@@ -99,14 +99,99 @@ fn callable(n: Node<'_>) -> bool {
         n.kind(),
         "method_declaration"
             | "constructor_declaration"
+            | "operator_declaration"
+            | "conversion_operator_declaration"
+            | "destructor_declaration"
             | "local_function_statement"
             | "accessor_declaration"
             | "lambda_expression"
             | "anonymous_method_expression"
     ) && (n.child_by_field_name("body").is_some() || n.kind() == "anonymous_method_expression")
-        || n.kind() == "property_declaration"
+        // Expression-bodied indexers store their arrow clause in `value`, not `body`.
+        // Indexers with explicit accessors have no direct body; their accessors are callables.
+        || matches!(n.kind(), "property_declaration" | "indexer_declaration")
             && n.child_by_field_name("value")
                 .is_some_and(|v| v.kind() == "arrow_expression_clause")
+}
+fn normalized_text(n: Node<'_>, source: &str) -> String {
+    n.utf8_text(source.as_bytes())
+        .unwrap_or("")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+// Parameter types are read from the parameter list. Ordinary parameters wrap their
+// type in `parameter`; `params` arrays expose `type` directly on the list.
+fn parameter_types(list: Option<Node<'_>>, source: &str) -> String {
+    let Some(list) = list else {
+        return String::new();
+    };
+    let mut types = Vec::new();
+    for i in 0..list.child_count() {
+        let Some(child) = list.child(i) else {
+            continue;
+        };
+        let ty = if child.kind() == "parameter" {
+            child.child_by_field_name("type")
+        } else {
+            (list.field_name_for_child(i as u32) == Some("type")).then_some(child)
+        };
+        if let Some(ty) = ty {
+            types.push(normalized_text(ty, source));
+        }
+    }
+    types.join(",")
+}
+fn checked_prefix(n: Node<'_>) -> &'static str {
+    let mut c = n.walk();
+    if n.children(&mut c).any(|child| child.kind() == "checked") {
+        "checked "
+    } else {
+        ""
+    }
+}
+fn callable_name(n: Node<'_>, source: &str) -> String {
+    match n.kind() {
+        "operator_declaration" => format!(
+            "operator {}{}({})",
+            checked_prefix(n),
+            n.child_by_field_name("operator")
+                .map(|x| normalized_text(x, source))
+                .unwrap_or_default(),
+            parameter_types(n.child_by_field_name("parameters"), source)
+        ),
+        "conversion_operator_declaration" => {
+            let mut c = n.walk();
+            let direction = n
+                .children(&mut c)
+                .map(|x| x.kind())
+                .find(|k| matches!(*k, "implicit" | "explicit"))
+                .unwrap_or("conversion");
+            format!(
+                "{direction} operator {}{}({})",
+                checked_prefix(n),
+                n.child_by_field_name("type")
+                    .map(|x| normalized_text(x, source))
+                    .unwrap_or_default(),
+                parameter_types(n.child_by_field_name("parameters"), source)
+            )
+        }
+        "destructor_declaration" => format!(
+            "~{}",
+            n.child_by_field_name("name")
+                .map(|x| normalized_text(x, source))
+                .unwrap_or_default()
+        ),
+        "indexer_declaration" => format!(
+            "this[{}]",
+            parameter_types(n.child_by_field_name("parameters"), source)
+        ),
+        _ => n
+            .child_by_field_name("name")
+            .and_then(|x| x.utf8_text(source.as_bytes()).ok())
+            .unwrap_or(n.kind())
+            .to_owned(),
+    }
 }
 fn decision(n: Node<'_>, source: &str) -> u32 {
     match n.kind() {
@@ -169,11 +254,7 @@ fn collect(n: Node<'_>, source: &str, file: &str, cov: Option<&CoverageFile>, ou
         let mut complexity = 1;
         let mut excluded = BTreeSet::new();
         score(n, source, &mut complexity, &mut excluded, true);
-        let name = n
-            .child_by_field_name("name")
-            .and_then(|x| x.utf8_text(source.as_bytes()).ok())
-            .unwrap_or(n.kind())
-            .to_owned();
+        let name = callable_name(n, source);
         let coverage = cov.and_then(|c| {
             let hits: Vec<u64> = c
                 .lines
