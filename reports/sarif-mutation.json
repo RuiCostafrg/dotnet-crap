@@ -1,0 +1,42 @@
+{
+  "tool": "cargo-mutants 27.1.0",
+  "tested_production_commit": "230e9a3bf42136af4a06522fdc56a19d60160f4d",
+  "scope": [
+    "src/sarif.rs"
+  ],
+  "test_targets": [
+    "bin dotnet-crap",
+    "test sarif"
+  ],
+  "command": "cargo mutants --file src/sarif.rs --jobs 1 --jobserver-tasks 2 --copy-target false --timeout 60 --build-timeout 240 --output target/sarif-mutation -- --locked --bin dotnet-crap --test sarif",
+  "file_sha256": {
+    "src/main.rs": "179bb837c77f84c6929d31d8d96017a560248f97250d7558c217f38dd7c55bd3",
+    "src/sarif.rs": "32f149208564f40fe31c15419a251efcfeabf4411e4eb85e6c763818df973dd2",
+    "tests/sarif.rs": "99617f82e4c3c391c9354020acb8f5aa5edf6499be2871774b3ea0b9dfbd45af"
+  },
+  "outcomes": {
+    "caught": [
+      "src/sarif.rs:14:5: replace render -> Result<String> with Ok(String::new())",
+      "src/sarif.rs:14:5: replace render -> Result<String> with Ok(\"xyzzy\".into())",
+      "src/sarif.rs:26:21: replace += with -= in render",
+      "src/sarif.rs:26:21: replace += with *= in render",
+      "src/sarif.rs:27:22: replace > with == in render",
+      "src/sarif.rs:27:22: replace > with < in render",
+      "src/sarif.rs:27:22: replace > with >= in render",
+      "src/sarif.rs:39:29: replace && with || in render",
+      "src/sarif.rs:49:22: replace && with || in render",
+      "src/sarif.rs:77:5: replace result -> Value with Default::default()",
+      "src/sarif.rs:88:5: replace uri -> String with String::new()",
+      "src/sarif.rs:88:5: replace uri -> String with \"xyzzy\".into()",
+      "src/sarif.rs:90:38: replace || with && in uri",
+      "src/sarif.rs:100:5: replace root_uri -> String with String::new()",
+      "src/sarif.rs:100:5: replace root_uri -> String with \"xyzzy\".into()"
+    ],
+    "missed": [],
+    "timeout": [],
+    "unviable": []
+  },
+  "score_definition": "caught / (caught + missed + timeout); unviable excluded",
+  "score_percent": 100,
+  "limitation": "Renderer-only inventory. Does not certify all Rust production sources or other feature branches."
+}
