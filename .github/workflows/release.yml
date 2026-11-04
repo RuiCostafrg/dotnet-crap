@@ -1,0 +1,125 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, target: x86_64-unknown-linux-gnu, rid: linux-x64 }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, rid: linux-arm64 }
+          - { os: macos-15-intel, target: x86_64-apple-darwin, rid: osx-x64 }
+          - { os: macos-15, target: aarch64-apple-darwin, rid: osx-arm64 }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, rid: win-x64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Verify tag and Cargo version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: test "${GITHUB_REF_NAME#v}" = "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
+      - run: cargo test --locked --target ${{ matrix.target }}
+      - run: cargo build --locked --release --target ${{ matrix.target }}
+      - name: Native binary smoke
+        shell: bash
+        run: |
+          exe=dotnet-crap
+          if [[ "$RUNNER_OS" == Windows ]]; then exe=dotnet-crap.exe; fi
+          "target/${{ matrix.target }}/release/$exe" --help
+          "target/${{ matrix.target }}/release/$exe" --root examples/Fixture --threshold 100 --fail-on-empty
+      - name: Archive native binary and checksum
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          RID: ${{ matrix.rid }}
+        run: |
+          mkdir -p dist
+          if [[ "$RUNNER_OS" == Windows ]]; then exe=dotnet-crap.exe; else exe=dotnet-crap; fi
+          cp "target/$TARGET/release/$exe" dist/
+          tar -czf "dotnet-crap-${GITHUB_REF_NAME}-${RID}.tar.gz" -C dist "$exe"
+          archive="dotnet-crap-${GITHUB_REF_NAME}-${RID}.tar.gz"
+          if command -v sha256sum >/dev/null; then sha256sum "$archive" > "$archive.sha256";
+          else shasum -a 256 "$archive" > "$archive.sha256"; fi
+          mkdir -p smoke
+          tar -xzf "$archive" -C smoke
+          "smoke/$exe" --version
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-${{ matrix.rid }}
+          path: dotnet-crap-${{ github.ref_name }}-${{ matrix.rid }}.tar.gz*
+          if-no-files-found: error
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: native-*
+          path: target/native-artifacts
+          merge-multiple: true
+      - name: Stage and smoke package
+        shell: bash
+        run: |
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
+          if [[ "${GITHUB_REF_NAME}" == v* ]]; then test "${GITHUB_REF_NAME#v}" = "$version"; fi
+          mkdir -p target/dotnet-tool-stage
+          for rid in linux-x64 linux-arm64 osx-x64 osx-arm64 win-x64; do
+            mkdir -p "target/dotnet-tool-stage/$rid"
+            file=dotnet-crap; [[ "$rid" == win-* ]] && file=dotnet-crap.exe
+            tar -xzf "target/native-artifacts/dotnet-crap-${GITHUB_REF_NAME}-${rid}.tar.gz" -C "target/dotnet-tool-stage/$rid"
+          done
+          bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$version"
+          mkdir -p target/tool
+          dotnet tool install --tool-path target/tool --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
+          target/tool/dotnet-crap --help
+          target/tool/dotnet-crap --version
+          target/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty
+          cp target/dotnet-tool-stage/feed/*.nupkg dotnet-crap.nupkg
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nuget-package
+          path: dotnet-crap.nupkg
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: package
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: native-*
+          path: release-assets
+          merge-multiple: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: nuget-package
+          path: release-assets
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" release-assets/* --generate-notes
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.x
+      - name: NuGet publish status
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${NUGET_API_KEY:-}" ]]; then
+            echo '::notice::NUGET_API_KEY is absent; skipping NuGet publication.'
+          else
+            dotnet nuget push release-assets/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+          fi

@@ -1,0 +1,23 @@
+[package]
+name = "dotnet-crap"
+version = "0.1.0"
+edition = "2021"
+description = "C# callable complexity and source-bound CRAP quality gates"
+license = "MIT"
+repository = "https://github.com/RuiCostafrg/dotnet-crap"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+hex = "0.4"
+tree-sitter = "0.25"
+tree-sitter-c-sharp = "0.23"
+walkdir = "2"
+tempfile = "3"
+same-file = "1"
+
+[lints.rust]
+unsafe_code = "forbid"
