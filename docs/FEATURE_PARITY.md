@@ -20,20 +20,22 @@ are replaced by .NET workflows rather than ported literally.
 | Project policy and boolean overrides | Versioned config and explicit CLI precedence | Phase 3 |
 | Regression baselines and move matching | Qualified C# identities and token fingerprints | Phase 4 |
 | Text and JSON reports | Same output roles | Implemented, initial report shape only |
-| XML, HTML, SARIF, filters/sorting/top | C# reports and stable diagnostic IDs | Phase 5 |
+| XML, HTML, SARIF, filters/sorting/top | C# reports and stable diagnostic IDs | SARIF implemented; XML/HTML/display options remain Phase 5 |
 | Public Rust API and streaming rendering | `dotnet_crap` library and thin CLI | Phase 5 |
 | Versioned JSON Schemas and compatibility policy | Coverage/config/baseline/report schemas | Phase 6 |
 | Native archives and checksums | Linux/macOS x64 + ARM64, Windows x64 | Release workflow included; release-time validation pending |
 | npm distribution | .NET global/local tool NuGet package | Launcher and local install smoke included |
 | Setup GitHub Action | Pinned native release download and checksum | Included; published-release adoption pending |
 | Installers, Homebrew, Linux packages, provenance | Equivalent native distribution | Phase 6 |
-| Audits, mutation, coverage, proofs, benchmarks | Rust and real .NET validation | Basic CI/E2E included; advanced checks Phase 6 |
+| Audits, mutation, coverage, proofs, benchmarks | Rust and real .NET validation | Mutation score gate and reproducible performance baseline added; audits/coverage/proofs remain Phase 6 |
 | Independent project adoption | Public C# projects with measured evidence | Phase 7 |
 
 ## Initial release contract
 
-The scanner scores implemented methods, constructors, local functions, explicit
-accessors, expression-bodied properties, lambdas, and anonymous delegates.
+The scanner scores implemented methods, constructors, operators, conversions,
+destructors, local functions, explicit accessors, expression-bodied properties and
+indexers, lambdas, and anonymous delegates. The callable additions and naming
+limits are detailed in [C# callable recognition](CSHARP_CALLABLES.md).
 Declaration-only methods and auto-accessors are omitted. Callables are separate
 records; nested decisions are not charged to the enclosing callable. Locations
 include a one-based line, UTF-8 byte column, and end line.
@@ -42,8 +44,8 @@ Complexity begins at 1 and adds one for `if`, loops, `catch`, ternaries,
 non-default switch labels and non-discard switch-expression arms, `when` guards,
 `&&`, `||`, `??`, and `??=`. Comments and strings do not contribute.
 This is the tool's convention, not a claim of Roslyn or IDE metric equivalence.
-Operators, destructors, expression-bodied indexers, top-level statements,
-advanced patterns, and conditional-compilation symbols need broader support.
+Top-level statements, advanced patterns, primary constructors, and
+conditional-compilation symbols still need broader support.
 
 Native coverage is validated for version, unknown/duplicate keys, canonical
 paths/line numbers, unsigned hit counts, source hashes, and selected-source line
@@ -84,8 +86,9 @@ are documented from actual runs.
 
 ## Phase 3: C# completeness and selection policy
 
-1. Add operators, conversions, destructors, indexers, top-level code, advanced
-   switch/pattern forms, async/iterators, records and primary constructors.
+1. Operators, conversions, destructors and implemented indexers are now supported.
+   Complete top-level code, advanced switch/pattern forms, async/iterators, records
+   and primary constructors.
 2. Decide preprocessor policy explicitly: source-as-written versus configured
    compilation symbols. Test inactive and invalid branches; never silently claim
    compilation-aware results. Add generated-file markers and deterministic ignores.

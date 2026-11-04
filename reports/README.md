@@ -23,3 +23,17 @@ Baseline validation: locked debug/release tests, rustfmt, clippy with warnings
 denied, and debug tests with `DOTNET_CRAP_E2E=1` passed. The budget failure path was
 also exercised with three files/runs and a deliberately unattainable positive
 budget; it returned exit 1. Mutation evidence is owned by its separate quality PR.
+
+## Combined feature batch
+
+`benchmark-combined-scan.json` and `benchmark-combined-coverage.json` were produced
+with the same commands and corpus after stacking the mutation gate, SARIF renderer,
+and expanded C# callable recognition. Their `production_commit` identifies the
+complete tested Rust source tree; subsequent changes in this PR are documentation,
+evidence and additional tests. Every scan processed the full expected corpus.
+
+These session measurements have substantial host variability and were not run
+as an interleaved controlled A/B experiment. They do not establish a speedup or
+regression budget. No performance optimization is claimed. Profile dense
+single-file coverage workloads before replacing the current per-callable coverage
+filter; this corpus primarily measures common scans over many small files.

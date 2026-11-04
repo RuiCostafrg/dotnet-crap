@@ -541,6 +541,7 @@ fn declaration_fixtures_are_valid_csharp() {
         ("Declarations.cs", DECLARATIONS_CS),
         ("Existing.cs", EXISTING_CS),
         ("Grid.cs", GRID_CS),
+        ("Signatures.cs", SIGNATURES_CS),
     ]);
     fs::write(
         dir.path().join("Fixtures.csproj"),
@@ -556,5 +557,40 @@ fn declaration_fixtures_are_valid_csharp() {
     assert!(status.success(), "fixtures must compile with the .NET SDK");
     // The same compiled sources must score identically under the Rust scanner.
     let report = json_report(dir.path());
-    assert_eq!(report["files_scanned"], 6);
+    assert_eq!(report["files_scanned"], 7);
+}
+
+const SIGNATURES_CS: &str = r#"public readonly struct Token
+{
+    private readonly int value;
+    public Token(int value) => this.value = value;
+    public static explicit operator int(Token x) => x.value;
+    public static explicit operator checked int(Token x) => checked(x.value);
+}
+public sealed class Many
+{
+    public int this[int index, params int[] rest] => rest.Length > 0 ? rest[0] : index;
+}
+"#;
+
+#[test]
+fn signature_names_distinguish_checked_conversions_and_params_indexers() {
+    let dir = write_files(&[("Signatures.cs", SIGNATURES_CS)]);
+    assert_eq!(
+        callables(&json_report(dir.path())),
+        expected(&[
+            ("constructor_declaration", "Token", 1),
+            (
+                "conversion_operator_declaration",
+                "explicit operator int(Token)",
+                1
+            ),
+            (
+                "conversion_operator_declaration",
+                "explicit operator checked int(Token)",
+                1
+            ),
+            ("indexer_declaration", "this[int,int[]]", 2),
+        ])
+    );
 }
