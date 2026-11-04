@@ -2,3 +2,6 @@
 **/bin/
 **/obj/
 /packaging/dotnet-crap-launcher/native/
+
+/mutants.out/
+/mutants.out.old/
