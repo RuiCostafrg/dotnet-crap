@@ -1,0 +1,4 @@
+/target/
+**/bin/
+**/obj/
+/packaging/dotnet-crap-launcher/native/
