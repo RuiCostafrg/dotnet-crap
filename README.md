@@ -28,6 +28,7 @@ cargo build --locked --release
 ./target/release/dotnet-crap --root . src --threshold 30
 ./target/release/dotnet-crap --root . --coverage coverage.json --require-coverage
 ./target/release/dotnet-crap --root . --format json --output report.json
+./target/release/dotnet-crap --root . --format sarif --output report.sarif
 ```
 
 Source paths are relative to `--root`; coverage and report paths are relative to
@@ -35,6 +36,8 @@ the calling directory. Reports are produced for passing and failing score gates.
 Exit codes are **0** for pass, **1** for a score gate failure, and **2** for an
 argument, source, coverage, or I/O error. `--fail-on-empty` rejects an empty scan.
 Missing required coverage and empty-selection gate failures also exit 1.
+[SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
+empty-selection diagnostics for code-scanning integrations.
 
 ## Coverage and scope
 

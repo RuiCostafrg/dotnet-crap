@@ -21,7 +21,7 @@ struct Args {
     root: PathBuf,
     #[arg(long, default_value_t = 10.0)]
     threshold: f64,
-    #[arg(long, default_value = "text", value_parser = ["text", "json"])]
+    #[arg(long, default_value = "text", value_parser = ["text", "json", "sarif"])]
     format: String,
     #[arg(long)]
     output: Option<PathBuf>,
@@ -93,6 +93,7 @@ struct Report {
     functions: Vec<Item>,
     failed: bool,
 }
+mod sarif;
 fn callable(n: Node<'_>) -> bool {
     matches!(
         n.kind(),
@@ -334,7 +335,12 @@ fn run(args: Args) -> Result<bool> {
         functions: items,
         failed,
     };
-    let output = if args.format == "json" {
+    let output = if args.format == "sarif" {
+        format!(
+            "{}\n",
+            sarif::render(&report, &root, args.require_coverage, args.fail_on_empty)?
+        )
+    } else if args.format == "json" {
         format!("{}\n", serde_json::to_string_pretty(&report)?)
     } else {
         let mut s = String::new();
