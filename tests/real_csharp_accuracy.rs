@@ -333,9 +333,13 @@ fn source_filenames_unrepresentable_in_native_coverage_fail_explicitly() {
     for name in [r"literal\name.cs", "colon:name.cs"] {
         let dir = tempfile::tempdir().unwrap();
         fs::write(dir.path().join(name), "class C { void F() {} }").unwrap();
+        let coverage = dir.path().join("coverage.json");
+        fs::write(&coverage, r#"{"version":1,"files":{}}"#).unwrap();
         let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
             .arg("--root")
             .arg(dir.path())
+            .arg("--coverage")
+            .arg(&coverage)
             .output()
             .unwrap();
         assert_eq!(output.status.code(), Some(2));

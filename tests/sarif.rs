@@ -205,6 +205,47 @@ fn literal_backslashes_in_source_root_remain_literal_uri_bytes() {
     assert!(!base.ends_with("/source/root/"));
 }
 
+#[cfg(unix)]
+#[test]
+fn special_source_names_are_encoded_without_coverage_and_rejected_with_it() {
+    for (name, uri) in [
+        (r"literal\name.cs", "literal%5Cname.cs"),
+        ("colon:name.cs", "colon%3Aname.cs"),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join(name), "class C { void F() {} }").unwrap();
+        let (code, report) = scan(dir.path(), &["--threshold", "0"]);
+        assert_eq!(code, 1);
+        assert_eq!(results(&report).len(), 1);
+        assert_eq!(
+            results(&report)[0]["locations"][0]["physicalLocation"]["artifactLocation"]["uri"],
+            uri
+        );
+        let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("--root")
+            .arg(dir.path())
+            .args(["--format", "json"])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0));
+        let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(report["functions"][0]["file"], name);
+
+        let coverage = dir.path().join("coverage.json");
+        fs::write(&coverage, r#"{"version":1,"files":{}}"#).unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("--root")
+            .arg(dir.path())
+            .args(["--format", "sarif", "--coverage"])
+            .arg(&coverage)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&output.stderr).contains("unsupported by native coverage"));
+    }
+}
+
 // APFS rejects invalid UTF-8 path components before the CLI can inspect them.
 #[cfg(all(unix, not(target_os = "macos")))]
 #[test]
