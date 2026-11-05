@@ -21,7 +21,7 @@ struct Args {
     root: PathBuf,
     #[arg(long, default_value_t = 10.0)]
     threshold: f64,
-    #[arg(long, default_value = "text", value_parser = ["text", "json"])]
+    #[arg(long, default_value = "text", value_parser = ["text", "json", "sarif"])]
     format: String,
     #[arg(long)]
     output: Option<PathBuf>,
@@ -93,6 +93,7 @@ struct Report {
     functions: Vec<Item>,
     failed: bool,
 }
+mod sarif;
 fn callable(n: Node<'_>) -> bool {
     matches!(
         n.kind(),
@@ -303,8 +304,14 @@ fn run(args: Args) -> Result<bool> {
             fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         let relative = path
             .strip_prefix(&root)?
-            .to_string_lossy()
-            .replace('\\', "/");
+            .to_str()
+            .context("non-UTF-8 source path")?
+            .to_owned();
+        #[cfg(windows)]
+        let relative = relative.replace('\\', "/");
+        if coverage.is_some() && relative.contains(['\\', ':']) {
+            bail!("source path contains characters unsupported by native coverage");
+        }
         let tree = parser.parse(&source, None).context("parser failed")?;
         if tree.root_node().has_error() {
             bail!("invalid C# syntax in {relative}");
@@ -334,7 +341,12 @@ fn run(args: Args) -> Result<bool> {
         functions: items,
         failed,
     };
-    let output = if args.format == "json" {
+    let output = if args.format == "sarif" {
+        format!(
+            "{}\n",
+            sarif::render(&report, &root, args.require_coverage, args.fail_on_empty)?
+        )
+    } else if args.format == "json" {
         format!("{}\n", serde_json::to_string_pretty(&report)?)
     } else {
         let mut s = String::new();
