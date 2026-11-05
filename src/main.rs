@@ -215,7 +215,10 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
         | "when_clause" => 1,
         "switch_section" => {
             let mut c = n.walk();
-            let result = u32::from(n.children(&mut c).any(|child| child.kind() == "case"));
+            let result = n
+                .children(&mut c)
+                .filter(|child| child.kind() == "case")
+                .count() as u32;
             result
         }
         "switch_expression_arm" => {
@@ -240,67 +243,132 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
         _ => 0,
     }
 }
-/// Accumulate one callable's decisions and record nested callable lines to exclude from coverage.
-fn score(
+/// Collect callable scores iteratively with bounded traversal and merged nested-coverage exclusions.
+/// The caller supplies independent whole-tree and per-callable named-node budgets.
+fn collect(
     n: Node<'_>,
     source: &str,
-    complexity: &mut u32,
-    excluded: &mut BTreeSet<usize>,
-    outer: bool,
-) {
-    if !outer && callable(n) {
-        for line in n.start_position().row..=n.end_position().row {
-            excluded.insert(line + 1);
+    file: &str,
+    cov: Option<&BTreeMap<usize, u64>>,
+    out: &mut Vec<Item>,
+    traversal_budget: usize,
+    callable_budget: usize,
+) -> Result<()> {
+    let mut nodes = vec![n];
+    let mut visited = 0usize;
+    while let Some(n) = nodes.pop() {
+        visited += 1;
+        if visited > traversal_budget {
+            bail!("syntax tree resource limit exceeded");
         }
-        return;
-    }
-    *complexity += decision(n, source);
-    let mut c = n.walk();
-    for child in n.named_children(&mut c) {
-        score(child, source, complexity, excluded, false);
-    }
-}
-/// Emit callable scores using supplied coverage points, then discover nested callables separately.
-fn collect(n: Node<'_>, source: &str, file: &str, cov: Option<&CoverageFile>, out: &mut Vec<Item>) {
-    if callable(n) {
-        let mut complexity = 1;
-        let mut excluded = BTreeSet::new();
-        score(n, source, &mut complexity, &mut excluded, true);
-        let name = callable_name(n, source);
+        let mut cursor = n.walk();
+        let children: Vec<_> = n.named_children(&mut cursor).collect();
+        nodes.extend(children.into_iter().rev());
+        if !callable(n) {
+            continue;
+        }
+        let mut complexity = 1u32;
+        let mut excluded = Vec::new();
+        let mut stack = vec![(n, true)];
+        let mut scored = 0usize;
+        while let Some((node, outer)) = stack.pop() {
+            scored += 1;
+            if scored > callable_budget {
+                bail!("callable resource limit exceeded");
+            }
+            if !outer && callable(node) {
+                excluded.push((node.start_position().row + 1, node.end_position().row + 1));
+                continue;
+            }
+            complexity = complexity
+                .checked_add(decision(node, source))
+                .context("complexity overflow")?;
+            let mut cursor = node.walk();
+            stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));
+        }
+        // Exclude nested spans as intervals, never one allocation per source
+        // line. Long overlapping local-function spans must not expand work.
+        excluded.sort_unstable();
+        let mut ranges: Vec<(usize, usize)> = Vec::new();
+        for (start, end) in excluded {
+            if let Some(last) = ranges.last_mut() {
+                if start <= last.1 {
+                    last.1 = last.1.max(end);
+                    continue;
+                }
+            }
+            ranges.push((start, end));
+        }
         let coverage = cov.and_then(|c| {
-            let hits: Vec<u64> = c
-                .lines
-                .iter()
-                .filter_map(|(line, hits)| {
-                    let l = line.parse::<usize>().ok()?;
-                    (l > n.start_position().row
-                        && l <= n.end_position().row + 1
-                        && !excluded.contains(&l))
-                    .then_some(*hits)
-                })
-                .collect();
-            (!hits.is_empty())
-                .then(|| hits.iter().filter(|&&h| h > 0).count() as f64 / hits.len() as f64)
+            let mut total = 0usize;
+            let mut hit = 0usize;
+            for (&line, &hits) in c.range((n.start_position().row + 1)..=(n.end_position().row + 1))
+            {
+                let position = ranges.partition_point(|&(start, _)| start <= line);
+                if position == 0 || ranges[position - 1].1 < line {
+                    total += 1;
+                    hit += usize::from(hits > 0);
+                }
+            }
+            (total > 0).then(|| hit as f64 / total as f64)
         });
         let missed = 1.0 - coverage.unwrap_or(0.0);
-        let crap = f64::from(complexity).powi(2) * missed.powi(3) + f64::from(complexity);
         out.push(Item {
             file: file.to_owned(),
-            name,
+            name: callable_name(n, source),
             kind: n.kind().to_owned(),
             line: n.start_position().row + 1,
             column: n.start_position().column + 1,
             end_line: n.end_position().row + 1,
             complexity,
             coverage,
-            crap,
+            crap: f64::from(complexity).powi(2) * missed.powi(3) + f64::from(complexity),
         });
     }
-    let mut c = n.walk();
-    for child in n.named_children(&mut c) {
-        collect(child, source, file, cov, out);
+    Ok(())
+}
+/// Decode UTF-8 or BOM-marked UTF-16 source, rejecting malformed bytes instead of replacing them.
+fn decode_source(bytes: &[u8]) -> Result<String> {
+    if bytes.starts_with(&[0xff, 0xfe]) || bytes.starts_with(&[0xfe, 0xff]) {
+        let le = bytes[0] == 0xff;
+        let data = &bytes[2..];
+        if !data.len().is_multiple_of(2) {
+            bail!("invalid UTF-16 source");
+        }
+        let units: Vec<u16> = data
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|c| {
+                if le {
+                    u16::from_le_bytes([c[0], c[1]])
+                } else {
+                    u16::from_be_bytes([c[0], c[1]])
+                }
+            })
+            .collect();
+        Ok(String::from_utf16(&units).context("invalid UTF-16 source")?)
+    } else {
+        Ok(
+            std::str::from_utf8(bytes.strip_prefix(&[0xef, 0xbb, 0xbf]).unwrap_or(bytes))
+                .context("invalid UTF-8 source")?
+                .to_owned(),
+        )
     }
 }
+/// Escape control characters before writing untrusted source names or errors to a terminal.
+fn terminal_safe(s: &str) -> String {
+    let mut text = String::with_capacity(s.len());
+    for character in s.chars() {
+        if character.is_control() {
+            text.extend(character.escape_default());
+        } else {
+            text.push(character);
+        }
+    }
+    text
+}
+
 /// Validate inputs, scan selected sources and stage a report without overwriting source inputs.
 /// Return whether score, required-coverage or empty-selection policy failed; input errors propagate.
 fn run(args: Args) -> Result<bool> {
@@ -329,6 +397,7 @@ fn run(args: Args) -> Result<bool> {
                     .components()
                     .any(|x| !matches!(x, Component::Normal(_)))
                 || path.is_empty()
+                || path.split('/').any(|part| part == "." || part == "..")
                 || path.contains("//")
                 || path.ends_with('/')
                 || f.sha256.len() != 64
@@ -380,7 +449,11 @@ fn run(args: Args) -> Result<bool> {
             })
         {
             let e = entry?;
-            if e.file_type().is_file() && e.path().extension().is_some_and(|x| x == "cs") {
+            if e.file_type().is_file()
+                && e.path()
+                    .extension()
+                    .is_some_and(|x| x.eq_ignore_ascii_case("cs"))
+            {
                 let name = e.file_name().to_string_lossy().to_ascii_lowercase();
                 if !name.ends_with(".g.cs")
                     && !name.ends_with(".generated.cs")
@@ -394,9 +467,12 @@ fn run(args: Args) -> Result<bool> {
     let mut parser = TsParser::new();
     parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
     let mut items = Vec::new();
+    let mut source_hashes = Vec::new();
     for path in &files {
+        let bytes = fs::read(path).with_context(|| format!("reading {}", path.display()))?;
+        let hash = hex::encode(Sha256::digest(&bytes));
         let source =
-            fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
+            decode_source(&bytes).with_context(|| format!("decoding {}", path.display()))?;
         let relative = path
             .strip_prefix(&root)?
             .to_str()
@@ -405,25 +481,41 @@ fn run(args: Args) -> Result<bool> {
         #[cfg(windows)]
         let relative = relative.replace('\\', "/");
         if coverage.is_some() && relative.contains(['\\', ':']) {
-            bail!("source path contains characters unsupported by native coverage");
+            bail!("source path contains characters unsupported by native coverage: {relative}");
         }
+        source_hashes.push((path, hash.clone()));
         let tree = parser.parse(&source, None).context("parser failed")?;
         if tree.root_node().has_error() {
             bail!("invalid C# syntax in {relative}");
         }
         let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
         if let Some(c) = cov {
-            if !hex::encode(Sha256::digest(source.as_bytes())).eq_ignore_ascii_case(&c.sha256) {
+            if !hash.eq_ignore_ascii_case(&c.sha256) {
                 bail!("stale coverage for {relative}");
             }
+            let line_count = source.lines().count();
             if c.lines
                 .keys()
-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > source.lines().count())
+                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
             {
                 bail!("coverage line outside {relative}");
             }
         }
-        collect(tree.root_node(), &source, &relative, cov, &mut items);
+        let points = cov.map(|c| {
+            c.lines
+                .iter()
+                .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits))
+                .collect()
+        });
+        collect(
+            tree.root_node(),
+            &source,
+            &relative,
+            points.as_ref(),
+            &mut items,
+            1_000_000,
+            1_000_000,
+        )?;
     }
     let coverage_complete = items.iter().all(|i| i.coverage.is_some());
     let failed = items.iter().any(|i| i.crap > args.threshold)
@@ -454,9 +546,9 @@ fn run(args: Args) -> Result<bool> {
         for i in &report.functions {
             s.push_str(&format!(
                 "{}:{} {} complexity={} coverage={} CRAP={:.2}\n",
-                i.file,
+                terminal_safe(&i.file),
                 i.line,
-                i.name,
+                terminal_safe(&i.name),
                 i.complexity,
                 i.coverage
                     .map_or_else(|| "absent".into(), |v| format!("{:.1}%", v * 100.0)),
@@ -465,6 +557,11 @@ fn run(args: Args) -> Result<bool> {
         }
         s
     };
+    for (path, hash) in source_hashes {
+        if hex::encode(Sha256::digest(fs::read(path)?)) != hash {
+            bail!("source changed during scan: {}", path.display());
+        }
+    }
     if let Some(path) = args.output {
         if path
             .extension()
@@ -515,9 +612,58 @@ fn main() {
         Ok(false) => 0,
         Ok(true) => 1,
         Err(e) => {
-            eprintln!("error: {e:#}");
+            eprintln!("error: {}", terminal_safe(&format!("{e:#}")));
             2
         }
     };
     std::process::exit(code);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Run the actual collector with deliberately small independent resource limits.
+    fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
+        let mut parser = TsParser::new();
+        parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
+        let tree = parser.parse(source, None).unwrap();
+        assert!(!tree.root_node().has_error());
+        let mut items = Vec::new();
+        collect(
+            tree.root_node(),
+            source,
+            "C.cs",
+            None,
+            &mut items,
+            traversal,
+            scoring,
+        )?;
+        Ok(items)
+    }
+
+    #[test]
+    /// Count even the root node and stop whole-tree traversal independently of scoring.
+    fn traversal_budget_counts_nodes_and_accepts_the_exact_limit() {
+        assert!(collect_with_limits("", 1, 0).unwrap().is_empty());
+        let error = collect_with_limits("", 0, 100).err().unwrap();
+        assert_eq!(error.to_string(), "syntax tree resource limit exceeded");
+        let error = collect_with_limits("class C { void F() {} }", 1, 100)
+            .err()
+            .unwrap();
+        assert_eq!(error.to_string(), "syntax tree resource limit exceeded");
+    }
+
+    #[test]
+    /// Bound callable scoring separately; this empty method has five named syntax nodes.
+    fn callable_budget_counts_nodes_and_accepts_the_exact_limit() {
+        let source = "class C { void F() {} }";
+        let items = collect_with_limits(source, 100, 5).unwrap();
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].complexity, 1);
+        for budget in [0, 4] {
+            let error = collect_with_limits(source, 100, budget).err().unwrap();
+            assert_eq!(error.to_string(), "callable resource limit exceeded");
+        }
+    }
 }
