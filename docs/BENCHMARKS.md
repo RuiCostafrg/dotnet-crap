@@ -1,0 +1,3 @@
+# Release benchmark
+
+Build the release binary, then run `python3 scripts/benchmark.py` for scan-only or add `--coverage` to include coverage scoring. The generated corpus has two known callables per file; the tool validates exact file/name identities, complexity, coverage, and CRAP scores for each report. `--timeout` sets a finite positive per-invocation timeout (120 seconds by default). The executable is copied into a private temporary directory before runs, and its digest is recorded. `--output` is written by atomic replacement; its parent directory must be writable. The output itself cannot be a symlink or alias the executable. Other external output paths are supported.
