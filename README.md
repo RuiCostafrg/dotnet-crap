@@ -39,6 +39,14 @@ Missing required coverage and empty-selection gate failures also exit 1.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
+## Rust library
+
+The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
+code can scan and render reports without starting the CLI. Gate failures are
+reported by `ScanResult::report().failed`; input errors are returned as `Err`.
+See the [Rust API guide](docs/RUST_API.md) for consumption, verification, and
+limits. Run the bundled example with `cargo run --example scan -- <root>`.
+
 ## Coverage and scope
 
 The initial [native coverage format](examples/COVERAGE.md) uses root-relative

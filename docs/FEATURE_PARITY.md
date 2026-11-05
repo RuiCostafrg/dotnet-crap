@@ -21,7 +21,7 @@ are replaced by .NET workflows rather than ported literally.
 | Regression baselines and move matching | Qualified C# identities and token fingerprints | Phase 4 |
 | Text and JSON reports | Same output roles | Implemented, initial report shape only |
 | XML, HTML, SARIF, filters/sorting/top | C# reports and stable diagnostic IDs | SARIF implemented; XML/HTML/display options remain Phase 5 |
-| Public Rust API and streaming rendering | `dotnet_crap` library and thin CLI | Phase 5 |
+| Public Rust API and streaming rendering | `dotnet_crap` library and thin CLI | Scan/typed reports/string rendering implemented; streaming deferred |
 | Versioned JSON Schemas and compatibility policy | Coverage/config/baseline/report schemas | Phase 6 |
 | Native archives and checksums | Linux/macOS x64 + ARM64, Windows x64 | Release workflow included; release-time validation pending |
 | npm distribution | .NET global/local tool NuGet package | Launcher and local install smoke included |
@@ -114,7 +114,8 @@ fixtures. Never silently rewrite a committed baseline.
 
 ## Phase 5: reports and reusable API
 
-Split scanning/rendering into a reusable Rust library. Add XML, standalone HTML
+Scanning and string rendering are available through the [Rust library API](RUST_API.md).
+Streaming rendering remains deferred. Add XML, standalone HTML
 with search and failing-only filters, then SARIF 2.1.0 with stable `DNCRAP001`
 (score) and `DNCRAP002` (completeness) IDs, encoded relative locations and stable
 fingerprints. Add deterministic text sort/top/filter flags without changing gates.
