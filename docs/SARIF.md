@@ -41,3 +41,18 @@ The initial attempt to copy the build cache failed with a filesystem read-link
 error on this Android runner. The completed run used `--copy-target false` and
 rebuilt dependencies in its isolated scratch directory; no production mutations
 were excluded within the selected renderer file.
+
+## Filesystem path contract
+
+The source root is canonicalized before rendering. On Unix, a literal backslash
+in the root is encoded as `%5C`; it is not converted into a directory separator.
+Windows drive and UNC roots retain their file-URI semantics. The exact canonical
+root is checked by integration tests, rather than just checking a URI prefix.
+
+A root that cannot be represented in UTF-8 fails SARIF rendering explicitly.
+Selected non-UTF-8 filenames are rejected before report identities are created.
+When coverage input is supplied, relative source names containing literal
+backslashes or colons are also rejected because the version-1 native coverage
+format cannot address them unambiguously. Without coverage input, these names
+are preserved in JSON and percent-encoded in SARIF.
+These failures produce exit 2 without a fabricated SARIF finding location.

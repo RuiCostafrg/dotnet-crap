@@ -28,6 +28,98 @@ fn results(report: &Value) -> &[Value] {
     report["runs"][0]["results"].as_array().unwrap()
 }
 
+/// Express the canonical path as a decoded file-URI tail, with UNC hosts in the authority.
+fn expected_file_uri_tail(canonical: &str, windows: bool) -> String {
+    if windows {
+        let normalized = canonical
+            .strip_prefix(r"\\?\")
+            .unwrap_or(canonical)
+            .replace('\\', "/");
+        let path = normalized.trim_end_matches('/');
+        if let Some(unc) = path
+            .strip_prefix("UNC/")
+            .or_else(|| path.strip_prefix("//"))
+        {
+            format!("{unc}/")
+        } else {
+            format!("/{path}/")
+        }
+    } else {
+        format!("{}/", canonical.trim_end_matches('/'))
+    }
+}
+
+/// Decode one URI component, rejecting malformed escapes and invalid UTF-8.
+fn decoded_uri_component(component: &str) -> Option<String> {
+    let mut decoded = Vec::new();
+    let mut bytes = component.bytes();
+    while let Some(byte) = bytes.next() {
+        if byte == b'%' {
+            let digits = [bytes.next()?, bytes.next()?];
+            decoded.push(u8::from_str_radix(std::str::from_utf8(&digits).ok()?, 16).ok()?);
+        } else {
+            decoded.push(byte);
+        }
+    }
+    String::from_utf8(decoded).ok()
+}
+
+/// Separate file-URI authority and absolute path before decoding their percent escapes.
+fn decoded_file_uri_parts(uri: &str) -> Option<(String, String)> {
+    if uri.contains(['?', '#']) {
+        return None;
+    }
+    let (authority, path) = uri.strip_prefix("file://")?.split_once('/')?;
+    let authority = decoded_uri_component(authority)?;
+    if authority.contains(['/', '\\']) {
+        return None;
+    }
+    Some((authority, decoded_uri_component(&format!("/{path}"))?))
+}
+
+#[test]
+/// Reject escaped separators in the authority while retaining valid local and UNC roots.
+fn file_uri_structure_is_checked_before_decoding() {
+    assert_eq!(decoded_file_uri_parts("file://%2Ftmp/root/"), None);
+    assert_eq!(decoded_file_uri_parts("file://server%2fshare/root/"), None);
+    assert_eq!(decoded_file_uri_parts("file://%5Cserver/share/"), None);
+    assert_eq!(
+        decoded_file_uri_parts("file:///tmp/source%20root/"),
+        Some((String::new(), "/tmp/source root/".into()))
+    );
+    assert_eq!(
+        decoded_file_uri_parts("file:///C:/source%20root/"),
+        Some((String::new(), "/C:/source root/".into()))
+    );
+    assert_eq!(
+        decoded_file_uri_parts("file://server/share/source%20root/"),
+        Some(("server".into(), "/share/source root/".into()))
+    );
+    assert_eq!(decoded_file_uri_parts("file:///tmp/%"), None);
+    assert_eq!(decoded_file_uri_parts("file:///tmp/%GG/"), None);
+}
+
+#[test]
+/// Check local-drive and UNC authority expectations on every host, without requiring a share.
+fn file_uri_expectations_distinguish_drive_paths_and_unc_authorities() {
+    for (path, expected) in [
+        (r"C:\source root", "/C:/source root/"),
+        (r"\\?\C:\source root", "/C:/source root/"),
+        (r"\\server\share\source root", "server/share/source root/"),
+        (
+            r"\\?\UNC\server\share\source root",
+            "server/share/source root/",
+        ),
+    ] {
+        assert_eq!(expected_file_uri_tail(path, true), expected);
+    }
+    assert_eq!(expected_file_uri_tail("/", false), "/");
+    assert_eq!(
+        expected_file_uri_tail(r"/source\root", false),
+        "/source\\root/"
+    );
+}
+
 #[test]
 fn score_threshold_empty_and_completeness_gates() {
     let dir = tempfile::tempdir().unwrap();
@@ -56,6 +148,7 @@ fn score_threshold_empty_and_completeness_gates() {
 }
 
 #[test]
+/// Verify encoded Unicode paths, canonical root identity and finding fingerprints through the CLI.
 fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     let dir = tempfile::tempdir().unwrap();
     fs::create_dir(dir.path().join("space #目录")).unwrap();
@@ -76,38 +169,14 @@ fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     let base = report["runs"][0]["originalUriBaseIds"]["%SRCROOT%"]["uri"]
         .as_str()
         .unwrap();
-    assert!(base.starts_with("file:///"));
+    assert!(base.starts_with("file://"));
     assert!(base.ends_with('/'));
-    // Decode URI octets independently and compare the exact canonical root.
-    let mut decoded = Vec::new();
-    let mut bytes = base
-        .strip_prefix("file://")
-        .unwrap()
-        .as_bytes()
-        .iter()
-        .copied();
-    while let Some(byte) = bytes.next() {
-        if byte == b'%' {
-            let digits = [bytes.next().unwrap(), bytes.next().unwrap()];
-            decoded.push(u8::from_str_radix(std::str::from_utf8(&digits).unwrap(), 16).unwrap());
-        } else {
-            decoded.push(byte);
-        }
-    }
-    let actual = String::from_utf8(decoded).unwrap();
+    // Split authority/path before decoding so an escaped slash cannot change their roles.
+    let actual = decoded_file_uri_parts(base).expect("valid source-root file URI");
     let canonical = dir.path().canonicalize().unwrap();
-    #[cfg(windows)]
-    let expected = format!(
-        "/{}/",
-        canonical
-            .to_str()
-            .unwrap()
-            .trim_start_matches(r"\\?\")
-            .replace('\\', "/")
-    );
-    #[cfg(not(windows))]
-    let expected = format!("{}/", canonical.to_str().unwrap());
-    assert_eq!(actual, expected);
+    let expected = expected_file_uri_tail(canonical.to_str().unwrap(), cfg!(windows));
+    let (authority, path) = expected.split_once('/').unwrap();
+    assert_eq!(actual, (authority.to_owned(), format!("/{path}")));
     assert_eq!(location["region"], json!({"startLine":2,"endLine":2}));
     assert!(first["message"]["text"].as_str().unwrap().contains('名'));
     let fingerprint = &first["partialFingerprints"]["dotnetCrap/v1"];
