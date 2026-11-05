@@ -255,6 +255,7 @@ public sealed class Grid
 }
 "##;
 
+/// Invoke the built CLI with an isolated source root and capture its public output contract.
 fn run(root: &Path, args: &[&str]) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
         .arg("--root")
@@ -264,6 +265,7 @@ fn run(root: &Path, args: &[&str]) -> std::process::Output {
         .unwrap()
 }
 
+/// Materialize C# fixtures in a temporary source directory owned by the caller.
 fn write_files(files: &[(&str, &str)]) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     for (name, text) in files {
@@ -272,6 +274,7 @@ fn write_files(files: &[(&str, &str)]) -> tempfile::TempDir {
     dir
 }
 
+/// Require a successful JSON scan before exposing the parsed report to assertions.
 fn json_report(root: &Path) -> Value {
     let output = run(root, &["--format", "json", "--threshold", "1000"]);
     assert!(
@@ -282,6 +285,7 @@ fn json_report(root: &Path) -> Value {
     serde_json::from_slice(&output.stdout).unwrap()
 }
 
+/// Project report records into comparable callable kind, name and complexity tuples.
 fn callables(report: &Value) -> Vec<(String, String, u64)> {
     report["functions"]
         .as_array()
@@ -297,6 +301,7 @@ fn callables(report: &Value) -> Vec<(String, String, u64)> {
         .collect()
 }
 
+/// Own the hand-calculated expected callable tuples for comparison with CLI output.
 fn expected(rows: &[(&str, &str, u64)]) -> Vec<(String, String, u64)> {
     rows.iter()
         .map(|(kind, name, complexity)| ((*kind).to_owned(), (*name).to_owned(), *complexity))
@@ -304,6 +309,7 @@ fn expected(rows: &[(&str, &str, u64)]) -> Vec<(String, String, u64)> {
 }
 
 #[test]
+/// Check the complete callable inventory and independently counted decisions for new C# forms.
 fn operator_conversion_destructor_and_indexer_complexity() {
     let dir = write_files(&[("Callables.cs", CALLABLES_CS)]);
     let report = json_report(dir.path());
@@ -350,6 +356,7 @@ fn operator_conversion_destructor_and_indexer_complexity() {
 }
 
 #[test]
+/// Verify enclosing operators and conversions do not absorb nested callable decisions.
 fn nested_callables_are_charged_only_to_their_owner() {
     let dir = write_files(&[("Nested.cs", NESTED_CS)]);
     let report = json_report(dir.path());
@@ -372,6 +379,7 @@ fn nested_callables_are_charged_only_to_their_owner() {
 }
 
 #[test]
+/// Compare equivalent expression-bodied and block-bodied callable scores.
 fn expression_and_block_bodies_score_the_same_logic() {
     let dir = write_files(&[("Variants.cs", VARIANTS_CS)]);
     let report = json_report(dir.path());
@@ -406,6 +414,7 @@ fn expression_and_block_bodies_score_the_same_logic() {
 }
 
 #[test]
+/// Exclude declarations and auto-accessors that have no implemented callable body.
 fn declaration_only_and_auto_forms_are_omitted() {
     let dir = write_files(&[("Declarations.cs", DECLARATIONS_CS)]);
     let report = json_report(dir.path());
@@ -415,6 +424,7 @@ fn declaration_only_and_auto_forms_are_omitted() {
 }
 
 #[test]
+/// Preserve the existing method, constructor, property and accessor report contract.
 fn existing_forms_keep_their_names_and_complexity() {
     let dir = write_files(&[("Existing.cs", EXISTING_CS)]);
     let report = json_report(dir.path());
@@ -431,6 +441,7 @@ fn existing_forms_keep_their_names_and_complexity() {
 }
 
 #[test]
+/// Check the fixture's declaration whitespace variants retain their expected display names.
 fn source_spacing_does_not_change_names() {
     let dir = write_files(&[(
         "Spacing.cs",
@@ -447,6 +458,7 @@ fn source_spacing_does_not_change_names() {
 }
 
 #[test]
+/// Require readable operator, conversion, destructor and indexer names in text reports.
 fn text_output_names_callables_descriptively() {
     let dir = write_files(&[("Callables.cs", CALLABLES_CS)]);
     let output = run(dir.path(), &["--threshold", "1000"]);
@@ -462,6 +474,7 @@ fn text_output_names_callables_descriptively() {
 }
 
 #[test]
+/// Keep nested callable coverage points out of their enclosing callable's denominator.
 fn coverage_is_owned_by_the_innermost_callable() {
     let dir = write_files(&[("Grid.cs", GRID_CS)]);
     let hash = hex::encode(Sha256::digest(GRID_CS.as_bytes()));
@@ -519,6 +532,7 @@ fn coverage_is_owned_by_the_innermost_callable() {
 }
 
 #[test]
+/// Reject malformed operator syntax with exit 2 and no partial report.
 fn malformed_operator_is_an_input_error_without_report() {
     let dir = write_files(&[(
         "Bad.cs",
@@ -530,6 +544,7 @@ fn malformed_operator_is_an_input_error_without_report() {
 }
 
 #[test]
+/// Compile declaration fixtures with the real .NET SDK when live E2E validation is enabled.
 fn declaration_fixtures_are_valid_csharp() {
     if std::env::var_os("DOTNET_CRAP_E2E").is_none() {
         return;
@@ -574,6 +589,7 @@ public sealed class Many
 "#;
 
 #[test]
+/// Distinguish checked conversions and params indexers by their syntax-derived signatures.
 fn signature_names_distinguish_checked_conversions_and_params_indexers() {
     let dir = write_files(&[("Signatures.cs", SIGNATURES_CS)]);
     assert_eq!(
