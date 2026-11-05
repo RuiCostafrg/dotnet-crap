@@ -309,7 +309,9 @@ fn decode_source(bytes: &[u8]) -> Result<String> {
             bail!("invalid UTF-16 source");
         }
         let units: Vec<u16> = data
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|c| {
                 if le {
                     u16::from_le_bytes([c[0], c[1]])
@@ -328,18 +330,17 @@ fn decode_source(bytes: &[u8]) -> Result<String> {
     }
 }
 fn terminal_safe(s: &str) -> String {
-    s.chars()
-        .flat_map(|c| {
-            if c.is_control() {
-                c.escape_default().collect::<String>()
-            } else {
-                c.to_string()
-            }
-            .chars()
-            .collect::<Vec<_>>()
-        })
-        .collect()
+    let mut text = String::with_capacity(s.len());
+    for character in s.chars() {
+        if character.is_control() {
+            text.extend(character.escape_default());
+        } else {
+            text.push(character);
+        }
+    }
+    text
 }
+
 fn run(args: Args) -> Result<bool> {
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         bail!("threshold must be finite and nonnegative");
@@ -574,7 +575,7 @@ fn main() {
         Ok(false) => 0,
         Ok(true) => 1,
         Err(e) => {
-            eprintln!("error: {e:#}");
+            eprintln!("error: {}", terminal_safe(&format!("{e:#}")));
             2
         }
     };
