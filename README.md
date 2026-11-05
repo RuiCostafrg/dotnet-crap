@@ -49,7 +49,9 @@ The initial denominator is the supplied coverage points inside each callable;
 producers must include zero-hit points. `--require-coverage` requires some
 evidence per callable, rather than proving complete statement coverage.
 
-The first implementation targets C# callables. F#, Visual Basic, semantic
+The scanner supports C# methods, constructors, operators, conversions, destructors,
+explicit accessors, expression-bodied properties/indexers, and nested callables.
+See [callable support and limits](docs/CSHARP_CALLABLES.md). F#, Visual Basic, semantic
 compilation, conditional-compilation symbol resolution, Git/PR selection,
 baselines, and additional report formats are future work. See the
 [full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature

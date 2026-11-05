@@ -41,6 +41,18 @@ Do not merge feature PRs automatically.
    whole-process timing. Make budgets explicit and opt-in until a controlled CI
    runner establishes a repeatable baseline.
 
+## Initial batch review stack
+
+The initial batch is implemented as separate, unmerged PRs. The branch stack is
+[#2 plan/performance](https://github.com/RuiCostafrg/dotnet-crap/pull/2), then
+[#3 mutation gate](https://github.com/RuiCostafrg/dotnet-crap/pull/3), then
+[#4 SARIF](https://github.com/RuiCostafrg/dotnet-crap/pull/4), then
+[#5 C# callables](https://github.com/RuiCostafrg/dotnet-crap/pull/5).
+The final branch includes the complete batch so its CI mutation job evaluates all
+production sources together. Per-feature historical measurements remain evidence
+for their recorded SHAs; they do not substitute for this combined run. No PR is
+merged automatically. Subsequent batches below remain planned, not implemented.
+
 ## Subsequent feature PRs, in dependency order
 
 Each numbered item is a separate proposed PR, not an implemented feature.

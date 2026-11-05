@@ -47,6 +47,7 @@ struct CoverageFile {
     #[serde(deserialize_with = "unique_map")]
     lines: BTreeMap<String, u64>,
 }
+/// Deserialize coverage maps while rejecting duplicate keys instead of overwriting evidence.
 fn unique_map<'de, D, V>(deserializer: D) -> std::result::Result<BTreeMap<String, V>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -55,9 +56,11 @@ where
     struct Unique<V>(std::marker::PhantomData<V>);
     impl<'de, V: Deserialize<'de>> serde::de::Visitor<'de> for Unique<V> {
         type Value = BTreeMap<String, V>;
+        /// Describe the expected coverage map when deserialization receives another JSON type.
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
             formatter.write_str("a map with unique keys")
         }
+        /// Retain each key once and fail immediately when a duplicate would replace evidence.
         fn visit_map<M: serde::de::MapAccess<'de>>(
             self,
             mut map: M,
@@ -94,20 +97,112 @@ struct Report {
     failed: bool,
 }
 mod sarif;
+/// Recognize implemented callable bodies, leaving explicit property/indexer accessors separate.
 fn callable(n: Node<'_>) -> bool {
     matches!(
         n.kind(),
         "method_declaration"
             | "constructor_declaration"
+            | "operator_declaration"
+            | "conversion_operator_declaration"
+            | "destructor_declaration"
             | "local_function_statement"
             | "accessor_declaration"
             | "lambda_expression"
             | "anonymous_method_expression"
     ) && (n.child_by_field_name("body").is_some() || n.kind() == "anonymous_method_expression")
-        || n.kind() == "property_declaration"
+        // Expression-bodied indexers store their arrow clause in `value`, not `body`.
+        // Indexers with explicit accessors have no direct body; their accessors are callables.
+        || matches!(n.kind(), "property_declaration" | "indexer_declaration")
             && n.child_by_field_name("value")
                 .is_some_and(|v| v.kind() == "arrow_expression_clause")
 }
+/// Collapse whitespace in a syntax node's spelling without semantic type normalization.
+fn normalized_text(n: Node<'_>, source: &str) -> String {
+    n.utf8_text(source.as_bytes())
+        .unwrap_or("")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+/// Collect ordered parameter types, omitting parameter names and modifiers.
+/// Ordinary parameters wrap their type in `parameter`; `params` arrays expose
+/// `type` directly on the list.
+fn parameter_types(list: Option<Node<'_>>, source: &str) -> String {
+    let Some(list) = list else {
+        return String::new();
+    };
+    let mut types = Vec::new();
+    for i in 0..list.child_count() {
+        let Some(child) = list.child(i) else {
+            continue;
+        };
+        let ty = if child.kind() == "parameter" {
+            child.child_by_field_name("type")
+        } else {
+            (list.field_name_for_child(i as u32) == Some("type")).then_some(child)
+        };
+        if let Some(ty) = ty {
+            types.push(normalized_text(ty, source));
+        }
+    }
+    types.join(",")
+}
+/// Preserve the checked modifier when naming arithmetic and conversion operators.
+fn checked_prefix(n: Node<'_>) -> &'static str {
+    let mut c = n.walk();
+    if n.children(&mut c).any(|child| child.kind() == "checked") {
+        "checked "
+    } else {
+        ""
+    }
+}
+/// Derive display names from syntax, including operator signatures and indexer types.
+/// These names are not compilation-resolved or globally qualified overload identities.
+fn callable_name(n: Node<'_>, source: &str) -> String {
+    match n.kind() {
+        "operator_declaration" => format!(
+            "operator {}{}({})",
+            checked_prefix(n),
+            n.child_by_field_name("operator")
+                .map(|x| normalized_text(x, source))
+                .unwrap_or_default(),
+            parameter_types(n.child_by_field_name("parameters"), source)
+        ),
+        "conversion_operator_declaration" => {
+            let mut c = n.walk();
+            let direction = n
+                .children(&mut c)
+                .map(|x| x.kind())
+                .find(|k| matches!(*k, "implicit" | "explicit"))
+                .unwrap_or("conversion");
+            format!(
+                "{direction} operator {}{}({})",
+                checked_prefix(n),
+                n.child_by_field_name("type")
+                    .map(|x| normalized_text(x, source))
+                    .unwrap_or_default(),
+                parameter_types(n.child_by_field_name("parameters"), source)
+            )
+        }
+        "destructor_declaration" => format!(
+            "~{}",
+            n.child_by_field_name("name")
+                .map(|x| normalized_text(x, source))
+                .unwrap_or_default()
+        ),
+        "indexer_declaration" => format!(
+            "this[{}]",
+            parameter_types(n.child_by_field_name("parameters"), source)
+        ),
+        _ => n
+            .child_by_field_name("name")
+            .and_then(|x| x.utf8_text(source.as_bytes()).ok())
+            .unwrap_or(n.kind())
+            .to_owned(),
+    }
+}
+/// Return this node's direct contribution under the documented complexity convention.
 fn decision(n: Node<'_>, source: &str) -> u32 {
     match n.kind() {
         "if_statement"
@@ -145,6 +240,7 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
         _ => 0,
     }
 }
+/// Accumulate one callable's decisions and record nested callable lines to exclude from coverage.
 fn score(
     n: Node<'_>,
     source: &str,
@@ -164,16 +260,13 @@ fn score(
         score(child, source, complexity, excluded, false);
     }
 }
+/// Emit callable scores using supplied coverage points, then discover nested callables separately.
 fn collect(n: Node<'_>, source: &str, file: &str, cov: Option<&CoverageFile>, out: &mut Vec<Item>) {
     if callable(n) {
         let mut complexity = 1;
         let mut excluded = BTreeSet::new();
         score(n, source, &mut complexity, &mut excluded, true);
-        let name = n
-            .child_by_field_name("name")
-            .and_then(|x| x.utf8_text(source.as_bytes()).ok())
-            .unwrap_or(n.kind())
-            .to_owned();
+        let name = callable_name(n, source);
         let coverage = cov.and_then(|c| {
             let hits: Vec<u64> = c
                 .lines
@@ -208,6 +301,8 @@ fn collect(n: Node<'_>, source: &str, file: &str, cov: Option<&CoverageFile>, ou
         collect(child, source, file, cov, out);
     }
 }
+/// Validate inputs, scan selected sources and stage a report without overwriting source inputs.
+/// Return whether score, required-coverage or empty-selection policy failed; input errors propagate.
 fn run(args: Args) -> Result<bool> {
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         bail!("threshold must be finite and nonnegative");
@@ -414,6 +509,7 @@ fn run(args: Args) -> Result<bool> {
     }
     Ok(failed)
 }
+/// Parse CLI arguments and translate pass, policy failure and input errors into exits 0, 1 and 2.
 fn main() {
     let code = match run(Args::parse()) {
         Ok(false) => 0,

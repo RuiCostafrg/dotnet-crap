@@ -52,3 +52,29 @@ Baseline validation: locked debug/release tests, rustfmt, clippy with warnings
 denied, and debug tests with `DOTNET_CRAP_E2E=1` passed. The budget failure path was
 also exercised with three files/runs and a deliberately unattainable positive
 budget; it returned exit 1. Mutation evidence is owned by its separate quality PR.
+
+## Combined feature batch
+
+`benchmark-combined-scan.json` and `benchmark-combined-coverage.json` were regenerated
+from reviewed commit `7073c090f2fa691fae881dba6079f2b71e32308a`, after a locked release
+build with clean Rust sources, manifests, lockfile and benchmark harness. They
+replace the earlier `47c64b9` samples rather than assuming the older binary digest
+still describes the reviewed code. Each report records the production commit,
+Rust source-tree ID, lockfile and harness SHA-256, compiler details, build command,
+benchmark command and measured binary SHA-256. Both modes measured the same binary
+and validated all 500 files, 1,000 callable identities and expected scores.
+
+Since the earlier sample, `main.rs` changed source-path validation and `sarif.rs`
+changed root-URI handling. These changes affect input/output behavior; the old
+samples do not certify their performance. The benchmark harness also gained
+private binary copies, exact identity/score assertions, bounded subprocess calls
+and atomic output. The mutation-gate changes affect test evidence and retention,
+not the executable under measurement. These regenerated samples include the
+reviewed scanner and harness changes. Later scanner-accuracy and packaging PRs
+are outside this recorded source snapshot and need their own evidence.
+
+These session measurements have substantial host variability and were not run
+as an interleaved controlled A/B experiment. They do not establish a speedup or
+regression budget. No performance optimization is claimed. Profile dense
+single-file coverage workloads before replacing the current per-callable coverage
+filter; this corpus primarily measures common scans over many small files.

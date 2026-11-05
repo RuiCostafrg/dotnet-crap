@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "platform": "Android-12-aarch64-64bit",
+  "binary_sha256": "b45dea96dd2bf70842f820641d480affea4e714568d58015f48b423c1c19ac4d",
+  "files": 500,
+  "callables": 1000,
+  "source_bytes": 55890,
+  "coverage": true,
+  "runs": 7,
+  "samples_ms": [
+    820.5782289151102,
+    712.2309369733557,
+    632.8961970284581,
+    620.9705210058019,
+    640.0287500582635,
+    630.831562099047,
+    647.9795830091462
+  ],
+  "median_ms": 640.0287500582635,
+  "min_ms": 620.9705210058019,
+  "max_ms": 820.5782289151102,
+  "production_commit": "7073c090f2fa691fae881dba6079f2b71e32308a",
+  "rust_source_tree": "8459e72dc8ccab6e89dcb9b2798a3558088a89ae",
+  "cargo_lock_sha256": "cdf573ce0198bc3073bc48e24af0e7e7a4026d80583d69834f0aaea1945ad613",
+  "harness_sha256": "52bb28ebc5edc5443a2aa15af54f1e0f3721c82ff0e962ef54233e83081ca293",
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25) (built from a source tarball)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-linux-android\nrelease: 1.96.0\nLLVM version: 21.1.8",
+  "build_command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--release"
+  ],
+  "benchmark_command": [
+    "python3",
+    "scripts/benchmark.py",
+    "--output",
+    "reports/benchmark-combined-coverage.json",
+    "--coverage"
+  ]
+}
