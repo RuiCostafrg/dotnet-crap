@@ -1,3 +1,5 @@
 # Release benchmark
 
 Build the release binary, then run `python3 scripts/benchmark.py` for scan-only or add `--coverage` to include coverage scoring. The generated corpus has two known callables per file; the tool validates exact file/name identities, complexity, coverage, and CRAP scores for each report. `--timeout` sets a finite positive per-invocation timeout (120 seconds by default). The executable is copied into a private temporary directory before runs, and its digest is recorded. `--output` is written by atomic replacement; its parent directory must be writable. The output itself cannot be a symlink or alias the executable. Other external output paths are supported.
+
+The independently derived expected complexities are F=3 (base, if, &&) and G=2 (base, ternary). With the generated hits, F has coverage 1/2 and CRAP 4.125; G is fully covered and scores 2. Without coverage they score 12 and 6. Private executable bytes are hashed after the copy, so the recorded digest identifies the file actually run. Report destinations may be outside the project; final symlinks and executable aliases are rejected.
