@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Dependency-free launcher tests. Run from the repository root with the
+    dotnet run command in packaging/README.md (project: packaging/tests/DotnetCrapLauncher.Tests).
+    Tests start real processes; Windows runs skip the Unix permission and argv cases.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Unix permission APIs are only reached by cases that the runner skips on Windows. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../dotnet-crap-launcher/dotnet-crap-launcher.csproj" />
+  </ItemGroup>
+</Project>

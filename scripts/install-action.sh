@@ -13,8 +13,13 @@ esac
 stage="$(mktemp -d "$RUNNER_TEMP/dotnet-crap.XXXXXX")"
 asset="dotnet-crap-v${version}-${rid}.tar.gz"
 url="https://github.com/RuiCostafrg/dotnet-crap/releases/download/v${version}"
-curl --fail --silent --show-error --location --retry 3 "$url/$asset" -o "$stage/$asset"
-curl --fail --silent --show-error --location --retry 3 "$url/$asset.sha256" -o "$stage/$asset.sha256"
+# Both requests share one bounded policy: a stalled connection fails promptly
+# instead of holding the setup step until the job timeout. TLS verification and
+# checksum verification stay enabled; the protocol is limited to HTTPS, including redirects.
+curl_policy=(--fail --silent --show-error --location --proto '=https' --proto-redir '=https'
+  --retry 3 --connect-timeout 20 --max-time 300)
+curl "${curl_policy[@]}" "$url/$asset" -o "$stage/$asset"
+curl "${curl_policy[@]}" "$url/$asset.sha256" -o "$stage/$asset.sha256"
 (
   cd "$stage"
   if command -v sha256sum >/dev/null; then sha256sum -c "$asset.sha256";
