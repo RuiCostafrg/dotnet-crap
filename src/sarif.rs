@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, path::Path};
@@ -55,7 +55,7 @@ pub fn render(
             json!({}),
         ));
     }
-    let root_uri = root_uri(&root.to_string_lossy());
+    let root_uri = root_uri(root.to_str().context("source root must be valid UTF-8")?);
     Ok(serde_json::to_string_pretty(&json!({
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
         "version": "2.1.0",
@@ -97,6 +97,11 @@ fn uri(path: &str) -> String {
 }
 
 fn root_uri(path: &str) -> String {
+    // Canonical Unix paths begin with a single slash; a backslash in such a
+    // path is a literal filename character, not a Windows separator.
+    if path.starts_with('/') && !path.starts_with("//") {
+        return format!("file://{}/", uri(path).trim_end_matches('/'));
+    }
     let normalized = path.replace('\\', "/");
     let normalized = normalized.strip_prefix("//?/").unwrap_or(&normalized);
     let unc;
@@ -124,6 +129,7 @@ mod tests {
     #[test]
     fn source_root_file_uris_cover_release_platform_paths() {
         assert_eq!(root_uri("/tmp/a b"), "file:///tmp/a%20b/");
+        assert_eq!(root_uri(r"/tmp/a\b"), "file:///tmp/a%5Cb/");
         assert_eq!(root_uri("/"), "file:///");
         assert_eq!(root_uri(r"C:\src\a b"), "file:///C:/src/a%20b/");
         assert_eq!(root_uri(r"\\?\C:\src"), "file:///C:/src/");
