@@ -37,3 +37,10 @@ per file traversal and per callable. Complexity overflow returns an error.
 Coverage points are parsed once into an ordered map and queried by callable line
 range, and line bounds use one cached count per file. A final source hash check
 detects changes before publication, but is not a filesystem transaction.
+
+Nested-callable exclusions are stored as merged line intervals, not expanded
+sets of every excluded line, so long nested spans do not multiply work by their
+line lengths. Coverage lookups use those intervals and the ordered point map.
+Selected relative paths containing literal backslashes or colons are rejected
+explicitly because version-1 native coverage cannot represent them; backslashes
+in the source root itself remain valid Unix filename characters.

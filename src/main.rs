@@ -254,7 +254,7 @@ fn collect(
             continue;
         }
         let mut complexity = 1u32;
-        let mut excluded = BTreeSet::new();
+        let mut excluded = Vec::new();
         let mut stack = vec![(n, true)];
         let mut scored = 0usize;
         while let Some((node, outer)) = stack.pop() {
@@ -263,9 +263,7 @@ fn collect(
                 bail!("callable resource limit exceeded");
             }
             if !outer && callable(node) {
-                for line in node.start_position().row..=node.end_position().row {
-                    excluded.insert(line + 1);
-                }
+                excluded.push((node.start_position().row + 1, node.end_position().row + 1));
                 continue;
             }
             complexity = complexity
@@ -274,12 +272,26 @@ fn collect(
             let mut cursor = node.walk();
             stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));
         }
+        // Exclude nested spans as intervals, never one allocation per source
+        // line. Long overlapping local-function spans must not expand work.
+        excluded.sort_unstable();
+        let mut ranges: Vec<(usize, usize)> = Vec::new();
+        for (start, end) in excluded {
+            if let Some(last) = ranges.last_mut() {
+                if start <= last.1 {
+                    last.1 = last.1.max(end);
+                    continue;
+                }
+            }
+            ranges.push((start, end));
+        }
         let coverage = cov.and_then(|c| {
             let mut total = 0usize;
             let mut hit = 0usize;
             for (&line, &hits) in c.range((n.start_position().row + 1)..=(n.end_position().row + 1))
             {
-                if !excluded.contains(&line) {
+                let position = ranges.partition_point(|&(start, _)| start <= line);
+                if position == 0 || ranges[position - 1].1 < line {
                     total += 1;
                     hit += usize::from(hits > 0);
                 }
@@ -449,6 +461,9 @@ fn run(args: Args) -> Result<bool> {
             .to_owned();
         #[cfg(windows)]
         let relative = relative.replace('\\', "/");
+        if relative.contains(['\\', ':']) {
+            bail!("source path contains characters unsupported by native coverage: {relative}");
+        }
         source_hashes.push((path, hash.clone()));
         let tree = parser.parse(&source, None).context("parser failed")?;
         if tree.root_node().has_error() {

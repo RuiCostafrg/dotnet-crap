@@ -326,3 +326,58 @@ fn invalid_source_diagnostics_escape_filename_controls() {
     assert_eq!(output.stderr.iter().filter(|&&b| b == b'\n').count(), 1);
     assert!(String::from_utf8_lossy(&output.stderr).contains(r"invalid\u{1b}\n.cs"));
 }
+
+#[cfg(unix)]
+#[test]
+fn source_filenames_unrepresentable_in_native_coverage_fail_explicitly() {
+    for name in [r"literal\name.cs", "colon:name.cs"] {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join(name), "class C { void F() {} }").unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("--root")
+            .arg(dir.path())
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&output.stderr).contains("unsupported by native coverage"));
+    }
+}
+
+#[test]
+fn long_nested_ranges_exclude_only_the_local_callable_span() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = format!("class C {{\n int Outer() {{\n int Local() {{\n{} return 1;\n }}\n return Local();\n }}\n}}\n", "\n".repeat(20000));
+    fs::write(dir.path().join("C.cs"), &source).unwrap();
+    let coverage = dir.path().join("coverage.json");
+    fs::write(
+        &coverage,
+        serde_json::json!({"version":1,"files":{"C.cs":{
+            "sha256":hex::encode(Sha256::digest(source.as_bytes())),
+            "lines":{"2":1,"3":0,"10000":0,"20004":0,"20005":0,"20006":1,"20007":1}
+        }}})
+        .to_string(),
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("--root")
+        .arg(dir.path())
+        .arg("--coverage")
+        .arg(&coverage)
+        .args(["--format", "json", "--require-coverage"])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let functions = report["functions"].as_array().unwrap();
+    let outer = functions.iter().find(|f| f["name"] == "Outer").unwrap();
+    let local = functions.iter().find(|f| f["name"] == "Local").unwrap();
+    assert_eq!(outer["coverage"], 1.0);
+    assert_eq!(outer["crap"], 1.0);
+    assert_eq!(local["coverage"], 0.0);
+    assert_eq!(local["crap"], 2.0);
+}
