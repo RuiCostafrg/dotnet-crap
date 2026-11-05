@@ -44,3 +44,13 @@ limit. Current and active runs are never pruned. Interrupted runs without the
 completion marker are retained for investigation and can be removed manually
 once their processes are stopped. CI artifacts follow GitHub retention settings;
 copy important evidence to a durable report before that retention period ends.
+
+Only a complete, identity-validated inventory receives the `.complete` marker.
+A complete score below the threshold is still valid evidence and is retained as
+such. Baseline, launch and malformed/incomplete-output failures receive `.failed`
+and `failure.txt` diagnostics instead. These failure directories have their own
+retention pool, so a failed attempt cannot evict the latest validated run even
+with `--keep-runs 1`. Concurrent pruning tolerates an already-removed directory
+but surfaces other filesystem failures. Newer completed runs may retire older
+completed evidence according to the configured retention limit; active runs are
+never candidates for cleanup.

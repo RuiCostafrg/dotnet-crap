@@ -381,3 +381,30 @@ fn long_nested_ranges_exclude_only_the_local_callable_span() {
     assert_eq!(local["coverage"], 0.0);
     assert_eq!(local["crap"], 2.0);
 }
+
+#[test]
+fn internal_dot_coverage_components_are_rejected_before_lookup() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::create_dir(dir.path().join("folder")).unwrap();
+    let source = "class C { void F() {} }";
+    fs::write(dir.path().join("folder/C.cs"), source).unwrap();
+    let coverage = dir.path().join("coverage.json");
+    fs::write(
+        &coverage,
+        serde_json::json!({"version":1,"files":{"folder/./C.cs":{
+            "sha256":hex::encode(Sha256::digest(source.as_bytes())), "lines":{"1":1}
+        }}})
+        .to_string(),
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("--root")
+        .arg(dir.path())
+        .arg("--coverage")
+        .arg(&coverage)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("invalid coverage entry"));
+}
