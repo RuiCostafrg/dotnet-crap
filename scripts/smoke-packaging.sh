@@ -24,6 +24,7 @@ echo "PASS bash -n: scripts/*.sh"
 
 bash scripts/test-install-action.sh
 bash scripts/test-release-publish.sh
+bash scripts/test-pack-publication.sh
 
 dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
 
@@ -43,7 +44,38 @@ native="$root/target/release/dotnet-crap"
 [[ -x "$native" ]] || fail "release build did not produce $native"
 
 checkout_native="$root/packaging/dotnet-crap-launcher/native"
-checkout_native_before="$([[ -e "$checkout_native" ]] && echo yes || echo no)"
+snapshot_native() {
+  python3 -I - "$checkout_native" "$1" <<'PYTHON'
+import hashlib, json, os, stat, sys
+root, output = sys.argv[1:]
+entries = []
+def visit(path, relative):
+    try:
+        info = os.lstat(path)
+    except FileNotFoundError:
+        if relative == ".":
+            return
+        raise
+    mode = stat.S_IMODE(info.st_mode)
+    if stat.S_ISLNK(info.st_mode):
+        value = ("link", os.readlink(path))
+    elif stat.S_ISDIR(info.st_mode):
+        value = ("directory", None)
+    elif stat.S_ISREG(info.st_mode):
+        with open(path, "rb") as f:
+            value = ("file", hashlib.sha256(f.read()).hexdigest())
+    else:
+        value = ("other", info.st_mode)
+    entries.append((relative, mode, value))
+    if stat.S_ISDIR(info.st_mode):
+        for name in sorted(os.listdir(path)):
+            visit(os.path.join(path, name), os.path.join(relative, name))
+visit(root, ".")
+with open(output, "w") as f:
+    json.dump(entries, f)
+PYTHON
+}
+snapshot_native "$work/native-before.json"
 
 for stage in a b; do
   mkdir -p "$work/stage-$stage/$rid"
@@ -65,8 +97,8 @@ if [[ "$status_a" -ne 0 || "$status_b" -ne 0 ]]; then
 fi
 echo "PASS concurrent packs: both succeeded from separate stages"
 
-checkout_native_after="$([[ -e "$checkout_native" ]] && echo yes || echo no)"
-[[ "$checkout_native_before" == "$checkout_native_after" ]] || fail "packing changed $checkout_native"
+snapshot_native "$work/native-after.json"
+cmp -s "$work/native-before.json" "$work/native-after.json" || fail "packing changed $checkout_native"
 
 nupkg_a="$work/stage-a/feed/dotnet-crap.$version.nupkg"
 nupkg_b="$work/stage-b/feed/dotnet-crap.$version.nupkg"

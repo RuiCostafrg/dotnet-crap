@@ -60,6 +60,7 @@ run_with_fakes() {
 # GitHub release: create succeeds.
 run_with_fakes env FAKE_GH_CREATE=ok bash "$root/scripts/publish-github-release.sh" v1.2.3 "$work"/assets/* \
   > "$work/out" 2>&1 || { cat "$work/out" >&2; fail "fresh release creation failed"; }
+grep -Fq -- "release create v1.2.3 $work/assets/dotnet-crap-v1.2.3-linux-x64.tar.gz $work/assets/dotnet-crap.nupkg " "$work/log" || fail "release create did not receive both expected assets"
 grep -q -- "--verify-tag" "$work/log" || fail "create did not pass --verify-tag"
 grep -q -- "upload" "$work/log" && fail "fresh release should not upload separately"
 
@@ -105,6 +106,7 @@ fi
 # NuGet: a retry passes --skip-duplicate, and a real push error still fails.
 run_with_fakes env NUGET_API_KEY=test-key-not-secret FAKE_DOTNET_EXIT=0 \
   bash "$root/scripts/publish-nuget.sh" "$work/assets" > "$work/out" 2>&1 || fail "NuGet push failed"
+grep -Fq -- "nuget push $work/assets/dotnet-crap.nupkg " "$work/log" || fail "NuGet push did not receive the expected package"
 grep -q -- "--skip-duplicate" "$work/log" || fail "NuGet push lacks --skip-duplicate"
 grep -q -- "--api-key test-key-not-secret" "$work/log" || fail "NuGet push did not use the supplied key"
 
@@ -152,6 +154,20 @@ git clone -q "$remote" "$checkout"
     fail "branch-only tag commit was accepted"
   fi
   grep -q "not reachable from origin/main" "$work/out" || fail "branch-only rejection was not explained"
+)
+
+# Resolve both lightweight and annotated remote tags, then reject moved and missing tags.
+git -C "$seed" tag light "$on_main"
+git -C "$seed" "${git_identity[@]}" tag -a annotated "$on_main" -m annotated
+git -C "$seed" push -q origin light annotated
+(
+  cd "$checkout"
+  bash "$root/scripts/verify-remote-tag.sh" light "$on_main" || fail "matching lightweight tag rejected"
+  bash "$root/scripts/verify-remote-tag.sh" annotated "$on_main" || fail "matching annotated tag rejected"
+  if bash "$root/scripts/verify-remote-tag.sh" missing "$on_main" > "$work/out" 2>&1; then fail "missing tag accepted"; fi
+  git -C "$seed" tag -f light "$off_main" >/dev/null
+  git -C "$seed" push -q --force origin light
+  if bash "$root/scripts/verify-remote-tag.sh" light "$on_main" > "$work/out" 2>&1; then fail "moved tag accepted"; fi
 )
 
 echo "PASS publish scripts: retry reuse, surfaced failures, NuGet skip-duplicate, absent-secret skip, trusted-main check"

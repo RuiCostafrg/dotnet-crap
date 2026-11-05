@@ -159,7 +159,7 @@ internal static class Program
             Console.WriteLine("NOTE: running as root; root bypasses permission bits. Run as a non-root user to enforce read-only.");
         }
 
-        foreach (var mode in new[] { ExecutableMode, NonExecutableMode })
+        foreach (var mode in new[] { ExecutableMode & ~UnixFileMode.UserWrite, NonExecutableMode & ~UnixFileMode.UserWrite })
         {
             using var scratch = new Scratch();
             InstallLauncher(scratch);
@@ -170,6 +170,7 @@ internal static class Program
             SetUnixMode(nativeDirectory, ReadOnlyDirectoryMode);
             SetUnixMode(scratch.App, ReadOnlyDirectoryMode);
             SetUnixMode(installed, mode);
+            Equal(mode, File.GetUnixFileMode(installed), "initial read-only native mode");
 
             var run = await RunLauncherProcessAsync(scratch, ["--read-only"], 0);
             Equal(0, run.ExitCode, $"read-only install (mode {Convert.ToString((int)mode, 8)}) exit code");

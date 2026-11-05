@@ -56,7 +56,16 @@ fi
 
 mkdir -p "$stage/feed"
 # Publish atomically within the feed so an interrupted copy never leaves a partial .nupkg.
-partial="$stage/feed/.$(basename "${packages[0]}").$$.partial"
+partial="$(mktemp "$stage/feed/.package.XXXXXX")"
+trap 'rm -f "$partial"; rm -rf "$work"' EXIT
 cp "${packages[0]}" "$partial"
-mv -f "$partial" "$stage/feed/$(basename "${packages[0]}")"
+destination="$stage/feed/$(basename "${packages[0]}")"
+# A hard link creates the final name exclusively and atomically on the same filesystem.
+if ! ln "$partial" "$destination" 2>/dev/null; then
+  if [[ ! -f "$destination" ]] || ! cmp -s "$partial" "$destination"; then
+    echo "Package already exists with different bytes or cannot be published: $destination" >&2
+    exit 1
+  fi
+fi
+rm -f "$partial"
 echo "Packed $stage/feed/$(basename "${packages[0]}") with $staged native binary file(s)."

@@ -4,7 +4,7 @@
 
 ## Staging and concurrent packs
 
-The pack script copies the launcher sources (not `bin/`, `obj/`, or `native/`) into a per-invocation work directory under `TMPDIR`. Native executables are staged there, and `dotnet pack` builds there too, so two packs from one checkout never share native, `bin`, or `obj` paths. The checkout's `packaging/dotnet-crap-launcher/native/` is no longer written. The finished `.nupkg` is copied atomically to `<native-stage>/feed/`.
+The pack script copies the launcher sources (not `bin/`, `obj/`, or `native/`) into a per-invocation work directory under `TMPDIR`. Native executables are staged there, and `dotnet pack` builds there too, so two packs from one checkout never share native, `bin`, or `obj` paths. The checkout's `packaging/dotnet-crap-launcher/native/` is no longer written. The finished `.nupkg` is published atomically to `<native-stage>/feed/`; an existing package must have identical bytes, otherwise the pack fails.
 
 Release builds require all five RIDs: `linux-x64`, `linux-arm64`, `osx-x64`,
 `osx-arm64`, and `win-x64`. The feed is created under `<native-stage>/feed`.
@@ -41,7 +41,7 @@ Apply the local runtime settings your machine needs before running these. For ex
 
 `.github/workflows/release.yml` runs on `v*` tags. Tags must match the Cargo version; that version is passed to `dotnet pack` to keep the NuGet package aligned. Build jobs use the pinned Rust 1.96.0 toolchain and the pinned .NET SDK 10.0.109. Every action is pinned to a full commit SHA.
 
-The `publish` job is the only job that writes to GitHub or NuGet, and it needs the `release` environment:
+The `publish` job is the only job that publishes release assets or NuGet packages, and it needs the `release` environment:
 
 1. **Trusted main:** `scripts/verify-tag-on-main.sh` fails unless the tagged commit is reachable from `origin/main`, so a tag on a branch-only commit cannot publish. It runs from the tagged checkout, so it catches mistakes but cannot stop a tag that carries its own modified workflow. The environment's reviewer and tag policies are the enforcement point for that case.
 2. **GitHub release, safe to retry:** `scripts/publish-github-release.sh` creates the release with `--verify-tag`, so gh never creates a tag. If creation fails and the release is readable, the script downloads the existing assets into an isolated temporary directory and requires byte-for-byte matches. It never overwrites published assets. A failed download or mismatch fails the retry. If the release is not readable, it reports the create error and exits non-zero.
@@ -76,3 +76,5 @@ inherited sources plus an invocation-specific package cache, so another feed or
 cached package with the same ID/version cannot substitute for the package under
 test. The smoke test also compares the installed native bytes with the locally
 built executable. Normal published-package installation is a separate workflow.
+
+Build and package jobs check out the event commit. Before each publication, the remote tag is checked against that commit, including annotated tags. This check and publication are not atomic: host-enforced tag protection is still required to prevent a tag moving between them.

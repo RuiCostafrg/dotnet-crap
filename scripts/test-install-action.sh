@@ -84,11 +84,19 @@ run_installer() {
 run_installer "$serve" "$version" || { cat "$work/installer.out" >&2; fail "valid release did not install"; }
 requests="$(wc -l < "$work/curl.log" | tr -d ' ')"
 [[ "$requests" == 2 ]] || fail "expected 2 curl requests, saw $requests"
+tls_safe() {
+  local line=" $1 "
+  [[ "$line" != *" --insecure "* && "$line" != *" -k "* ]]
+}
+for unsafe in '-k other' 'other -k' '-k' '--insecure other' 'other --insecure'; do
+  if tls_safe "$unsafe"; then fail "TLS check accepted $unsafe"; fi
+done
+tls_safe '--connect-timeout 20' || fail "TLS check rejected safe arguments"
 while IFS= read -r line; do
   [[ "$line" == *"--connect-timeout 20"* ]] || fail "request lacks connect timeout: $line"
   [[ "$line" == *"--max-time 300"* ]] || fail "request lacks total timeout: $line"
   [[ "$line" == *"--proto =https"* && "$line" == *"--proto-redir =https"* ]] || fail "request is not HTTPS-only: $line"
-  [[ "$line" != *"--insecure"* && "$line" != *" -k "* ]] || fail "request disables TLS verification: $line"
+  tls_safe "$line" || fail "request disables TLS verification: $line"
 done < "$work/curl.log"
 staged="$(cat "$work/github_path")"
 [[ -x "$staged/dotnet-crap" ]] || fail "verified binary was not staged with an execute bit"
