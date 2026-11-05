@@ -1,6 +1,7 @@
 use sha2::{Digest, Sha256};
 use std::{fs, process::Command};
 
+/// Scan a physical C# fixture and compare independently counted complexity, coverage and gate edges.
 fn check(file: &str, name: &str, complexity: u64, lines: &[(&str, u64)], expected: f64) {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/accuracy");
     let bytes = fs::read(root.join(file)).unwrap();
@@ -46,14 +47,17 @@ fn check(file: &str, name: &str, complexity: u64, lines: &[(&str, u64)], expecte
     assert_eq!(run((expected - 0.001).to_string()).status.code(), Some(1));
 }
 #[test]
+/// Count stacked non-default labels separately using the real switch fixture.
 fn stacked_switch() {
     check("Switch.cs", "Pick", 3, &[("5", 1), ("6", 0)], 4.125);
 }
 #[test]
+/// Check the real branch fixture's loops, Boolean operators, coalescing and catch decisions.
 fn branches() {
     check("Branches.cs", "Run", 5, &[("4", 1), ("5", 0)], 8.125);
 }
 #[test]
+/// Keep the physical fixture's local function decisions and coverage separate from its parent.
 fn nested_ownership() {
     check(
         "Nested.cs",
@@ -65,6 +69,7 @@ fn nested_ownership() {
 }
 
 #[test]
+/// Exercise uppercase source selection, supported encodings and escaped text-report controls.
 fn encoding_paths_and_terminal_controls() {
     let dir = tempfile::tempdir().unwrap();
     let source = "class C { int M() => 1; }";
@@ -104,6 +109,7 @@ fn encoding_paths_and_terminal_controls() {
 }
 
 #[test]
+/// Execute physical C# fixtures and verify measured partial/full coverage and exact gate boundaries.
 fn execute_accuracy_fixtures_with_sdk() {
     if std::env::var_os("DOTNET_CRAP_E2E").is_none() {
         return;
@@ -209,6 +215,7 @@ fn execute_accuracy_fixtures_with_sdk() {
 }
 
 #[test]
+/// Require raw-byte hashes for BOM encodings and reject stale hashes or malformed UTF-16.
 fn bom_encodings_bind_coverage_to_original_bytes() {
     let dir = tempfile::tempdir().unwrap();
     let source = "class C { int M() => 1; }\n";
@@ -267,6 +274,7 @@ fn bom_encodings_bind_coverage_to_original_bytes() {
 }
 
 #[test]
+/// Scan deep valid syntax without recursive Rust traversal exhausting the call stack.
 fn deep_syntax_is_scored_without_recursive_rust_traversal() {
     let dir = tempfile::tempdir().unwrap();
     let source = format!(
@@ -290,8 +298,46 @@ fn deep_syntax_is_scored_without_recursive_rust_traversal() {
     assert_eq!(report["functions"][0]["complexity"], 2001);
 }
 
+#[test]
+/// Identify malformed source among valid files and escape any filename controls in decode errors.
+fn decoding_errors_identify_the_file_and_escape_its_name() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("A.cs"), "class A { void F() {} }").unwrap();
+    let name = if cfg!(unix) {
+        "Z-broken-\u{1b}\n.cs"
+    } else {
+        "Z-broken.cs"
+    };
+    let displayed_name = if cfg!(unix) {
+        r"Z-broken-\u{1b}\n.cs"
+    } else {
+        "Z-broken.cs"
+    };
+    for (bytes, expected) in [
+        (vec![0xff], "invalid UTF-8 source"),
+        (vec![0xff, 0xfe, 0x01], "invalid UTF-16 source"),
+        (vec![0xfe, 0xff, 0xd8, 0x00], "invalid UTF-16 source"),
+    ] {
+        fs::write(dir.path().join(name), bytes).unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("--root")
+            .arg(dir.path())
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        let error = String::from_utf8(output.stderr).unwrap();
+        assert!(error.contains("decoding "), "{error}");
+        assert!(error.contains(displayed_name), "{error}");
+        assert!(error.contains(expected), "{error}");
+        assert!(!error.contains('\u{1b}'));
+        assert_eq!(error.lines().count(), 1);
+    }
+}
+
 #[cfg(all(unix, not(target_os = "macos")))]
 #[test]
+/// Reject invalid filename bytes rather than merging distinct paths through lossy conversion.
 fn invalid_utf8_filenames_fail_instead_of_collapsing_source_identity() {
     use std::{ffi::OsString, os::unix::ffi::OsStringExt};
     let dir = tempfile::tempdir().unwrap();
@@ -312,6 +358,7 @@ fn invalid_utf8_filenames_fail_instead_of_collapsing_source_identity() {
 
 #[cfg(unix)]
 #[test]
+/// Ensure syntax-error filenames cannot inject terminal controls or extra diagnostic lines.
 fn invalid_source_diagnostics_escape_filename_controls() {
     let dir = tempfile::tempdir().unwrap();
     fs::write(dir.path().join("invalid\u{1b}\n.cs"), "class C { int F( }").unwrap();
@@ -329,6 +376,7 @@ fn invalid_source_diagnostics_escape_filename_controls() {
 
 #[cfg(unix)]
 #[test]
+/// Reject source names the native coverage format cannot address when coverage is supplied.
 fn source_filenames_unrepresentable_in_native_coverage_fail_explicitly() {
     for name in [r"literal\name.cs", "colon:name.cs"] {
         let dir = tempfile::tempdir().unwrap();
@@ -349,6 +397,7 @@ fn source_filenames_unrepresentable_in_native_coverage_fail_explicitly() {
 }
 
 #[test]
+/// Verify interval-based coverage exclusions over long nested callable spans.
 fn long_nested_ranges_exclude_only_the_local_callable_span() {
     let dir = tempfile::tempdir().unwrap();
     let source = format!("class C {{\n int Outer() {{\n int Local() {{\n{} return 1;\n }}\n return Local();\n }}\n}}\n", "\n".repeat(20000));
@@ -387,6 +436,7 @@ fn long_nested_ranges_exclude_only_the_local_callable_span() {
 }
 
 #[test]
+/// Reject internal dot components before filesystem path normalization can hide them.
 fn internal_dot_coverage_components_are_rejected_before_lookup() {
     let dir = tempfile::tempdir().unwrap();
     fs::create_dir(dir.path().join("folder")).unwrap();

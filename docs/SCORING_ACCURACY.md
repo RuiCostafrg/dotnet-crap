@@ -34,6 +34,10 @@ lossy replacement characters. Backslashes are separators only on Windows.
 
 Collection and scoring use iterative traversal, with a one-million-node budget
 per file traversal and per callable. Complexity overflow returns an error.
+Independent unit tests lower each internal budget and verify rejection beyond
+the limit, including exact-limit acceptance. The CLI supplies one million for
+both budgets. Decode failures identify the source file, and terminal controls
+in that error context are escaped before printing.
 Coverage points are parsed once into an ordered map and queried by callable line
 range, and line bounds use one cached count per file. A final source hash check
 detects changes before publication, but is not a filesystem transaction.
