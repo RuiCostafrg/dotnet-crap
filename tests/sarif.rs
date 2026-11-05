@@ -154,3 +154,19 @@ fn same_named_overloads_have_distinct_fingerprints() {
         results(&report)[1]["partialFingerprints"]
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn literal_backslashes_in_source_root_remain_literal_uri_bytes() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join(r"source\root");
+    fs::create_dir(&root).unwrap();
+    fs::write(root.join("C.cs"), "class C { int F() => 1; }").unwrap();
+    let (code, report) = scan(&root, &["--threshold", "0"]);
+    assert_eq!(code, 1);
+    let base = report["runs"][0]["originalUriBaseIds"]["%SRCROOT%"]["uri"]
+        .as_str()
+        .unwrap();
+    assert!(base.ends_with("/source%5Croot/"), "{base}");
+    assert!(!base.ends_with("/source/root/"));
+}
