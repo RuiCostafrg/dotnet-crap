@@ -51,6 +51,8 @@ root is checked by integration tests, rather than just checking a URI prefix.
 
 A root that cannot be represented in UTF-8 fails SARIF rendering explicitly.
 Selected non-UTF-8 filenames are rejected before report identities are created.
-Relative source names containing literal backslashes or colons are also rejected
-because the version-1 native coverage format cannot address them unambiguously.
+When coverage input is supplied, relative source names containing literal
+backslashes or colons are also rejected because the version-1 native coverage
+format cannot address them unambiguously. Without coverage input, these names
+are preserved in JSON and percent-encoded in SARIF.
 These failures produce exit 2 without a fabricated SARIF finding location.
