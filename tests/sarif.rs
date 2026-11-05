@@ -226,3 +226,25 @@ fn non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri() {
     assert!(output.stdout.is_empty());
     assert!(String::from_utf8_lossy(&output.stderr).contains("source root must be valid UTF-8"));
 }
+
+#[cfg(all(unix, not(target_os = "macos")))]
+#[test]
+fn non_utf8_source_filename_is_rejected_without_lossy_report_identity() {
+    use std::{ffi::OsString, os::unix::ffi::OsStringExt};
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path()
+            .join(OsString::from_vec(b"invalid-\xff.cs".to_vec())),
+        "class C { void F() {} }",
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("--root")
+        .arg(dir.path())
+        .args(["--format", "sarif"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("non-UTF-8 source path"));
+}
