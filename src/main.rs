@@ -244,18 +244,21 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
     }
 }
 /// Collect callable scores iteratively with bounded traversal and merged nested-coverage exclusions.
+/// The caller supplies independent whole-tree and per-callable named-node budgets.
 fn collect(
     n: Node<'_>,
     source: &str,
     file: &str,
     cov: Option<&BTreeMap<usize, u64>>,
     out: &mut Vec<Item>,
+    traversal_budget: usize,
+    callable_budget: usize,
 ) -> Result<()> {
     let mut nodes = vec![n];
     let mut visited = 0usize;
     while let Some(n) = nodes.pop() {
         visited += 1;
-        if visited > 1_000_000 {
+        if visited > traversal_budget {
             bail!("syntax tree resource limit exceeded");
         }
         let mut cursor = n.walk();
@@ -270,7 +273,7 @@ fn collect(
         let mut scored = 0usize;
         while let Some((node, outer)) = stack.pop() {
             scored += 1;
-            if scored > 1_000_000 {
+            if scored > callable_budget {
                 bail!("callable resource limit exceeded");
             }
             if !outer && callable(node) {
@@ -324,6 +327,7 @@ fn collect(
     }
     Ok(())
 }
+/// Decode UTF-8 or BOM-marked UTF-16 source, rejecting malformed bytes instead of replacing them.
 fn decode_source(bytes: &[u8]) -> Result<String> {
     if bytes.starts_with(&[0xff, 0xfe]) || bytes.starts_with(&[0xfe, 0xff]) {
         let le = bytes[0] == 0xff;
@@ -467,7 +471,8 @@ fn run(args: Args) -> Result<bool> {
     for path in &files {
         let bytes = fs::read(path).with_context(|| format!("reading {}", path.display()))?;
         let hash = hex::encode(Sha256::digest(&bytes));
-        let source = decode_source(&bytes)?;
+        let source =
+            decode_source(&bytes).with_context(|| format!("decoding {}", path.display()))?;
         let relative = path
             .strip_prefix(&root)?
             .to_str()
@@ -508,6 +513,8 @@ fn run(args: Args) -> Result<bool> {
             &relative,
             points.as_ref(),
             &mut items,
+            1_000_000,
+            1_000_000,
         )?;
     }
     let coverage_complete = items.iter().all(|i| i.coverage.is_some());
@@ -610,4 +617,53 @@ fn main() {
         }
     };
     std::process::exit(code);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Run the actual collector with deliberately small independent resource limits.
+    fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
+        let mut parser = TsParser::new();
+        parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
+        let tree = parser.parse(source, None).unwrap();
+        assert!(!tree.root_node().has_error());
+        let mut items = Vec::new();
+        collect(
+            tree.root_node(),
+            source,
+            "C.cs",
+            None,
+            &mut items,
+            traversal,
+            scoring,
+        )?;
+        Ok(items)
+    }
+
+    #[test]
+    /// Count even the root node and stop whole-tree traversal independently of scoring.
+    fn traversal_budget_counts_nodes_and_accepts_the_exact_limit() {
+        assert!(collect_with_limits("", 1, 0).unwrap().is_empty());
+        let error = collect_with_limits("", 0, 100).err().unwrap();
+        assert_eq!(error.to_string(), "syntax tree resource limit exceeded");
+        let error = collect_with_limits("class C { void F() {} }", 1, 100)
+            .err()
+            .unwrap();
+        assert_eq!(error.to_string(), "syntax tree resource limit exceeded");
+    }
+
+    #[test]
+    /// Bound callable scoring separately; this empty method has five named syntax nodes.
+    fn callable_budget_counts_nodes_and_accepts_the_exact_limit() {
+        let source = "class C { void F() {} }";
+        let items = collect_with_limits(source, 100, 5).unwrap();
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].complexity, 1);
+        for budget in [0, 4] {
+            let error = collect_with_limits(source, 100, budget).err().unwrap();
+            assert_eq!(error.to_string(), "callable resource limit exceeded");
+        }
+    }
 }
