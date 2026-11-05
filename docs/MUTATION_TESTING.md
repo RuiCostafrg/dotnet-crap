@@ -29,3 +29,7 @@ auto-property omission, switch-arm complexity, each malformed coverage path/hash
 line condition, nested source selection, existing relative report replacement,
 and conditional text diagnostics. No production mutations are excluded.
 A fresh full CI result is required before claiming the greater-than-90% target.
+
+The dependency-security workflow separately runs cargo-audit 0.22.2 against the
+committed lockfile and denies advisory warnings as well as vulnerabilities. A
+passing mutation score is not a substitute for that audit or code review.
