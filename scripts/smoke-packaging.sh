@@ -104,7 +104,8 @@ print(f"PASS package contents: {expected_native} is the only native entry")
 PY
 
 tool="$work/tool"
-dotnet tool install --tool-path "$tool" --add-source "$work/stage-a/feed" --version "$version" dotnet-crap \
+printf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > "$work/NuGet.Config"
+NUGET_PACKAGES="$work/restore-cache" dotnet tool install --tool-path "$tool" --configfile "$work/NuGet.Config" --add-source "$work/stage-a/feed" --version "$version" dotnet-crap \
   > "$work/install.log" 2>&1 || { cat "$work/install.log" >&2; fail "dotnet tool install failed"; }
 launcher="$tool/dotnet-crap"
 
@@ -119,6 +120,7 @@ echo "PASS installed launcher: --version, passing fixture gate, failing gate exi
 
 installed_native="$(find "$tool/.store" -path "*/tools/net10.0/any/native/$rid/dotnet-crap" -type f | head -1)"
 [[ -n "$installed_native" ]] || fail "installed package has no native executable for $rid"
+cmp -s "$native" "$installed_native" || fail "installed native bytes differ from the locally built package input"
 echo "Installed native mode: $(ls -l "$installed_native" | cut -c1-10)"
 
 if [[ "$(id -u)" == 0 ]] && command -v setpriv >/dev/null 2>&1 && id nobody >/dev/null 2>&1; then

@@ -57,7 +57,8 @@ jobs:
           cp "target/release/$NATIVE_EXE" "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID/$NATIVE_EXE"
           bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
           version="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' Cargo.toml | head -1)"
-          dotnet tool install --tool-path target/tool --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
+          printf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config
+          NUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
           target/tool/dotnet-crap --help
           target/tool/dotnet-crap --version
           target/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty

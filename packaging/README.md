@@ -70,3 +70,9 @@ A retry verifies existing GitHub assets byte-for-byte and never overwrites them.
 Rerun only the failed publish job with its original retained artifacts. If rebuilt
 artifacts differ, publication fails closed; use a new version rather than mutating
 the published release. Missing existing assets also fail verification.
+
+Local packaging validation uses an explicit NuGet configuration with cleared
+inherited sources plus an invocation-specific package cache, so another feed or
+cached package with the same ID/version cannot substitute for the package under
+test. The smoke test also compares the installed native bytes with the locally
+built executable. Normal published-package installation is a separate workflow.
