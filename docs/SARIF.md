@@ -17,6 +17,10 @@ one-based start/end lines. Columns are deliberately omitted: existing scanner
 columns count UTF-8 bytes, which do not match SARIF Unicode column conventions.
 The existing JSON shape and scanner locations remain unchanged.
 
+On Unix, filenames containing literal backslashes or colons are supported when
+no coverage input is supplied; SARIF percent-encodes these characters. Scans with
+native coverage reject these names because version 1 cannot address them.
+
 Fingerprints use SHA-256 over rule, path, callable kind/name, and the occurrence
 number among callables sharing that path/kind/name. They remain stable when scores,
 thresholds or coverage change. They are not semantic C# overload identities:
@@ -47,6 +51,8 @@ root is checked by integration tests, rather than just checking a URI prefix.
 
 A root that cannot be represented in UTF-8 fails SARIF rendering explicitly.
 Selected non-UTF-8 filenames are rejected before report identities are created.
-Relative source names containing literal backslashes or colons are also rejected
-because the version-1 native coverage format cannot address them unambiguously.
+When coverage input is supplied, relative source names containing literal
+backslashes or colons are also rejected because the version-1 native coverage
+format cannot address them unambiguously. Without coverage input, these names
+are preserved in JSON and percent-encoded in SARIF.
 These failures produce exit 2 without a fabricated SARIF finding location.

@@ -461,7 +461,7 @@ fn run(args: Args) -> Result<bool> {
             .to_owned();
         #[cfg(windows)]
         let relative = relative.replace('\\', "/");
-        if relative.contains(['\\', ':']) {
+        if coverage.is_some() && relative.contains(['\\', ':']) {
             bail!("source path contains characters unsupported by native coverage: {relative}");
         }
         source_hashes.push((path, hash.clone()));
