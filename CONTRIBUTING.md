@@ -4,6 +4,18 @@ The analyzer is Rust; the .NET launcher only selects and starts the packaged
 native executable. Keep scoring, file selection, and coverage validation in Rust.
 No Node.js or npm is required.
 
+See [implementation batches](docs/IMPLEMENTATION_PLAN.md) for the active parity
+backlog and architectural boundaries. Generate a reproducible whole-process
+performance sample after a release build:
+
+```sh
+python3 scripts/benchmark.py --output target/benchmark-scan.json
+python3 scripts/benchmark.py --coverage --output target/benchmark-coverage.json
+```
+
+The harness requires Python 3, discards one warmup, checks the full scan output,
+and accepts an optional `--max-median-ms` budget for a controlled runner.
+
 Use a stable Rust toolchain and a C compiler for Tree-sitter. The live C# tests
 and launcher require the .NET 10 SDK.
 
