@@ -3,4 +3,6 @@
 **/obj/
 /packaging/dotnet-crap-launcher/native/
 
+/mutants.out/
+/mutants.out.old/
 __pycache__/
