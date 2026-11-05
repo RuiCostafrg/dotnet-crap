@@ -37,6 +37,13 @@ jobs:
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: 10.0.x
+      - name: Launcher process and permission contracts
+        run: dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
+      - name: Installer and immutable-publication contracts
+        if: runner.os != 'Windows'
+        run: |
+          bash scripts/test-install-action.sh
+          bash scripts/test-release-publish.sh
       - run: cargo test --locked
         env:
           DOTNET_CRAP_E2E: '1'
@@ -50,7 +57,8 @@ jobs:
           cp "target/release/$NATIVE_EXE" "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID/$NATIVE_EXE"
           bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
           version="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' Cargo.toml | head -1)"
-          dotnet tool install --tool-path target/tool --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
+          printf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config
+          NUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
           target/tool/dotnet-crap --help
           target/tool/dotnet-crap --version
           target/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty
@@ -59,3 +67,15 @@ jobs:
           code=$?
           set -e
           test "$code" = 1
+  packaging-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: 1.96.0
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.109
+      - run: bash scripts/smoke-packaging.sh

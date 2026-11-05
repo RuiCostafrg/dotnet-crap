@@ -10,8 +10,15 @@ your own pipeline and review changes to gate policy.
 
 Release archives include SHA-256 checksums. A checksum detects corruption; it is
 not independent proof of publisher identity. Pin versions and obtain assets from
-this repository's GitHub Releases. NuGet publication requires a maintainer-owned
-secret configured in GitHub Actions; no credential is stored in this repo.
+this repository's GitHub Releases. The installer action verifies the checksum and
+never disables TLS.
+
+The tag-triggered workflow builds artifacts with read-only repository contents
+permission and has no publication job. Automatic publication is unavailable until
+a future publication workflow is reviewed and host protections can be enforced;
+the current repository plan cannot enforce required reviewers. Removing this job
+does not prevent a maintainer who can change workflows from adding another one.
+See `packaging/README.md` for the retained, tested publication helpers.
 
 Report security issues privately through the repository's GitHub security
 advisories, rather than posting sensitive details in a public issue.
