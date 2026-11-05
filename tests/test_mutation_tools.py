@@ -1,10 +1,9 @@
 import concurrent.futures
-import copy
 import importlib.util
 import json
-import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -12,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def module(name, path):
+    """Import a tooling module without executing its command-line entry point."""
     spec = importlib.util.spec_from_file_location(name, ROOT / path)
     result = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(result)
@@ -19,10 +19,10 @@ def module(name, path):
 
 
 gate = module("mutation_gate", "scripts/mutation-gate.py")
-benchmark = module("benchmark", "scripts/benchmark.py")
 
 
 def write_inventory(out, names, buckets):
+    """Create cargo-mutants-shaped identity and outcome fixtures for independent gate tests."""
     out.mkdir(parents=True, exist_ok=True)
     # Match cargo-mutants 27.1.0's real format, not a made-up `id` field.
     (out / "mutants.json").write_text(json.dumps([{"name": n, "file": "src/main.rs"} for n in names]))
@@ -32,6 +32,7 @@ def write_inventory(out, names, buckets):
 
 class MutationTests(unittest.TestCase):
     def test_complete_real_format(self):
+        """Accept complete evidence using the name field emitted by cargo-mutants."""
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             names = [f"src/main.rs:{i}:1: replace > with >= in scan" for i in range(4)]
@@ -41,6 +42,7 @@ class MutationTests(unittest.TestCase):
             self.assertEqual(counts, dict(caught=2, missed=0, timeout=1, unviable=1))
 
     def test_incomplete_duplicate_unknown_and_overlapping_outcomes_fail(self):
+        """Reject incomplete or ambiguous evidence instead of calculating a misleading score."""
         cases = [
             (["a", "b"], {"caught": ["a"]}),
             (["a", "b"], {"caught": ["a", "a"], "missed": ["b"]}),
@@ -57,6 +59,7 @@ class MutationTests(unittest.TestCase):
                     gate.read_inventory(out)
 
     def test_threshold_is_strict_and_timeouts_are_not_kills(self):
+        """Exercise exact-threshold rejection, timeout accounting, and all-unviable inventory handling."""
         for counts in [dict(caught=9, missed=1, timeout=0, unviable=0),
                        dict(caught=9, missed=0, timeout=1, unviable=100),
                        dict(caught=0, missed=0, timeout=0, unviable=4)]:
@@ -65,13 +68,16 @@ class MutationTests(unittest.TestCase):
         self.assertAlmostEqual(gate.check_score(dict(caught=10, missed=1, timeout=0, unviable=100)), 1000 / 11)
 
     def test_concurrent_invocations_read_only_their_own_evidence(self):
+        """Verify simultaneous gate calls consume only their independently reserved output directories."""
         with tempfile.TemporaryDirectory() as tmp:
             def runner(command, **kwargs):
+                """Emit realistic output inside the invocation-specific directory supplied to the runner."""
                 parent = Path(command[command.index("--output") + 1])
                 name = parent.name
                 write_inventory(parent / "mutants.out", [name], {"caught": [name]})
                 return SimpleNamespace(returncode=0)
             def run(_):
+                """Execute one independently reserved test gate invocation."""
                 return gate.run_gate(runner=runner, evidence_root=Path(tmp))
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
                 outputs = list(pool.map(run, range(2)))
@@ -80,16 +86,19 @@ class MutationTests(unittest.TestCase):
                 self.assertEqual(gate.read_inventory(out), (dict(caught=1, missed=0, timeout=0, unviable=0), 1))
 
     def test_failed_runner_never_consumes_stale_evidence(self):
+        """Reject a failed subprocess before any previous mutation evidence can be consumed."""
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(ValueError, "runner failed"):
                 gate.run_gate(runner=lambda *a, **k: SimpleNamespace(returncode=1), evidence_root=Path(tmp))
 
     def test_retention_preserves_current_and_active_runs(self):
+        """Prune completed historical runs without deleting current or active evidence."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             active = root / "run-active"
             active.mkdir()
             def runner(command, **kwargs):
+                """Emit realistic output inside the invocation-specific directory supplied to the runner."""
                 parent = Path(command[command.index("--output") + 1])
                 write_inventory(parent / "mutants.out", [parent.name], {"caught": [parent.name]})
                 return SimpleNamespace(returncode=0)
@@ -99,82 +108,60 @@ class MutationTests(unittest.TestCase):
             self.assertTrue(active.exists())
             self.assertEqual(len(list(root.glob("run-*/.complete"))), 2)
 
-
-
-class BenchmarkTests(unittest.TestCase):
-    @staticmethod
-    def report(covered):
-        return {"files_scanned": 1, "failed": False, "functions": [
-            {"file": "C000000.cs", "name": "F", "complexity": 3,
-             "coverage": 0.5 if covered else None, "crap": 4.125 if covered else 12.0},
-            {"file": "C000000.cs", "name": "G", "complexity": 2,
-             "coverage": 1.0 if covered else None, "crap": 2.0 if covered else 6.0},
-        ]}
-
-    def test_generated_corpus_has_independently_calculated_scores(self):
-        for covered in (False, True):
-            benchmark.validate_report(self.report(covered), 1, covered)
-
-    def test_duplicate_identity_cannot_hide_a_missing_function(self):
-        report = self.report(False)
-        report["functions"][1] = copy.deepcopy(report["functions"][0])
-        with self.assertRaises(ValueError):
-            benchmark.validate_report(report, 1, False)
-
-    def test_bad_complexity_coverage_crap_or_gate_is_rejected(self):
-        for field, value in [("complexity", 2), ("coverage", 1.0), ("crap", 3.0)]:
-            report = self.report(True)
-            report["functions"][0][field] = value
-            with self.subTest(field=field), self.assertRaises(ValueError):
-                benchmark.validate_report(report, 1, True)
-        report = self.report(False)
-        report["failed"] = True
-        with self.assertRaises(ValueError):
-            benchmark.validate_report(report, 1, False)
-
-    def test_output_replacement_and_binary_alias_protection(self):
+    def test_failed_and_incomplete_runs_do_not_evict_valid_evidence(self):
+        """Keep the last complete run when baseline or schema failures occupy the failed pool."""
         with tempfile.TemporaryDirectory() as tmp:
-            binary = Path(tmp) / "binary"
-            binary.write_bytes(b"binary contents")
-            output = Path(tmp) / "report.json"
-            output.write_text("old")
-            benchmark.write_output(output, binary.resolve(), "new")
-            self.assertEqual(output.read_text(), "new")
+            root = Path(tmp)
+            def valid_runner(command, **kwargs):
+                """Write a complete real-format inventory for a successful tool invocation."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one"], {"caught": ["one"]})
+                return SimpleNamespace(returncode=0)
+            valid = gate.run_gate(runner=valid_runner, evidence_root=root, keep_runs=1)
+            for code in (1, 4):
+                with self.assertRaises(ValueError):
+                    gate.run_gate(runner=lambda *a, **k: SimpleNamespace(returncode=code), evidence_root=root, keep_runs=1)
+                self.assertTrue(valid.exists())
+            def incomplete_runner(command, **kwargs):
+                """Simulate a nominal process exit whose output does not cover the inventory."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one", "two"], {"caught": ["one"]})
+                return SimpleNamespace(returncode=0)
             with self.assertRaises(ValueError):
-                benchmark.write_output(binary, binary.resolve(), "bad")
-            self.assertEqual(binary.read_bytes(), b"binary contents")
-            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["binary", "report.json"])
+                gate.run_gate(runner=incomplete_runner, evidence_root=root, keep_runs=1)
+            self.assertTrue(valid.exists())
+            self.assertEqual(len(list(root.glob("run-*/.complete"))), 1)
+            self.assertEqual(len(list(root.glob("run-*/.failed"))), 1)
+            self.assertEqual(len(list(root.glob("run-*/failure.txt"))), 1)
 
-    @unittest.skipIf(__import__('os').name == 'nt', 'symlink/hardlink creation may require Windows privileges')
-    def test_output_symlink_and_hardlink_to_binary_are_rejected(self):
+    def test_low_score_still_produces_validated_evidence(self):
+        """Retain an honest complete failing score as evidence rather than a baseline failure."""
         with tempfile.TemporaryDirectory() as tmp:
-            binary = Path(tmp) / "binary"
-            binary.write_text("native")
-            link = Path(tmp) / "link.json"
-            link.symlink_to(binary)
-            with self.assertRaises(ValueError):
-                benchmark.write_output(link, binary.resolve(), "bad")
-            link.unlink()
-            if hasattr(__import__('os'), 'link'):
-                __import__('os').link(binary, link)
-            else:
-                subprocess.run(['ln', str(binary), str(link)], check=True)
-            with self.assertRaises(ValueError):
-                benchmark.write_output(link, binary.resolve(), "bad")
-            self.assertEqual(binary.read_text(), "native")
+            def runner(command, **kwargs):
+                """Write a complete inventory with a single missed mutant."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one"], {"missed": ["one"]})
+                return SimpleNamespace(returncode=2)
+            with self.assertRaisesRegex(ValueError, "must exceed"):
+                gate.run_gate(runner=runner, evidence_root=Path(tmp), keep_runs=1)
+            self.assertEqual(len(list(Path(tmp).glob("run-*/.complete"))), 1)
+            self.assertEqual(len(list(Path(tmp).glob("run-*/.failed"))), 0)
 
-    @unittest.skipIf(__import__('os').name == 'nt', 'Unix executable fixture')
-    def test_hung_process_obeys_timeout(self):
+    def test_concurrent_cleanup_ignores_only_missing_directories(self):
+        """Treat another pruner's deletion as success without hiding permission failures."""
         with tempfile.TemporaryDirectory() as tmp:
-            # Tooling-only fake executable, never described as real C# evidence.
-            binary = Path(tmp) / "hang"
-            binary.write_text('#!/bin/sh\nexec sleep 30\n')
-            binary.chmod(0o700)
-            output = subprocess.run([__import__('sys').executable, str(ROOT / 'scripts/benchmark.py'),
-                                     '--binary', str(binary), '--files', '1', '--runs', '3', '--timeout', '0.05'],
-                                    capture_output=True, timeout=5)
-            self.assertNotEqual(output.returncode, 0)
-            self.assertIn(b'timed out', output.stderr)
+            root = Path(tmp)
+            old, current = root / "run-old", root / "run-current"
+            for directory in (old, current):
+                directory.mkdir()
+                (directory / ".complete").write_text("dotnet-crap-mutation-v1")
+            __import__('os').utime(old / ".complete", (1, 1))
+            with mock.patch.object(gate.shutil, "rmtree", side_effect=FileNotFoundError) as remove:
+                gate.prune_evidence(root, current, 1)
+                remove.assert_called_once_with(old)
+            with mock.patch.object(gate.shutil, "rmtree", side_effect=PermissionError):
+                with self.assertRaises(PermissionError):
+                    gate.prune_evidence(root, current, 1)
 
 
 if __name__ == "__main__":

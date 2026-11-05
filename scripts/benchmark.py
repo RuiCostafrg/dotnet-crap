@@ -15,6 +15,7 @@ from pathlib import Path
 
 
 def validate_report(report, files, has_coverage):
+    """Reject incomplete corpus identities or scores that differ from the known C# fixture."""
     expected = {(f"C{i:06}.cs", name) for i in range(files) for name in ("F", "G")}
     if not isinstance(report, dict) or not isinstance(report.get("functions"), list):
         raise ValueError("benchmark report must contain a functions list")
@@ -38,6 +39,7 @@ def validate_report(report, files, has_coverage):
 
 
 def write_output(path, binary, encoded):
+    """Atomically publish measurement JSON while preserving symlinks and executable inputs."""
     # Destinations outside the project are intentional. Never follow a final
     # symlink or overwrite the measured executable (including a hardlink alias).
     path = path.absolute()
@@ -58,6 +60,7 @@ def write_output(path, binary, encoded):
 
 
 def main():
+    """Generate the corpus, measure a private executable copy, and enforce an optional median budget."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, default=Path("target/release/dotnet-crap.exe" if os.name == "nt" else "target/release/dotnet-crap"))
     parser.add_argument("--files", type=int, default=500)

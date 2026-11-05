@@ -1,6 +1,6 @@
 # Feature parity roadmap
 
-Reference: [typescript-crap](https://github.com/RuiCostafrg/typescript-crap)
+Reference: [typescript-crap](https://github.com/RuiCostafrg/typescript-crap/tree/4d86589163270ab81cd3b0603a27d558f17bfe04)
 2.3.2, inspected 2026-11-04. This is a plan for equivalent C# workflows, not a
 claim that the initial release has full parity. Node, V8, Jest, Vitest, and npm
 are replaced by .NET workflows rather than ported literally.
