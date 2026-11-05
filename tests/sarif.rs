@@ -10,6 +10,9 @@ fn scan(root: &Path, args: &[&str]) -> (i32, Value) {
         .args(args)
         .output()
         .unwrap();
+    decode(output)
+}
+fn decode(output: std::process::Output) -> (i32, Value) {
     assert!(
         output.stderr.is_empty(),
         "{}",
@@ -20,6 +23,7 @@ fn scan(root: &Path, args: &[&str]) -> (i32, Value) {
         serde_json::from_slice(&output.stdout).unwrap(),
     )
 }
+
 fn results(report: &Value) -> &[Value] {
     report["runs"][0]["results"].as_array().unwrap()
 }
@@ -74,6 +78,36 @@ fn unicode_uri_regions_and_fingerprints_are_deterministic() {
         .unwrap();
     assert!(base.starts_with("file:///"));
     assert!(base.ends_with('/'));
+    // Decode URI octets independently and compare the exact canonical root.
+    let mut decoded = Vec::new();
+    let mut bytes = base
+        .strip_prefix("file://")
+        .unwrap()
+        .as_bytes()
+        .iter()
+        .copied();
+    while let Some(byte) = bytes.next() {
+        if byte == b'%' {
+            let digits = [bytes.next().unwrap(), bytes.next().unwrap()];
+            decoded.push(u8::from_str_radix(std::str::from_utf8(&digits).unwrap(), 16).unwrap());
+        } else {
+            decoded.push(byte);
+        }
+    }
+    let actual = String::from_utf8(decoded).unwrap();
+    let canonical = dir.path().canonicalize().unwrap();
+    #[cfg(windows)]
+    let expected = format!(
+        "/{}/",
+        canonical
+            .to_str()
+            .unwrap()
+            .trim_start_matches(r"\\?\")
+            .replace('\\', "/")
+    );
+    #[cfg(not(windows))]
+    let expected = format!("{}/", canonical.to_str().unwrap());
+    assert_eq!(actual, expected);
     assert_eq!(location["region"], json!({"startLine":2,"endLine":2}));
     assert!(first["message"]["text"].as_str().unwrap().contains('名'));
     let fingerprint = &first["partialFingerprints"]["dotnetCrap/v1"];
@@ -89,15 +123,15 @@ fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     );
     let coverage = dir.path().join("coverage.json");
     fs::write(&coverage, serde_json::to_vec(&json!({"version":1,"files":{name:{"sha256":hex::encode(Sha256::digest(source.as_bytes())),"lines":{"2":1,"3":1}}}})).unwrap()).unwrap();
-    let (code, covered) = scan(
-        dir.path(),
-        &[
-            "--coverage",
-            coverage.to_str().unwrap(),
-            "--require-coverage",
-            "--threshold",
-            "0",
-        ],
+    let (code, covered) = decode(
+        Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("--root")
+            .arg(dir.path())
+            .args(["--format", "sarif", "--coverage"])
+            .arg(&coverage)
+            .args(["--require-coverage", "--threshold", "0"])
+            .output()
+            .unwrap(),
     );
     assert_eq!(code, 1);
     assert_eq!(results(&covered).len(), 2);
@@ -153,4 +187,64 @@ fn same_named_overloads_have_distinct_fingerprints() {
         results(&report)[0]["partialFingerprints"],
         results(&report)[1]["partialFingerprints"]
     );
+}
+
+#[cfg(unix)]
+#[test]
+fn literal_backslashes_in_source_root_remain_literal_uri_bytes() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join(r"source\root");
+    fs::create_dir(&root).unwrap();
+    fs::write(root.join("C.cs"), "class C { int F() => 1; }").unwrap();
+    let (code, report) = scan(&root, &["--threshold", "0"]);
+    assert_eq!(code, 1);
+    let base = report["runs"][0]["originalUriBaseIds"]["%SRCROOT%"]["uri"]
+        .as_str()
+        .unwrap();
+    assert!(base.ends_with("/source%5Croot/"), "{base}");
+    assert!(!base.ends_with("/source/root/"));
+}
+
+// APFS rejects invalid UTF-8 path components before the CLI can inspect them.
+#[cfg(all(unix, not(target_os = "macos")))]
+#[test]
+fn non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri() {
+    use std::{ffi::OsString, os::unix::ffi::OsStringExt};
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir
+        .path()
+        .join(OsString::from_vec(b"invalid-\xff".to_vec()));
+    fs::create_dir(&root).unwrap();
+    fs::write(root.join("C.cs"), "class C { void F() {} }").unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("--root")
+        .arg(&root)
+        .args(["--format", "sarif"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("source root must be valid UTF-8"));
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+#[test]
+fn non_utf8_source_filename_is_rejected_without_lossy_report_identity() {
+    use std::{ffi::OsString, os::unix::ffi::OsStringExt};
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path()
+            .join(OsString::from_vec(b"invalid-\xff.cs".to_vec())),
+        "class C { void F() {} }",
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("--root")
+        .arg(dir.path())
+        .args(["--format", "sarif"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("non-UTF-8 source path"));
 }

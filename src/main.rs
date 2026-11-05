@@ -304,8 +304,14 @@ fn run(args: Args) -> Result<bool> {
             fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         let relative = path
             .strip_prefix(&root)?
-            .to_string_lossy()
-            .replace('\\', "/");
+            .to_str()
+            .context("non-UTF-8 source path")?
+            .to_owned();
+        #[cfg(windows)]
+        let relative = relative.replace('\\', "/");
+        if relative.contains(['\\', ':']) {
+            bail!("source path contains characters unsupported by native coverage");
+        }
         let tree = parser.parse(&source, None).context("parser failed")?;
         if tree.root_node().has_error() {
             bail!("invalid C# syntax in {relative}");
