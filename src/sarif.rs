@@ -5,6 +5,8 @@ use std::{collections::BTreeMap, path::Path};
 
 use crate::{Item, Report};
 
+/// Render deterministic SARIF score, required-coverage and empty-selection diagnostics.
+/// Reject a non-UTF-8 source root rather than fabricate a finding location.
 pub fn render(
     report: &Report,
     root: &Path,
@@ -67,6 +69,7 @@ pub fn render(
     }))?)
 }
 
+/// Build a rule-specific stable fingerprint and an optional line-only source location.
 fn result(
     rule: &str,
     message: String,
@@ -84,6 +87,7 @@ fn result(
     result
 }
 
+/// Percent-encode UTF-8 path bytes while preserving directory separators and unreserved bytes.
 fn uri(path: &str) -> String {
     let mut out = String::new();
     for b in path.as_bytes() {
@@ -96,6 +100,8 @@ fn uri(path: &str) -> String {
     out
 }
 
+/// Encode canonical Unix, Windows drive and UNC roots as directory file URIs.
+/// Preserve literal backslashes in Unix roots instead of treating them as separators.
 fn root_uri(path: &str) -> String {
     // Canonical Unix paths begin with a single slash; a backslash in such a
     // path is a literal filename character, not a Windows separator.
@@ -127,6 +133,7 @@ mod tests {
     use super::root_uri;
 
     #[test]
+    /// Verify drive, UNC, extended Windows and literal Unix path encoding independently.
     fn source_root_file_uris_cover_release_platform_paths() {
         assert_eq!(root_uri("/tmp/a b"), "file:///tmp/a%20b/");
         assert_eq!(root_uri(r"/tmp/a\b"), "file:///tmp/a%5Cb/");
