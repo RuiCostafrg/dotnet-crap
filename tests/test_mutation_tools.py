@@ -3,6 +3,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -107,7 +108,60 @@ class MutationTests(unittest.TestCase):
             self.assertTrue(active.exists())
             self.assertEqual(len(list(root.glob("run-*/.complete"))), 2)
 
+    def test_failed_and_incomplete_runs_do_not_evict_valid_evidence(self):
+        """Keep the last complete run when baseline or schema failures occupy the failed pool."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            def valid_runner(command, **kwargs):
+                """Write a complete real-format inventory for a successful tool invocation."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one"], {"caught": ["one"]})
+                return SimpleNamespace(returncode=0)
+            valid = gate.run_gate(runner=valid_runner, evidence_root=root, keep_runs=1)
+            for code in (1, 4):
+                with self.assertRaises(ValueError):
+                    gate.run_gate(runner=lambda *a, **k: SimpleNamespace(returncode=code), evidence_root=root, keep_runs=1)
+                self.assertTrue(valid.exists())
+            def incomplete_runner(command, **kwargs):
+                """Simulate a nominal process exit whose output does not cover the inventory."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one", "two"], {"caught": ["one"]})
+                return SimpleNamespace(returncode=0)
+            with self.assertRaises(ValueError):
+                gate.run_gate(runner=incomplete_runner, evidence_root=root, keep_runs=1)
+            self.assertTrue(valid.exists())
+            self.assertEqual(len(list(root.glob("run-*/.complete"))), 1)
+            self.assertEqual(len(list(root.glob("run-*/.failed"))), 1)
+            self.assertEqual(len(list(root.glob("run-*/failure.txt"))), 1)
 
+    def test_low_score_still_produces_validated_evidence(self):
+        """Retain an honest complete failing score as evidence rather than a baseline failure."""
+        with tempfile.TemporaryDirectory() as tmp:
+            def runner(command, **kwargs):
+                """Write a complete inventory with a single missed mutant."""
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one"], {"missed": ["one"]})
+                return SimpleNamespace(returncode=2)
+            with self.assertRaisesRegex(ValueError, "must exceed"):
+                gate.run_gate(runner=runner, evidence_root=Path(tmp), keep_runs=1)
+            self.assertEqual(len(list(Path(tmp).glob("run-*/.complete"))), 1)
+            self.assertEqual(len(list(Path(tmp).glob("run-*/.failed"))), 0)
+
+    def test_concurrent_cleanup_ignores_only_missing_directories(self):
+        """Treat another pruner's deletion as success without hiding permission failures."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old, current = root / "run-old", root / "run-current"
+            for directory in (old, current):
+                directory.mkdir()
+                (directory / ".complete").write_text("dotnet-crap-mutation-v1")
+            __import__('os').utime(old / ".complete", (1, 1))
+            with mock.patch.object(gate.shutil, "rmtree", side_effect=FileNotFoundError) as remove:
+                gate.prune_evidence(root, current, 1)
+                remove.assert_called_once_with(old)
+            with mock.patch.object(gate.shutil, "rmtree", side_effect=PermissionError):
+                with self.assertRaises(PermissionError):
+                    gate.prune_evidence(root, current, 1)
 
 
 if __name__ == "__main__":

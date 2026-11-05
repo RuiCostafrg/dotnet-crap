@@ -54,18 +54,30 @@ def check_score(counts):
     return score
 
 
-def prune_evidence(root, current, keep):
-    """Retain recent completed evidence while preserving active and current invocations."""
+def prune_evidence(root, current, keep, marker_name=".complete"):
+    """Prune older evidence in one completed/failed pool, tolerating concurrent removals."""
+    try:
+        current_key = ((current / marker_name).stat().st_mtime_ns, current.name)
+    except FileNotFoundError:
+        return  # A newer completed invocation already retired this evidence.
     completed = []
     for directory in root.glob("run-*"):
         if directory == current or directory.is_symlink():
             continue
-        marker = directory / ".complete"
-        if marker.is_file() and marker.read_text() == "dotnet-crap-mutation-v1":
-            completed.append(directory)
-    completed.sort(key=lambda p: p.stat().st_mtime_ns, reverse=True)
-    for directory in completed[keep - 1:]:
-        shutil.rmtree(directory)
+        marker = directory / marker_name
+        try:
+            if marker.is_file() and marker.read_text() == "dotnet-crap-mutation-v1":
+                key = (marker.stat().st_mtime_ns, directory.name)
+                if key < current_key:
+                    completed.append((key, directory))
+        except FileNotFoundError:
+            continue
+    completed.sort(reverse=True)
+    for _, directory in completed[keep - 1:]:
+        try:
+            shutil.rmtree(directory)
+        except FileNotFoundError:
+            pass  # Another invocation pruned it; other deletion errors must surface.
 
 
 def run_gate(runner=subprocess.run, evidence_root=pathlib.Path("target/mutation-runs"), keep_runs=5):
@@ -80,6 +92,7 @@ def run_gate(runner=subprocess.run, evidence_root=pathlib.Path("target/mutation-
     command = ["cargo", "mutants", "--output", str(parent), "--jobs", "2",
                "--jobserver-tasks", "2", "--timeout", "120", "--build-timeout", "600", "-C", "--locked"]
     finished = False
+    validated = False
     try:
         try:
             result = runner(command, check=False)
@@ -90,15 +103,23 @@ def run_gate(runner=subprocess.run, evidence_root=pathlib.Path("target/mutation-
         if result.returncode not in (0, 2, 3):
             raise ValueError(f"Mutation runner failed with status {result.returncode}; evidence retained at {out}")
         counts, total = read_inventory(out)
+        validated = True
         print(f"total={total} " + " ".join(f"{k}={v}" for k, v in counts.items()), flush=True)
         score = check_score(counts)
         print(f"score={score:.2f}% (caught / (caught + missed + timeout))")
         return out
-    finally:
-        # Never mark an interrupted process as complete or prune active runs.
+    except (OSError, ValueError, TypeError) as error:
         if finished:
-            (parent / ".complete").write_text("dotnet-crap-mutation-v1")
-            prune_evidence(evidence_root, parent, keep_runs)
+            (parent / "failure.txt").write_text(str(error) + "\n")
+        raise
+    finally:
+        # Complete means validated evidence, even if its measured score is low.
+        # Baseline/launch/schema failures use an independent diagnostics pool;
+        # they must never evict the last validated run. Interrupted runs stay active.
+        if finished:
+            marker = ".complete" if validated else ".failed"
+            (parent / marker).write_text("dotnet-crap-mutation-v1")
+            prune_evidence(evidence_root, parent, keep_runs, marker)
 
 
 def main():
