@@ -64,6 +64,20 @@ public static class NativeLauncher
         TextWriter error,
         string? temporaryRoot = null)
     {
+        try
+        {
+            return await RunCoreAsync(appBaseDirectory, rid, arguments, error, temporaryRoot);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or Win32Exception)
+        {
+            error.WriteLine($"dotnet-crap could not start its native binary: {exception.Message}");
+            return 2;
+        }
+    }
+
+    private static async Task<int> RunCoreAsync(string appBaseDirectory, string rid,
+        IReadOnlyList<string> arguments, TextWriter error, string? temporaryRoot)
+    {
         var installed = NativeExecutablePath(appBaseDirectory, rid);
         if (!File.Exists(installed))
         {
@@ -177,6 +191,7 @@ public static class NativeLauncher
         }
     }
 
+    [UnsupportedOSPlatform("windows")]
     private static string CreatePrivateDirectory(string root)
     {
         for (var attempt = 0; attempt < 16; attempt++)
@@ -187,11 +202,7 @@ public static class NativeLauncher
                 continue;
             }
 
-            Directory.CreateDirectory(path);
-            if (!OperatingSystem.IsWindows())
-            {
-                File.SetUnixFileMode(path, PrivateDirectoryMode);
-            }
+            Directory.CreateDirectory(path, PrivateDirectoryMode);
             return path;
         }
 

@@ -99,7 +99,8 @@ jobs:
     # Until those host settings exist, this name does not protect anything. The main-reachability
     # check below runs from the tagged checkout, so it catches mistakes; the environment's reviewer
     # and tag policies are the gate against an untrusted tag that carries its own workflow.
-    if: startsWith(github.ref, 'refs/tags/')
+    # Disabled until a maintainer configures actual host protections and opts in.
+    if: startsWith(github.ref, 'refs/tags/') && vars.RELEASE_PUBLISH_ENABLED == 'true'
     needs: package
     environment:
       name: release

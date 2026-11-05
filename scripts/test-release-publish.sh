@@ -8,9 +8,10 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 work="$(mktemp -d "${TMPDIR:-/tmp}/dotnet-crap-publish-test.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
-mkdir -p "$work/bin" "$work/assets"
+mkdir -p "$work/bin" "$work/assets" "$work/published"
 printf 'native' > "$work/assets/dotnet-crap-v1.2.3-linux-x64.tar.gz"
 printf 'package' > "$work/assets/dotnet-crap.nupkg"
+cp "$work"/assets/* "$work/published/"
 
 fail() {
   echo "FAIL: $*" >&2
@@ -28,9 +29,17 @@ case "$1 $2" in
   "release view")
     [[ "${FAKE_GH_VIEW:-ok}" == ok ]] && exit 0
     echo "release not found" >&2; exit 1 ;;
-  "release upload")
-    if [[ "${FAKE_GH_UPLOAD:-ok}" == ok ]]; then exit 0; fi
-    echo "HTTP 500: upload failed" >&2; exit 1 ;;
+  "release download")
+    [[ "${FAKE_GH_DOWNLOAD:-ok}" == ok ]] || exit 1
+    shift 3
+    while (($#)); do
+      case "$1" in
+        --pattern) pattern="$2"; shift 2 ;;
+        --dir) destination="$2"; shift 2 ;;
+        *) exit 99 ;;
+      esac
+    done
+    cp "$FAKE_PUBLISHED/$pattern" "$destination/$pattern" ;;
   *) echo "fake gh: unexpected $*" >&2; exit 99 ;;
 esac
 FAKE_GH
@@ -45,7 +54,7 @@ chmod 755 "$work/bin/gh" "$work/bin/dotnet"
 run_with_fakes() {
   # Remaining arguments are the command; FAKE_* variables come from the caller's environment.
   : > "$work/log"
-  env PATH="$work/bin:$PATH" FAKE_LOG="$work/log" "$@"
+  env PATH="$work/bin:$PATH" FAKE_LOG="$work/log" FAKE_PUBLISHED="$work/published" "$@"
 }
 
 # GitHub release: create succeeds.
@@ -54,12 +63,12 @@ run_with_fakes env FAKE_GH_CREATE=ok bash "$root/scripts/publish-github-release.
 grep -q -- "--verify-tag" "$work/log" || fail "create did not pass --verify-tag"
 grep -q -- "upload" "$work/log" && fail "fresh release should not upload separately"
 
-# GitHub release: a retry finds the existing release and replaces assets with --clobber.
-run_with_fakes env FAKE_GH_CREATE=exists FAKE_GH_VIEW=ok FAKE_GH_UPLOAD=ok \
+# GitHub release: a retry preserves matching existing assets.
+run_with_fakes env FAKE_GH_CREATE=exists FAKE_GH_VIEW=ok FAKE_GH_DOWNLOAD=ok \
   bash "$root/scripts/publish-github-release.sh" v1.2.3 "$work"/assets/* > "$work/out" 2>&1 \
   || { cat "$work/out" >&2; fail "retry against an existing release did not reuse it"; }
-grep -q -- "release upload v1.2.3" "$work/log" || fail "retry did not upload assets"
-grep -q -- "--clobber" "$work/log" || fail "retry upload did not use --clobber"
+grep -q -- "release download v1.2.3" "$work/log" || fail "retry did not verify published assets"
+grep -q -- "release upload" "$work/log" && fail "retry modified immutable published assets"
 grep -q "already exists" "$work/out" || fail "retry did not announce reuse"
 
 # GitHub release: creation fails and no release is readable; the failure must surface.
@@ -70,11 +79,22 @@ fi
 grep -q "could not be created" "$work/out" || fail "creation failure was not reported"
 grep -q "release upload" "$work/log" && fail "upload was attempted without a readable release"
 
-# GitHub release: the existing release is readable but its asset upload fails; that error must surface.
-if run_with_fakes env FAKE_GH_CREATE=exists FAKE_GH_VIEW=ok FAKE_GH_UPLOAD=fail \
+# GitHub release: failed downloads surface and never modify published assets.
+if run_with_fakes env FAKE_GH_CREATE=exists FAKE_GH_VIEW=ok FAKE_GH_DOWNLOAD=fail \
   bash "$root/scripts/publish-github-release.sh" v1.2.3 "$work"/assets/* > "$work/out" 2>&1; then
-  fail "failed asset upload was reported as success"
+  fail "failed asset verification was reported as success"
 fi
+
+# A rebuilt package must not replace published bytes for an immutable version.
+printf 'different rebuilt package' > "$work/assets/dotnet-crap.nupkg"
+if run_with_fakes env FAKE_GH_CREATE=exists FAKE_GH_VIEW=ok FAKE_GH_DOWNLOAD=ok \
+  bash "$root/scripts/publish-github-release.sh" v1.2.3 "$work"/assets/* > "$work/out" 2>&1; then
+  fail "mismatched rebuilt assets were accepted"
+fi
+grep -q "differs from this build" "$work/out" || fail "mismatched assets were not explained"
+grep -q "release upload" "$work/log" && fail "mismatched assets were uploaded"
+[[ "$(cat "$work/published/dotnet-crap.nupkg")" == package ]] || fail "published package changed"
+printf 'package' > "$work/assets/dotnet-crap.nupkg"
 
 # GitHub release: missing assets are rejected before gh runs.
 if run_with_fakes bash "$root/scripts/publish-github-release.sh" v1.2.3 "$work/assets/missing.tar.gz" > "$work/out" 2>&1; then

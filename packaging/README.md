@@ -35,7 +35,7 @@ On Unix it never changes the installed file. If the file has an execute bit, the
 - `bash scripts/test-release-publish.sh` runs the publish scripts with fake `gh` and `dotnet`, and checks the trusted-main ancestry check against a local git remote.
 - `bash scripts/smoke-packaging.sh` runs all of the above, then builds the host native executable, packs two concurrent invocations, checks that the package has only the host native entry, installs it with `dotnet tool install`, and runs the installed launcher. As root on Linux it also runs the installed tool as `nobody` from an unwritable tree. It publishes, tags, and signs nothing.
 
-Apply the local runtime settings your machine needs before running these. For example, when .NET uses an installation outside the default search path, set `DOTNET_ROOT`; on a host without ICU, set `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`. GitHub's `setup-dotnet` action provides both in CI.
+Apply the local runtime settings your machine needs before running these. For example, when .NET uses an installation outside the default search path, set `DOTNET_ROOT`; on a host without ICU, set `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`. GitHub's `setup-dotnet` action configures the SDK in CI; hosted runners normally provide ICU without invariant mode.
 
 ## Release workflow
 
@@ -44,7 +44,7 @@ Apply the local runtime settings your machine needs before running these. For ex
 The `publish` job is the only job that writes to GitHub or NuGet, and it needs the `release` environment:
 
 1. **Trusted main:** `scripts/verify-tag-on-main.sh` fails unless the tagged commit is reachable from `origin/main`, so a tag on a branch-only commit cannot publish. It runs from the tagged checkout, so it catches mistakes but cannot stop a tag that carries its own modified workflow. The environment's reviewer and tag policies are the enforcement point for that case.
-2. **GitHub release, safe to retry:** `scripts/publish-github-release.sh` creates the release with `--verify-tag`, so gh never creates a tag. If creation fails and the release is readable, the script replaces the same-named assets with `--clobber`. If the release is not readable, it reports the create error and exits non-zero.
+2. **GitHub release, safe to retry:** `scripts/publish-github-release.sh` creates the release with `--verify-tag`, so gh never creates a tag. If creation fails and the release is readable, the script downloads the existing assets into an isolated temporary directory and requires byte-for-byte matches. It never overwrites published assets. A failed download or mismatch fails the retry. If the release is not readable, it reports the create error and exits non-zero.
 3. **NuGet, safe to retry:** `scripts/publish-nuget.sh` pushes with `--skip-duplicate`, so a version that is already published counts as success. Other push errors still fail the job. A missing `NUGET_API_KEY` skips NuGet with an explicit notice.
 
 A retry rebuilds the artifacts from the same tag. Rebuilt archives may not be byte-identical, while NuGet keeps the first pushed `.nupkg`. After a NuGet-only retry, compare the GitHub asset digest with the published package before you rely on it.
@@ -58,3 +58,15 @@ The workflow names an environment, but naming it protects nothing. A missing env
 - **`NUGET_API_KEY` must be an environment secret of `release`, not a repository secret.** A repository secret is available to every workflow in the repository; environment scope limits it to approved `publish` runs.
 
 This repository's current GitHub state, as checked with the read-only API, has no environments and no repository secrets. Rulesets were not readable on this private plan. Until the settings above are in place, do not add `NUGET_API_KEY` anywhere.
+
+Publication is disabled by default. Set the repository variable
+`RELEASE_PUBLISH_ENABLED=true` only after configuring supported required reviewers,
+protected release tags, and environment-scoped credentials. This opt-in is a
+rollout safeguard, not a substitute for host enforcement against a workflow
+modified in an untrusted tag. If the GitHub billing plan cannot enforce required
+reviewers for this private repository, leave publication disabled.
+
+A retry verifies existing GitHub assets byte-for-byte and never overwrites them.
+Rerun only the failed publish job with its original retained artifacts. If rebuilt
+artifacts differ, publication fails closed; use a new version rather than mutating
+the published release. Missing existing assets also fail verification.

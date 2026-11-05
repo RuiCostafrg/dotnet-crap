@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates the GitHub release for a tag, or reuses one left by an earlier attempt.
-# Reuse replaces same-named assets with this run's verified assets. A failure is
-# reported unless an existing release is readable, in which case the upload error is returned.
+# Existing assets are immutable: retries must supply the same bytes, normally
+# by rerunning only the failed publish job with its original retained artifacts.
 set -euo pipefail
 
 tag="${1:?usage: publish-github-release.sh <tag> <asset>...}"
@@ -28,5 +28,16 @@ if ! gh release view "$tag" >/dev/null 2>&1; then
   echo "::error::GitHub release $tag could not be created and no existing release is readable." >&2
   exit 1
 fi
-echo "::notice::GitHub release $tag already exists; replacing its assets with this run's verified assets."
-gh release upload "$tag" "$@" --clobber
+# Never overwrite published assets: doing so could make GitHub downloads differ
+# from a NuGet package that has already been published for this same version.
+work="$(mktemp -d "${TMPDIR:-/tmp}/dotnet-crap-release-verify.XXXXXX")"
+trap 'rm -rf "$work"' EXIT
+for asset in "$@"; do
+  name="$(basename "$asset")"
+  gh release download "$tag" --pattern "$name" --dir "$work"
+  if ! cmp -s "$asset" "$work/$name"; then
+    echo "::error::Published asset $name differs from this build; no published assets were changed. Rerun the original publish job with its retained artifacts, or use a new version." >&2
+    exit 1
+  fi
+done
+echo "::notice::GitHub release $tag already exists with matching assets; preserving published bytes."

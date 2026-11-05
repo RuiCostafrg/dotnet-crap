@@ -24,3 +24,15 @@ secret. No credential is stored in this repo. See `packaging/README.md`.
 
 Report security issues privately through the repository's GitHub security
 advisories, rather than posting sensitive details in a public issue.
+
+Publication is disabled by default. Set the repository variable
+`RELEASE_PUBLISH_ENABLED=true` only after configuring supported required reviewers,
+protected release tags, and environment-scoped credentials. This opt-in is a
+rollout safeguard, not a substitute for host enforcement against a workflow
+modified in an untrusted tag. If the GitHub billing plan cannot enforce required
+reviewers for this private repository, leave publication disabled.
+
+A retry verifies existing GitHub assets byte-for-byte and never overwrites them.
+Rerun only the failed publish job with its original retained artifacts. If rebuilt
+artifacts differ, publication fails closed; use a new version rather than mutating
+the published release. Missing existing assets also fail verification.
