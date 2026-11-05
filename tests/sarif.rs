@@ -28,6 +28,48 @@ fn results(report: &Value) -> &[Value] {
     report["runs"][0]["results"].as_array().unwrap()
 }
 
+/// Express the canonical path as a decoded file-URI tail, with UNC hosts in the authority.
+fn expected_file_uri_tail(canonical: &str, windows: bool) -> String {
+    if windows {
+        let normalized = canonical
+            .strip_prefix(r"\\?\")
+            .unwrap_or(canonical)
+            .replace('\\', "/");
+        let path = normalized.trim_end_matches('/');
+        if let Some(unc) = path
+            .strip_prefix("UNC/")
+            .or_else(|| path.strip_prefix("//"))
+        {
+            format!("{unc}/")
+        } else {
+            format!("/{path}/")
+        }
+    } else {
+        format!("{}/", canonical.trim_end_matches('/'))
+    }
+}
+
+#[test]
+/// Check local-drive and UNC authority expectations on every host, without requiring a share.
+fn file_uri_expectations_distinguish_drive_paths_and_unc_authorities() {
+    for (path, expected) in [
+        (r"C:\source root", "/C:/source root/"),
+        (r"\\?\C:\source root", "/C:/source root/"),
+        (r"\\server\share\source root", "server/share/source root/"),
+        (
+            r"\\?\UNC\server\share\source root",
+            "server/share/source root/",
+        ),
+    ] {
+        assert_eq!(expected_file_uri_tail(path, true), expected);
+    }
+    assert_eq!(expected_file_uri_tail("/", false), "/");
+    assert_eq!(
+        expected_file_uri_tail(r"/source\root", false),
+        "/source\\root/"
+    );
+}
+
 #[test]
 fn score_threshold_empty_and_completeness_gates() {
     let dir = tempfile::tempdir().unwrap();
@@ -56,6 +98,7 @@ fn score_threshold_empty_and_completeness_gates() {
 }
 
 #[test]
+/// Verify encoded Unicode paths, canonical root identity and finding fingerprints through the CLI.
 fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     let dir = tempfile::tempdir().unwrap();
     fs::create_dir(dir.path().join("space #目录")).unwrap();
@@ -76,7 +119,7 @@ fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     let base = report["runs"][0]["originalUriBaseIds"]["%SRCROOT%"]["uri"]
         .as_str()
         .unwrap();
-    assert!(base.starts_with("file:///"));
+    assert!(base.starts_with("file://"));
     assert!(base.ends_with('/'));
     // Decode URI octets independently and compare the exact canonical root.
     let mut decoded = Vec::new();
@@ -96,17 +139,7 @@ fn unicode_uri_regions_and_fingerprints_are_deterministic() {
     }
     let actual = String::from_utf8(decoded).unwrap();
     let canonical = dir.path().canonicalize().unwrap();
-    #[cfg(windows)]
-    let expected = format!(
-        "/{}/",
-        canonical
-            .to_str()
-            .unwrap()
-            .trim_start_matches(r"\\?\")
-            .replace('\\', "/")
-    );
-    #[cfg(not(windows))]
-    let expected = format!("{}/", canonical.to_str().unwrap());
+    let expected = expected_file_uri_tail(canonical.to_str().unwrap(), cfg!(windows));
     assert_eq!(actual, expected);
     assert_eq!(location["region"], json!({"startLine":2,"endLine":2}));
     assert!(first["message"]["text"].as_str().unwrap().contains('名'));
