@@ -16,6 +16,12 @@ fi
 
 mkdir -p "$stage_arg"
 stage="$(cd "$stage_arg" && pwd)"
+# Package archives may contain build-specific timestamps and metadata. Each pack
+# owns a fresh feed; reuse the existing archive instead of rebuilding over it.
+if [[ -e "$stage/feed" || -L "$stage/feed" ]]; then
+  echo "Pack output already exists: $stage/feed; use a fresh stage or reuse its existing package." >&2
+  exit 2
+fi
 launcher_source="$root/packaging/dotnet-crap-launcher"
 work="$(mktemp -d "${TMPDIR:-/tmp}/dotnet-crap-pack.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
@@ -54,7 +60,11 @@ if [[ "${#packages[@]}" -ne 1 || ! -f "${packages[0]}" ]]; then
   exit 1
 fi
 
-mkdir -p "$stage/feed"
+# Claim the output directory exclusively, including against concurrent packs.
+if ! mkdir "$stage/feed"; then
+  echo "Could not reserve pack output: $stage/feed; use a fresh writable stage." >&2
+  exit 1
+fi
 # Publish atomically within the feed so an interrupted copy never leaves a partial .nupkg.
 partial="$(mktemp "$stage/feed/.package.XXXXXX")"
 trap 'rm -f "$partial"; rm -rf "$work"' EXIT
@@ -64,10 +74,8 @@ chmod 644 "$partial"
 destination="$stage/feed/$(basename "${packages[0]}")"
 # A hard link creates the final name exclusively and atomically on the same filesystem.
 if ! ln "$partial" "$destination" 2>/dev/null; then
-  if [[ ! -f "$destination" ]] || ! cmp -s "$partial" "$destination"; then
-    echo "Package already exists with different bytes or cannot be published: $destination" >&2
-    exit 1
-  fi
+  echo "Package destination already exists or cannot be published: $destination" >&2
+  exit 1
 fi
 rm -f "$partial"
 echo "Packed $stage/feed/$(basename "${packages[0]}") with $staged native binary file(s)."

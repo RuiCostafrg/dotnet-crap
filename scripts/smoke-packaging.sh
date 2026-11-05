@@ -105,6 +105,15 @@ nupkg_a="$work/stage-a/feed/dotnet-crap.$version.nupkg"
 nupkg_b="$work/stage-b/feed/dotnet-crap.$version.nupkg"
 [[ -f "$nupkg_a" && -f "$nupkg_b" ]] || fail "expected packages were not written to each feed"
 
+# A same-input rebuild is rejected explicitly; retain the original package bytes.
+cp "$nupkg_a" "$work/original.nupkg"
+if DOTNET_CRAP_LOCAL_RID="$rid" bash scripts/pack-dotnet-tool.sh "$work/stage-a" "$version" > "$work/repack.log" 2>&1; then
+  fail "repacking into an existing feed unexpectedly succeeded"
+fi
+grep -q 'use a fresh stage' "$work/repack.log" || fail "repack did not explain the fresh-stage requirement"
+cmp -s "$nupkg_a" "$work/original.nupkg" || fail "repack changed the original package"
+echo "PASS repack: existing feed rejected, original package unchanged"
+
 # Inspect archive entries and native bytes; -I isolates Python's import environment.
 python3 -I - "$nupkg_a" "$nupkg_b" "$rid" "$version" "$native" <<'PY'
 import sys

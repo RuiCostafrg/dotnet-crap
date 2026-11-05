@@ -4,7 +4,20 @@
 
 ## Staging and concurrent packs
 
-The pack script copies the launcher sources (not `bin/`, `obj/`, or `native/`) into a per-invocation work directory under `TMPDIR`. Native executables are staged there, and `dotnet pack` builds there too, so two packs from one checkout never share native, `bin`, or `obj` paths. The checkout's `packaging/dotnet-crap-launcher/native/` is no longer written. The finished `.nupkg` is published atomically to `<native-stage>/feed/`; an existing package must have identical bytes, otherwise the pack fails.
+The pack script copies the launcher sources (not `bin/`, `obj/`, or `native/`) into a per-invocation work directory under `TMPDIR`. Native executables are staged there, and `dotnet pack` builds there too, so two packs from one checkout never share native, `bin`, or `obj` paths. The checkout's `packaging/dotnet-crap-launcher/native/` is no longer written. The finished `.nupkg` is published atomically to `<native-stage>/feed/`.
+
+Each invocation requires a fresh output feed: `<native-stage>/feed` must not
+already exist, even if it is empty or contains an identical-input build. This is
+checked before building, and the directory is reserved exclusively at publication.
+Use distinct stage directories for concurrent packs. To retry an installation or
+publication, reuse the existing `.nupkg`; to rebuild, stage the native inputs in
+a new directory. The script never removes or replaces an existing feed.
+An interrupted pack may leave a reserved feed and likewise requires a new stage.
+
+The current package pipeline does not promise byte-reproducible rebuilds;
+archive timestamps and generated metadata can differ. Rebuilt archives are not
+compared by normalized entries or silently substituted for retained packages.
+The separate release-publication helper still requires exact byte identity on retries.
 
 Release builds require all five RIDs: `linux-x64`, `linux-arm64`, `osx-x64`,
 `osx-arm64`, and `win-x64`. The feed is created under `<native-stage>/feed`.
@@ -66,4 +79,4 @@ with a 20-second connection timeout and a 240-second limit per attempt. This
 budgets at most 300 seconds per asset request, including its final attempt.
 See [curl's retry-time semantics](https://curl.se/docs/manpage.html#--retry-max-time).
 Packages published to the local feed have mode `0644`, including under a restrictive
-caller umask; existing differing package bytes are still rejected.
+caller umask; existing feed contents are never replaced.
