@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates the GitHub release for a tag, or reuses one left by an earlier attempt.
 # Existing assets are immutable: retries must supply the same bytes, normally
-# by rerunning only the failed publish job with its original retained artifacts.
+# by reusing the original retained artifacts.
 set -euo pipefail
 
 tag="${1:?usage: publish-github-release.sh <tag> <asset>...}"
@@ -36,7 +36,7 @@ for asset in "$@"; do
   name="$(basename "$asset")"
   gh release download "$tag" --pattern "$name" --dir "$work"
   if ! cmp -s "$asset" "$work/$name"; then
-    echo "::error::Published asset $name differs from this build; no published assets were changed. Rerun the original publish job with its retained artifacts, or use a new version." >&2
+    echo "::error::Published asset $name differs from this build; no published assets were changed. Reuse the original retained artifacts, or use a new version." >&2
     exit 1
   fi
 done

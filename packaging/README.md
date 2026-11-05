@@ -41,40 +41,22 @@ Apply the local runtime settings your machine needs before running these. For ex
 
 `.github/workflows/release.yml` runs on `v*` tags. Tags must match the Cargo version; that version is passed to `dotnet pack` to keep the NuGet package aligned. Build jobs use the pinned Rust 1.96.0 toolchain and the pinned .NET SDK 10.0.109. Every action is pinned to a full commit SHA.
 
-The `publish` job is the only job that publishes release assets or NuGet packages, and it needs the `release` environment:
+The tag-triggered workflow checks out the event commit and uploads build and
+package artifacts. It has read-only repository contents permission and does not
+create a GitHub release or publish a NuGet package. Automatic publication is
+unavailable until a future publication workflow is reviewed and host protections
+can be enforced. The current repository plan cannot enforce required reviewers.
+This does not prevent a maintainer who can change workflows from adding one.
 
-1. **Trusted main:** `scripts/verify-tag-on-main.sh` fails unless the tagged commit is reachable from `origin/main`, so a tag on a branch-only commit cannot publish. It runs from the tagged checkout, so it catches mistakes but cannot stop a tag that carries its own modified workflow. The environment's reviewer and tag policies are the enforcement point for that case.
-2. **GitHub release, safe to retry:** `scripts/publish-github-release.sh` creates the release with `--verify-tag`, so gh never creates a tag. If creation fails and the release is readable, the script downloads the existing assets into an isolated temporary directory and requires byte-for-byte matches. It never overwrites published assets. A failed download or mismatch fails the retry. If the release is not readable, it reports the create error and exits non-zero.
-3. **NuGet, safe to retry:** `scripts/publish-nuget.sh` pushes with `--skip-duplicate`, so a version that is already published counts as success. Other push errors still fail the job. A missing `NUGET_API_KEY` skips NuGet with an explicit notice.
-
-A retry rebuilds the artifacts from the same tag. Rebuilt archives may not be byte-identical, while NuGet keeps the first pushed `.nupkg`. After a NuGet-only retry, compare the GitHub asset digest with the published package before you rely on it.
-
-### Required host settings (not configured by this repository)
-
-The workflow names an environment, but naming it protects nothing. A missing environment is created on first use with no protection, and a missing secret is simply absent. Before the first release, a repository administrator must configure:
-
-- **`release` environment with required reviewers.** Approval must be required before the `publish` job starts.
-- **Deployment policy for the `release` environment limited to `v*` tags.** Add a protected tag ruleset for `v*` that only maintainers can create or update, so an untrusted tag cannot reach the environment.
-- **`NUGET_API_KEY` must be an environment secret of `release`, not a repository secret.** A repository secret is available to every workflow in the repository; environment scope limits it to approved `publish` runs.
-
-This repository's current GitHub state, as checked with the read-only API, has no environments and no repository secrets. Rulesets were not readable on this private plan. Until the settings above are in place, do not add `NUGET_API_KEY` anywhere.
-
-Publication is disabled by default. Set the repository variable
-`RELEASE_PUBLISH_ENABLED=true` only after configuring supported required reviewers,
-protected release tags, and environment-scoped credentials. This opt-in is a
-rollout safeguard, not a substitute for host enforcement against a workflow
-modified in an untrusted tag. If the GitHub billing plan cannot enforce required
-reviewers for this private repository, leave publication disabled.
-
-A retry verifies existing GitHub assets byte-for-byte and never overwrites them.
-Rerun only the failed publish job with its original retained artifacts. If rebuilt
-artifacts differ, publication fails closed; use a new version rather than mutating
-the published release. Missing existing assets also fail verification.
+The standalone publication scripts and their offline tests remain as preparatory
+tooling. The GitHub release helper requires existing assets to match byte for byte
+on retry; the NuGet helper uses `--skip-duplicate`. The tag verification helpers
+check remote tag resolution and reachability from main. A remote tag check and
+publication are not atomic, so a future workflow also needs enforceable tag
+protection. These scripts are not invoked for publication by the release workflow.
 
 Local packaging validation uses an explicit NuGet configuration with cleared
 inherited sources plus an invocation-specific package cache, so another feed or
 cached package with the same ID/version cannot substitute for the package under
 test. The smoke test also compares the installed native bytes with the locally
-built executable. Normal published-package installation is a separate workflow.
-
-Build and package jobs check out the event commit. Before each publication, the remote tag is checked against that commit, including annotated tags. This check and publication are not atomic: host-enforced tag protection is still required to prevent a tag moving between them.
+built executable.

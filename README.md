@@ -59,8 +59,10 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
 ## Installation and releases
 
-The release workflow builds platform binaries and a .NET 10 tool package. Once a
-maintainer tags and publishes a release, download an archive and its checksum
+The release workflow builds platform binaries and a .NET 10 tool package as
+workflow artifacts; it does not publish a release. Automatic publication is
+unavailable until a future publication workflow is reviewed and host protections
+can be enforced. If a release is published in the future, download an archive and its checksum
 from [GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases), or
 install the published NuGet package:
 
@@ -69,9 +71,8 @@ dotnet tool install --global dotnet-crap --version 0.1.0
 dotnet-crap --help
 ```
 
-These commands describe the release being prepared; this initial PR does not
-publish a release. NuGet publication requires the repository's configured
-`NUGET_API_KEY`. See [packaging](packaging/README.md) for local package creation
+These commands describe a future release; no release is created by this workflow.
+See [packaging](packaging/README.md) for local package creation
 and verification. The launcher needs .NET 10 and starts the bundled native
 executable, forwarding its arguments and exit code.
 

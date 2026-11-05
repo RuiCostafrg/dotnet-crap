@@ -13,26 +13,12 @@ not independent proof of publisher identity. Pin versions and obtain assets from
 this repository's GitHub Releases. The installer action verifies the checksum and
 never disables TLS.
 
-Publication uses the `release` GitHub environment for `v*` tags. The publish job
-also checks that the tagged commit is reachable from `main`, but that check runs
-from the tagged checkout. The enforcement against an untrusted tag is the
-environment itself, so maintainers must configure these settings, which this
-repository cannot enforce from its files: required reviewers on `release`, a
-deployment policy limited to `v*` tags with a protected tag ruleset, and
-`NUGET_API_KEY` stored as an environment secret of `release`, not as a repository
-secret. No credential is stored in this repo. See `packaging/README.md`.
+The tag-triggered workflow builds artifacts with read-only repository contents
+permission and has no publication job. Automatic publication is unavailable until
+a future publication workflow is reviewed and host protections can be enforced;
+the current repository plan cannot enforce required reviewers. Removing this job
+does not prevent a maintainer who can change workflows from adding another one.
+See `packaging/README.md` for the retained, tested publication helpers.
 
 Report security issues privately through the repository's GitHub security
 advisories, rather than posting sensitive details in a public issue.
-
-Publication is disabled by default. Set the repository variable
-`RELEASE_PUBLISH_ENABLED=true` only after configuring supported required reviewers,
-protected release tags, and environment-scoped credentials. This opt-in is a
-rollout safeguard, not a substitute for host enforcement against a workflow
-modified in an untrusted tag. If the GitHub billing plan cannot enforce required
-reviewers for this private repository, leave publication disabled.
-
-A retry verifies existing GitHub assets byte-for-byte and never overwrites them.
-Rerun only the failed publish job with its original retained artifacts. If rebuilt
-artifacts differ, publication fails closed; use a new version rather than mutating
-the published release. Missing existing assets also fail verification.
