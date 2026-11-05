@@ -5,3 +5,5 @@
 
 /mutants.out/
 /mutants.out.old/
+
+__pycache__/
