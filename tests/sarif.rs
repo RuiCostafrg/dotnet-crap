@@ -205,7 +205,8 @@ fn literal_backslashes_in_source_root_remain_literal_uri_bytes() {
     assert!(!base.ends_with("/source/root/"));
 }
 
-#[cfg(unix)]
+// APFS rejects invalid UTF-8 path components before the CLI can inspect them.
+#[cfg(all(unix, not(target_os = "macos")))]
 #[test]
 fn non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri() {
     use std::{ffi::OsString, os::unix::ffi::OsStringExt};
