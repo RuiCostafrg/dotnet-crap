@@ -33,3 +33,14 @@ A fresh full CI result is required before claiming the greater-than-90% target.
 The dependency-security workflow separately runs cargo-audit 0.22.2 against the
 committed lockfile and denies advisory warnings as well as vulnerabilities. A
 passing mutation score is not a substitute for that audit or code review.
+
+## Evidence paths and retention
+
+Each invocation reserves `target/mutation-runs/run-<random>/`; cargo-mutants writes
+its inventory, outcomes and logs in the `mutants.out/` child. CI uploads the
+`target/mutation-runs/run-*/` artifact tree. Local runs retain the latest five
+completed invocation directories by default; `--keep-runs N` adjusts this positive
+limit. Current and active runs are never pruned. Interrupted runs without the
+completion marker are retained for investigation and can be removed manually
+once their processes are stopped. CI artifacts follow GitHub retention settings;
+copy important evidence to a durable report before that retention period ends.

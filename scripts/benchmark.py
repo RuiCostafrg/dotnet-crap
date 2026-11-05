@@ -114,7 +114,9 @@ def main():
             command += ["--coverage", str(coverage), "--require-coverage"]
         for run in range(args.runs + 1):
             started = time.perf_counter()
-            result = subprocess.run(command, capture_output=True, check=True, timeout=args.timeout)
+            # Audited: --binary intentionally selects a local executable. argv
+            # is passed without a shell; quoting elements would corrupt paths.
+            result = subprocess.run(command, capture_output=True, check=True, timeout=args.timeout, shell=False)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit, python.lang.security.audit.dangerous-subprocess-use-tainted-env-args
             elapsed = (time.perf_counter() - started) * 1000
             report = json.loads(result.stdout)
             validate_report(report, args.files, args.coverage)
