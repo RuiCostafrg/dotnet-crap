@@ -84,6 +84,22 @@ class MutationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "runner failed"):
                 gate.run_gate(runner=lambda *a, **k: SimpleNamespace(returncode=1), evidence_root=Path(tmp))
 
+    def test_retention_preserves_current_and_active_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            active = root / "run-active"
+            active.mkdir()
+            def runner(command, **kwargs):
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", [parent.name], {"caught": [parent.name]})
+                return SimpleNamespace(returncode=0)
+            for _ in range(4):
+                latest = gate.run_gate(runner=runner, evidence_root=root, keep_runs=2)
+            self.assertTrue(latest.exists())
+            self.assertTrue(active.exists())
+            self.assertEqual(len(list(root.glob("run-*/.complete"))), 2)
+
+
 
 class BenchmarkTests(unittest.TestCase):
     @staticmethod

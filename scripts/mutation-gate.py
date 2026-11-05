@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Run cargo-mutants in an invocation-private evidence directory."""
+import argparse
 import json
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -50,28 +52,58 @@ def check_score(counts):
     return score
 
 
-def run_gate(runner=subprocess.run, evidence_root=pathlib.Path("target/mutation-runs")):
+def prune_evidence(root, current, keep):
+    completed = []
+    for directory in root.glob("run-*"):
+        if directory == current or directory.is_symlink():
+            continue
+        marker = directory / ".complete"
+        if marker.is_file() and marker.read_text() == "dotnet-crap-mutation-v1":
+            completed.append(directory)
+    completed.sort(key=lambda p: p.stat().st_mtime_ns, reverse=True)
+    for directory in completed[keep - 1:]:
+        shutil.rmtree(directory)
+
+
+def run_gate(runner=subprocess.run, evidence_root=pathlib.Path("target/mutation-runs"), keep_runs=5):
+    if keep_runs < 1:
+        raise ValueError("keep_runs must be at least one")
+    evidence_root = evidence_root.resolve()
     evidence_root.mkdir(parents=True, exist_ok=True)
-    # mkdtemp reserves an unpredictable directory atomically, even for calls
-    # from multiple threads within one process. Retain evidence after failure.
-    parent = pathlib.Path(tempfile.mkdtemp(prefix="run-", dir=evidence_root)).resolve()
+    parent = pathlib.Path(tempfile.mkdtemp(prefix="run-", dir=evidence_root))
     out = parent / "mutants.out"
     print(f"evidence={out}", flush=True)
     command = ["cargo", "mutants", "--output", str(parent), "--jobs", "2",
                "--jobserver-tasks", "2", "--timeout", "120", "--build-timeout", "600", "-C", "--locked"]
-    result = runner(command, check=False)
-    if result.returncode not in (0, 2, 3):
-        raise ValueError(f"Mutation runner failed with status {result.returncode}; evidence retained at {out}")
-    counts, total = read_inventory(out)
-    print(f"total={total} " + " ".join(f"{k}={v}" for k, v in counts.items()), flush=True)
-    score = check_score(counts)
-    print(f"score={score:.2f}% (caught / (caught + missed + timeout))")
-    return out
+    finished = False
+    try:
+        try:
+            result = runner(command, check=False)
+        except OSError:
+            finished = True
+            raise
+        finished = True
+        if result.returncode not in (0, 2, 3):
+            raise ValueError(f"Mutation runner failed with status {result.returncode}; evidence retained at {out}")
+        counts, total = read_inventory(out)
+        print(f"total={total} " + " ".join(f"{k}={v}" for k, v in counts.items()), flush=True)
+        score = check_score(counts)
+        print(f"score={score:.2f}% (caught / (caught + missed + timeout))")
+        return out
+    finally:
+        # Never mark an interrupted process as complete or prune active runs.
+        if finished:
+            (parent / ".complete").write_text("dotnet-crap-mutation-v1")
+            prune_evidence(evidence_root, parent, keep_runs)
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--keep-runs", type=int, default=5,
+                        help="completed evidence runs to retain, including this run (default: 5)")
+    args = parser.parse_args()
     try:
-        run_gate()
+        run_gate(keep_runs=args.keep_runs)
     except (OSError, ValueError, TypeError) as error:
         sys.exit(f"Mutation gate failed: {error}")
 
