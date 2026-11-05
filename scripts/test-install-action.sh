@@ -94,7 +94,9 @@ done
 tls_safe '--connect-timeout 20' || fail "TLS check rejected safe arguments"
 while IFS= read -r line; do
   [[ "$line" == *"--connect-timeout 20"* ]] || fail "request lacks connect timeout: $line"
-  [[ "$line" == *"--max-time 300"* ]] || fail "request lacks total timeout: $line"
+  [[ " $line " == *" --max-time 240 "* ]] || fail "request lacks attempt timeout: $line"
+  [[ " $line " == *" --retry-max-time 60 "* ]] || fail "request lacks retry window: $line"
+  [[ " $line " == *" --retry 3 "* ]] || fail "request lacks bounded retry count: $line"
   [[ "$line" == *"--proto =https"* && "$line" == *"--proto-redir =https"* ]] || fail "request is not HTTPS-only: $line"
   tls_safe "$line" || fail "request disables TLS verification: $line"
 done < "$work/curl.log"

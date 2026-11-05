@@ -58,5 +58,12 @@ protection. These scripts are not invoked for publication by the release workflo
 Local packaging validation uses an explicit NuGet configuration with cleared
 inherited sources plus an invocation-specific package cache, so another feed or
 cached package with the same ID/version cannot substitute for the package under
-test. The smoke test also compares the installed native bytes with the locally
-built executable.
+test. The smoke test compares the native bytes in both concurrent packages and
+the installed executable with the local build input.
+
+Installer downloads allow three retries within a 60-second retry-start window,
+with a 20-second connection timeout and a 240-second limit per attempt. This
+budgets at most 300 seconds per asset request, including its final attempt.
+See [curl's retry-time semantics](https://curl.se/docs/manpage.html#--retry-max-time).
+Packages published to the local feed have mode `0644`, including under a restrictive
+caller umask; existing differing package bytes are still rejected.

@@ -20,6 +20,8 @@ public static class NativeLauncher
     private const UnixFileMode PrivateDirectoryMode =
         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
 
+    /// <summary>Returns the bundled runtime identifier supported by the current OS and architecture.</summary>
+    /// <returns>The supported runtime identifier, or <see langword="null"/> when this launcher has no matching binary.</returns>
     public static string? CurrentRuntimeIdentifier()
     {
         if (OperatingSystem.IsWindows())
@@ -47,8 +49,15 @@ public static class NativeLauncher
         return null;
     }
 
+    /// <summary>Gets the native executable file name for a runtime identifier.</summary>
+    /// <param name="rid">Runtime identifier used to select the platform-specific file name.</param>
+    /// <returns><c>dotnet-crap.exe</c> for <c>win-x64</c>; otherwise <c>dotnet-crap</c>.</returns>
     public static string ExecutableName(string rid) => rid == "win-x64" ? "dotnet-crap.exe" : "dotnet-crap";
 
+    /// <summary>Builds the path to the native executable bundled with the launcher.</summary>
+    /// <param name="appBaseDirectory">Directory containing the launcher application.</param>
+    /// <param name="rid">Runtime identifier subdirectory under <c>native</c>.</param>
+    /// <returns>The combined path to the native executable.</returns>
     public static string NativeExecutablePath(string appBaseDirectory, string rid) =>
         Path.Combine(appBaseDirectory, "native", rid, ExecutableName(rid));
 
@@ -56,7 +65,12 @@ public static class NativeLauncher
     /// Runs the native executable with <paramref name="arguments"/> passed through unchanged and
     /// returns its exit code. Launcher-side failures return 2 and are written to <paramref name="error"/>.
     /// </summary>
+    /// <param name="appBaseDirectory">Directory containing the launcher application and bundled native files.</param>
+    /// <param name="rid">Runtime identifier selecting the native executable.</param>
+    /// <param name="arguments">Arguments passed to the native executable in order.</param>
+    /// <param name="error">Writer for launcher-side error messages.</param>
     /// <param name="temporaryRoot">Parent for the private copy; defaults to <see cref="Path.GetTempPath"/>.</param>
+    /// <returns>The native executable's exit code, or 2 when the launcher cannot start it.</returns>
     public static async Task<int> RunAsync(
         string appBaseDirectory,
         string rid,
@@ -75,6 +89,13 @@ public static class NativeLauncher
         }
     }
 
+    /// <summary>Locates the bundled executable and chooses the direct or private-copy launch path.</summary>
+    /// <param name="appBaseDirectory">Directory containing the launcher application.</param>
+    /// <param name="rid">Runtime identifier selecting the native executable.</param>
+    /// <param name="arguments">Arguments passed to the native executable in order.</param>
+    /// <param name="error">Writer for launcher-side error messages.</param>
+    /// <param name="temporaryRoot">Parent directory for a private executable copy, when needed.</param>
+    /// <returns>The child exit code or 2 when the executable is missing or cannot be launched.</returns>
     private static async Task<int> RunCoreAsync(string appBaseDirectory, string rid,
         IReadOnlyList<string> arguments, TextWriter error, string? temporaryRoot)
     {
@@ -105,6 +126,13 @@ public static class NativeLauncher
         return await RunPrivateCopyAsync(installed, ExecutableName(rid), arguments, error, temporaryRoot);
     }
 
+    /// <summary>Copies the native file into a private directory, launches it, then removes that directory.</summary>
+    /// <param name="installed">Path to the bundled native file.</param>
+    /// <param name="fileName">File name to use for the private copy.</param>
+    /// <param name="arguments">Arguments passed to the copied executable in order.</param>
+    /// <param name="error">Writer for launcher-side error messages.</param>
+    /// <param name="temporaryRoot">Parent directory for the private directory.</param>
+    /// <returns>The child exit code or 2 when preparation or launch fails.</returns>
     [UnsupportedOSPlatform("windows")]
     private static async Task<int> RunPrivateCopyAsync(
         string installed,
@@ -160,6 +188,11 @@ public static class NativeLauncher
 
     private readonly record struct StartOutcome(int ExitCode, bool PermissionDenied);
 
+    /// <summary>Starts a process with the supplied argument list and waits for it to exit.</summary>
+    /// <param name="executable">Path to the executable.</param>
+    /// <param name="arguments">Arguments passed to the executable in order.</param>
+    /// <param name="error">Writer for launch errors other than Unix permission denial.</param>
+    /// <returns>The child exit code and whether launch failed with Unix permission denial.</returns>
     private static async Task<StartOutcome> StartAsync(string executable, IReadOnlyList<string> arguments, TextWriter error)
     {
         var start = new ProcessStartInfo(executable) { UseShellExecute = false };
@@ -191,6 +224,10 @@ public static class NativeLauncher
         }
     }
 
+    /// <summary>Creates a uniquely named directory with owner-only permissions.</summary>
+    /// <param name="root">Parent directory in which to create the private directory.</param>
+    /// <returns>The path of the created directory.</returns>
+    /// <exception cref="IOException">No unique directory could be allocated after the retry limit.</exception>
     [UnsupportedOSPlatform("windows")]
     private static string CreatePrivateDirectory(string root)
     {
@@ -209,6 +246,9 @@ public static class NativeLauncher
         throw new IOException("Could not allocate a unique private launcher directory.");
     }
 
+    /// <summary>Attempts to remove a private directory and reports cleanup failures.</summary>
+    /// <param name="path">Directory to remove recursively.</param>
+    /// <param name="error">Writer for a warning if removal fails.</param>
     private static void RemovePrivateDirectory(string path, TextWriter error)
     {
         try

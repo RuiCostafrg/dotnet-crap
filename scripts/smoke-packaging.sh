@@ -50,6 +50,7 @@ import hashlib, json, os, stat, sys
 root, output = sys.argv[1:]
 entries = []
 def visit(path, relative):
+    """Snapshot entry type, mode and bytes without following symbolic links."""
     try:
         info = os.lstat(path)
     except FileNotFoundError:
@@ -104,15 +105,16 @@ nupkg_a="$work/stage-a/feed/dotnet-crap.$version.nupkg"
 nupkg_b="$work/stage-b/feed/dotnet-crap.$version.nupkg"
 [[ -f "$nupkg_a" && -f "$nupkg_b" ]] || fail "expected packages were not written to each feed"
 
-# Inspect archive entries only; -I ignores environment and current-directory Python imports.
-python3 -I - "$nupkg_a" "$nupkg_b" "$rid" "$version" <<'PY'
+# Inspect archive entries and native bytes; -I isolates Python's import environment.
+python3 -I - "$nupkg_a" "$nupkg_b" "$rid" "$version" "$native" <<'PY'
 import sys
 import zipfile
 
-nupkg_a, nupkg_b, rid, version = sys.argv[1:5]
+nupkg_a, nupkg_b, rid, version, native_path = sys.argv[1:6]
 expected_native = f"tools/net10.0/any/native/{rid}/dotnet-crap"
 
 def entries(path):
+    """List package entries excluding the randomized core-properties metadata name."""
     # NuGet names its core-properties part with a random GUID; ignore that metadata-only name.
     with zipfile.ZipFile(path) as archive:
         return sorted(name for name in archive.namelist()
@@ -125,6 +127,12 @@ if names_a != names_b:
 natives = [name for name in names_a if name.startswith("tools/net10.0/any/native/")]
 if natives != [expected_native]:
     sys.exit(f"expected only {expected_native}, found {natives}")
+with open(native_path, "rb") as source:
+    expected_bytes = source.read()
+for path in (nupkg_a, nupkg_b):
+    with zipfile.ZipFile(path) as archive:
+        if archive.read(expected_native) != expected_bytes:
+            sys.exit(f"{path}: native entry differs from the local build input")
 for required in ("tools/net10.0/any/dotnet-crap-launcher.dll", "dotnet-crap.nuspec", "README.md"):
     if required not in names_a:
         sys.exit(f"package lacks {required}")

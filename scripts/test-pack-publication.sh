@@ -17,7 +17,7 @@ exit 1
 FAKE
 chmod +x "$work/bin/dotnet"
 for value in first second; do
-  PATH="$work/bin:$PATH" DOTNET_CRAP_LOCAL_RID=linux-x64 FAKE_PACKAGE="$value" bash "$root/scripts/pack-dotnet-tool.sh" "$work/stage" 1.2.3 > "$work/$value.log" 2>&1 &
+  (umask 077; PATH="$work/bin:$PATH" DOTNET_CRAP_LOCAL_RID=linux-x64 FAKE_PACKAGE="$value" bash "$root/scripts/pack-dotnet-tool.sh" "$work/stage" 1.2.3) > "$work/$value.log" 2>&1 &
   if [[ "$value" == first ]]; then first=$!; else second=$!; fi
 done
 status1=0; status2=0
@@ -27,6 +27,11 @@ if ! { [[ "$status1" == 0 && "$status2" != 0 ]] || [[ "$status1" != 0 && "$statu
   cat "$work/first.log" "$work/second.log" >&2; echo 'FAIL: expected exactly one differing package to win' >&2; exit 1
 fi
 winner="$(cat "$work/stage/feed/dotnet-crap.1.2.3.nupkg")"
+python3 -I - "$work/stage/feed/dotnet-crap.1.2.3.nupkg" <<'PY'
+import os, stat, sys
+mode = stat.S_IMODE(os.stat(sys.argv[1]).st_mode)
+assert mode == 0o644, f"published package mode is {mode:o}, expected 644"
+PY
 [[ "$winner" == first || "$winner" == second ]] || exit 1
 PATH="$work/bin:$PATH" DOTNET_CRAP_LOCAL_RID=linux-x64 FAKE_PACKAGE="$winner" bash "$root/scripts/pack-dotnet-tool.sh" "$work/stage" 1.2.3 >/dev/null
 [[ "$(cat "$work/stage/feed/dotnet-crap.1.2.3.nupkg")" == "$winner" ]]

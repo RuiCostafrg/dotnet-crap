@@ -59,6 +59,8 @@ mkdir -p "$stage/feed"
 partial="$(mktemp "$stage/feed/.package.XXXXXX")"
 trap 'rm -f "$partial"; rm -rf "$work"' EXIT
 cp "${packages[0]}" "$partial"
+# mktemp starts at 0600; publish a readable package regardless of caller umask.
+chmod 644 "$partial"
 destination="$stage/feed/$(basename "${packages[0]}")"
 # A hard link creates the final name exclusively and atomically on the same filesystem.
 if ! ln "$partial" "$destination" 2>/dev/null; then

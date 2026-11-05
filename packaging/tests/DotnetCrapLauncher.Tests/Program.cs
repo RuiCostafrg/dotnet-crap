@@ -22,6 +22,8 @@ internal static class Program
         "--root", "dir with spaces", "", "quote\"d", "-x", "--", "unicode-é", "back\\slash", "$HOME", "*", "line one\nline two",
     ];
 
+    /// <summary>Runs each launcher check and returns a failing process status if any check fails.</summary>
+    /// <returns>Zero when all applicable checks pass; otherwise one.</returns>
     public static async Task<int> Main()
     {
         var tests = new (string Name, Func<Task> Run, bool UnixOnly)[]
@@ -68,12 +70,14 @@ internal static class Program
         return failed == 0 ? 0 : 1;
     }
 
+    /// <summary>Checks that the current host maps to one of the launcher's supported runtime identifiers.</summary>
     private static void RuntimeIdentifierIsSupported()
     {
         var rid = NativeLauncher.CurrentRuntimeIdentifier();
         Check(rid is "linux-x64" or "linux-arm64" or "osx-x64" or "osx-arm64" or "win-x64", $"unexpected RID {rid ?? "<null>"}");
     }
 
+    /// <summary>Checks platform-specific executable naming and native path construction.</summary>
     private static void WindowsExecutableNameIsUnchanged()
     {
         Equal("dotnet-crap.exe", NativeLauncher.ExecutableName("win-x64"), "win-x64 executable");
@@ -81,6 +85,7 @@ internal static class Program
         Equal(Path.Combine("base", "native", "osx-arm64", "dotnet-crap"), NativeLauncher.NativeExecutablePath("base", "osx-arm64"), "native path");
     }
 
+    /// <summary>Checks that a missing bundled executable reports an error and returns exit code 2.</summary>
     private static async Task MissingNativeReportsErrorAsync()
     {
         using var scratch = new Scratch();
@@ -90,6 +95,7 @@ internal static class Program
         Check(run.Stderr.Contains("missing from this installation", StringComparison.Ordinal), $"stderr was: {run.Stderr}");
     }
 
+    /// <summary>Checks direct execution, argument forwarding, output forwarding, and child exit-code forwarding.</summary>
     private static async Task ExecutableNativeRunsDirectlyAsync()
     {
         using var scratch = new Scratch();
@@ -109,6 +115,7 @@ internal static class Program
         Equal(0, Directory.EnumerateFileSystemEntries(scratch.Temp).Count(), "private directories after direct run");
     }
 
+    /// <summary>Checks that direct runs preserve representative child exit codes.</summary>
     private static async Task ExitCodesAreForwardedAsync()
     {
         using var scratch = new Scratch();
@@ -121,6 +128,7 @@ internal static class Program
         }
     }
 
+    /// <summary>Checks that a non-executable bundled file runs through a temporary copy without changing the install.</summary>
     private static async Task NonExecutableNativeUsesPrivateCopyAsync()
     {
         using var scratch = new Scratch();
@@ -142,6 +150,7 @@ internal static class Program
         Equal(0, Directory.EnumerateFileSystemEntries(scratch.Temp).Count(), "private copy leftovers");
     }
 
+    /// <summary>Checks that the temporary copy is removed after the child returns a nonzero exit code.</summary>
     private static async Task PrivateCopyRemovedAfterFailureAsync()
     {
         using var scratch = new Scratch();
@@ -152,6 +161,7 @@ internal static class Program
         Equal(0, Directory.EnumerateFileSystemEntries(scratch.Temp).Count(), "private copy leftovers after failure");
     }
 
+    /// <summary>Checks direct and copy-based launches from install directories without write permission.</summary>
     private static async Task ReadOnlyInstallRunsWithoutWriteAccessAsync()
     {
         if (Environment.UserName == "root")
@@ -179,6 +189,7 @@ internal static class Program
         }
     }
 
+    /// <summary>Checks that an in-place permission denial falls back to executing a private copy.</summary>
     private static async Task OwnerWithoutExecuteFallsBackAsync()
     {
         // Only the group execute bit is set and the test user owns the file, so the kernel refuses
@@ -203,6 +214,7 @@ internal static class Program
         Equal(0, Directory.EnumerateFileSystemEntries(scratch.Temp).Count(), "private copy leftovers after fallback");
     }
 
+    /// <summary>Checks that failure to create the private copy returns 2 and leaves the installed file unchanged.</summary>
     private static async Task PrivateCopyPreparationFailureAsync()
     {
         using var scratch = new Scratch();
@@ -218,6 +230,7 @@ internal static class Program
         Equal(NonExecutableMode, File.GetUnixFileMode(installed), "installed mode after failed preparation");
     }
 
+    /// <summary>Checks argument and exit-code forwarding and cleanup through the in-process launcher API.</summary>
     private static async Task InProcessApiForwardsAndCleansUpAsync()
     {
         using var scratch = new Scratch();
@@ -250,9 +263,14 @@ internal static class Program
         UnixFileMode.UserRead | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
         UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
 
+    /// <summary>Gets the current host's supported runtime identifier for test fixture paths.</summary>
     private static string NativeRid() => NativeLauncher.CurrentRuntimeIdentifier()
         ?? throw new InvalidOperationException("No supported runtime identifier on this host.");
 
+    /// <summary>Writes the fake native executable into the fixture app's native directory.</summary>
+    /// <param name="scratch">Fixture directory structure to populate.</param>
+    /// <param name="mode">Unix file mode to apply to the executable.</param>
+    /// <returns>The path of the created executable.</returns>
     private static string WriteNative(Scratch scratch, UnixFileMode mode)
     {
         var directory = Path.Combine(scratch.App, "native", NativeRid());
@@ -263,6 +281,8 @@ internal static class Program
         return path;
     }
 
+    /// <summary>Copies the launcher build output into the fixture app directory.</summary>
+    /// <param name="scratch">Fixture directory structure to populate.</param>
     private static void InstallLauncher(Scratch scratch)
     {
         var copied = 0;
@@ -274,6 +294,11 @@ internal static class Program
         Check(copied > 0, "launcher build output was not found next to the test assembly");
     }
 
+    /// <summary>Runs the launcher assembly as a child process and captures its output.</summary>
+    /// <param name="scratch">Fixture containing the launcher, native file, and temporary directory.</param>
+    /// <param name="arguments">Arguments passed through the launcher.</param>
+    /// <param name="exitCode">Exit code requested from the fake native executable.</param>
+    /// <returns>The launcher exit code and captured standard output and error.</returns>
     private static async Task<LauncherRun> RunLauncherProcessAsync(Scratch scratch, IReadOnlyList<string> arguments, int exitCode)
     {
         var start = new ProcessStartInfo(DotnetHost()) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
@@ -293,8 +318,12 @@ internal static class Program
         return new LauncherRun(process.ExitCode, await stdout, await stderr);
     }
 
+    /// <summary>Gets the configured dotnet host path, falling back to the <c>dotnet</c> command.</summary>
     private static string DotnetHost() => Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") is { Length: > 0 } host ? host : "dotnet";
 
+    /// <summary>Reads the fake executable's NUL-delimited record of its path and arguments.</summary>
+    /// <param name="path">Path to the record file.</param>
+    /// <returns>The recorded executable path followed by its arguments.</returns>
     private static IReadOnlyList<string> ReadRecord(string path)
     {
         Check(File.Exists(path), "the fake native executable did not write its argv record");
@@ -304,9 +333,15 @@ internal static class Program
         return parts[..^1];
     }
 
+    /// <summary>Applies a Unix file mode to a path.</summary>
+    /// <param name="path">File or directory to update.</param>
+    /// <param name="mode">Mode to apply.</param>
     [UnsupportedOSPlatform("windows")]
     private static void SetUnixMode(string path, UnixFileMode mode) => File.SetUnixFileMode(path, mode);
 
+    /// <summary>Throws an <see cref="InvalidOperationException"/> when a test condition is false.</summary>
+    /// <param name="condition">Condition that must be true.</param>
+    /// <param name="message">Failure description.</param>
     private static void Check(bool condition, string message)
     {
         if (!condition)
@@ -315,6 +350,11 @@ internal static class Program
         }
     }
 
+    /// <summary>Checks equality and reports the expected and actual values on failure.</summary>
+    /// <typeparam name="T">Value type being compared.</typeparam>
+    /// <param name="expected">Expected value.</param>
+    /// <param name="actual">Observed value.</param>
+    /// <param name="label">Description of the checked value.</param>
     private static void Equal<T>(T expected, T actual, string label)
     {
         if (!EqualityComparer<T>.Default.Equals(expected, actual))
@@ -323,6 +363,10 @@ internal static class Program
         }
     }
 
+    /// <summary>Checks two argument lists for equal length and ordinal element equality.</summary>
+    /// <param name="expected">Expected arguments.</param>
+    /// <param name="actual">Observed arguments.</param>
+    /// <param name="label">Description used in failure messages.</param>
     private static void SameArguments(IReadOnlyList<string> expected, IReadOnlyList<string> actual, string label)
     {
         Check(expected.Count == actual.Count, $"{label}: expected {expected.Count} arguments but got {actual.Count}");
@@ -337,6 +381,7 @@ internal static class Program
 
     private sealed class Scratch : IDisposable
     {
+        /// <summary>Creates an isolated app and temporary directory for a launcher check.</summary>
         public Scratch()
         {
             Root = Path.Combine(Path.GetTempPath(), "dotnet-crap-launcher-tests-" + Guid.NewGuid().ToString("N"));
@@ -351,6 +396,7 @@ internal static class Program
         public string Temp { get; }
         public string Record => Path.Combine(Root, "record.bin");
 
+        /// <summary>Removes the fixture directory and restores write access where needed.</summary>
         public void Dispose()
         {
             try
@@ -367,6 +413,8 @@ internal static class Program
             }
         }
 
+        /// <summary>Restores owner write and traversal permissions throughout a fixture tree.</summary>
+        /// <param name="root">Root directory of the fixture tree.</param>
         [UnsupportedOSPlatform("windows")]
         private static void MakeWritable(string root)
         {
@@ -387,17 +435,23 @@ internal static class Program
     {
         private readonly Dictionary<string, string?> _previous = new(StringComparer.Ordinal);
 
+        /// <summary>Creates an environment override that directs the fake executable's record file.</summary>
+        /// <param name="scratch">Fixture whose record path is used.</param>
         public EnvironmentOverride(Scratch scratch)
         {
             Set("DOTNET_CRAP_TEST_RECORD", scratch.Record);
         }
 
+        /// <summary>Sets an environment variable while saving its original value for disposal.</summary>
+        /// <param name="name">Environment variable name.</param>
+        /// <param name="value">Value to set.</param>
         public void Set(string name, string value)
         {
             _previous.TryAdd(name, Environment.GetEnvironmentVariable(name));
             Environment.SetEnvironmentVariable(name, value);
         }
 
+        /// <summary>Restores the environment variables changed by this fixture.</summary>
         public void Dispose()
         {
             foreach (var (name, value) in _previous)
