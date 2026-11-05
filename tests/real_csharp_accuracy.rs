@@ -49,12 +49,12 @@ fn check(file: &str, name: &str, complexity: u64, lines: &[(&str, u64)], expecte
 #[test]
 /// Count stacked non-default labels separately using the real switch fixture.
 fn stacked_switch() {
-    check("Switch.cs", "Pick", 3, &[("5", 1), ("6", 0)], 4.125);
+    check("Switch.cs", "Pick", 3, &[("6", 1), ("7", 0)], 4.125);
 }
 #[test]
 /// Check the real branch fixture's loops, Boolean operators, coalescing and catch decisions.
 fn branches() {
-    check("Branches.cs", "Run", 5, &[("4", 1), ("5", 0)], 8.125);
+    check("Branches.cs", "Run", 5, &[("5", 1), ("6", 0)], 8.125);
 }
 #[test]
 /// Keep the physical fixture's local function decisions and coverage separate from its parent.
@@ -63,7 +63,7 @@ fn nested_ownership() {
         "Nested.cs",
         "Outer",
         2,
-        &[("3", 1), ("4", 1), ("5", 0)],
+        &[("5", 1), ("6", 1), ("7", 0)],
         2.5,
     );
 }

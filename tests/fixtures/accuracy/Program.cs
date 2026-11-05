@@ -6,15 +6,19 @@ using System.Text.Json;
 
 static class Hits {
     public static readonly Dictionary<string, Dictionary<int, ulong>> Files = new() {
-        ["Switch.cs"] = new() { [5] = 0, [6] = 0 },
-        ["Branches.cs"] = new() { [4] = 0, [5] = 0 },
-        ["Nested.cs"] = new() { [3] = 0, [4] = 0, [5] = 0 }
+        ["Switch.cs"] = new() { [6] = 0, [7] = 0 },
+        ["Branches.cs"] = new() { [5] = 0, [6] = 0 },
+        ["Nested.cs"] = new() { [5] = 0, [6] = 0, [7] = 0 }
     };
+    /// <summary>Increment the explicitly registered source-line probe.</summary>
     public static void Mark(string file, int line) => Files[file][line]++;
+    /// <summary>Record local callable execution and preserve its return value.</summary>
     public static int Value(string file, int line, int value) { Mark(file, line); return value; }
 }
 class Program {
+    /// <summary>Invoke a fixture's private callable without changing its scanner declaration.</summary>
     static object Invoke(object target, string method, params object[] args) => target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(target, args)!;
+    /// <summary>Run partial or full probe paths, assert runtime outcomes and write hit counts.</summary>
     static void Main(string[] args) {
         if ((int)Invoke(new SwitchFixture(), "Pick", 2) != 1) throw new Exception("switch");
         if ((int)Invoke(new BranchesFixture(), "Run", "abc", true, true) != 3) throw new Exception("branches");
