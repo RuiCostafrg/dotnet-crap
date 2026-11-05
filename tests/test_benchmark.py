@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def module(name, path):
+    """Load a tooling script without invoking its command-line entry point."""
     spec = importlib.util.spec_from_file_location(name, ROOT / path)
     result = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(result)
@@ -23,6 +24,7 @@ benchmark = module("benchmark", "scripts/benchmark.py")
 class BenchmarkTests(unittest.TestCase):
     @staticmethod
     def report(covered):
+        """Return independent expected scores for the two generated C# callables."""
         return {"files_scanned": 1, "failed": False, "functions": [
             {"file": "C000000.cs", "name": "F", "complexity": 3,
              "coverage": 0.5 if covered else None, "crap": 4.125 if covered else 12.0},
@@ -31,16 +33,19 @@ class BenchmarkTests(unittest.TestCase):
         ]}
 
     def test_generated_corpus_has_independently_calculated_scores(self):
+        """Accept both uncovered and partially covered hand-calculated fixture reports."""
         for covered in (False, True):
             benchmark.validate_report(self.report(covered), 1, covered)
 
     def test_duplicate_identity_cannot_hide_a_missing_function(self):
+        """Reject duplicated F records even when the reported callable count remains correct."""
         report = self.report(False)
         report["functions"][1] = copy.deepcopy(report["functions"][0])
         with self.assertRaises(ValueError):
             benchmark.validate_report(report, 1, False)
 
     def test_bad_complexity_coverage_crap_or_gate_is_rejected(self):
+        """Reject independent corruptions of each score input and the final gate result."""
         for field, value in [("complexity", 2), ("coverage", 1.0), ("crap", 3.0)]:
             report = self.report(True)
             report["functions"][0][field] = value
@@ -52,6 +57,7 @@ class BenchmarkTests(unittest.TestCase):
             benchmark.validate_report(report, 1, False)
 
     def test_output_replacement_and_binary_alias_protection(self):
+        """Replace an ordinary report atomically while preserving the measured executable."""
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "binary"
             binary.write_bytes(b"binary contents")
@@ -66,6 +72,7 @@ class BenchmarkTests(unittest.TestCase):
 
     @unittest.skipIf(__import__('os').name == 'nt', 'symlink/hardlink creation may require Windows privileges')
     def test_output_symlink_and_hardlink_to_binary_are_rejected(self):
+        """Reject filesystem aliases that could overwrite the measured executable."""
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "binary"
             binary.write_text("native")
@@ -84,6 +91,7 @@ class BenchmarkTests(unittest.TestCase):
 
     @unittest.skipIf(__import__('os').name == 'nt', 'Unix executable fixture')
     def test_hung_process_obeys_timeout(self):
+        """Verify a deliberately stalled tooling-only executable exits under the timeout."""
         with tempfile.TemporaryDirectory() as tmp:
             # Tooling-only fake executable, never described as real C# evidence.
             binary = Path(tmp) / "hang"
