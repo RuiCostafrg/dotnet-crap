@@ -17,6 +17,10 @@ one-based start/end lines. Columns are deliberately omitted: existing scanner
 columns count UTF-8 bytes, which do not match SARIF Unicode column conventions.
 The existing JSON shape and scanner locations remain unchanged.
 
+On Unix, filenames containing literal backslashes or colons are supported when
+no coverage input is supplied; SARIF percent-encodes these characters. Scans with
+native coverage reject these names because version 1 cannot address them.
+
 Fingerprints use SHA-256 over rule, path, callable kind/name, and the occurrence
 number among callables sharing that path/kind/name. They remain stable when scores,
 thresholds or coverage change. They are not semantic C# overload identities:
