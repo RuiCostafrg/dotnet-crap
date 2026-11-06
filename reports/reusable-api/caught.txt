@@ -1,0 +1,178 @@
+src/lib.rs:85:9: replace ScanResult::input_paths -> &[PathBuf] with Vec::leak(Vec::new())
+src/lib.rs:85:9: replace ScanResult::input_paths -> &[PathBuf] with Vec::leak(vec![Default::default()])
+src/lib.rs:90:61: replace != with == in ScanResult::verify_sources
+src/lib.rs:89:9: replace ScanResult::verify_sources -> Result<()> with Ok(())
+src/lib.rs:98:9: replace ScanResult::render -> Result<String> with Ok(String::new())
+src/lib.rs:98:9: replace ScanResult::render -> Result<String> with Ok("xyzzy".into())
+src/lib.rs:99:32: replace == with != in ScanResult::render
+src/lib.rs:109:26: replace == with != in ScanResult::render
+src/lib.rs:116:38: replace && with || in ScanResult::render
+src/lib.rs:116:41: delete ! in ScanResult::render
+src/lib.rs:156:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::new())
+src/lib.rs:168:13: replace unique_map::<impl serde::de::Visitor<'de> for Unique<V>>::visit_map -> std::result::Result<Self::Value, M::Error> with Ok(Default::default())
+src/lib.rs:161:13: replace unique_map::<impl serde::de::Visitor<'de> for Unique<V>>::expecting -> std::fmt::Result with Ok(Default::default())
+src/lib.rs:218:5: replace callable -> bool with true
+src/lib.rs:218:5: replace callable -> bool with false
+src/lib.rs:232:9: replace || with && in callable
+src/lib.rs:229:7: replace && with || in callable
+src/lib.rs:229:51: replace || with && in callable
+src/lib.rs:229:63: replace == with != in callable
+src/lib.rs:233:13: replace && with || in callable
+src/lib.rs:234:43: replace == with != in callable
+src/lib.rs:238:5: replace normalized_text -> String with String::new()
+src/lib.rs:238:5: replace normalized_text -> String with "xyzzy".into()
+src/lib.rs:248:5: replace parameter_types -> String with String::new()
+src/lib.rs:248:5: replace parameter_types -> String with "xyzzy".into()
+src/lib.rs:256:34: replace == with != in parameter_types
+src/lib.rs:259:50: replace == with != in parameter_types
+src/lib.rs:269:5: replace checked_prefix -> &'static str with ""
+src/lib.rs:269:5: replace checked_prefix -> &'static str with "xyzzy"
+src/lib.rs:270:52: replace == with != in checked_prefix
+src/lib.rs:279:5: replace callable_name -> String with String::new()
+src/lib.rs:279:5: replace callable_name -> String with "xyzzy".into()
+src/lib.rs:280:9: delete match arm "operator_declaration" in callable_name
+src/lib.rs:288:9: delete match arm "conversion_operator_declaration" in callable_name
+src/lib.rs:304:9: delete match arm "destructor_declaration" in callable_name
+src/lib.rs:310:9: delete match arm "indexer_declaration" in callable_name
+src/lib.rs:323:5: replace decision -> u32 with 0
+src/lib.rs:323:5: replace decision -> u32 with 1
+src/lib.rs:324:9: delete match arm "if_statement" | "for_statement" | "foreach_statement" | "while_statement" | "do_statement" | "catch_clause" | "conditional_expression" | "when_clause" in decision
+src/lib.rs:332:9: delete match arm "switch_section" in decision
+src/lib.rs:340:9: delete match arm "switch_expression_arm" in decision
+src/lib.rs:349:9: delete match arm "binary_expression" | "assignment_expression" in decision
+src/lib.rs:336:46: replace == with != in decision
+src/lib.rs:345:54: replace != with == in decision
+src/lib.rs:373:5: replace collect -> Result<()> with Ok(())
+src/lib.rs:376:17: replace += with -= in collect
+src/lib.rs:376:17: replace += with *= in collect
+src/lib.rs:377:20: replace > with == in collect
+src/lib.rs:377:20: replace > with < in collect
+src/lib.rs:377:20: replace > with >= in collect
+src/lib.rs:383:12: delete ! in collect
+src/lib.rs:391:20: replace += with -= in collect
+src/lib.rs:391:20: replace += with *= in collect
+src/lib.rs:392:23: replace > with == in collect
+src/lib.rs:392:23: replace > with < in collect
+src/lib.rs:392:23: replace > with >= in collect
+src/lib.rs:395:23: replace && with || in collect
+src/lib.rs:395:16: delete ! in collect
+src/lib.rs:396:58: replace + with - in collect
+src/lib.rs:396:58: replace + with * in collect
+src/lib.rs:396:87: replace + with - in collect
+src/lib.rs:396:87: replace + with * in collect
+src/lib.rs:421:67: replace + with - in collect
+src/lib.rs:421:67: replace + with * in collect
+src/lib.rs:421:96: replace + with - in collect
+src/lib.rs:421:96: replace + with * in collect
+src/lib.rs:423:75: replace <= with > in collect
+src/lib.rs:424:34: replace || with && in collect
+src/lib.rs:424:29: replace == with != in collect
+src/lib.rs:424:60: replace < with == in collect
+src/lib.rs:424:60: replace < with > in collect
+src/lib.rs:424:60: replace < with <= in collect
+src/lib.rs:424:53: replace - with + in collect
+src/lib.rs:424:53: replace - with / in collect
+src/lib.rs:425:27: replace += with -= in collect
+src/lib.rs:425:27: replace += with *= in collect
+src/lib.rs:426:25: replace += with -= in collect
+src/lib.rs:426:25: replace += with *= in collect
+src/lib.rs:426:45: replace > with == in collect
+src/lib.rs:426:45: replace > with < in collect
+src/lib.rs:426:45: replace > with >= in collect
+src/lib.rs:429:20: replace > with == in collect
+src/lib.rs:429:20: replace > with < in collect
+src/lib.rs:429:44: replace / with % in collect
+src/lib.rs:429:44: replace / with * in collect
+src/lib.rs:431:26: replace - with + in collect
+src/lib.rs:436:42: replace + with - in collect
+src/lib.rs:431:26: replace - with / in collect
+src/lib.rs:436:42: replace + with * in collect
+src/lib.rs:437:47: replace + with - in collect
+src/lib.rs:438:44: replace + with - in collect
+src/lib.rs:437:47: replace + with * in collect
+src/lib.rs:438:44: replace + with * in collect
+src/lib.rs:441:66: replace + with - in collect
+src/lib.rs:441:66: replace + with * in collect
+src/lib.rs:441:49: replace * with + in collect
+src/lib.rs:441:49: replace * with / in collect
+src/lib.rs:448:5: replace decode_source -> Result<String> with Ok(String::new())
+src/lib.rs:448:5: replace decode_source -> Result<String> with Ok("xyzzy".into())
+src/lib.rs:448:41: replace || with && in decode_source
+src/lib.rs:449:27: replace == with != in decode_source
+src/lib.rs:451:12: delete ! in decode_source
+src/lib.rs:477:5: replace terminal_safe -> String with String::new()
+src/lib.rs:477:5: replace terminal_safe -> String with "xyzzy".into()
+src/lib.rs:490:36: replace || with && in scan
+src/lib.rs:490:8: delete ! in scan
+src/lib.rs:490:54: replace < with == in scan
+src/lib.rs:490:54: replace < with > in scan
+src/lib.rs:490:54: replace < with <= in scan
+src/lib.rs:494:8: delete ! in scan
+src/lib.rs:506:22: replace != with == in scan
+src/lib.rs:519:17: replace || with && in scan
+src/lib.rs:518:17: replace || with && in scan
+src/lib.rs:517:17: replace || with && in scan
+src/lib.rs:516:17: replace || with && in scan
+src/lib.rs:515:17: replace || with && in scan
+src/lib.rs:514:17: replace || with && in scan
+src/lib.rs:511:17: replace || with && in scan
+src/lib.rs:513:30: delete ! in scan
+src/lib.rs:515:59: replace || with && in scan
+src/lib.rs:515:52: replace == with != in scan
+src/lib.rs:515:67: replace == with != in scan
+src/lib.rs:518:35: replace != with == in scan
+src/lib.rs:519:20: delete ! in scan
+src/lib.rs:526:40: replace && with || in scan
+src/lib.rs:526:36: replace > with == in scan
+src/lib.rs:526:36: replace > with < in scan
+src/lib.rs:526:36: replace > with >= in scan
+src/lib.rs:526:57: replace == with != in scan
+src/lib.rs:546:12: delete ! in scan
+src/lib.rs:562:21: replace || with && in scan
+src/lib.rs:561:27: replace == with != in scan
+src/lib.rs:562:24: delete ! in scan
+src/lib.rs:563:25: replace || with && in scan
+src/lib.rs:563:51: replace && with || in scan
+src/lib.rs:568:17: replace && with || in scan
+src/lib.rs:575:21: replace && with || in scan
+src/lib.rs:574:21: replace && with || in scan
+src/lib.rs:573:20: delete ! in scan
+src/lib.rs:574:24: delete ! in scan
+src/lib.rs:575:24: delete ! in scan
+src/lib.rs:598:31: replace && with || in scan
+src/lib.rs:608:16: delete ! in scan
+src/lib.rs:614:67: replace > with == in scan
+src/lib.rs:614:67: replace > with < in scan
+src/lib.rs:614:67: replace > with >= in scan
+src/lib.rs:638:9: replace || with && in scan
+src/lib.rs:637:9: replace || with && in scan
+src/lib.rs:636:46: replace > with == in scan
+src/lib.rs:636:46: replace > with < in scan
+src/lib.rs:636:46: replace > with >= in scan
+src/lib.rs:637:34: replace && with || in scan
+src/lib.rs:637:37: delete ! in scan
+src/lib.rs:638:31: replace && with || in scan
+src/main.rs:35:5: replace run -> Result<bool> with Ok(true)
+src/main.rs:35:5: replace run -> Result<bool> with Ok(false)
+src/main.rs:44:9: delete match arm "json" in run
+src/main.rs:45:9: delete match arm "sarif" in run
+src/main.rs:75:21: replace && with || in run
+src/main.rs:74:21: replace && with || in run
+src/main.rs:98:5: replace main with ()
+src/sarif.rs:16:5: replace render -> Result<String> with Ok(String::new())
+src/sarif.rs:16:5: replace render -> Result<String> with Ok("xyzzy".into())
+src/sarif.rs:28:21: replace += with -= in render
+src/sarif.rs:28:21: replace += with *= in render
+src/sarif.rs:29:22: replace > with == in render
+src/sarif.rs:29:22: replace > with < in render
+src/sarif.rs:29:22: replace > with >= in render
+src/sarif.rs:41:29: replace && with || in render
+src/sarif.rs:51:22: replace && with || in render
+src/sarif.rs:80:5: replace result -> Value with Default::default()
+src/sarif.rs:92:5: replace uri -> String with String::new()
+src/sarif.rs:92:5: replace uri -> String with "xyzzy".into()
+src/sarif.rs:94:38: replace || with && in uri
+src/sarif.rs:108:5: replace root_uri -> String with String::new()
+src/sarif.rs:108:5: replace root_uri -> String with "xyzzy".into()
+src/sarif.rs:108:30: replace && with || in root_uri
+src/sarif.rs:108:33: delete ! in root_uri

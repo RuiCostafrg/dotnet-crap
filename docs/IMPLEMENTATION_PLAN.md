@@ -1,5 +1,9 @@
 # Parity implementation batches
 
+The initial implementation batch is merged. See [PLAN.md](../PLAN.md) for the
+current ordered backlog, acceptance criteria and integration gates. This document
+retains the original batch design and broader milestone context.
+
 All production changes belong to `RuiCostafrg/dotnet-crap`. The sibling
 TypeScript repository is a read-only behavioral reference, inspected at commit
 `4d86589163270ab81cd3b0603a27d558f17bfe04` on 2026-11-04. The detailed
@@ -9,7 +13,7 @@ turns that map into reviewable implementation batches; it does not claim parity.
 ## Architecture and repository boundaries
 
 Keep the Rust application and .NET packaging in this repository. Preserve
-`src/main.rs` as the eventual thin clap/process adapter, extracting cohesive
+`src/main.rs` as the thin clap/process adapter, extracting cohesive
 `analysis`, `coverage`, `selection`, `config`, `baseline`, and `report` modules
 behind `src/lib.rs`. Define scan options and typed reports at the library boundary;
 keep filesystem/process policy outside pure scoring and rendering. Extract modules
@@ -43,23 +47,34 @@ Do not merge feature PRs automatically.
 
 ## Initial batch review stack
 
-The initial batch is implemented as separate, unmerged PRs. The branch stack is
+The initial batch was implemented as separate PRs. The original branch stack was
 [#2 plan/performance](https://github.com/RuiCostafrg/dotnet-crap/pull/2), then
 [#3 mutation gate](https://github.com/RuiCostafrg/dotnet-crap/pull/3), then
 [#4 SARIF](https://github.com/RuiCostafrg/dotnet-crap/pull/4), then
 [#5 C# callables](https://github.com/RuiCostafrg/dotnet-crap/pull/5).
-The final branch includes the complete batch so its CI mutation job evaluates all
-production sources together. Per-feature historical measurements remain evidence
-for their recorded SHAs; they do not substitute for this combined run. No PR is
-merged automatically. Subsequent batches below remain planned, not implemented.
+PRs #2–#9 are now merged into `main` at `c1c78cd`. The final reviewed tree's full
+mutation run caught 171 of 174 viable mutants (98.28%), with 3 missed, no timeouts
+and 2 unviable. Historical measurements remain qualified to their recorded SHAs.
+Tag workflows build artifacts; automatic publication remains disabled. The reusable
+API batch below is now implemented on its feature branch;
+remaining batches stay planned.
 
 ## Subsequent feature PRs, in dependency order
 
-Each numbered item is a separate proposed PR, not an implemented feature.
+Each numbered item is a separate bounded change. Status is explicit below;
+unmarked items remain proposed.
 
-5. **Reusable API:** extract the existing scanner and typed report into a library;
-   keep JSON/exit contracts unchanged. Public API examples and CLI equivalence
-   checks must pass before downstream additions depend on it.
+5. **Reusable API — implemented on `feat/reusable-rust-api`:** commit `c80bbd0`
+   extracts the scanner, coverage validation and typed reports behind `src/lib.rs`.
+   The CLI owns destinations, staging and exits. The example and CLI/library
+   equivalence tests preserve JSON order, SARIF identities and gate behavior;
+   review-driven tests were added in `a285bf5`. Debug/release, live SDK, Python,
+   formatting and clippy checks passed. Full mutation evidence for `c80bbd0`:
+   178 caught, 3 missed, 0 timeouts, 5 unviable (98.34%). See the
+   [evidence and survivor review](../reports/reusable-api/README.md).
+   A targeted recheck catches the two library survivors; the remaining output
+   parent-path survivor is qualified to this runner in the report.
+   This branch is not yet merged; integrate it before dependent work.
 6. **Fresh Coverlet coverage:** snapshot source before a trusted test process,
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual

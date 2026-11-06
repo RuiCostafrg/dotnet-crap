@@ -126,7 +126,8 @@ These fields are public and match the current JSON output.
 - Each returned string ends with a newline. The CLI writes exactly these bytes
   to stdout or to `--output`.
 - `Json` is the CLI's existing shape. Field names and order are unchanged.
-- `Sarif` is SARIF 2.1.0. Its rule identifiers and location rules are described in
+- `Sarif` returns an error if the canonical root cannot be represented as UTF-8.
+  It emits SARIF 2.1.0. Its rule identifiers and location rules are described in
   [SARIF output](SARIF.md).
 - `Text` escapes control characters in file names and callable names. JSON and
   SARIF carry the raw strings, so escape them in your own sinks if needed.

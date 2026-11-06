@@ -1,0 +1,98 @@
+[
+  {
+    "diff": "--- src/lib.rs\n+++ replace <= with > in collect\n@@ -403,17 +403,17 @@\n             stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));\n         }\n         // Exclude nested spans as intervals, never one allocation per source\n         // line. Long overlapping local-function spans must not expand work.\n         excluded.sort_unstable();\n         let mut ranges: Vec<(usize, usize)> = Vec::new();\n         for (start, end) in excluded {\n             if let Some(last) = ranges.last_mut() {\n-                if start <= last.1 {\n+                if start > /* ~ changed by cargo-mutants ~ */ last.1 {\n                     last.1 = last.1.max(end);\n                     continue;\n                 }\n             }\n             ranges.push((start, end));\n         }\n         let coverage = cov.and_then(|c| {\n             let mut total = 0usize;\n",
+    "file": "src/lib.rs",
+    "function": {
+      "function_name": "collect",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 445
+        },
+        "start": {
+          "column": 1,
+          "line": 362
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/lib.rs:411:26: replace <= with > in collect",
+    "package": "dotnet-crap",
+    "replacement": ">",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 411
+      },
+      "start": {
+        "column": 26,
+        "line": 411
+      }
+    }
+  },
+  {
+    "diff": "--- src/lib.rs\n+++ replace > with >= in collect\n@@ -421,17 +421,17 @@\n             for (&line, &hits) in c.range((n.start_position().row + 1)..=(n.end_position().row + 1))\n             {\n                 let position = ranges.partition_point(|&(start, _)| start <= line);\n                 if position == 0 || ranges[position - 1].1 < line {\n                     total += 1;\n                     hit += usize::from(hits > 0);\n                 }\n             }\n-            (total > 0).then(|| hit as f64 / total as f64)\n+            (total >= /* ~ changed by cargo-mutants ~ */ 0).then(|| hit as f64 / total as f64)\n         });\n         let missed = 1.0 - coverage.unwrap_or(0.0);\n         out.push(Item {\n             file: file.to_owned(),\n             name: callable_name(n, source),\n             kind: n.kind().to_owned(),\n             line: n.start_position().row + 1,\n             column: n.start_position().column + 1,\n",
+    "file": "src/lib.rs",
+    "function": {
+      "function_name": "collect",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 445
+        },
+        "start": {
+          "column": 1,
+          "line": 362
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/lib.rs:429:20: replace > with >= in collect",
+    "package": "dotnet-crap",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 429
+      },
+      "start": {
+        "column": 20,
+        "line": 429
+      }
+    }
+  },
+  {
+    "diff": "--- src/main.rs\n+++ delete ! in run\n@@ -75,17 +75,17 @@\n                     && same_file::is_same_file(&path, entry.path())?\n                 {\n                     bail!(\"report output aliases C# source\");\n                 }\n             }\n         }\n         let parent = path\n             .parent()\n-            .filter(|p| !p.as_os_str().is_empty())\n+            .filter(|p|  /* ~ changed by cargo-mutants ~ */p.as_os_str().is_empty())\n             .unwrap_or(Path::new(\".\"));\n         let mut staged = tempfile::NamedTempFile::new_in(parent)?;\n         staged.write_all(output.as_bytes())?;\n         staged.as_file().sync_all()?;\n         result.verify_sources()?;\n         staged.persist(path)?;\n     } else {\n         result.verify_sources()?;\n",
+    "file": "src/main.rs",
+    "function": {
+      "function_name": "run",
+      "return_type": "-> Result<bool>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 95
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/main.rs:83:25: delete ! in run",
+    "package": "dotnet-crap",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 26,
+        "line": 83
+      },
+      "start": {
+        "column": 25,
+        "line": 83
+      }
+    }
+  }
+]
