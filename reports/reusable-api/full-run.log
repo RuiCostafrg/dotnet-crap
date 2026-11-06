@@ -1,0 +1,9 @@
+evidence=/root/.t3/projects/dotnet-crap/target/mutation-runs/run-jljq0ifv/mutants.out
+Found 186 mutants to test
+ok       Unmutated baseline in 103s build + 9s test
+MISSED   src/lib.rs:411:26: replace <= with > in collect in 20s build + 11s test
+MISSED   src/lib.rs:429:20: replace > with >= in collect in 23s build + 11s test
+MISSED   src/main.rs:83:25: delete ! in run in 5s build + 10s test
+186 mutants tested in 40m: 3 missed, 178 caught, 5 unviable
+total=186 caught=178 missed=3 timeout=0 unviable=5
+score=98.34% (caught / (caught + missed + timeout))

@@ -1,0 +1,26 @@
+{
+  "source_revision": "a285bf548e876e64a270eeb24a0107aa9b5b77c6",
+  "production_revision": "c80bbd0c4cc8fc4c9239130d07f75ddfd218079d",
+  "production_unchanged": true,
+  "binary_sha256": "de0a8668cf4da005909e870cff26eee7ae0713c8a72958ba538f37b1baa6c0d4",
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25) (built from a source tarball)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-linux-android\nrelease: 1.96.0\nLLVM version: 21.1.8",
+  "dotnet_sdk": "10.0.109",
+  "build_command": "cargo build --locked --release",
+  "benchmark_commands": [
+    "python3 scripts/benchmark.py --output target/api-benchmark-final.json",
+    "python3 scripts/benchmark.py --coverage --output target/api-benchmark-coverage-final.json"
+  ],
+  "conditions": "Android aarch64 shared runner; isolated mutation builds and debug live SDK tests may run concurrently; observations only, no comparative performance claim.",
+  "artifact_copies": [
+    {
+      "from": "target/api-benchmark-final.json",
+      "to": "reports/reusable-api/api-benchmark.json",
+      "sha256": "1e728d1304e65a980a4a8dadbe3188238ef8a2d26ccd151837841697102bb3a6"
+    },
+    {
+      "from": "target/api-benchmark-coverage-final.json",
+      "to": "reports/reusable-api/api-benchmark-coverage.json",
+      "sha256": "a4491869515053727f6a7e6537f749dce11e03e670670ad3795debc61796da0e"
+    }
+  ]
+}
