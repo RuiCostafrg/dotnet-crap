@@ -31,6 +31,7 @@ struct Args {
 }
 use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
 
+/// Adapt scan results to CLI output while rejecting input aliases and staging writes.
 fn run(args: Args) -> Result<bool> {
     let result = scan(&ScanOptions {
         root: args.root,

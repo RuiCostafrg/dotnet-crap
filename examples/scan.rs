@@ -7,6 +7,7 @@ use anyhow::Result;
 use dotnet_crap::{scan, ReportFormat, ScanOptions};
 use std::{env, path::PathBuf};
 
+/// Scan the requested root directly through the library and print the text report.
 fn main() -> Result<()> {
     let root = env::args_os()
         .nth(1)

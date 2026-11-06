@@ -7,6 +7,7 @@ use std::{
     process::{Command, Output},
 };
 
+/// Build scan options for an isolated fixture while retaining public defaults.
 fn options(root: &Path) -> ScanOptions {
     ScanOptions {
         root: root.to_path_buf(),
@@ -14,6 +15,7 @@ fn options(root: &Path) -> ScanOptions {
     }
 }
 
+/// Invoke the real CLI for the same fixture without changing the test process directory.
 fn cli(root: &Path, args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
         .arg("--root")
@@ -23,6 +25,7 @@ fn cli(root: &Path, args: &[&str]) -> Output {
         .unwrap()
 }
 
+/// Compare all rendered bytes and gate exits through the library and CLI boundaries.
 fn assert_equivalent(root: &Path, opts: &ScanOptions, cli_args: &[&str]) {
     let result = scan(opts).unwrap();
     for (format, name) in [
@@ -48,6 +51,7 @@ fn assert_equivalent(root: &Path, opts: &ScanOptions, cli_args: &[&str]) {
     }
 }
 
+/// Require identical diagnostics, empty stdout and exit 2 for invalid inputs in every format.
 fn assert_invalid(opts: &ScanOptions, cli_args: &[&str], message: &str) {
     let error = scan(opts).err().expect("invalid input must fail");
     assert!(format!("{error:#}").contains(message));

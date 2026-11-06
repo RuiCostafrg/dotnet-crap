@@ -19,6 +19,7 @@ plus the `ScanResult`, `Report`, and `Item` types described below.
 ```toml
 [dependencies]
 dotnet-crap = { path = "../dotnet-crap" }
+anyhow = "1"
 # Or pin a reviewed revision:
 # dotnet-crap = { git = "https://github.com/RuiCostafrg/dotnet-crap", rev = "<full commit SHA>" }
 ```
