@@ -4,11 +4,11 @@
 //! directory containing C# source files).
 
 use anyhow::Result;
-use dotnet_crap::{scan, ReportFormat, ScanOptions};
-use std::{env, path::PathBuf};
+use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
+use std::{env, io::Write, path::PathBuf};
 
 /// Scan the requested root directly through the library and print the text report.
-fn main() -> Result<()> {
+fn run() -> Result<()> {
     let root = env::args_os()
         .nth(1)
         .map(PathBuf::from)
@@ -18,6 +18,16 @@ fn main() -> Result<()> {
         ..ScanOptions::default()
     };
     let result = scan(&options)?;
-    print!("{}", result.render(ReportFormat::Text)?);
+    let output = result.render(ReportFormat::Text)?;
+    result.verify_sources()?;
+    std::io::stdout().lock().write_all(output.as_bytes())?;
     Ok(())
+}
+
+/// Escape untrusted diagnostic paths before writing errors to the terminal.
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("error: {}", terminal_safe(&format!("{error:#}")));
+        std::process::exit(2);
+    }
 }

@@ -10,5 +10,17 @@
     "python3 scripts/benchmark.py --output target/api-benchmark-final.json",
     "python3 scripts/benchmark.py --coverage --output target/api-benchmark-coverage-final.json"
   ],
-  "conditions": "Android aarch64 shared runner; isolated mutation builds and debug live SDK tests may run concurrently; observations only, no comparative performance claim."
+  "conditions": "Android aarch64 shared runner; isolated mutation builds and debug live SDK tests may run concurrently; observations only, no comparative performance claim.",
+  "artifact_copies": [
+    {
+      "from": "target/api-benchmark-final.json",
+      "to": "reports/reusable-api/api-benchmark.json",
+      "sha256": "1e728d1304e65a980a4a8dadbe3188238ef8a2d26ccd151837841697102bb3a6"
+    },
+    {
+      "from": "target/api-benchmark-coverage-final.json",
+      "to": "reports/reusable-api/api-benchmark-coverage.json",
+      "sha256": "a4491869515053727f6a7e6537f749dce11e03e670670ad3795debc61796da0e"
+    }
+  ]
 }

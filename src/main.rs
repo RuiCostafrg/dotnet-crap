@@ -89,7 +89,6 @@ fn run(args: Args) -> Result<bool> {
         result.verify_sources()?;
         staged.persist(path)?;
     } else {
-        result.verify_sources()?;
         std::io::stdout().lock().write_all(output.as_bytes())?;
     }
     Ok(result.report().failed)

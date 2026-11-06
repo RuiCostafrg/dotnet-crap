@@ -31,9 +31,9 @@ CLI, or a prebuilt native executable, when Rust is not available.
 ## Scanning
 
 ```rust
-use dotnet_crap::{scan, ReportFormat, ScanOptions};
+use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
 
-fn main() -> anyhow::Result<()> {
+fn run() -> anyhow::Result<()> {
     let result = scan(&ScanOptions {
         root: "src".into(),
         threshold: 10.0,
@@ -43,8 +43,17 @@ fn main() -> anyhow::Result<()> {
     if result.report().failed {
         eprintln!("CRAP gate failed");
     }
-    print!("{}", result.render(ReportFormat::Json)?);
+    let json = result.render(ReportFormat::Json)?;
+    result.verify_sources()?;
+    print!("{json}");
     Ok(())
+}
+
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("error: {}", terminal_safe(&format!("{error:#}")));
+        std::process::exit(2);
+    }
 }
 ```
 
@@ -60,7 +69,7 @@ fn main() -> anyhow::Result<()> {
 | `threshold: f64` | Must be finite and nonnegative. A callable fails only when its CRAP score is strictly greater than this value. |
 | `coverage: Option<PathBuf>` | Native coverage JSON (version 1). Read relative to the process working directory, not `root`. |
 | `require_coverage: bool` | Makes any callable without coverage evidence a policy failure. |
-| `fail_on_empty: bool` | Makes an empty selection a policy failure. |
+| `fail_on_empty: bool` | Makes a scan that finds no callables a policy failure, including selected files without callable bodies. |
 | `paths: Vec<PathBuf>` | Files or directories to select. Relative values resolve against `root`. Absolute values must be inside `root`. Empty selects `root`. |
 
 ## Results, policy, and errors
@@ -74,13 +83,13 @@ fn main() -> anyhow::Result<()> {
   its file, or a source that changed during the scan. The CLI reports these as
   exit **2**.
 - **`Ok(ScanResult)` with `report().failed == true`**: the scan succeeded but a
-  policy gate failed (score above threshold, missing required coverage, or empty
-  selection with `fail_on_empty`). The CLI reports this as exit **1**. The result
-  is still returned, so the report can be rendered.
+  policy gate failed (score above threshold, missing required coverage, or
+  a scan with no callables and `fail_on_empty`). The CLI reports this as exit
+  **1**. The result is still returned, so the report can be rendered.
 - **`Ok(ScanResult)` with `report().failed == false`**: passing. The CLI exits **0**.
 
 The library does not map outcomes to process exit codes. The bundled example
-does not either (see below).
+exits 2 on errors but leaves policy failures as successful process exits (see below).
 
 ### `Report` and `Item`
 
@@ -194,6 +203,9 @@ Key points for library callers:
   `.designer.cs` are skipped. Directories named `bin`, `obj`, and `.git` are
   skipped, as are symbolic links found during the walk.
 - Any syntax error in a selected file fails the whole scan.
+- Syntax traversal budgets do not bound aggregate coverage-point visits. Dense
+  coverage across deeply nested callables can repeat work; profiling and
+  coverage-range optimization remain in the performance backlog.
 - Analysis works on the source as written. It does not apply compilation
   symbols, preprocessor policy, or semantic binding. See
   [callable support and limits](CSHARP_CALLABLES.md).
@@ -209,8 +221,15 @@ cargo run --example scan -- <root>
 ```
 
 `examples/scan.rs` scans `<root>` with default options and prints the text
-report. It does not write files, and it does not set an exit code from
+report after rendering and re-verifying source bytes. It escapes error diagnostics
+and exits 2 on input or I/O errors. It does not write report files or set an exit code from
 `report().failed`. Use the CLI when you need the gate exit codes.
+
+## Terminal diagnostics helper
+
+`terminal_safe(&str) -> String` escapes control characters for terminal sinks,
+and is also used by CLI error diagnostics. It does not perform path validation.
+It is public and shares the API's current lack of a stability guarantee.
 
 ## Not in this API
 
@@ -219,6 +238,3 @@ report. It does not write files, and it does not set an exit code from
 - Coverage collection from .NET tools.
 - Semantic (Roslyn) analysis.
 - Any stability promise beyond this document.
-
-`terminal_safe(&str) -> String` escapes control characters for terminal sinks,
-and is also used by CLI error diagnostics. It does not perform path validation.

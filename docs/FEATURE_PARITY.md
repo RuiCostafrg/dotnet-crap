@@ -115,10 +115,10 @@ fixtures. Never silently rewrite a committed baseline.
 ## Phase 5: reports and reusable API
 
 Scanning and string rendering are available through the [Rust library API](RUST_API.md).
-Streaming rendering remains deferred. Add XML, standalone HTML
-with search and failing-only filters, then SARIF 2.1.0 with stable `DNCRAP001`
-(score) and `DNCRAP002` (completeness) IDs, encoded relative locations and stable
-fingerprints. Add deterministic text sort/top/filter flags without changing gates.
+Streaming rendering remains deferred. Add XML and standalone HTML with search
+and failing-only filters. SARIF 2.1.0, its diagnostic IDs, encoded locations and
+fingerprints are already implemented. Add deterministic text sort/top/filter
+flags without changing gates.
 
 Acceptance: format/schema/escaping tests, Unicode and terminal controls, output
 failures and failed-gate reports. Each format reports empty selections clearly.

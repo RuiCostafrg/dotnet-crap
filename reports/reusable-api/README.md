@@ -29,7 +29,7 @@ Inventory composition: 161 `src/lib.rs`, 17 `src/sarif.rs`, and 8 `src/main.rs` 
 - `src/lib.rs:429:20`, `replace > with >= in collect`: changes the `total > 0` guard to `total >= 0`, so an empty set of eligible coverage lines is treated as a present coverage ratio and computes `0.0 / 0.0` (NaN). The intended behavior is `None`; downstream output or calculations can therefore be invalid for that input. The existing tests did not expose it.
 - `src/main.rs:83:25`, `delete ! in run`: changes the parent-path filter so an output filename with no directory component selects an empty parent path instead of falling back to `.`. For a relative output such as `report.json`, temporary-file creation can fail rather than writing in the current directory. The existing relative-output regression already exercises this case. The mutation survived on this runner, so empty-parent staging succeeds here; this is a portability-sensitive behavior, not a demonstrated failure on the tested host.
 
-No production code was changed after this measurement. Review-driven tests in
+Production code was unchanged through `a285bf5`. Review-driven tests in
 `a285bf5` add sparse nested ownership and empty coverage evidence assertions,
 coverage-input/generated-source alias and symlink protections, exact JSON field
 order and SARIF fingerprint expectations, immutable captured policy, library
@@ -89,3 +89,18 @@ exist for the returned types, or construct a generic coverage value without a
 `Default` bound. They are not counted as caught. No timeout is counted as a kill.
 Full per-mutant logs remain in the original ignored local evidence directory;
 this report preserves the complete inventory and all outcome identities.
+
+
+## PR review follow-up
+
+The later review fix removes one redundant CLI source verification immediately
+before stdout (the common pre-output verification and post-staging verification
+remain). The runnable example now verifies after rendering, escapes diagnostic
+controls and reports I/O errors. Library analysis and coverage semantics did not
+change. The local full run and targeted subset above remain measurements of
+their named revisions; the final PR head requires its own green CI mutation run.
+
+The dense nested-coverage visit cost is inherited from the scanner before this
+extraction: syntax budgets do not bound aggregate coverage visits. It is recorded
+in PLAN.md step 8 for measured profiling and range/prefix-count optimization,
+rather than introducing an unmeasured algorithm change in the API extraction.

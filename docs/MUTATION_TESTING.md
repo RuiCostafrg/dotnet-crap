@@ -4,12 +4,15 @@ Install cargo-mutants 27.1.0 (`cargo install cargo-mutants --version 27.1.0 --lo
 
 ## Reusable API measurement
 
-The complete run for `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d` tested 186 mutants:
+The complete **local** run for `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d`
+tested 186 mutants:
 178 caught, 3 missed, 0 timed out, and 5 unviable (**98.34%**). The audited inventory
 covers `src/lib.rs` (161), `src/sarif.rs` (17) and `src/main.rs` (8), with no
 production-source exclusions. [Inventory, outcomes and survivor review](../reports/reusable-api/README.md)
 are committed separately from the historical measurements below. Additional tests
-added after this full run do not retroactively change its score.
+added after this full run do not retroactively change its score. This is local
+evidence only, not validation of the current PR head in CI; the PR mutation
+workflow must independently pass before merge.
 
 ## Qualified historical measurements
 

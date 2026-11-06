@@ -164,6 +164,9 @@ Start profiling after step 1; repeat on each relevant production change.
 
 - [ ] Add dense single-file coverage, many-callable, deep-nesting and larger
   solution workloads alongside the existing many-small-files benchmark.
+- [ ] Profile aggregate coverage-point visits across deeply nested callables.
+  The current traversal budgets bound syntax nodes, not repeated coverage work;
+  evaluate prefix counts or excluded-range skipping after measuring dense workloads.
 - [ ] Record runtime and peak memory with compiler, binary digest, source commit,
   corpus and individual samples. Keep correctness assertions in the harness.
 - [ ] Investigate the 3 recorded surviving mutants; strengthen independent
