@@ -205,3 +205,159 @@ fn result_detects_source_byte_changes() {
     fs::write(&source_path, "class A { int F()=>2; }\n").unwrap();
     assert!(result.verify_sources().is_err());
 }
+
+#[test]
+fn serialization_and_captured_policy_keep_the_existing_contract() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("a.cs"), "class C { void F() {} }\n").unwrap();
+    let mut opts = options(dir.path());
+    opts.threshold = 1.0;
+    opts.require_coverage = true;
+    let result = scan(&opts).unwrap();
+    opts.threshold = 100.0;
+    opts.require_coverage = false;
+    assert!(!scan(&opts).unwrap().report().failed);
+    assert_eq!(
+        result.render(ReportFormat::Json).unwrap(),
+        concat!(
+            "{\n  \"threshold\": 1.0,\n  \"files_scanned\": 1,\n",
+            "  \"coverage_complete\": false,\n  \"functions\": [\n    {\n",
+            "      \"file\": \"a.cs\",\n      \"name\": \"F\",\n",
+            "      \"kind\": \"method_declaration\",\n      \"line\": 1,\n",
+            "      \"column\": 11,\n      \"end_line\": 1,\n",
+            "      \"complexity\": 1,\n      \"coverage\": null,\n",
+            "      \"crap\": 2.0\n    }\n  ],\n  \"failed\": true\n}\n"
+        )
+    );
+    assert!(result
+        .render(ReportFormat::Text)
+        .unwrap()
+        .starts_with("Coverage missing"));
+    let sarif: Value = serde_json::from_str(&result.render(ReportFormat::Sarif).unwrap()).unwrap();
+    let run = &sarif["runs"][0];
+    assert_eq!(
+        run["results"][0]["partialFingerprints"]["dotnetCrap/v1"],
+        "d0e351aa246e10d614c46e9fd304b17caf372430147b6807bbbe8e347e4c591e"
+    );
+    assert_eq!(run["results"][1]["ruleId"], "DNCRAP002");
+    let ids: Vec<_> = run["tool"]["driver"]["rules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|rule| rule["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(ids, ["DNCRAP001", "DNCRAP002", "DNCRAP003"]);
+}
+
+#[test]
+fn coverage_inputs_and_sparse_nested_ownership_are_retained() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = "class C {\n void F() {\n  void A() {}\n  System.Console.WriteLine(1);\n  void B() {}\n  System.Console.WriteLine(2);\n }\n}\n";
+    fs::write(dir.path().join("a.cs"), source).unwrap();
+    let coverage = dir.path().join("coverage.json");
+    let hash = hex::encode(Sha256::digest(source));
+    fs::write(&coverage, format!(r#"{{"version":1,"files":{{"a.cs":{{"sha256":"{hash}","lines":{{"3":1,"4":0,"5":1,"6":1}}}}}}}}"#)).unwrap();
+    let mut opts = options(dir.path());
+    opts.coverage = Some(coverage.clone());
+    opts.require_coverage = true;
+    let result = scan(&opts).unwrap();
+    assert_eq!(
+        result.input_paths(),
+        &[
+            dir.path().join("a.cs").canonicalize().unwrap(),
+            coverage.clone()
+        ]
+    );
+    assert_eq!(result.report().functions[0].coverage, Some(0.5));
+    assert_eq!(result.report().functions[0].crap, 1.125);
+    fs::write(
+        &coverage,
+        format!(r#"{{"version":1,"files":{{"a.cs":{{"sha256":"{hash}","lines":{{}}}}}}}}"#),
+    )
+    .unwrap();
+    let result = scan(&opts).unwrap();
+    assert!(!result.report().coverage_complete);
+    assert!(result.report().failed);
+    assert!(result
+        .report()
+        .functions
+        .iter()
+        .all(|item| item.coverage.is_none()));
+}
+
+#[test]
+fn library_selection_deduplicates_and_rejects_root_escape() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::create_dir(dir.path().join("nested")).unwrap();
+    for name in ["nested/a.cs", "nested/skip.g.cs", "z.cs"] {
+        fs::write(dir.path().join(name), "class C { void F() {} }").unwrap();
+    }
+    let mut opts = options(dir.path());
+    opts.paths = vec!["nested".into(), dir.path().join("nested/a.cs")];
+    let result = scan(&opts).unwrap();
+    assert_eq!(result.report().files_scanned, 1);
+    assert_eq!(result.report().functions[0].file, "nested/a.cs");
+    assert_equivalent(dir.path(), &opts, &["nested", "nested/a.cs"]);
+    opts.paths = vec!["..".into()];
+    assert_invalid(&opts, &[".."], "input path escapes root");
+    opts.paths.clear();
+    for (threshold, arg) in [
+        (f64::INFINITY, "--threshold=inf"),
+        (f64::NEG_INFINITY, "--threshold=-inf"),
+    ] {
+        opts.threshold = threshold;
+        assert_invalid(&opts, &[arg], "threshold must be finite and nonnegative");
+    }
+}
+
+#[test]
+fn cli_preserves_coverage_and_unselected_source_aliases() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = "class C { void F() {} }\n";
+    fs::write(dir.path().join("a.cs"), source).unwrap();
+    let coverage = dir.path().join("coverage.json");
+    let hash = hex::encode(Sha256::digest(source));
+    let evidence =
+        format!(r#"{{"version":1,"files":{{"a.cs":{{"sha256":"{hash}","lines":{{"1":1}}}}}}}}"#);
+    fs::write(&coverage, &evidence).unwrap();
+    let alias = dir.path().join("alias.json");
+    fs::hard_link(&coverage, &alias).unwrap();
+    for output in [&coverage, &alias] {
+        let output = cli(
+            dir.path(),
+            &[
+                "--coverage",
+                coverage.to_str().unwrap(),
+                "--output",
+                output.to_str().unwrap(),
+            ],
+        );
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert_eq!(fs::read_to_string(&coverage).unwrap(), evidence);
+    }
+    let ignored = dir.path().join("ignored.g.cs");
+    fs::write(&ignored, source).unwrap();
+    let alias = dir.path().join("ignored.json");
+    fs::hard_link(&ignored, &alias).unwrap();
+    let output = cli(dir.path(), &["--output", alias.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(2));
+    assert_eq!(fs::read_to_string(&ignored).unwrap(), source);
+}
+
+#[cfg(unix)]
+#[test]
+fn cli_preserves_symlink_output_targets() {
+    let dir = tempfile::tempdir().unwrap();
+    let target = dir.path().join("target.json");
+    let output = dir.path().join("link.json");
+    fs::write(&target, "original").unwrap();
+    std::os::unix::fs::symlink(&target, &output).unwrap();
+    let result = cli(dir.path(), &["--output", output.to_str().unwrap()]);
+    assert_eq!(result.status.code(), Some(2));
+    assert!(String::from_utf8(result.stderr)
+        .unwrap()
+        .contains("symbolic link"));
+    assert_eq!(fs::read_to_string(&target).unwrap(), "original");
+    assert!(output.is_symlink());
+}
