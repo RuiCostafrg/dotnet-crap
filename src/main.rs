@@ -31,6 +31,48 @@ struct Args {
 }
 use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
 
+/// Collect fresh evidence with an explicitly trusted argv after `--`.
+#[derive(Parser)]
+#[command(
+    name = "dotnet-crap collect",
+    about = "Collect fresh Coverlet Cobertura as native v1 evidence"
+)]
+struct CollectArgs {
+    #[arg(long, default_value = ".")]
+    root: PathBuf,
+    #[arg(long)]
+    output: PathBuf,
+    #[arg(long = "path")]
+    paths: Vec<PathBuf>,
+    #[arg(last = true, required = true)]
+    test_command: Vec<std::ffi::OsString>,
+    #[arg(long, default_value_t = 1)]
+    expected_reports: usize,
+}
+
+fn execute() -> Result<bool> {
+    if std::env::args_os().nth(1).is_some_and(|a| a == "collect") {
+        let args = CollectArgs::parse_from(
+            std::env::args_os()
+                .take(1)
+                .chain(std::env::args_os().skip(2)),
+        );
+        dotnet_crap::collector::collect(&dotnet_crap::collector::CollectOptions {
+            scan: ScanOptions {
+                root: args.root,
+                paths: args.paths,
+                ..Default::default()
+            },
+            output: args.output,
+            command: args.test_command,
+            expected_reports: args.expected_reports,
+        })?;
+        Ok(false)
+    } else {
+        run(Args::parse())
+    }
+}
+
 /// Adapt scan results to CLI output while rejecting input aliases and staging writes.
 fn run(args: Args) -> Result<bool> {
     let result = scan(&ScanOptions {
@@ -95,7 +137,7 @@ fn run(args: Args) -> Result<bool> {
 }
 /// Parse CLI arguments and translate pass, policy failure and input errors into exits 0, 1 and 2.
 fn main() {
-    let code = match run(Args::parse()) {
+    let code = match execute() {
         Ok(false) => 0,
         Ok(true) => 1,
         Err(e) => {

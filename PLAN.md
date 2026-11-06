@@ -47,7 +47,7 @@ Each row is a bounded feature change. Checked items are implemented on the
 branch identified below; unchecked items remain proposed. Split a row further
 if it cannot be reviewed and validated independently.
 
-### 1. Reusable Rust API and thin CLI — implemented on feature branch
+### 1. Reusable Rust API and thin CLI — merged in PR #11
 
 - [x] Extract existing analysis, native coverage validation and typed reports
   behind `src/lib.rs`; expose scan and rendering operations without clap types.
@@ -60,7 +60,8 @@ if it cannot be reviewed and validated independently.
 
 Implementation: `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d`; additional
 review-driven regression tests: `a285bf5`. This work is committed on
-`feat/reusable-rust-api`, not merged into `main`. The API, example and CLI
+`feat/reusable-rust-api`, merged in [PR #11](https://github.com/RuiCostafrg/dotnet-crap/pull/11)
+at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`. The API, example and CLI
 compatibility tests are documented in [Rust API](docs/RUST_API.md).
 
 Validation: formatting, warnings-denied clippy, locked debug/release tests,
@@ -77,7 +78,7 @@ reviewed in the evidence. Benchmarks in both modes are observational on this run
 and the complete production mutation inventory covers the extracted modules.
 Audit mutation configuration after moving files so no library source is omitted.
 
-### 2. Fresh Coverlet/Cobertura collection — next
+### 2. Fresh Coverlet/Cobertura collection — in progress
 
 Depends on step 1. Deliver the mapping contract and collector as reviewable slices.
 
@@ -199,15 +200,14 @@ and installation/publication claims reflect actual validated releases.
 
 ## Parallel work and integration
 
-The library boundary is implemented on its feature branch; integrate it before
-starting dependent branches. Then collector work and config/selection work can
+The library boundary is merged in PR #11. Then collector work and config/selection work can
 run in separate prepared worktrees with agreed API ownership. Syntax fixtures and
 benchmark research can proceed independently; coordinate changes to analysis code.
 Baselines depend on stable identities; reporting can use the established report API.
 
-Use one feature branch and PR per bounded change. Assign Terra the cross-module
-API/collector work and Luna bounded fixtures, schemas or tooling where available;
-reserve another reviewer for independent assessment. Select only available models.
+Use one feature branch and PR per bounded change. For step 2, Sol owns API integration and independent review; Luna owns live
+fixtures, Haiku mapping research, and DeepSeek Flash the parser. Use the explicitly
+requested providers/models; report availability limitations without substitution.
 Do not let agents edit the same shared files concurrently. Integrate parent changes
 before validating a dependent PR; prefer a short stack over a long review chain.
 

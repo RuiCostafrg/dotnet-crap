@@ -56,7 +56,7 @@ PRs #2–#9 are now merged into `main` at `c1c78cd`. The final reviewed tree's f
 mutation run caught 171 of 174 viable mutants (98.28%), with 3 missed, no timeouts
 and 2 unviable. Historical measurements remain qualified to their recorded SHAs.
 Tag workflows build artifacts; automatic publication remains disabled. The reusable
-API batch below is now implemented on its feature branch;
+API batch below is now merged in PR #11;
 remaining batches stay planned.
 
 ## Subsequent feature PRs, in dependency order
@@ -64,7 +64,7 @@ remaining batches stay planned.
 Each numbered item is a separate bounded change. Status is explicit below;
 unmarked items remain proposed.
 
-5. **Reusable API — implemented on `feat/reusable-rust-api`:** commit `c80bbd0`
+5. **Reusable API — merged in PR #11:** commit `c80bbd0`
    extracts the scanner, coverage validation and typed reports behind `src/lib.rs`.
    The CLI owns destinations, staging and exits. The example and CLI/library
    equivalence tests preserve JSON order, SARIF identities and gate behavior;
@@ -74,8 +74,9 @@ unmarked items remain proposed.
    [evidence and survivor review](../reports/reusable-api/README.md).
    A targeted recheck catches the two library survivors; the remaining output
    parent-path survivor is qualified to this runner in the report.
-   This branch is not yet merged; integrate it before dependent work.
-6. **Fresh Coverlet coverage:** snapshot source before a trusted test process,
+   Merged at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`; historical evidence above
+   remains qualified to its named source revisions.
+6. **Fresh Coverlet coverage — in progress:** snapshot source before a trusted test process,
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual
    pinned .NET collector fixtures, failures, multiple assemblies and uncovered code.

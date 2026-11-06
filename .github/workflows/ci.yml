@@ -47,6 +47,7 @@ jobs:
       - run: cargo test --locked
         env:
           DOTNET_CRAP_E2E: '1'
+          DOTNET_CRAP_COVERLET_E2E: '1'
       - run: cargo build --locked --release
       - name: Pack local tool and run real .NET fixture
         env:

@@ -194,8 +194,9 @@ Key points for library callers:
   that every statement is covered.
 - Nested callables are scored separately. Callables that share a source line are
   ambiguous and are not resolved.
-- The library does not run tests or collect coverage. Coverlet/Cobertura
-  collection is planned separately.
+- `scan` never runs tests. Explicit process collection is available separately via
+  `collector::{CollectOptions, collect}`; see [Coverlet collection](COVERLET.md).
+  `cobertura::parse_reports` imports line evidence without starting a process.
 
 ## Source selection and parsing limits
 

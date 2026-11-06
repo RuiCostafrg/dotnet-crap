@@ -102,3 +102,6 @@ not supported release targets.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for checks, including the live .NET fixture
 suite, and [SECURITY.md](SECURITY.md) for coverage trust and release verification.
 Licensed under [MIT](LICENSE).
+
+Fresh pinned Coverlet collection is available through `dotnet-crap collect`; see
+[the command, mapping contract and runner limits](docs/COVERLET.md).
