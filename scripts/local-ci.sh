@@ -29,8 +29,8 @@ SELECTED=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-signoff) NO_SIGNOFF=1 ;;
-    --list) printf '%s\n' "stages: ${AVAILABLE_STAGES[*]}" ;;
-    -h|--help) sed -n '2,14p' "$0" ;;
+    --list) printf '%s\n' "stages: ${AVAILABLE_STAGES[*]}"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     -*) _fail "unknown option: $1 (try --help)" ;;
     *) SELECTED+=("$1") ;;
   esac
@@ -85,15 +85,31 @@ stage_e2e() {
   dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
   bash scripts/test-install-action.sh
   bash scripts/test-release-publish.sh
+  bash scripts/smoke-packaging.sh
   DOTNET_CRAP_E2E=1 cargo test --locked
 }
 
 # ── runner ────────────────────────────────────────────────────────────────────
 
+# Validate all selected stage names before running anything.
 for s in "${SELECTED[@]}"; do
   declare -F "stage_$s" >/dev/null || _fail "unknown stage '$s' (stages: ${AVAILABLE_STAGES[*]})"
+done
+
+if git status --porcelain | grep -q .; then
+  _log "warning: working tree has uncommitted changes — results may not match HEAD"
+fi
+
+for s in "${SELECTED[@]}"; do
   _log "stage: $s"
-  if ! ( set -e; "stage_$s" ); then
+  # Run the stage in a subshell with errexit, OUTSIDE any if-condition context:
+  # inside `if ! (...)` bash suppresses errexit, so a failing command mid-stage
+  # could be masked and the stage wrongly reported green (bot review P0).
+  set +e
+  ( set -e; "stage_$s" )
+  rc=$?
+  set -e
+  if [ "$rc" -ne 0 ]; then
     [ "$NO_SIGNOFF" = 0 ] && gh signoff fail "$s" --description "$s failed locally" >/dev/null 2>&1 || true
     _fail "stage '$s' failed"
   fi
@@ -103,4 +119,9 @@ for s in "${SELECTED[@]}"; do
       || printf '⚠ could not post signoff status for %s — is HEAD pushed? gh authorized?\n' "$s" >&2
   fi
 done
-_log "all done${NO_SIGNOFF:+ — no signoff statuses posted (was --no-signoff)}."
+
+if [ "$NO_SIGNOFF" = 1 ]; then
+  _log "all done — no signoff statuses posted (was --no-signoff)."
+else
+  _log "all done."
+fi
