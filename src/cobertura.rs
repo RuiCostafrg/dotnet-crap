@@ -29,7 +29,7 @@ pub type LineEvidence = BTreeMap<String, BTreeMap<u32, u64>>;
 /// UTF-8 source text used to bound line numbers. Every report must contain
 /// `coverage/packages/package/classes` and at least one class record overall.
 /// Each class requires a `lines` container, whose line records may be empty.
-/// Empty packages are permitted alongside class records.
+/// Each package requires a `classes` container, which may be empty.
 ///
 /// Reports may mention other real files inside `root`; their evidence is
 /// ignored. Any path that does not resolve exactly, escapes the root, is a

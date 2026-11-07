@@ -28,6 +28,8 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 
 - Follow-up Cubic findings 4501329615/18/19/21/22/26: kept the expanded live-validation checklist pending until combined validation lands; restored the independently enumerated source-module list in the audit; clarified class-level zero-hit and optional-line documentation; identified the standalone NUnit observation as unarchived; and reject child statuses first observed at or after the deadline. CodeRabbit 4501331329 and Cubic 4501329613 refer to the stale MSTest README already corrected in `4fdff9e`.
 
-- Cubic 4501335130 (review-test provenance): explicitly separated the historical independent review note from current parent validation, captured the current focused command/log/revision, and regenerated `tested-files.json` from the current production/test/Cargo inputs. Final documentation-only commits must retain these exact hashes.
+- Cubic 4501335130 (review-test provenance): explicitly separated the historical independent review note from current parent validation, captured the current focused command/log/revision, and captured a source-qualified parent validation record. Existing `tested-files.json` data is historical until final validation finishes; regenerate it from the final production/test/Cargo inputs, then verify any later evidence-only commit preserves those bytes.
 
 - Parent mapping audit: preserved literal source-prefix edge whitespace. A regression creates two real selected directories so trimming would demonstrably transfer evidence to the wrong source. This completes the same exact-path contract as the comment/CDATA fix.
+
+- Follow-up documentation findings 4501364351/4501416076/4501432383: clarified that every package still requires a `classes` container; the final evidence document will name the validated production/test revision explicitly, and its manifest will be regenerated after final validation rather than retaining historical hashes.
