@@ -1,0 +1,37 @@
+{
+  "fixture_revision": "dedf03e6d2aa30161475108fe036f3b3a270a916",
+  "sdk": "10.0.109",
+  "global_json": {
+    "test": {
+      "runner": "Microsoft.Testing.Platform"
+    }
+  },
+  "results": [
+    {
+      "argv": [
+        "dotnet",
+        "test",
+        "--solution",
+        "CoverletFixtures.sln"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.\nThe following test projects are using VSTest test runner:\nBeta.Tests.csproj\nAlpha.Tests.csproj\n\nSee https://aka.ms/dotnet-test/mtp for more information.\nGet projects properties with MSBuild didn't execute properly with exit code: 1.\n"
+    },
+    {
+      "argv": [
+        "dotnet",
+        "test",
+        "--solution",
+        "CoverletFixtures.sln",
+        "--collect:XPlat Code Coverage",
+        "--results-directory",
+        "/data/data/com.termux/files/usr/tmp/coverlet-mtp-probe-5x9ge3l2/results"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.\nThe following test projects are using VSTest test runner:\nBeta.Tests.csproj\nAlpha.Tests.csproj\n\nSee https://aka.ms/dotnet-test/mtp for more information.\nGet projects properties with MSBuild didn't execute properly with exit code: 1.\n"
+    }
+  ],
+  "note": "Proper --solution syntax; negative compatibility evidence for this VSTest fixture, not a successful MTP test or coverage run."
+}

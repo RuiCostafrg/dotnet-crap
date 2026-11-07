@@ -94,12 +94,12 @@ Depends on step 1. Deliver the mapping contract and collector as reviewable slic
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
 
-Implementation: `dedf03e` (collector/parser plus review fixes). Native v1 remains
+Implementation: `18fc47a` (collector/parser, review fixes and three-framework fixtures). Native v1 remains
 unchanged: supplied-line evidence, maximum-hit union across assemblies, zero-hit
 retention, and existing same-line nesting limits. Foreign roots, unmapped
 SourceLink/deterministic paths, and UNC paths are rejected rather than guessed.
-See [the mapping and command contract](docs/COVERLET.md). The full explicitly enabled
-live suite passed; the final mutation rerun is in progress; do not interpret the initial
+See [the mapping and command contract](docs/COVERLET.md). The prior xUnit live suite passed; combined xUnit/MSTest/NUnit live validation
+and the final-source mutation rerun are in progress; do not interpret the initial
 `7aaae57` mutation result as validation of the fixes.
 
 **Done when:** actual .NET collector runs produce independently checked scores;

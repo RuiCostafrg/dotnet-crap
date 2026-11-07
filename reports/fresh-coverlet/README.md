@@ -1,4 +1,6 @@
-# Fresh Coverlet collection evidence (validation in progress)
+# Fresh Coverlet collection evidence (expanded validation in progress)
+
+Current production/test revision: `18fc47a221f58a4b23da5f6cb37d37fdc2db8fb1`.
 
 Last completed non-mutation validation revision: `dedf03e6d2aa30161475108fe036f3b3a270a916`.
 The implementation starts at `7aaae575`; `dedf03e` fixes review findings and the
@@ -7,8 +9,8 @@ Cargo input hashes, so later documentation commits can be checked for equality.
 
 Formatting, warnings-denied clippy, locked debug/release tests, Python contracts,
 actionlint 1.7.12 and the full explicitly enabled live SDK/collector suite passed.
-Further PR review fixes and MSTest/NUnit fixtures are being integrated. They
-require fresh validation; the logs below do not certify those later changes. Supported-host packaging smoke
+Further PR review fixes and MSTest/NUnit fixtures are committed in `18fc47a`.
+Fresh validation is running; the older logs do not certify those later changes. Supported-host packaging smoke
 passed in Ubuntu CI at `027815c`; the local Android/bionic installed launcher
 crashed with SIGABRT in the Mono runtime. That local smoke is not a pass.
 Launcher contracts and archive/repack checks passed locally before that failure.
@@ -30,7 +32,8 @@ predates the review fixes and is not final-tree validation. No filters or blanke
 exclusions were added. The subsequent local run at
 `target/mutation-runs/run-2ntvch4c/mutants.out` was stopped after additional PR
 review fixes made its source stale. Its partial outcomes are not a full score.
-`inventory-audit.json` confirms all five production modules are included.
+`inventory-audit.json` now refers to the new current-source invocation and
+confirms all five production modules are included; final outcomes are pending.
 
 ## Benchmarks
 
@@ -48,8 +51,9 @@ The pinned fixture is .NET SDK 10.0.109/runtime 10.0.9, VSTest, Coverlet collect
 host. Native v1 supplied-line completeness is unchanged. Same-line nesting,
 unmapped SourceLink/deterministic paths and UNC paths have explicit limits.
 The live harness tests real failed tests and an unsupported MTP-mode invocation;
-that rejection does not certify an MTP collector. .NET 8, NUnit, MSTest and actual
-MTP collection remain unverified; CI is configured to exercise .NET 10 on its
+that rejection does not certify an MTP collector. Separate worker live runs
+verified MSTest 4.5.2 and NUnit 4.3.2 / adapter 5.0.0; combined current-source
+validation is in progress. .NET 8 and actual MTP collection remain unverified; CI is configured to exercise .NET 10 on its
 Linux/macOS/Windows matrix but results must be inspected independently.
 
 Release publication remains disabled. The user subsequently authorized merging

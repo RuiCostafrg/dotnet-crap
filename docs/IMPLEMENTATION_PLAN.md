@@ -80,7 +80,8 @@ unmarked items remain proposed.
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual
    pinned .NET collector fixtures, failures, multiple assemblies and uncovered code.
-   Implemented at `dedf03e`, with final live/mutation validation in progress.
+   Implemented at `18fc47a`, including xUnit/MSTest/NUnit fixtures; combined final
+   live/mutation validation is in progress.
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
    rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
