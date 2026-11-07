@@ -66,7 +66,8 @@ All projects target .NET 10 and pin Test SDK 17.12.0 / Coverlet collector 6.0.4.
 The xUnit projects pin xUnit 2.9.2 / adapter 2.8.2; MSTest pins framework and
 adapter 4.5.2; NUnit pins framework 4.3.2 / NUnit3TestAdapter 5.0.0.
 MSTest and NUnit add one positive `Full(1)` call to the paired xUnit pattern.
-Their Full line hits are therefore 3/3/2/1/3 instead of 2/2/1/1/2. Each pair
+MSTest Full hits are 3/3/2/1/3; NUnit Full hits are 3/3/1/2/3 because Beta
+tests `value == 0`. The paired xUnit reports have 2/2/1/1/2. Each pair
 must contain exactly one report with each signature, making missing/duplicate
 project output observable while preserving the coverage ratios and scores above. The live harness verifies all four
 project assemblies appear and exactly four fresh attachments are produced.

@@ -196,8 +196,8 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
             &[
                 ("6", calls),
                 ("7", calls),
-                ("8", positives),
-                ("9", "1"),
+                ("8", "1"),
+                ("9", positives),
                 ("10", calls),
             ],
         );
