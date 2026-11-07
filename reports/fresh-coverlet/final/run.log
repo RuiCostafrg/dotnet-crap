@@ -1,0 +1,713 @@
+mutation	Set up job	﻿2026-11-07T11:32:03.1159477Z Current runner version: '2.338.2'
+mutation	Set up job	2026-11-07T11:32:03.1195740Z ##[group]Runner Image Provisioner
+mutation	Set up job	2026-11-07T11:32:03.1197207Z Hosted Compute Agent
+mutation	Set up job	2026-11-07T11:32:03.1198165Z Version: 20261028.624
+mutation	Set up job	2026-11-07T11:32:03.1199321Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+mutation	Set up job	2026-11-07T11:32:03.1200919Z Build Date: 2026-10-28T21:51:42Z
+mutation	Set up job	2026-11-07T11:32:03.1202111Z Worker ID: {c6852cd1-5183-419a-a395-618f1448ca4e}
+mutation	Set up job	2026-11-07T11:32:03.1203533Z Region: eastus
+mutation	Set up job	2026-11-07T11:32:03.1204421Z Cloud: Azure
+mutation	Set up job	2026-11-07T11:32:03.1205290Z ##[endgroup]
+mutation	Set up job	2026-11-07T11:32:03.1207684Z ##[group]Operating System
+mutation	Set up job	2026-11-07T11:32:03.1208812Z Ubuntu
+mutation	Set up job	2026-11-07T11:32:03.1209904Z 24.04.5
+mutation	Set up job	2026-11-07T11:32:03.1211001Z LTS
+mutation	Set up job	2026-11-07T11:32:03.1211955Z ##[endgroup]
+mutation	Set up job	2026-11-07T11:32:03.1212968Z ##[group]Runner Image
+mutation	Set up job	2026-11-07T11:32:03.1213971Z Image: ubuntu-24.04
+mutation	Set up job	2026-11-07T11:32:03.1214946Z Version: 20261101.360.1
+mutation	Set up job	2026-11-07T11:32:03.1216785Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+mutation	Set up job	2026-11-07T11:32:03.1219865Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+mutation	Set up job	2026-11-07T11:32:03.1221806Z ##[endgroup]
+mutation	Set up job	2026-11-07T11:32:03.1223805Z ##[group]GITHUB_TOKEN Permissions
+mutation	Set up job	2026-11-07T11:32:03.1226380Z Contents: read
+mutation	Set up job	2026-11-07T11:32:03.1227572Z Metadata: read
+mutation	Set up job	2026-11-07T11:32:03.1228460Z ##[endgroup]
+mutation	Set up job	2026-11-07T11:32:03.1231833Z Secret source: Actions
+mutation	Set up job	2026-11-07T11:32:03.1233504Z Cache mode: write
+mutation	Set up job	2026-11-07T11:32:03.1234781Z Prepare workflow directory
+mutation	Set up job	2026-11-07T11:32:03.1712707Z Prepare all required actions
+mutation	Set up job	2026-11-07T11:32:03.1784083Z Getting action download info
+mutation	Set up job	2026-11-07T11:32:03.3952257Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+mutation	Set up job	2026-11-07T11:32:03.5452840Z Download action repository 'dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec' (SHA:b725eda525362e7cf34af9a7243cac1e3f01a7ec)
+mutation	Set up job	2026-11-07T11:32:03.6387709Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+mutation	Set up job	2026-11-07T11:32:03.8836793Z Complete job name: mutation
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:32:03.9724640Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9725763Z with:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9726248Z   repository: RuiCostafrg/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9730188Z   token: ***
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9730837Z   ssh-strict: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9731327Z   ssh-user: git
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9731804Z   persist-credentials: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9732313Z   clean: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9732768Z   sparse-checkout-cone-mode: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9733310Z   fetch-depth: 1
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9733756Z   fetch-tags: false
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9734208Z   show-progress: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9734678Z   lfs: false
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9735105Z   submodules: false
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9735575Z   set-safe-directory: true
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9736325Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3877930Z Syncing repository: RuiCostafrg/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3879927Z ##[group]Getting Git version info
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3881118Z Working directory is '/home/runner/work/dotnet-crap/dotnet-crap'
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3882342Z [command]/usr/bin/git version
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3980752Z git version 2.56.0
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4005973Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4023406Z Temporarily overriding HOME='/home/runner/work/_temp/d27412ea-f4d9-42ea-ba7b-f3536aff54a3' before making global git config changes
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4025884Z Adding repository directory to the temporary git global config as a safe directory
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4029155Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4086551Z Deleting the contents of '/home/runner/work/dotnet-crap/dotnet-crap'
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4092186Z ##[group]Initializing the repository
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4098431Z [command]/usr/bin/git init /home/runner/work/dotnet-crap/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4226577Z hint: Using 'master' as the name for the initial branch. This default branch name
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4228628Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4230564Z hint: to use in all of your new repositories, which will suppress this warning,
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4232255Z hint: call:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4233042Z hint:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4233948Z hint: 	git config --global init.defaultBranch <name>
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4235051Z hint:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4236177Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4237845Z hint: 'development'. The just-created branch can be renamed via this command:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4240283Z hint:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4241828Z hint: 	git branch -m <name>
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4242895Z hint:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4244127Z hint: Disable this message with "git config set advice.defaultBranchName false"
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4246075Z Initialized empty Git repository in /home/runner/work/dotnet-crap/dotnet-crap/.git/
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4255131Z [command]/usr/bin/git remote add origin https://github.com/RuiCostafrg/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4310244Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4312132Z ##[group]Disabling automatic garbage collection
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4315179Z [command]/usr/bin/git config --local gc.auto 0
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4356590Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4358338Z ##[group]Setting up auth
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4367093Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4414533Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4854557Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.4899504Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5141794Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5193093Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5194585Z ##[group]Fetching the repository
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5207373Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +76a45d29d47de392c069308bb1f64753152096e2:refs/remotes/pull/15/merge
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7636681Z From https://github.com/RuiCostafrg/dotnet-crap
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7638219Z  * [new ref]         76a45d29d47de392c069308bb1f64753152096e2 -> pull/15/merge
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7641781Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7643237Z ##[group]Determining the checkout info
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7645506Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7654020Z [command]/usr/bin/git sparse-checkout disable
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7727833Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7889541Z ##[group]Checking out the ref
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7909809Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/15/merge
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7959604Z Note: switching to 'refs/remotes/pull/15/merge'.
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7960831Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7961403Z You are in 'detached HEAD' state. You can look around, make experimental
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7962566Z changes and commit them, and you can discard any commits you make in this
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7963694Z state without impacting any branches by switching back to a branch.
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7964367Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7964902Z If you want to create a new branch to retain commits you create, you may
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7966182Z do so (now or later) by using -c with the switch command. Example:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7966908Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7967165Z   git switch -c <new-branch-name>
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7967678Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7968214Z Or undo this operation with:
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7968690Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7968900Z   git switch -
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7969245Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7969902Z Turn off this advice by setting config variable advice.detachedHead to false
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7971562Z 
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7972837Z HEAD is now at 76a45d2 Merge 1cad955cbe5ec29590fb405174c495826de5f39f into 8620f712871a3acb6d985f26f0a35fbf38d5db71
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.7976028Z ##[endgroup]
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.8038225Z [command]/usr/bin/git log -1 --format=%H
+mutation	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.8072221Z 76a45d29d47de392c069308bb1f64753152096e2
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	﻿2026-11-07T11:32:04.8779688Z ##[group]Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8781122Z with:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8781606Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8782153Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8871588Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8951240Z ##[group]Run if [[ -z $toolchain ]]; then
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8952217Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8953789Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8955481Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8956321Z ^[[36;1m  exit 1^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8957255Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8958481Z ^[[36;1m  if [[ Linux == macOS ]]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8960027Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8961775Z ^[[36;1m  else^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8962973Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8964387Z ^[[36;1m  fi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8965208Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8966837Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8968224Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8969804Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8971453Z ^[[36;1melse^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8971968Z ^[[36;1m  delimiter=EOF^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8972828Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8974357Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.8975643Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9001028Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9002057Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9002520Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9003080Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9112917Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=23]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9119783Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9172126Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9173524Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9193821Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9194782Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9258516Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=13]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9263663Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9311129Z ##[group]Run if ! command -v rustup &>/dev/null; then
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9312161Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9314452Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9316917Z ^[[36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9317765Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9337631Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9339282Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9340132Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9341549Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9404254Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=13]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9409337Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9420183Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9438286Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9476742Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9478691Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9479991Z ^[[36;1mflags=()^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9481001Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9482240Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9483711Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9484961Z ^[[36;1mlog=$(mktemp)^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9485557Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9486253Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9487921Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9489650Z ^[[36;1m    break^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9490157Z ^[[36;1m  else^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9490864Z ^[[36;1m    status=$?^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9491436Z ^[[36;1m  fi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9492213Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9493917Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9495284Z ^[[36;1m    exit "$status"^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9495885Z ^[[36;1m  fi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9496888Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9498130Z ^[[36;1m  sleep 30^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9498653Z ^[[36;1mdone^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9518140Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9519074Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9519553Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9520244Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9521040Z   targets: 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9521556Z   components: 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9522104Z   RUSTUP_PERMIT_COPY_RENAME: 1
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9522764Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1579915Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2476573Z 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2559924Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2561629Z 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2622864Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=318]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2632889Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2678437Z ##[group]Run rustup default "$toolchain" --force-non-host
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2680018Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2702436Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2703863Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2704766Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2706072Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2707023Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2804292Z info: using existing install for stable-x86_64-unknown-linux-gnu
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2814478Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2815728Z 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2895224Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2896631Z 
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2922372Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=28]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2930366Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2977785Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2981287Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2983903Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2985846Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3007138Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3008447Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3009211Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3010195Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3011308Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3416721Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=48]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3423829Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3469910Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3471536Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3472821Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3473947Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3498294Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3499544Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3500332Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3501585Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3564935Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=13]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3571287Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3614487Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3615784Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3617045Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3618158Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3638008Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3639221Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3639957Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3641072Z   CARGO_INCREMENTAL: 0
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3641915Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3703357Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=12]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3711166Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3755383Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3757134Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3759609Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3762409Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3764517Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3766491Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3768554Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3770811Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3772739Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3774028Z ^[[36;1m  fi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3774757Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3794092Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3795315Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3796048Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3797178Z   CARGO_INCREMENTAL: 0
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3798015Z   CARGO_TERM_COLOR: always
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3798867Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.3799641Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4120970Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=40]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4129413Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4174381Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4176915Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4179146Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4181157Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4182380Z ^[[36;1mfi^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4202959Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4204167Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4204895Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4205832Z   CARGO_INCREMENTAL: 0
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4206670Z   CARGO_TERM_COLOR: always
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4207522Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4208281Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4399839Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=26]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4408461Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4451705Z ##[group]Run rustc +"$toolchain" --version --verbose
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4452973Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4474019Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4475198Z env:
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4475942Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4476873Z   CARGO_INCREMENTAL: 0
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4477705Z   CARGO_TERM_COLOR: always
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4478535Z   toolchain: stable
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4479285Z ##[endgroup]
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4644397Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4646000Z binary: rustc
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4648061Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4649820Z commit-date: 2026-10-13
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4651993Z host: x86_64-unknown-linux-gnu
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4653956Z release: 1.99.1
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4655694Z LLVM version: 23.1.1
+mutation	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.4677143Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=26]
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	﻿2026-11-07T11:32:05.4788294Z ##[group]Run cargo install cargo-mutants --version 27.1.0 --locked
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4791182Z ^[[36;1mcargo install cargo-mutants --version 27.1.0 --locked^[[0m
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4817458Z shell: /usr/bin/bash -e {0}
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4818352Z env:
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4819073Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4819994Z   CARGO_INCREMENTAL: 0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4821132Z   CARGO_TERM_COLOR: always
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.4822069Z ##[endgroup]
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.5774795Z ^[[1m^[[92m    Updating^[[0m crates.io index
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.6321530Z ^[[1m^[[92m Downloading^[[0m crates ...
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.7152531Z ^[[1m^[[92m  Downloaded^[[0m cargo-mutants v27.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.7867995Z ^[[1m^[[92m  Installing^[[0m cargo-mutants v27.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:05.7893961Z ^[[1m^[[92m    Updating^[[0m crates.io index
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.1524130Z ^[[1m^[[92m    Updating^[[0m crates.io index
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2121965Z ^[[1m^[[92m Downloading^[[0m crates ...
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2249724Z ^[[1m^[[92m  Downloaded^[[0m cargo-platform v0.3.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2273256Z ^[[1m^[[92m  Downloaded^[[0m color-print-proc-macro v0.3.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2289921Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.10
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2304047Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2353382Z ^[[1m^[[92m  Downloaded^[[0m camino v1.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2371920Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.5.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2393667Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v0.7.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2403637Z ^[[1m^[[92m  Downloaded^[[0m flickzeug v0.4.5
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2477880Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2488698Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.10
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2502836Z ^[[1m^[[92m  Downloaded^[[0m color-print v0.3.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2511930Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2525273Z ^[[1m^[[92m  Downloaded^[[0m cfg_aliases v0.2.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2534436Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v0.2.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2551231Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.86
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2589225Z ^[[1m^[[92m  Downloaded^[[0m bstr v1.11.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2666035Z ^[[1m^[[92m  Downloaded^[[0m clap v4.5.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2787757Z ^[[1m^[[92m  Downloaded^[[0m anstream v0.6.18
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2820232Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.8.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2884395Z ^[[1m^[[92m  Downloaded^[[0m cargo_metadata v0.23.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2911806Z ^[[1m^[[92m  Downloaded^[[0m cfg-expr v0.17.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.2956394Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.5.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3049283Z ^[[1m^[[92m  Downloaded^[[0m clap_complete v4.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3081607Z ^[[1m^[[92m  Downloaded^[[0m borsh v1.5.5
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3188832Z ^[[1m^[[92m  Downloaded^[[0m atty v0.2.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3204959Z ^[[1m^[[92m  Downloaded^[[0m target-lexicon v0.12.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3236529Z ^[[1m^[[92m  Downloaded^[[0m tracing-log v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3256476Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3267666Z ^[[1m^[[92m  Downloaded^[[0m toml_datetime v1.1.1+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3281836Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3297140Z ^[[1m^[[92m  Downloaded^[[0m nextest-workspace-hack v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3304354Z ^[[1m^[[92m  Downloaded^[[0m semver v1.0.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3328163Z ^[[1m^[[92m  Downloaded^[[0m thread_local v1.1.8
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3342577Z ^[[1m^[[92m  Downloaded^[[0m terminal_size v0.4.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3356985Z ^[[1m^[[92m  Downloaded^[[0m test-log-macros v0.2.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3366243Z ^[[1m^[[92m  Downloaded^[[0m env_filter v0.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3381185Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.7.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3434489Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.35
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3461031Z ^[[1m^[[92m  Downloaded^[[0m smallvec v1.13.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3482182Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3496109Z ^[[1m^[[92m  Downloaded^[[0m indoc v2.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3524410Z ^[[1m^[[92m  Downloaded^[[0m lazy_static v1.4.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3537396Z ^[[1m^[[92m  Downloaded^[[0m mutants v0.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3552579Z ^[[1m^[[92m  Downloaded^[[0m nu-ansi-term v0.50.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3569973Z ^[[1m^[[92m  Downloaded^[[0m num_cpus v1.16.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3600540Z ^[[1m^[[92m  Downloaded^[[0m similar v2.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3647727Z ^[[1m^[[92m  Downloaded^[[0m strum_macros v0.26.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3669259Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3678552Z ^[[1m^[[92m  Downloaded^[[0m matchers v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3688679Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3715066Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3743533Z ^[[1m^[[92m  Downloaded^[[0m test-log v0.2.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3752548Z ^[[1m^[[92m  Downloaded^[[0m jobserver v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3769559Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3777413Z ^[[1m^[[92m  Downloaded^[[0m ref-cast-impl v1.0.24
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3785335Z ^[[1m^[[92m  Downloaded^[[0m thiserror v2.0.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3846711Z ^[[1m^[[92m  Downloaded^[[0m whoami v1.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3865395Z ^[[1m^[[92m  Downloaded^[[0m toml_writer v1.1.1+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3878293Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3895565Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v2.0.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3909257Z ^[[1m^[[92m  Downloaded^[[0m yansi v0.5.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3921710Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.21
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3938818Z ^[[1m^[[92m  Downloaded^[[0m tracing-attributes v0.1.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3959593Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.3985855Z ^[[1m^[[92m  Downloaded^[[0m toml v1.1.2+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4024393Z ^[[1m^[[92m  Downloaded^[[0m toml_parser v1.1.2+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4046012Z ^[[1m^[[92m  Downloaded^[[0m tracing-core v0.1.33
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4070980Z ^[[1m^[[92m  Downloaded^[[0m dyn-clone v1.0.19
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4086619Z ^[[1m^[[92m  Downloaded^[[0m serde_spanned v1.1.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4097362Z ^[[1m^[[92m  Downloaded^[[0m tracing v0.1.41
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4134137Z ^[[1m^[[92m  Downloaded^[[0m winnow v1.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4225807Z ^[[1m^[[92m  Downloaded^[[0m tracing-subscriber v0.3.20
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4303325Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.1.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4357664Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4366529Z ^[[1m^[[92m  Downloaded^[[0m path-slash v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4378796Z ^[[1m^[[92m  Downloaded^[[0m guppy-workspace-hack v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4384775Z ^[[1m^[[92m  Downloaded^[[0m ref-cast v1.0.24
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4412089Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4424690Z ^[[1m^[[92m  Downloaded^[[0m ctrlc v3.4.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4443601Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.3.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4455679Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4467874Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4501201Z ^[[1m^[[92m  Downloaded^[[0m terminal_size v0.1.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4512974Z ^[[1m^[[92m  Downloaded^[[0m console v0.15.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4531432Z ^[[1m^[[92m  Downloaded^[[0m fs2 v0.4.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4542067Z ^[[1m^[[92m  Downloaded^[[0m nextest-metadata v0.12.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4554915Z ^[[1m^[[92m  Downloaded^[[0m nutmeg v0.1.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4590489Z ^[[1m^[[92m  Downloaded^[[0m pin-project-lite v0.2.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4647781Z ^[[1m^[[92m  Downloaded^[[0m reflink v0.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4660136Z ^[[1m^[[92m  Downloaded^[[0m schemars_derive v0.9.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4678738Z ^[[1m^[[92m  Downloaded^[[0m serde_derive_internals v0.29.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4691767Z ^[[1m^[[92m  Downloaded^[[0m sharded-slab v0.1.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4724100Z ^[[1m^[[92m  Downloaded^[[0m smol_str v0.3.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4739081Z ^[[1m^[[92m  Downloaded^[[0m strum v0.26.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4747060Z ^[[1m^[[92m  Downloaded^[[0m target-spec v3.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4762359Z ^[[1m^[[92m  Downloaded^[[0m crossbeam-deque v0.8.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4776090Z ^[[1m^[[92m  Downloaded^[[0m crossbeam-epoch v0.9.18
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4800527Z ^[[1m^[[92m  Downloaded^[[0m crossbeam-utils v0.8.21
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4834176Z ^[[1m^[[92m  Downloaded^[[0m either v1.13.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4847848Z ^[[1m^[[92m  Downloaded^[[0m env_logger v0.11.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4871876Z ^[[1m^[[92m  Downloaded^[[0m filetime v0.2.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4887215Z ^[[1m^[[92m  Downloaded^[[0m globset v0.4.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4900974Z ^[[1m^[[92m  Downloaded^[[0m ignore v0.4.23
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4920893Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.20.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4946473Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.95
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4972159Z ^[[1m^[[92m  Downloaded^[[0m rustversion v1.0.19
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.4998752Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.22.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5026042Z ^[[1m^[[92m  Downloaded^[[0m log v0.4.25
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5046716Z ^[[1m^[[92m  Downloaded^[[0m schemars v0.9.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5181796Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.3.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5212692Z ^[[1m^[[92m  Downloaded^[[0m minimal-lexical v0.2.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5256159Z ^[[1m^[[92m  Downloaded^[[0m nom v7.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5305513Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.14.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5347197Z ^[[1m^[[92m  Downloaded^[[0m nix v0.30.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5457720Z ^[[1m^[[92m  Downloaded^[[0m itertools v0.13.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5523036Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.149
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5591882Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.17.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5641922Z ^[[1m^[[92m  Downloaded^[[0m regex v1.10.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5771771Z ^[[1m^[[92m  Downloaded^[[0m syn v2.0.104
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5870538Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.5
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.5936440Z ^[[1m^[[92m  Downloaded^[[0m rustix v0.38.44
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.6186549Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.6445177Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.9
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.6587326Z ^[[1m^[[92m  Downloaded^[[0m jiff v0.1.29
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.6718108Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.174
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.6966563Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.4.15
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.7406561Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.11.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.8374242Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.95
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.8382267Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.8383641Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:06.8384802Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.174
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:07.1162441Z ^[[1m^[[92m   Compiling^[[0m memchr v2.7.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:08.2052209Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.35
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:08.4452269Z ^[[1m^[[92m   Compiling^[[0m syn v2.0.104
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:09.0182840Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.8.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:09.0952111Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:09.3471319Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:09.5191241Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.20.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:09.7162192Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.5
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.0782138Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.1361976Z ^[[1m^[[92m   Compiling^[[0m log v0.4.25
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.3915350Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.4336141Z ^[[1m^[[92m   Compiling^[[0m rustix v0.38.44
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.6440391Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.21
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:10.8422239Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v0.2.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.0280899Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.4.15
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.3772099Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.149
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.4682813Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.5162829Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.5672051Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.10
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:11.7992152Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.9
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:13.4307283Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.228
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:15.7382111Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:15.7842165Z ^[[1m^[[92m   Compiling^[[0m anstream v0.6.18
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:17.5646967Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:17.6722310Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:17.7592247Z ^[[1m^[[92m   Compiling^[[0m crossbeam-utils v0.8.21
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:17.7651809Z ^[[1m^[[92m   Compiling^[[0m target-lexicon v0.12.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:17.9312098Z ^[[1m^[[92m   Compiling^[[0m smallvec v1.13.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.1422215Z ^[[1m^[[92m   Compiling^[[0m terminal_size v0.4.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.2276840Z ^[[1m^[[92m   Compiling^[[0m tracing-core v0.1.33
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.3121926Z ^[[1m^[[92m   Compiling^[[0m cfg_aliases v0.2.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.3511951Z ^[[1m^[[92m   Compiling^[[0m thiserror v2.0.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.5401949Z ^[[1m^[[92m   Compiling^[[0m camino v1.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.7232108Z ^[[1m^[[92m   Compiling^[[0m guppy-workspace-hack v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:18.8172513Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:19.3657260Z ^[[1m^[[92m   Compiling^[[0m rustversion v1.0.19
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:19.7103028Z ^[[1m^[[92m   Compiling^[[0m nix v0.30.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:20.3882178Z ^[[1m^[[92m   Compiling^[[0m tracing-attributes v0.1.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:20.5912184Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v2.0.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.0772534Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.2981937Z ^[[1m^[[92m   Compiling^[[0m minimal-lexical v0.2.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.4871842Z ^[[1m^[[92m   Compiling^[[0m nextest-workspace-hack v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.5651947Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.3.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.5701727Z ^[[1m^[[92m   Compiling^[[0m nu-ansi-term v0.50.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.7546153Z ^[[1m^[[92m   Compiling^[[0m ref-cast v1.0.24
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:21.8951827Z ^[[1m^[[92m   Compiling^[[0m target-spec v3.2.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.0322047Z ^[[1m^[[92m   Compiling^[[0m clap_lex v0.7.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.0998514Z ^[[1m^[[92m   Compiling^[[0m lazy_static v1.4.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.1702122Z ^[[1m^[[92m   Compiling^[[0m pin-project-lite v0.2.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.2292112Z ^[[1m^[[92m   Compiling^[[0m tracing v0.1.41
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.2793633Z ^[[1m^[[92m   Compiling^[[0m sharded-slab v0.1.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.3382335Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.5.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:22.5462112Z ^[[1m^[[92m   Compiling^[[0m nom v7.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:23.1582032Z ^[[1m^[[92m   Compiling^[[0m cfg-expr v0.17.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:24.2462040Z ^[[1m^[[92m   Compiling^[[0m crossbeam-epoch v0.9.18
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:25.2182168Z ^[[1m^[[92m   Compiling^[[0m tracing-log v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:25.5132078Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.5.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:27.6392088Z ^[[1m^[[92m   Compiling^[[0m matchers v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:27.6635146Z ^[[1m^[[92m   Compiling^[[0m ref-cast-impl v1.0.24
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:27.7222154Z ^[[1m^[[92m   Compiling^[[0m serde_derive_internals v0.29.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:28.0192394Z ^[[1m^[[92m   Compiling^[[0m env_filter v0.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:28.6182353Z ^[[1m^[[92m   Compiling^[[0m thread_local v1.1.8
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:28.7392035Z ^[[1m^[[92m   Compiling^[[0m bstr v1.11.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:28.8602033Z ^[[1m^[[92m   Compiling^[[0m winnow v1.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:29.2972124Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.11.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:29.4882084Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:29.5942121Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.86
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:29.8102179Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:30.0182074Z ^[[1m^[[92m   Compiling^[[0m globset v0.4.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:30.5159682Z ^[[1m^[[92m   Compiling^[[0m toml_parser v1.1.2+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:32.0142183Z ^[[1m^[[92m   Compiling^[[0m tracing-subscriber v0.3.20
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:32.9222939Z ^[[1m^[[92m   Compiling^[[0m schemars_derive v0.9.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:33.5451447Z ^[[1m^[[92m   Compiling^[[0m env_logger v0.11.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:34.1217994Z ^[[1m^[[92m   Compiling^[[0m clap v4.5.28
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:34.1661967Z ^[[1m^[[92m   Compiling^[[0m strum_macros v0.26.4
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:35.0769103Z ^[[1m^[[92m   Compiling^[[0m crossbeam-deque v0.8.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:35.9152030Z ^[[1m^[[92m   Compiling^[[0m color-print-proc-macro v0.3.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:36.8722100Z ^[[1m^[[92m   Compiling^[[0m smol_str v0.3.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:37.1301994Z ^[[1m^[[92m   Compiling^[[0m regex v1.10.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.1162061Z ^[[1m^[[92m   Compiling^[[0m test-log-macros v0.2.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.3132096Z ^[[1m^[[92m   Compiling^[[0m serde_spanned v1.1.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.3452181Z ^[[1m^[[92m   Compiling^[[0m semver v1.0.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.3991996Z ^[[1m^[[92m   Compiling^[[0m cargo-platform v0.3.2
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.5772275Z ^[[1m^[[92m   Compiling^[[0m toml_datetime v1.1.1+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.7462464Z ^[[1m^[[92m   Compiling^[[0m atty v0.2.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.8062227Z ^[[1m^[[92m   Compiling^[[0m terminal_size v0.1.17
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.8732149Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.3.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.9232272Z ^[[1m^[[92m   Compiling^[[0m either v1.13.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:38.9542574Z ^[[1m^[[92m   Compiling^[[0m toml_writer v1.1.1+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.0401931Z ^[[1m^[[92m   Compiling^[[0m dyn-clone v1.0.19
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.1072092Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.1.14
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.1212222Z ^[[1m^[[92m   Compiling^[[0m yansi v0.5.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.1294151Z ^[[1m^[[92m   Compiling^[[0m toml v1.1.2+spec-1.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.1611988Z ^[[1m^[[92m   Compiling^[[0m schemars v0.9.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.2965275Z ^[[1m^[[92m   Compiling^[[0m console v0.15.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.3252052Z ^[[1m^[[92m   Compiling^[[0m nutmeg v0.1.6
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:39.6312168Z ^[[1m^[[92m   Compiling^[[0m itertools v0.13.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:41.1282200Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.22.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:41.4772079Z ^[[1m^[[92m   Compiling^[[0m cargo_metadata v0.23.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:42.0181825Z ^[[1m^[[92m   Compiling^[[0m test-log v0.2.16
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:42.0622493Z ^[[1m^[[92m   Compiling^[[0m nextest-metadata v0.12.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:44.2071324Z ^[[1m^[[92m   Compiling^[[0m ctrlc v3.4.7
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:44.3282629Z ^[[1m^[[92m   Compiling^[[0m color-print v0.3.1
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:44.3732112Z ^[[1m^[[92m   Compiling^[[0m strum v0.26.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:44.4342028Z ^[[1m^[[92m   Compiling^[[0m ignore v0.4.23
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:47.4752116Z ^[[1m^[[92m   Compiling^[[0m clap_complete v4.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:48.2992974Z ^[[1m^[[92m   Compiling^[[0m flickzeug v0.4.5
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:50.7162483Z ^[[1m^[[92m   Compiling^[[0m jiff v0.1.29
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:51.0541858Z ^[[1m^[[92m   Compiling^[[0m filetime v0.2.27
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:51.2302410Z ^[[1m^[[92m   Compiling^[[0m num_cpus v1.16.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:52.2272065Z ^[[1m^[[92m   Compiling^[[0m reflink v0.1.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:52.3204528Z ^[[1m^[[92m   Compiling^[[0m fs2 v0.4.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:52.4422001Z ^[[1m^[[92m   Compiling^[[0m jobserver v0.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:52.7722180Z ^[[1m^[[92m   Compiling^[[0m similar v2.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:52.7882144Z ^[[1m^[[92m   Compiling^[[0m indoc v2.0.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:53.0692553Z ^[[1m^[[92m   Compiling^[[0m mutants v0.0.3
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:53.1932081Z ^[[1m^[[92m   Compiling^[[0m whoami v1.5.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:32:53.6222158Z ^[[1m^[[92m   Compiling^[[0m path-slash v0.2.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:33:02.3400163Z ^[[1m^[[92m   Compiling^[[0m cargo-mutants v27.1.0
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:33:12.3133120Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 1m 06s
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:33:12.3245842Z ^[[1m^[[92m  Installing^[[0m /home/runner/.cargo/bin/cargo-mutants
+mutation	Run cargo install cargo-mutants --version 27.1.0 --locked	2026-11-07T11:33:12.3304682Z ^[[1m^[[92m   Installed^[[0m package `cargo-mutants v27.1.0` (executable `cargo-mutants`)
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	﻿2026-11-07T11:33:12.4587540Z ##[group]Run python3 -m unittest discover -s tests -p 'test_*.py'
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4588059Z ^[[36;1mpython3 -m unittest discover -s tests -p 'test_*.py'^[[0m
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4609038Z shell: /usr/bin/bash -e {0}
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4609289Z env:
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4609486Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4609738Z   CARGO_INCREMENTAL: 0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4609953Z   CARGO_TERM_COLOR: always
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.4610183Z ##[endgroup]
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7501656Z evidence=/tmp/tmpu11x_w03/run-xr5_ycsn/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7503827Z evidence=/tmp/tmpu11x_w03/run-2bgxv6n7/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7518442Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7521673Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7522298Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7539219Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7539638Z evidence=/tmp/tmp996uv2rf/run-ikwetavg/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7544980Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7547676Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7548030Z evidence=/tmp/tmp996uv2rf/run-ax6gbem2/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7551800Z evidence=/tmp/tmp996uv2rf/run-ycq8wkac/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7556854Z evidence=/tmp/tmp996uv2rf/run-0t7tqvbl/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7577714Z evidence=/tmp/tmp4tsk1noq/run-w5btrlpw/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7622910Z evidence=/tmp/tmpq60zj1di/run-9rbczkbk/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7628683Z total=1 caught=0 missed=1 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7637459Z evidence=/tmp/tmpmeukb1gp/run-ady9s1b6/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7643325Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7646224Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7646659Z evidence=/tmp/tmpmeukb1gp/run-yvmfft1c/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7652370Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7656183Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7657119Z evidence=/tmp/tmpmeukb1gp/run-t8w8iuxh/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7662965Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7669908Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7670956Z evidence=/tmp/tmpmeukb1gp/run-gzbwt1hg/mutants.out
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7676108Z total=1 caught=1 missed=0 timeout=0 unviable=0
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7688030Z ...............
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7688544Z ----------------------------------------------------------------------
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7689162Z Ran 15 tests in 0.201s
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7689408Z 
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7689548Z OK
+mutation	Run python3 -m unittest discover -s tests -p 'test_*.py'	2026-11-07T11:33:12.7689858Z score=100.00% (caught / (caught + missed + timeout))
+mutation	Run python3 scripts/mutation-gate.py	﻿2026-11-07T11:33:12.7861436Z ##[group]Run python3 scripts/mutation-gate.py
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7861872Z ^[[36;1mpython3 scripts/mutation-gate.py^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7882432Z shell: /usr/bin/bash -e {0}
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7882679Z env:
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7882874Z   CARGO_HOME: /home/runner/.cargo
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7883137Z   CARGO_INCREMENTAL: 0
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7883356Z   CARGO_TERM_COLOR: always
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.7883582Z ##[endgroup]
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.8273175Z evidence=/home/runner/work/dotnet-crap/dotnet-crap/target/mutation-runs/run-mcxdb0df/mutants.out
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:12.9629591Z Found 297 mutants to test
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:33:34.1495715Z ^[[32mok      ^[[0m Unmutated baseline in ^[[36m19s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:14.7703391Z ^[[31m^[[1mMISSED  ^[[0m src/main.rs:128:25: delete ^[[33m!^[[0m in ^[[38;5;13mrun^[[0m in ^[[36m0s^[[0m ^[[2mbuild^[[0m + ^[[36m0s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:14.7726067Z ##[warning] delete ! in run
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:27.2722018Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:65:45: replace ^[[33m*^[[0m with ^[[38;5;11m+^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:27.2753838Z ##[warning] replace * with + in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:33.4657410Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:65:38: replace ^[[33m*^[[0m with ^[[38;5;11m+^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:33.4684188Z ##[warning] replace * with + in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:39.5207947Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:67:31: replace ^[[33m>^[[0m with ^[[38;5;11m==^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:39.5234638Z ##[warning] replace > with == in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:45.2792554Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:67:31: replace ^[[33m>^[[0m with ^[[38;5;11m>=^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:45.2832799Z ##[warning] replace > with >= in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:47.1929670Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:71:32: replace ^[[33m+^[[0m with ^[[38;5;11m-^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:47.1952764Z ##[warning] replace + with - in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:50.8183011Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:71:32: replace ^[[33m+^[[0m with ^[[38;5;11m*^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:50.8189951Z ##[warning] replace + with * in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:53.3932569Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:72:27: replace ^[[33m>^[[0m with ^[[38;5;11m==^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:53.3938371Z ##[warning] replace > with == in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:56.9281235Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:72:27: replace ^[[33m>^[[0m with ^[[38;5;11m>=^[[0m in ^[[38;5;13mimport_report^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:41:56.9290352Z ##[warning] replace > with >= in import_report
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:42:54.3977962Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:264:32: delete ^[[33m!^[[0m in ^[[38;5;13mresolve_filename^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:42:54.3989748Z ##[warning] delete ! in resolve_filename
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:42:56.9697166Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:265:53: replace ^[[33m||^[[0m with ^[[38;5;11m&&^[[0m in ^[[38;5;13mresolve_filename^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:42:56.9707392Z ##[warning] replace || with && in resolve_filename
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:00.0932715Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:265:32: replace ^[[33m||^[[0m with ^[[38;5;11m&&^[[0m in ^[[38;5;13mresolve_filename^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:00.0956338Z ##[warning] replace || with && in resolve_filename
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:03.0542526Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:265:35: delete ^[[33m!^[[0m in ^[[38;5;13mresolve_filename^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:03.0588388Z ##[warning] delete ! in resolve_filename
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:17.0092168Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:310:23: replace match guard ^[[33merror.kind() == std::io::ErrorKind::NotFound^[[0m with ^[[33mtrue^[[0m in ^[[38;5;13madd_candidate^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:17.0114897Z ##[warning] replace match guard error.kind() == std::io::ErrorKind::NotFound with true in add_candidate
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:23.1531133Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:299:34: replace ^[[33m||^[[0m with ^[[38;5;11m&&^[[0m in ^[[38;5;13madd_candidate^[[0m in ^[[36m4s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:23.1553679Z ##[warning] replace || with && in add_candidate
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:42.0883050Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:341:13: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mnormalize_path^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:42.0914783Z ##[warning] replace && with || in normalize_path
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:50.1685695Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:346:13: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mnormalize_path^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:50.1704249Z ##[warning] replace && with || in normalize_path
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:53.3773778Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:345:13: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mnormalize_path^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:43:53.3799087Z ##[warning] replace && with || in normalize_path
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:44:07.5052923Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:347:24: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mnormalize_path^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:44:07.5082726Z ##[warning] replace && with || in normalize_path
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:44:21.0518916Z ^[[31m^[[1mMISSED  ^[[0m src/cobertura.rs:373:25: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mvalidate_filename^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:44:21.0522051Z ##[warning] replace && with || in validate_filename
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:16.7383707Z ^[[31m^[[1mMISSED  ^[[0m src/collector.rs:69:35: replace ^[[33m||^[[0m with ^[[38;5;11m&&^[[0m in ^[[38;5;13mcollect^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:16.7415604Z ##[warning] replace || with && in collect
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:25.2422666Z ^[[31m^[[1mMISSED  ^[[0m src/collector.rs:109:58: replace ^[[33m&&^[[0m with ^[[38;5;11m||^[[0m in ^[[38;5;13mcollect^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:25.2433430Z ##[warning] replace && with || in collect
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:34.1473363Z ^[[31m^[[1mMISSED  ^[[0m src/collector.rs:142:21: delete ^[[33m!^[[0m in ^[[38;5;13mcollect^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:34.1476119Z ##[warning] delete ! in collect
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:46.0313690Z ^[[31m^[[1mMISSED  ^[[0m src/collector.rs:177:19: replace match guard ^[[33me.kind() == std::io::ErrorKind::NotFound^[[0m with ^[[33mtrue^[[0m in ^[[38;5;13mvalidate_destination^[[0m in ^[[36m5s^[[0m ^[[2mbuild^[[0m + ^[[36m1s^[[0m ^[[2mtest^[[0m
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:45:46.0344079Z ##[warning] replace match guard e.kind() == std::io::ErrorKind::NotFound with true in validate_destination
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:46:49.4247291Z 297 mutants tested in 14m: 24 missed, 262 caught, 11 unviable
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:46:49.4321414Z total=297 caught=262 missed=24 timeout=0 unviable=11
+mutation	Run python3 scripts/mutation-gate.py	2026-11-07T11:46:49.4325236Z score=91.61% (caught / (caught + missed + timeout))
+mutation	Preserve complete mutation evidence	﻿2026-11-07T11:46:49.4472989Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4473429Z with:
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4473633Z   name: mutation-evidence
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4473881Z   path: target/mutation-runs/run-*/
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4474156Z   if-no-files-found: warn
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4474379Z   compression-level: 6
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4474592Z   overwrite: false
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4474804Z   include-hidden-files: false
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4475028Z env:
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4475214Z   CARGO_HOME: /home/runner/.cargo
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4475459Z   CARGO_INCREMENTAL: 0
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4475667Z   CARGO_TERM_COLOR: always
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.4475882Z ##[endgroup]
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.6261725Z (node:108153) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.6262907Z (Use `node --trace-deprecation ...` to show where the warning was created)
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.7565509Z With the provided path, there will be 603 files uploaded
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.7566641Z Artifact name is valid!
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.7567173Z Root directory input is valid!
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:49.9520902Z Beginning upload of artifact content to blob storage
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.5118294Z (node:108153) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.5828500Z Uploaded bytes 1967517
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.5985247Z Finished uploading artifact content to blob storage!
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.5986299Z SHA256 digest of uploaded artifact zip is fbb4922fb50db25e956650824912132fad3d1cf0cd33ebb95c295a5e0a58b934
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.5987987Z Finalizing artifact upload
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.9402526Z Artifact mutation-evidence.zip successfully finalized. Artifact ID 13572329519
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.9404330Z Artifact mutation-evidence has been successfully uploaded! Final size is 1967517 bytes. Artifact ID is 13572329519
+mutation	Preserve complete mutation evidence	2026-11-07T11:46:50.9411969Z Artifact download URL: https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570749/artifacts/13572329519
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:46:50.9738807Z Post job cleanup.
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0633521Z [command]/usr/bin/git version
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0689591Z git version 2.56.0
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0759020Z Temporarily overriding HOME='/home/runner/work/_temp/c7e9c290-5474-43bf-921b-2e06d1699500' before making global git config changes
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0760451Z Adding repository directory to the temporary git global config as a safe directory
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0766164Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0810202Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.0852161Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.1119784Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.1155126Z http.https://github.com/.extraheader
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.1172210Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+mutation	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:46:51.1217157Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+mutation	Complete job	﻿2026-11-07T11:46:51.1679209Z Cleaning up orphan processes
+mutation	Complete job	2026-11-07T11:46:51.2169621Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

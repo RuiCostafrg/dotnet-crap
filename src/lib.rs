@@ -133,14 +133,14 @@ impl ScanResult {
         Ok(output)
     }
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct Coverage {
     version: u32,
     #[serde(deserialize_with = "unique_map")]
     files: BTreeMap<String, CoverageFile>,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct CoverageFile {
     sha256: String,
@@ -212,6 +212,10 @@ pub struct Report {
     /// Whether any configured policy failed.
     pub failed: bool,
 }
+/// Strict Cobertura line-evidence importer.
+pub mod cobertura;
+/// Explicit trusted-process collection, separate from pure scanning.
+pub mod collector;
 mod sarif;
 /// Recognize implemented callable bodies, leaving explicit property/indexer accessors separate.
 fn callable(n: Node<'_>) -> bool {

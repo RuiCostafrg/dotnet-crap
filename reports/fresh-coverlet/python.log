@@ -1,0 +1,32 @@
+........evidence=/data/data/com.termux/files/usr/tmp/tmp1t8o6n_f/run-k50x0sur/mutants.out
+evidence=/data/data/com.termux/files/usr/tmp/tmp1t8o6n_f/run-g81on6te/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+score=100.00% (caught / (caught + missed + timeout))
+total=1 caught=1 missed=0 timeout=0 unviable=0
+.score=100.00% (caught / (caught + missed + timeout))
+evidence=/data/data/com.termux/files/usr/tmp/tmpd_c4l9lt/run-ew_p22jd/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+score=100.00% (caught / (caught + missed + timeout))
+evidence=/data/data/com.termux/files/usr/tmp/tmpd_c4l9lt/run-9sb46m4b/mutants.out
+evidence=/data/data/com.termux/files/usr/tmp/tmpd_c4l9lt/run-oop8ups9/mutants.out
+evidence=/data/data/com.termux/files/usr/tmp/tmpd_c4l9lt/run-9sm23lx6/mutants.out
+.evidence=/data/data/com.termux/files/usr/tmp/tmp9mgw7345/run-bk0w47t4/mutants.out
+..evidence=/data/data/com.termux/files/usr/tmp/tmpyb5ot3nd/run-iwatk1h0/mutants.out
+total=1 caught=0 missed=1 timeout=0 unviable=0
+.evidence=/data/data/com.termux/files/usr/tmp/tmpvhxyf3kb/run-45iwc71s/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+score=100.00% (caught / (caught + missed + timeout))
+evidence=/data/data/com.termux/files/usr/tmp/tmpvhxyf3kb/run-kqp1tib2/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+score=100.00% (caught / (caught + missed + timeout))
+evidence=/data/data/com.termux/files/usr/tmp/tmpvhxyf3kb/run-gd7q4nyn/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+score=100.00% (caught / (caught + missed + timeout))
+evidence=/data/data/com.termux/files/usr/tmp/tmpvhxyf3kb/run-cssxcbmz/mutants.out
+total=1 caught=1 missed=0 timeout=0 unviable=0
+..
+----------------------------------------------------------------------
+Ran 15 tests in 3.493s
+
+OK
+score=100.00% (caught / (caught + missed + timeout))

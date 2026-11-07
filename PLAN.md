@@ -47,7 +47,7 @@ Each row is a bounded feature change. Checked items are implemented on the
 branch identified below; unchecked items remain proposed. Split a row further
 if it cannot be reviewed and validated independently.
 
-### 1. Reusable Rust API and thin CLI — implemented on feature branch
+### 1. Reusable Rust API and thin CLI — merged in PR #11
 
 - [x] Extract existing analysis, native coverage validation and typed reports
   behind `src/lib.rs`; expose scan and rendering operations without clap types.
@@ -60,7 +60,8 @@ if it cannot be reviewed and validated independently.
 
 Implementation: `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d`; additional
 review-driven regression tests: `a285bf5`. This work is committed on
-`feat/reusable-rust-api`, not merged into `main`. The API, example and CLI
+`feat/reusable-rust-api`, merged in [PR #11](https://github.com/RuiCostafrg/dotnet-crap/pull/11)
+at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`. The API, example and CLI
 compatibility tests are documented in [Rust API](docs/RUST_API.md).
 
 Validation: formatting, warnings-denied clippy, locked debug/release tests,
@@ -77,21 +78,37 @@ reviewed in the evidence. Benchmarks in both modes are observational on this run
 and the complete production mutation inventory covers the extracted modules.
 Audit mutation configuration after moving files so no library source is omitted.
 
-### 2. Fresh Coverlet/Cobertura collection — next
+### 2. Fresh Coverlet/Cobertura collection — implemented in PR #15
 
 Depends on step 1. Deliver the mapping contract and collector as reviewable slices.
 
-- [ ] Snapshot selected sources before running an explicitly supplied trusted
+- [x] Snapshot selected sources before running an explicitly supplied trusted
   test command; verify original bytes again before publishing evidence.
-- [ ] Collect pinned Coverlet Cobertura output from a fresh per-run directory.
+- [x] Collect pinned Coverlet Cobertura output from a fresh per-run directory.
   Reject old output, failed tests, missing reports and changed source.
-- [ ] Define sequence-point ownership, zero-hit points, multi-assembly merging,
+- [x] Define sequence-point ownership, zero-hit points, multi-assembly merging,
   same-line nesting and missing evidence before changing completeness semantics.
-- [ ] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
+- [x] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
   partial classes, malformed XML and unsafe XML external references.
-- [ ] Add real collector fixtures covering partial/full/uncovered code, a
+- [x] Add real collector fixtures covering partial/full/uncovered code, a
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
+
+Implementation and validated source/test snapshot: `1cad955`;
+[PR #15](https://github.com/RuiCostafrg/dotnet-crap/pull/15).
+Native v1 remains unchanged: supplied-line evidence, maximum-hit union across
+assemblies, zero-hit retention and existing same-line nesting limits. Foreign
+roots, unmapped SourceLink/deterministic paths and UNC paths are rejected.
+See [the mapping/command contract](docs/COVERLET.md).
+
+Validation: locked debug/release, formatting, warnings-denied clippy, Python
+contracts, actionlint and actual .NET 10 VSTest collection for xUnit, MSTest and
+NUnit passed. Linux/macOS/Windows CI and supported Ubuntu packaging smoke passed.
+The full source-qualified mutation run tested 297 mutants: 262 caught, 24 missed,
+0 timeouts, 11 unviable; **91.61%**, with all five production modules represented
+and no blanket exclusions. [Complete evidence, inventory and survivor review](reports/fresh-coverlet/README.md).
+SDK 8 and actual MTP collection remain unverified; no parity is inferred from
+the negative MTP-mode SDK test. No release publication is enabled.
 
 **Done when:** actual .NET collector runs produce independently checked scores;
 failures leave no new coverage artifact. Document any versioned format migration.
@@ -169,8 +186,10 @@ Start profiling after step 1; repeat on each relevant production change.
   evaluate prefix counts or excluded-range skipping after measuring dense workloads.
 - [ ] Record runtime and peak memory with compiler, binary digest, source commit,
   corpus and individual samples. Keep correctness assertions in the harness.
-- [ ] Investigate the 3 recorded surviving mutants; strengthen independent
-  assertions where behavior matters and document genuinely equivalent cases.
+- [ ] Continue survivor investigation at named source revisions: the initial 3
+  cases and the 24 reviewed collector-tree survivors are qualified in their
+  evidence. Strengthen independent assertions where behavior matters; do not
+  declare uncovered boundaries or platform-specific cases globally equivalent.
 - [ ] Introduce performance budgets only after controlled, repeated measurements.
   Optimize measured bottlenecks without changing scoring semantics.
 
@@ -199,15 +218,15 @@ and installation/publication claims reflect actual validated releases.
 
 ## Parallel work and integration
 
-The library boundary is implemented on its feature branch; integrate it before
-starting dependent branches. Then collector work and config/selection work can
+The library boundary is merged in PR #11. Then collector work and config/selection work can
 run in separate prepared worktrees with agreed API ownership. Syntax fixtures and
 benchmark research can proceed independently; coordinate changes to analysis code.
 Baselines depend on stable identities; reporting can use the established report API.
 
-Use one feature branch and PR per bounded change. Assign Terra the cross-module
-API/collector work and Luna bounded fixtures, schemas or tooling where available;
-reserve another reviewer for independent assessment. Select only available models.
+Use one feature branch and PR per bounded change. For step 2, Sol owns API
+integration and independent review; Luna owns live fixtures, Haiku owns mapping
+research, and DeepSeek Flash owns the parser. Use the explicitly
+requested providers/models; report availability limitations without substitution.
 Do not let agents edit the same shared files concurrently. Integrate parent changes
 before validating a dependent PR; prefer a short stack over a long review chain.
 
@@ -221,7 +240,7 @@ cargo fmt --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo test --locked --release
-DOTNET_CRAP_E2E=1 cargo test --locked
+DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/mutation-gate.py
 ```

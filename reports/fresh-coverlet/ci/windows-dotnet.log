@@ -1,0 +1,872 @@
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	﻿2026-11-07T11:32:03.6418741Z Current runner version: '2.338.2'
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6481359Z ##[group]Runner Image Provisioner
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6482223Z Hosted Compute Agent
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6482780Z Version: 20261103.629
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6483417Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6484188Z Build Date: 2026-11-03T17:26:59Z
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6485007Z Worker ID: {cc4a4de3-1ca9-41ce-89db-b4f87393f528}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6485787Z Region: centralus
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6486368Z Cloud: Azure
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6486942Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6488287Z ##[group]Operating System
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6488904Z Microsoft Windows Server 2025
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6489458Z 10.0.26100
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6489913Z Datacenter
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6490521Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6491017Z ##[group]Runner Image
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6491767Z Image: windows-2025-vs2026
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6492481Z Version: 20261103.298.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6493609Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261103.298/images/windows/Windows2025-VS2026-Readme.md
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6496428Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261103.298
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6497367Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6498391Z ##[group]GITHUB_TOKEN Permissions
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6500483Z Contents: read
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6501004Z Metadata: read
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6501492Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6503561Z Secret source: Actions
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6504378Z Cache mode: write
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6505074Z Prepare workflow directory
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.6946926Z Prepare all required actions
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.7015183Z Getting action download info
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:03.9373090Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:04.0445892Z Download action repository 'dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec' (SHA:b725eda525362e7cf34af9a7243cac1e3f01a7ec)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:04.2042543Z Download action repository 'actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1' (SHA:26b0ec14cb23fa6904739307f278c14f94c95bf1)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Set up job	2026-11-07T11:32:04.7347354Z Complete job name: dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:32:04.8999328Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9001513Z with:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9002026Z   repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9006631Z   token: ***
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9007188Z   ssh-strict: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9007645Z   ssh-user: git
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9008088Z   persist-credentials: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9008687Z   clean: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9009240Z   sparse-checkout-cone-mode: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9009845Z   fetch-depth: 1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9010353Z   fetch-tags: false
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9010881Z   show-progress: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9011490Z   lfs: false
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9012063Z   submodules: false
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9012602Z   set-safe-directory: true
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.9013453Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.0526103Z Syncing repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.0528033Z ##[group]Getting Git version info
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.0528665Z Working directory is 'D:\a\dotnet-crap\dotnet-crap'
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.1293768Z [command]"C:\Program Files\Git\bin\git.exe" version
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.4317498Z git version 2.56.0.windows.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.4368440Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.4388994Z Temporarily overriding HOME='D:\a\_temp\7551ece3-88db-4cf2-b4fe-2e36138920de' before making global git config changes
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.4391938Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.4399990Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dotnet-crap\dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.5029991Z Deleting the contents of 'D:\a\dotnet-crap\dotnet-crap'
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.5038193Z ##[group]Initializing the repository
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.5046620Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\dotnet-crap\dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.5870062Z Initialized empty Git repository in D:/a/dotnet-crap/dotnet-crap/.git/
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.5923975Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.6658062Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.6661723Z ##[group]Disabling automatic garbage collection
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.6667016Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.7090093Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.7093728Z ##[group]Setting up auth
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.7103610Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:05.7610859Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.2153546Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.2563058Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.8842064Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.9316008Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.9317592Z ##[group]Fetching the repository
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.9332699Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +76a45d29d47de392c069308bb1f64753152096e2:refs/remotes/pull/15/merge
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0327150Z From https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0328279Z  * [new ref]         76a45d29d47de392c069308bb1f64753152096e2 -> pull/15/merge
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0375792Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0377106Z ##[group]Determining the checkout info
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0378016Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0388292Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.0976505Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.1381457Z ##[group]Checking out the ref
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.1391335Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/15/merge
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2288432Z Note: switching to 'refs/remotes/pull/15/merge'.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2289008Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2289402Z You are in 'detached HEAD' state. You can look around, make experimental
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2290206Z changes and commit them, and you can discard any commits you make in this
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2291006Z state without impacting any branches by switching back to a branch.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2291517Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2291790Z If you want to create a new branch to retain commits you create, you may
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2292334Z do so (now or later) by using -c with the switch command. Example:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2292636Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2292856Z   git switch -c <new-branch-name>
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2293063Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2293676Z Or undo this operation with:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2293963Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2294093Z   git switch -
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2294321Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2294549Z Turn off this advice by setting config variable advice.detachedHead to false
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2294885Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2295290Z HEAD is now at 76a45d2 Merge 1cad955cbe5ec29590fb405174c495826de5f39f into 8620f712871a3acb6d985f26f0a35fbf38d5db71
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2447668Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.2979309Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:10.3351685Z 76a45d29d47de392c069308bb1f64753152096e2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	﻿2026-11-07T11:32:10.3953056Z ##[group]Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.3953821Z with:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.3954132Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.3954441Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4034120Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4224106Z ##[group]Run if [[ -z $toolchain ]]; then
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4224759Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4225397Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4225999Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4226383Z ^[[36;1m  exit 1^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4226798Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4227363Z ^[[36;1m  if [[ Windows == macOS ]]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4227955Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4228665Z ^[[36;1m  else^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4229176Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4229680Z ^[[36;1m  fi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4230076Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4230653Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4231236Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4232445Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4233071Z ^[[36;1melse^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4233376Z ^[[36;1m  delimiter=EOF^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4233763Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4234342Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4234833Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4252987Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4253604Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4253913Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.4254209Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.5993218Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=195]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.5999462Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6226949Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6227635Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$USERPROFILE\.cargo"} >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6241616Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6242213Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6678185Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=67]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6681358Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6695308Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6699389Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6861778Z ##[group]Run if ! command -v rustup &>/dev/null; then
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6862279Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6863133Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://win.rustup.rs/x86_64 --output 'D:\a\_temp\rustup-init.exe'^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6864220Z ^[[36;1m  'D:\a\_temp\rustup-init.exe' --default-toolchain none --no-modify-path -y^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6868059Z ^[[36;1m  echo "$CARGO_HOME\bin" >> $GITHUB_PATH^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6868433Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6880888Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6881490Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6881802Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.6882172Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7540979Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=84]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7560862Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7705173Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7706388Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7706972Z ^[[36;1mflags=()^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7707350Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7707953Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7708530Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7709078Z ^[[36;1mlog=$(mktemp)^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7709434Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7709837Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7710514Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7711172Z ^[[36;1m    break^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7711542Z ^[[36;1m  else^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7711886Z ^[[36;1m    status=$?^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7712215Z ^[[36;1m  fi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7712635Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7713429Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7713980Z ^[[36;1m    exit "$status"^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7714367Z ^[[36;1m  fi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7714782Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7715338Z ^[[36;1m  sleep 30^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7715632Z ^[[36;1mdone^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7727999Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7728544Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7728905Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7729295Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7729588Z   targets: 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7729855Z   components: 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7730173Z   RUSTUP_PERMIT_COPY_RENAME: 1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:10.7730493Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:14.7416833Z info: syncing channel updates for stable-x86_64-pc-windows-msvc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.2315110Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.2635794Z   stable-x86_64-pc-windows-msvc unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.2636450Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.2992455Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=4543]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3003365Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3160205Z ##[group]Run rustup default "$toolchain" --force-non-host
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3160733Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3173909Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3174425Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3174775Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3175163Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3175487Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3900840Z info: using existing install for stable-x86_64-pc-windows-msvc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3990313Z info: default toolchain set to stable-x86_64-pc-windows-msvc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.3991754Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4225330Z   stable-x86_64-pc-windows-msvc unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4225805Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4310576Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=130]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4315460Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4461554Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4462550Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4463261Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4463831Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4476724Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4477221Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4477533Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4477908Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:15.4478199Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3157286Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=884]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3161060Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3300624Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3301150Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3301593Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3301955Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3314352Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3314865Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3315210Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3315583Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3746267Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=58]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3749313Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3887001Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3887492Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3887915Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3888278Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3900358Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3900860Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3901172Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3901518Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.3901860Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4323415Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=57]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4327862Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4462556Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4463157Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4463919Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4464645Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4465246Z ^[[36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4465802Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4467145Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4467804Z ^[[36;1m    touch "D:\a\_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4468491Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4468921Z ^[[36;1m  fi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4469198Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4480215Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4480724Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4481043Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4481392Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4482298Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4482718Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.4483029Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6340091Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=201]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6345658Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6496303Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6497606Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6498682Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6499545Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6500173Z ^[[36;1mfi^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6518107Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6518878Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6519309Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6519835Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6520354Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6520779Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.6521252Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7630150Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=128]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7636789Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7796161Z ##[group]Run rustc +"$toolchain" --version --verbose
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7796673Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7808268Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7808803Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7809122Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7809483Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7809805Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7810330Z   toolchain: stable
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.7810622Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8702545Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8703261Z binary: rustc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8703745Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8704420Z commit-date: 2026-10-13
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8704888Z host: x86_64-pc-windows-msvc
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8705400Z release: 1.99.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8705952Z LLVM version: 23.1.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:16.8843909Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=120]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:32:16.9064723Z ##[group]Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9065310Z with:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9065606Z   dotnet-version: 10.0.x
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9065934Z   cache: false
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9066218Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9066482Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9066915Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9067228Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:16.9067546Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:17.1660962Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\26b0ec14cb23fa6904739307f278c14f94c95bf1\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Runtime dotnet -Channel LTS
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:18.6729703Z dotnet-install: .NET Core Runtime with version '10.0.14' is already installed.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:18.8012211Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\26b0ec14cb23fa6904739307f278c14f94c95bf1\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Channel 10.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:19.7996440Z dotnet-install: .NET Core SDK with version '10.0.403' is already installed.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	﻿2026-11-07T11:32:19.9019562Z ##[group]Run dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9020358Z ^[[36;1mdotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9036399Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9036901Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9037241Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9037602Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9037897Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9038258Z   DOTNET_ROOT: C:\Program Files\dotnet
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:19.9038592Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.4802108Z PASS runtime identifier is supported on this host
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.4813672Z PASS Windows executable name is unchanged
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6142562Z PASS missing native binary reports an error and exits 2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6147906Z SKIP executable native runs directly with exact argv and exit code (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6149807Z SKIP exit codes are forwarded exactly for direct runs (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6151525Z SKIP non-executable native runs from a private copy and leaves the install untouched (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6157468Z SKIP private copy is removed after a non-zero child exit (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6158664Z SKIP read-only installs need no write access (exec and non-exec files) (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6159666Z SKIP owner without execute permission falls back to a private copy (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6160898Z SKIP private copy preparation failure exits 2 without touching the install (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6162193Z SKIP in-process API forwards arguments and cleans its private copy (Unix permission semantics)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Launcher process and permission contracts	2026-11-07T11:32:36.6163082Z 3 passed, 0 failed, 8 skipped
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	﻿2026-11-07T11:32:36.9490509Z ##[group]Run cargo test --locked
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9491030Z ^[[36;1mcargo test --locked^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9503812Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9504339Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9504651Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9505125Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9505484Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9505878Z   DOTNET_ROOT: C:\Program Files\dotnet
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9506219Z   DOTNET_CRAP_E2E: 1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9506508Z   DOTNET_CRAP_COVERLET_E2E: 1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:36.9506845Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:39.7060384Z ^[[1m^[[92m    Updating^[[0m crates.io index
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:40.5027096Z ^[[1m^[[92m Downloading^[[0m crates ...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:40.7238723Z ^[[1m^[[92m  Downloaded^[[0m roxmltree v0.20.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:40.9683954Z ^[[1m^[[92m  Downloaded^[[0m anstyle-wincon v3.0.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.0842352Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.0975593Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1094505Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1229931Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1317741Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1443287Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1591795Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1695862Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1830969Z ^[[1m^[[92m  Downloaded^[[0m windows-link v0.2.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.1913642Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2068308Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2179136Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2374546Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2453409Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2541324Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.1.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2635322Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2712804Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2869611Z ^[[1m^[[92m  Downloaded^[[0m once_cell_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.2958986Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3068644Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3217090Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3345970Z ^[[1m^[[92m  Downloaded^[[0m shlex v2.0.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3462516Z ^[[1m^[[92m  Downloaded^[[0m streaming-iterator v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3558704Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3726720Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.23
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.3862529Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.4099156Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.4202992Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.47
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.4521129Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.4806193Z ^[[1m^[[92m  Downloaded^[[0m winapi-util v0.1.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.4972226Z ^[[1m^[[92m  Downloaded^[[0m anstream v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.5150158Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.5302002Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.5488743Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.14
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.5641850Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.5825999Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.6101699Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.27
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.6376162Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.27.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.6598250Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.6895835Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.7275487Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.107
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.7548872Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.7818868Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.104
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.8301161Z ^[[1m^[[92m  Downloaded^[[0m clap v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.9570838Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:41.9894717Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.20.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.0114549Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.0523281Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.1044944Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.14.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.1424996Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.17.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.1868524Z ^[[1m^[[92m  Downloaded^[[0m regex v1.13.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.2362420Z ^[[1m^[[92m  Downloaded^[[0m cc v1.11.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.2695662Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.3261303Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.154
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:42.9986425Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter v0.25.10
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:43.0673405Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:43.1936119Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:43.2501648Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:43.3942124Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:43.4652090Z ^[[1m^[[92m  Downloaded^[[0m windows-sys v0.61.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:45.2394692Z ^[[1m^[[92m   Compiling^[[0m windows-link v0.2.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:45.2396139Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:45.2396696Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:45.2397177Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:51.0638765Z ^[[1m^[[92m   Compiling^[[0m windows-sys v0.61.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:54.2420607Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:54.4140987Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:54.6231356Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:54.8671436Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:55.4451758Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:56.3897245Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:57.1957005Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:57.1979426Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:57.4150270Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:57.6840014Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:58.7185571Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:58.7540050Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:58.7828755Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:58.9861462Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:59.0412172Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:59.2218601Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:32:59.9602488Z ^[[1m^[[92m   Compiling^[[0m once_cell_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:00.0507247Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:00.3569896Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:00.4568550Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:00.8355482Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.0363972Z ^[[1m^[[92m   Compiling^[[0m anstyle-wincon v3.0.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.0432439Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.4278511Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.5858185Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.6596025Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:01.8013921Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:04.1018853Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:04.3764348Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:04.4511023Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:04.8200529Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:05.1532530Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:05.6778887Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:05.7815932Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:05.9223193Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:06.3206065Z ^[[1m^[[92m   Compiling^[[0m winapi-util v0.1.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:06.6204677Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:07.0383227Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:07.3206177Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:07.4117609Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:07.6554170Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:07.9161297Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:08.1741335Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:08.4842217Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:08.9574094Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:10.5703178Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:11.4725470Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:14.3171060Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:14.3452623Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:14.4319766Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:14.5788874Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:14.8959998Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:15.2799217Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:15.7891397Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:15.8575500Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:16.3237756Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:16.4560801Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:17.0290160Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (D:\a\dotnet-crap\dotnet-crap)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9336774Z ^[[1m^[[92m    Finished^[[0m `test` profile [unoptimized + debuginfo] target(s) in 46.09s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9672500Z ^[[1m^[[92m     Running^[[0m unittests src\lib.rs (target\debug\deps\dotnet_crap-d81282385293ab64.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9787810Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9788273Z running 5 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9799858Z test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9800967Z test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9803814Z test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9804792Z test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9878431Z test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9878839Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9879112Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9879411Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:23.9901217Z ^[[1m^[[92m     Running^[[0m unittests src\main.rs (target\debug\deps\dotnet_crap-db5e634109585705.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0006241Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0006591Z running 0 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0006757Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0007052Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0007374Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0025532Z ^[[1m^[[92m     Running^[[0m tests\cli.rs (target\debug\deps\cli-a4af7a4cbc91a704.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0128977Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0129440Z running 6 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0379882Z test csharp_constructs_and_nested_ownership ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0607794Z test coverage_and_gates ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.0627829Z test rejects_duplicate_and_invalid_coverage ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.1140257Z test selection_deduplication_exclusions_and_output_safety ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:24.1444183Z test threshold_empty_missing_coverage_and_input_errors ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.3792700Z fixture passed
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7065205Z test dotnet_fixture ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7065836Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7066159Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.69s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7066492Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7093583Z ^[[1m^[[92m     Running^[[0m tests\cobertura_parser.rs (target\debug\deps\cobertura_parser-77ffacac06e682af.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7204897Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7206042Z running 26 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7529523Z test absolute_paths_outside_the_root_are_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7530480Z test class_filename_is_required ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7537053Z test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7544009Z test empty_report_slice_is_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7554813Z test ambiguous_exact_candidates_are_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7593233Z test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7610010Z test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7656762Z test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7710088Z test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7759769Z test malformed_and_unsafe_xml_is_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7773693Z test merges_selected_files_from_multiple_assemblies ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7853396Z test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7867069Z test ordinary_underscore_directory_is_an_exact_local_path ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7934166Z test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.7969032Z test parent_components_and_source_prefix_escapes_are_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8042656Z test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8119281Z test required_coverage_structure_is_enforced ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8193895Z test source_link_and_deterministic_paths_are_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8223650Z test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8249868Z test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8251752Z test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8283282Z test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8295206Z test source_text_line_bounds_use_original_utf8 ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8307140Z test unknown_relative_filename_is_not_suffix_matched ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8323890Z test unselected_root_files_are_ignored_without_basename_guessing ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8331545Z test zero_hit_only_evidence_is_preserved_as_zero ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8331945Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8332366Z test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8332903Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8359777Z ^[[1m^[[92m     Running^[[0m tests\collector.rs (target\debug\deps\collector-e044dc4badbb7687.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8480871Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.8481912Z running 10 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:26.9332764Z test deadline_reaps_the_child_and_publishes_nothing ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.7716199Z test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.7911040Z test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.7954234Z test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.8716042Z test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.9165219Z test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.9388293Z test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:27.9591728Z test incomplete_or_extra_project_reports_are_errors ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.0030074Z test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.1851599Z test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.1852178Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.1852604Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.1853481Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.1881578Z ^[[1m^[[92m     Running^[[0m tests\coverlet_live.rs (target\debug\deps\coverlet_live-b0efa0c8a7065ef8.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.2027947Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:28.2028904Z running 1 test
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:57.4700453Z   Determining projects to restore...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:57.8963335Z   All projects are up-to-date for restore.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:58.3045643Z   Alpha.Library -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Library\bin\Debug\net10.0\Alpha.Library.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:58.3862478Z   Alpha.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Tests\bin\Debug\net10.0\Alpha.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:58.3950029Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Tests\bin\Debug\net10.0\Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:33:58.6074224Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.0933763Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.0977879Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 9 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.2457384Z   Beta.Library -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Library\bin\Debug\net10.0\Beta.Library.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.3067649Z   Beta.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Tests\bin\Debug\net10.0\Beta.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.3173053Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Tests\bin\Debug\net10.0\Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:00.5307843Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:02.1627708Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:02.1672598Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 17 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:02.3350712Z   NUnit.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\NUnit.Tests\bin\Debug\net10.0\NUnit.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:02.3487871Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\NUnit.Tests\bin\Debug\net10.0\NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:02.5692697Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:04.1866325Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:04.1926678Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 8 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:04.3039312Z   MSTest.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\MSTest.Tests\bin\Debug\net10.0\MSTest.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:04.3103955Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\MSTest.Tests\bin\Debug\net10.0\MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:04.5314453Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.0711161Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.0767451Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 51 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3204461Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3210006Z Attachments:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3211884Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-g777qw\9b305f69-6c62-4f6a-a168-1d47a7ea82de\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3213215Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-g777qw\a8f46c50-4659-4302-875d-447859622239\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3214066Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-g777qw\436da8cd-0cb1-4bea-81b3-b0d02284e29f\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:06.3214916Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-g777qw\95934f48-c3b3-4276-87ea-b7b6a39718b6\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:07.5023255Z   Determining projects to restore...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:07.9345594Z   All projects are up-to-date for restore.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:08.3535779Z   Alpha.Library -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Library\bin\Debug\net10.0\Alpha.Library.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:08.5556721Z   Alpha.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Tests\bin\Debug\net10.0\Alpha.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:08.5655053Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Tests\bin\Debug\net10.0\Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:08.7770900Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:09.9772690Z [xUnit.net 00:00:00.20]     CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [FAIL]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2964544Z   Failed CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [17 ms]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2965935Z   Error Message:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2966556Z    Assert.Equal() Failure: Values differ
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2966937Z Expected: 77
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2970432Z Actual:   1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2971139Z   Stack Trace:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2972314Z      at CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches() in C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Alpha.Tests\AlphaCoverageTests.cs:line 12
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2974079Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.2974755Z    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.3056774Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.3097583Z Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 17 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.4579455Z   Beta.Library -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Library\bin\Debug\net10.0\Beta.Library.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.5212278Z   Beta.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Tests\bin\Debug\net10.0\Beta.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.5312847Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\Beta.Tests\bin\Debug\net10.0\Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:10.7547531Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:12.3805634Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:12.3850193Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 18 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:12.5349734Z   NUnit.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\NUnit.Tests\bin\Debug\net10.0\NUnit.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:12.5466779Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\NUnit.Tests\bin\Debug\net10.0\NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:12.7641596Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:14.3924209Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:14.3967509Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 8 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:14.5052387Z   MSTest.Tests -> C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\MSTest.Tests\bin\Debug\net10.0\MSTest.Tests.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:14.5118211Z Test run for C:\Users\runneradmin\AppData\Local\Temp\.tmp2mbu87\fixture\MSTest.Tests\bin\Debug\net10.0\MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:14.7338238Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.2986967Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.3030818Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 35 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5499266Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5506701Z Attachments:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5508508Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-LcBz5s\2a33cc57-ee8d-4653-984e-46248d2aeecb\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5509841Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-LcBz5s\a8c3480a-2dad-4854-93aa-b3111408c54f\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5510692Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-LcBz5s\f505ea5d-552e-4136-883f-9dc18db58921\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:16.5511536Z   C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-coverlet-LcBz5s\0bdd9240-4c16-4ca6-923d-40d318afa5e2\coverage.cobertura.xml
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9754736Z global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9757349Z The following test projects are using VSTest test runner:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9758615Z Alpha.Tests.csproj
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9759334Z MSTest.Tests.csproj
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9760010Z NUnit.Tests.csproj
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9760903Z Beta.Tests.csproj
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9761426Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:21.9934527Z See https://aka.ms/dotnet-test/mtp for more information.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4634327Z test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4638256Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4642220Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.26s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4643493Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4683669Z ^[[1m^[[92m     Running^[[0m tests\csharp_callables.rs (target\debug\deps\csharp_callables-6bf1aa860c92e6f5.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4828181Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.4830605Z running 11 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.5399396Z test coverage_is_owned_by_the_innermost_callable ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.5733033Z test existing_forms_keep_their_names_and_complexity ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.6829355Z test declaration_only_and_auto_forms_are_omitted ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.7180858Z test expression_and_block_bodies_score_the_same_logic ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.7486106Z test malformed_operator_is_an_input_error_without_report ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.8002653Z test nested_callables_are_charged_only_to_their_owner ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.8200760Z test operator_conversion_destructor_and_indexer_complexity ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.8489340Z test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.9019708Z test source_spacing_does_not_change_names ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:22.9696083Z test text_output_names_callables_descriptively ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:24.2587521Z   Determining projects to restore...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:24.7320010Z   Restored C:\Users\runneradmin\AppData\Local\Temp\.tmp4niBSe\Fixtures.csproj (in 89 ms).
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2186406Z   Fixtures -> C:\Users\runneradmin\AppData\Local\Temp\.tmp4niBSe\bin\Debug\net10.0\Fixtures.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2338881Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2346922Z Build succeeded.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2356128Z     0 Warning(s)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2356908Z     0 Error(s)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2358497Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.2358865Z Time Elapsed 00:00:01.85
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5681768Z test declaration_fixtures_are_valid_csharp ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5682209Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5682651Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.09s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5683142Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5706399Z ^[[1m^[[92m     Running^[[0m tests\library_api.rs (target\debug\deps\library_api-2ed8cde8850c6d4a.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5843798Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5844513Z running 8 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5852284Z test library_defaults_match_documented_cli_defaults ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5926403Z test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.5950802Z test result_detects_source_byte_changes ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.6355901Z test cli_preserves_coverage_and_unselected_source_aliases ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.6420290Z test serialization_and_captured_policy_keep_the_existing_contract ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.7083017Z test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.7240980Z test library_selection_deduplicates_and_rejects_root_escape ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8778926Z test coverage_empty_and_error_policies_match_cli ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8779427Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8779854Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8780879Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8804066Z ^[[1m^[[92m     Running^[[0m tests\live_coverage.rs (target\debug\deps\live_coverage-3f670543dec21a61.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8907547Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:25.8908303Z running 1 test
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9307545Z test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9308000Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9308274Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.04s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9308602Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9326858Z ^[[1m^[[92m     Running^[[0m tests\mutation_contracts.rs (target\debug\deps\mutation_contracts-bd63436562305348.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9444847Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9445684Z running 7 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9583148Z test malformed_coverage_map_reports_expected_type ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9691659Z test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9721464Z test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9780848Z test nested_source_selection_keeps_normal_directories ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9810741Z test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:30.9998722Z test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1066189Z test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1066569Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1066866Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1067210Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1087088Z ^[[1m^[[92m     Running^[[0m tests\real_csharp_accuracy.rs (target\debug\deps\real_csharp_accuracy-82579c7dcc3f048a.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1190124Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1190912Z running 10 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1479747Z test branches ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1536071Z test decoding_errors_identify_the_file_and_escape_its_name ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1683951Z test encoding_paths_and_terminal_controls ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.1793502Z test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.2022768Z test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.2090072Z test bom_encodings_bind_coverage_to_original_bytes ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.2189791Z test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.2238964Z test nested_ownership ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:31.2309087Z test stacked_switch ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0789735Z test execute_accuracy_fixtures_with_sdk ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0790486Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0790800Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.96s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0791157Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0812194Z ^[[1m^[[92m     Running^[[0m tests\sarif.rs (target\debug\deps\sarif-88753595b08d67f5.exe)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0916730Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0917187Z running 6 tests
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0925215Z test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.0926490Z test file_uri_structure_is_checked_before_decoding ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1144208Z test same_named_overloads_have_distinct_fingerprints ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1278349Z test staged_output_keeps_failed_reports_and_protects_source ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1404211Z test score_threshold_empty_and_completeness_gates ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1436016Z test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1436420Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1436706Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1437323Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.1455933Z ^[[1m^[[92m   Doc-tests^[[0m dotnet_crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9088980Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9090020Z running 1 test
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9961580Z test src\lib.rs - (line 7) - compile ... ok
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9961913Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9962198Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo test --locked	2026-11-07T11:34:36.9962561Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	﻿2026-11-07T11:34:37.0613319Z ##[group]Run cargo build --locked --release
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0613792Z ^[[36;1mcargo build --locked --release^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0625590Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0626007Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0626250Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0626551Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0626825Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0627062Z   DOTNET_ROOT: C:\Program Files\dotnet
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.0627796Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.2378015Z ^[[1m^[[92m   Compiling^[[0m windows-link v0.2.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.2378932Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.2379579Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.2381357Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.3721825Z ^[[1m^[[92m   Compiling^[[0m windows-sys v0.61.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.5531524Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.5636455Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.7606750Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.8357868Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:37.9125973Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:38.2382906Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:38.5736274Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:38.8262704Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:39.1595787Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:39.2570721Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:39.3745024Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:39.4725145Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:40.2649920Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:40.3309173Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:41.0443110Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:41.4964058Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:41.7094150Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:42.2398769Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:42.3315742Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:42.6374421Z ^[[1m^[[92m   Compiling^[[0m once_cell_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:42.6995591Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:42.7276916Z ^[[1m^[[92m   Compiling^[[0m anstyle-wincon v3.0.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:43.0041431Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:43.2907874Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:43.4707630Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:43.5891740Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:43.6456973Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:45.9536474Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:46.0312000Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:46.3429479Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:46.5099172Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:47.5380352Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:51.3930032Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:51.5463431Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:51.6615898Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:52.0566488Z ^[[1m^[[92m   Compiling^[[0m winapi-util v0.1.11
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:52.6626547Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:52.9193312Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:53.2463576Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:53.3236009Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:53.6661075Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:53.9512358Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:55.1845801Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:58.2682841Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:58.4819651Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:34:58.7767217Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:04.5285462Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:05.5703772Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:06.0437790Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:06.4428872Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:06.7561480Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:07.2357488Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:10.4696173Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:13.5798940Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:13.7665973Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:13.8482470Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:14.2238110Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:15.3169830Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (D:\a\dotnet-crap\dotnet-crap)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Run cargo build --locked --release	2026-11-07T11:35:21.8735320Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 44.72s
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	﻿2026-11-07T11:35:21.9078055Z ##[group]Run mkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9078665Z ^[[36;1mmkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9079183Z ^[[36;1mcp "target/release/$NATIVE_EXE" "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID/$NATIVE_EXE"^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9079901Z ^[[36;1mbash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9080517Z ^[[36;1mversion="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9081144Z ^[[36;1mprintf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9082262Z ^[[36;1mNUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9083197Z ^[[36;1mtarget/tool/dotnet-crap --help^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9083488Z ^[[36;1mtarget/tool/dotnet-crap --version^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9083899Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9084303Z ^[[36;1mset +e^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9084595Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 0^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9084956Z ^[[36;1mcode=$?^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9085151Z ^[[36;1mset -e^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9085345Z ^[[36;1mtest "$code" = 1^[[0m
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9100753Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9101178Z env:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9101392Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9101659Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9101895Z   CARGO_TERM_COLOR: always
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9102132Z   DOTNET_ROOT: C:\Program Files\dotnet
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9102396Z   DOTNET_CRAP_LOCAL_RID: win-x64
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9102767Z   NATIVE_EXE: dotnet-crap.exe
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:21.9103002Z ##[endgroup]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:23.1233078Z   Determining projects to restore...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:23.4866304Z   Restored C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-pack.tKRFx5\project\dotnet-crap-launcher.csproj (in 93 ms).
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:24.1069920Z   dotnet-crap-launcher -> C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-pack.tKRFx5\project\bin\Release\net10.0\dotnet-crap-launcher.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:24.2427681Z   dotnet-crap-launcher -> C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-pack.tKRFx5\project\bin\Release\net10.0\dotnet-crap-launcher.dll
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:24.2690819Z   dotnet-crap-launcher -> C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-pack.tKRFx5\project\bin\Release\net10.0\publish\
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:24.6462732Z   Successfully created package 'C:\Users\runneradmin\AppData\Local\Temp\dotnet-crap-pack.tKRFx5\feed\dotnet-crap.0.1.0.nupkg'.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:25.1614295Z Packed /d/a/dotnet-crap/dotnet-crap/target/dotnet-tool-stage/feed/dotnet-crap.0.1.0.nupkg with 1 native binary file(s).
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:25.9114935Z You can invoke the tool using the following command: dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:25.9115795Z Tool 'dotnet-crap' (version '0.1.0') was successfully installed.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0296206Z Score C# callables using cyclomatic complexity and source-bound coverage
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0297169Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0297454Z Usage: dotnet-crap.exe [OPTIONS] [PATHS]...
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0297709Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0297832Z Arguments:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0298590Z   [PATHS]...  
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0300680Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0300807Z Options:
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0301177Z       --root <ROOT>            [default: .]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0301691Z       --threshold <THRESHOLD>  [default: 10]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0302349Z       --format <FORMAT>        [default: text] [possible values: text, json, sarif]
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0302953Z       --output <OUTPUT>        
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0306253Z       --coverage <COVERAGE>    
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0306632Z       --require-coverage       
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0307012Z       --fail-on-empty          
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0307457Z   -h, --help                   Print help
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0307916Z   -V, --version                Print version
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0308166Z 
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.0308426Z Fresh coverage collection: dotnet-crap collect --help
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.1274442Z dotnet-crap 0.1.0
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.2254810Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.2255535Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.3307804Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Pack local tool and run real .NET fixture	2026-11-07T11:35:26.3308546Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:35:26.3667679Z Post job cleanup.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:35:26.5508735Z Post job cleanup.
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.7325297Z [command]"C:\Program Files\Git\bin\git.exe" version
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.7697741Z git version 2.56.0.windows.4
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.7775650Z Temporarily overriding HOME='D:\a\_temp\f65b75d8-0249-4f8d-82be-ee0d8de677c6' before making global git config changes
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.7776844Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.7787105Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dotnet-crap\dotnet-crap
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.8204857Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:26.8647147Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:27.4419734Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:27.4775119Z http.https://github.com/.extraheader
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:27.4828135Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:35:27.5247132Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	﻿2026-11-07T11:35:28.1326002Z Cleaning up orphan processes
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.1703032Z Terminate orphan process: pid (1860) (VBCSCompiler)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.1779831Z Terminate orphan process: pid (1436) (conhost)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.1935770Z Terminate orphan process: pid (5692) (vctip)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.2106760Z Terminate orphan process: pid (1280) (dotnet)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.2246749Z Terminate orphan process: pid (6452) (dotnet)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.2419343Z Terminate orphan process: pid (8688) (dotnet)
+dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)	Complete job	2026-11-07T11:35:28.2658006Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

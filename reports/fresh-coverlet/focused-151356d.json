@@ -1,0 +1,7 @@
+{
+  "revision": "151356dac9d7511cf15238484a49d52252fa5f91",
+  "command": "cargo test --locked --test collector --test cobertura_parser --lib",
+  "log": "focused-151356d.log",
+  "log_sha256": "54340fb580b92fa533b6550f632f071f9d1d727d7dca38e4ad14b7b08a6f1ed7",
+  "runner": "parent integration validation; not an independent review run"
+}

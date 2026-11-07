@@ -1,0 +1,113 @@
+   Compiling dotnet-crap v0.1.0 (/root/.t3/worktrees/dotnet-crap/feat-fresh-coverlet-coverage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.57s
+     Running tests/coverlet_live.rs (target/debug/deps/coverlet_live-625f54aebaab6350)
+
+running 1 test
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Alpha.Library -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+  Alpha.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 231 ms - Alpha.Tests.dll (net10.0)
+  Beta.Library -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+  Beta.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 117 ms - Beta.Tests.dll (net10.0)
+  NUnit.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 142 ms - NUnit.Tests.dll (net10.0)
+  MSTest.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 104 ms - MSTest.Tests.dll (net10.0)
+
+Attachments:
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-Ct6V7p/a4bb349c-d581-4d1f-81b0-f12a651d4986/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-Ct6V7p/4a49c256-32b5-454b-9a2b-61d52f88d275/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-Ct6V7p/341e5ae4-bf21-4ce3-8834-b99295d4b2e0/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-Ct6V7p/cbac841f-a702-4223-a4aa-a43f349521d9/coverage.cobertura.xml
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Alpha.Library -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+  Alpha.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.42]     CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [FAIL]
+  Failed CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [216 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 77
+Actual:   1
+  Stack Trace:
+     at CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches() in /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Alpha.Tests/AlphaCoverageTests.cs:line 12
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 216 ms - Alpha.Tests.dll (net10.0)
+  Beta.Library -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+  Beta.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 123 ms - Beta.Tests.dll (net10.0)
+  NUnit.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 98 ms - NUnit.Tests.dll (net10.0)
+  MSTest.Tests -> /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpI0ADwX/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 94 ms - MSTest.Tests.dll (net10.0)
+
+Attachments:
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-TX6Gd1/7ff454f2-1c43-4aaf-bc1d-f9b970fc30e6/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-TX6Gd1/417aae1b-aeee-4fe4-9f33-6a6737ff549b/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-TX6Gd1/ebae8407-28cc-46a7-b260-2da93fb6586f/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-TX6Gd1/5f638a90-d0b1-4aca-bf24-b8946878066d/coverage.cobertura.xml
+global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
+Beta.Tests.csproj
+Alpha.Tests.csproj
+MSTest.Tests.csproj
+NUnit.Tests.csproj
+
+See https://aka.ms/dotnet-test/mtp for more information.
+Get projects properties with MSBuild didn't execute properly with exit code: 1.
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 497.16s
+

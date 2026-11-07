@@ -1,0 +1,302 @@
+
+*** src/lib.rs:494:5: replace scan -> Result<ScanResult> with Ok(Default::default())
+
+*** mutation diff:
+--- src/lib.rs
++++ replace scan -> Result<ScanResult> with Ok(Default::default())
+@@ -486,184 +486,17 @@
+             text.push(character);
+         }
+     }
+     text
+ }
+ 
+ /// Validate inputs and scan selected C# sources.
+ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+-    if !args.threshold.is_finite() || args.threshold < 0.0 {
+-        bail!("threshold must be finite and nonnegative");
+-    }
+-    let root = args.root.canonicalize().context("invalid root")?;
+-    if !root.is_dir() {
+-        bail!("root must be a directory");
+-    }
+-    let coverage: Option<Coverage> = args
+-        .coverage
+-        .as_ref()
+-        .map(|p| -> Result<_> {
+-            serde_json::from_slice(&fs::read(p).context("reading coverage")?)
+-                .context("invalid coverage JSON")
+-        })
+-        .transpose()?;
+-    if let Some(c) = &coverage {
+-        if c.version != 1 {
+-            bail!("unsupported coverage version");
+-        }
+-        for (path, f) in &c.files {
+-            if path.contains(['\\', ':'])
+-                || Path::new(path)
+-                    .components()
+-                    .any(|x| !matches!(x, Component::Normal(_)))
+-                || path.is_empty()
+-                || path.split('/').any(|part| part == "." || part == "..")
+-                || path.contains("//")
+-                || path.ends_with('/')
+-                || f.sha256.len() != 64
+-                || !f.sha256.bytes().all(|b| b.is_ascii_hexdigit())
+-            {
+-                bail!("invalid coverage entry: {path}");
+-            }
+-            for l in f.lines.keys() {
+-                if l.parse::<usize>()
+-                    .ok()
+-                    .filter(|v| *v > 0 && v.to_string() == *l)
+-                    .is_none()
+-                {
+-                    bail!("invalid coverage line: {l}");
+-                }
+-            }
+-        }
+-    }
+-    let mut files = BTreeSet::new();
+-    for path in if args.paths.is_empty() {
+-        vec![PathBuf::from(".")]
+-    } else {
+-        args.paths.clone()
+-    } {
+-        let candidate = if path.is_absolute() {
+-            path
+-        } else {
+-            root.join(path)
+-        };
+-        let candidate = candidate.canonicalize().context("invalid input path")?;
+-        if !candidate.starts_with(&root) {
+-            bail!("input path escapes root");
+-        }
+-        if candidate
+-            .strip_prefix(&root)?
+-            .components()
+-            .any(|part| matches!(part.as_os_str().to_str(), Some("bin" | "obj" | ".git")))
+-        {
+-            continue;
+-        }
+-        for entry in WalkDir::new(candidate)
+-            .follow_links(false)
+-            .into_iter()
+-            .filter_entry(|e| {
+-                let n = e.file_name().to_string_lossy();
+-                e.depth() == 0
+-                    || !(e.file_type().is_symlink()
+-                        || e.file_type().is_dir() && matches!(n.as_ref(), "bin" | "obj" | ".git"))
+-            })
+-        {
+-            let e = entry?;
+-            if e.file_type().is_file()
+-                && e.path()
+-                    .extension()
+-                    .is_some_and(|x| x.eq_ignore_ascii_case("cs"))
+-            {
+-                let name = e.file_name().to_string_lossy().to_ascii_lowercase();
+-                if !name.ends_with(".g.cs")
+-                    && !name.ends_with(".generated.cs")
+-                    && !name.ends_with(".designer.cs")
+-                {
+-                    files.insert(e.path().to_path_buf());
+-                }
+-            }
+-        }
+-    }
+-    let mut parser = TsParser::new();
+-    parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
+-    let mut items = Vec::new();
+-    let mut source_hashes = Vec::new();
+-    for path in &files {
+-        let bytes = fs::read(path).with_context(|| format!("reading {}", path.display()))?;
+-        let hash = hex::encode(Sha256::digest(&bytes));
+-        let source =
+-            decode_source(&bytes).with_context(|| format!("decoding {}", path.display()))?;
+-        let relative = path
+-            .strip_prefix(&root)?
+-            .to_str()
+-            .context("non-UTF-8 source path")?
+-            .to_owned();
+-        #[cfg(windows)]
+-        let relative = relative.replace('\\', "/");
+-        if coverage.is_some() && relative.contains(['\\', ':']) {
+-            bail!("source path contains characters unsupported by native coverage: {relative}");
+-        }
+-        source_hashes.push((path.clone(), hash.clone()));
+-        let tree = parser.parse(&source, None).context("parser failed")?;
+-        if tree.root_node().has_error() {
+-            bail!("invalid C# syntax in {relative}");
+-        }
+-        let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
+-        if let Some(c) = cov {
+-            if !hash.eq_ignore_ascii_case(&c.sha256) {
+-                bail!("stale coverage for {relative}");
+-            }
+-            let line_count = source.lines().count();
+-            if c.lines
+-                .keys()
+-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
+-            {
+-                bail!("coverage line outside {relative}");
+-            }
+-        }
+-        let points = cov.map(|c| {
+-            c.lines
+-                .iter()
+-                .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits))
+-                .collect()
+-        });
+-        collect(
+-            tree.root_node(),
+-            &source,
+-            &relative,
+-            points.as_ref(),
+-            &mut items,
+-            1_000_000,
+-            1_000_000,
+-        )?;
+-    }
+-    let coverage_complete = items.iter().all(|i| i.coverage.is_some());
+-    let failed = items.iter().any(|i| i.crap > args.threshold)
+-        || args.require_coverage && !coverage_complete
+-        || args.fail_on_empty && items.is_empty();
+-    let report = Report {
+-        threshold: args.threshold,
+-        files_scanned: files.len(),
+-        coverage_complete,
+-        functions: items,
+-        failed,
+-    };
+-    let mut input_paths: Vec<PathBuf> = files.into_iter().collect();
+-    input_paths.extend(args.coverage.iter().cloned());
+-    let result = ScanResult {
+-        report,
+-        root,
+-        input_paths,
+-        source_hashes,
+-        require_coverage: args.require_coverage,
+-        fail_on_empty: args.fail_on_empty,
+-    };
+-    result.verify_sources()?;
+-    Ok(result)
++    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     /// Run the actual collector with deliberately small independent resource limits.
+     fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
+         let mut parser = TsParser::new();
+
+
+*** /home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo test --no-run --verbose --package=dotnet-crap@0.1.0 --locked
+[1m[92m       Fresh[0m memchr v2.8.3
+[1m[92m       Fresh[0m find-msvc-tools v0.1.15
+[1m[92m       Fresh[0m shlex v2.0.1
+[1m[92m       Fresh[0m version_check v0.9.5
+[1m[92m       Fresh[0m unicode-ident v1.0.27
+[1m[92m       Fresh[0m proc-macro2 v1.0.107
+[1m[92m       Fresh[0m cc v1.11.0
+[1m[92m       Fresh[0m quote v1.0.47
+[1m[92m       Fresh[0m zmij v1.0.23
+[1m[92m       Fresh[0m hashbrown v0.17.1
+[1m[92m       Fresh[0m itoa v1.0.18
+[1m[92m       Fresh[0m typenum v1.20.1
+[1m[92m       Fresh[0m equivalent v1.0.3
+[1m[92m       Fresh[0m indexmap v2.14.2
+[1m[92m       Fresh[0m generic-array v0.14.7
+[1m[92m       Fresh[0m syn v3.0.9
+[1m[92m       Fresh[0m utf8parse v0.2.2
+[1m[92m       Fresh[0m foldhash v0.2.0
+[1m[92m       Fresh[0m anstyle-parse v1.0.0
+[1m[92m       Fresh[0m aho-corasick v1.1.5
+[1m[92m       Fresh[0m anstyle v1.0.14
+[1m[92m       Fresh[0m regex-syntax v0.8.11
+[1m[92m       Fresh[0m cfg-if v1.0.5
+[1m[92m       Fresh[0m is_terminal_polyfill v1.70.2
+[1m[92m       Fresh[0m colorchoice v1.0.5
+[1m[92m       Fresh[0m anstyle-query v1.1.5
+[1m[92m       Fresh[0m anstream v1.0.0
+[1m[92m       Fresh[0m regex-automata v0.4.18
+[1m[92m       Fresh[0m libc v0.2.191
+[1m[92m       Fresh[0m serde_core v1.0.229
+[1m[92m       Fresh[0m block-buffer v0.10.4
+[1m[92m       Fresh[0m crypto-common v0.1.7
+[1m[92m       Fresh[0m tree-sitter-language v0.1.9
+[1m[92m       Fresh[0m linux-raw-sys v0.12.1
+[1m[92m       Fresh[0m bitflags v2.13.2
+[1m[92m       Fresh[0m heck v0.5.0
+[1m[92m       Fresh[0m strsim v0.11.1
+[1m[92m       Fresh[0m clap_lex v1.1.1
+[1m[92m       Fresh[0m clap_builder v4.6.7
+[1m[92m       Fresh[0m clap_derive v4.6.7
+[1m[92m       Fresh[0m rustix v1.1.6
+[1m[92m       Fresh[0m digest v0.10.7
+[1m[92m       Fresh[0m getrandom v0.4.3
+[1m[92m       Fresh[0m regex v1.13.1
+[1m[92m       Fresh[0m serde_derive v1.0.229
+[1m[92m       Fresh[0m streaming-iterator v0.1.9
+[1m[92m       Fresh[0m once_cell v1.21.4
+[1m[92m       Fresh[0m fastrand v2.5.0
+[1m[92m       Fresh[0m cpufeatures v0.2.17
+[1m[92m       Fresh[0m same-file v1.0.6
+[1m[92m       Fresh[0m walkdir v2.5.0
+[1m[92m       Fresh[0m sha2 v0.10.9
+[1m[92m       Fresh[0m tempfile v3.27.0
+[1m[92m       Fresh[0m tree-sitter v0.25.10
+[1m[92m       Fresh[0m serde v1.0.229
+[1m[92m       Fresh[0m tree-sitter-c-sharp v0.23.5
+[1m[92m       Fresh[0m serde_json v1.0.154
+[1m[92m       Fresh[0m anyhow v1.0.104
+[1m[92m       Fresh[0m clap v4.6.7
+[1m[92m       Fresh[0m roxmltree v0.20.0
+[1m[92m       Fresh[0m hex v0.4.3
+[1m[92m       Dirty[0m dotnet-crap v0.1.0 (/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp): the file `src/lib.rs` has changed (1794051525.299130528s, 6s after last build at 1794051519.777133185s)
+[1m[92m   Compiling[0m dotnet-crap v0.1.0 (/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp)
+[1m[92m     Running[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name dotnet_crap --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --forbid=unsafe_code --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=77a32f5a8159c764 -C extra-filename=-75a587a3d1a18363 --out-dir /tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps -L dependency=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps --extern anyhow=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libanyhow-2af0cc7ddb15f3f7.rmeta --extern clap=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libclap-8e74421947c29e52.rmeta --extern hex=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libhex-b0757a7bc7b6b2d3.rmeta --extern roxmltree=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libroxmltree-1fa369c42784ddf0.rmeta --extern same_file=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libsame_file-4f847cd9b41b73de.rmeta --extern serde=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libserde-c0653af92fb8333a.rmeta --extern serde_json=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libserde_json-906cb9383affae14.rmeta --extern sha2=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libsha2-381948c786df0976.rmeta --extern tempfile=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtempfile-add702d1c81690c2.rmeta --extern tree_sitter=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtree_sitter-0290f8f3b92aabfe.rmeta --extern tree_sitter_c_sharp=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtree_sitter_c_sharp-84169dae1b8c00b1.rmeta --extern walkdir=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libwalkdir-e035f265a75fec69.rmeta -L native=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/build/tree-sitter-4619d7aba301294b/out -L native=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/build/tree-sitter-c-sharp-c468f49c45b06dfc/out`
+[1m[33mwarning[0m[1m: unused imports: `BTreeSet` and `Component`[0m
+  [1m[94m--> [0msrc/lib.rs:20:29
+   [1m[94m|[0m
+[1m[94m20[0m [1m[94m|[0m     collections::{BTreeMap, BTreeSet},
+   [1m[94m|[0m                             [1m[33m^^^^^^^^[0m
+[1m[94m21[0m [1m[94m|[0m     fs,
+[1m[94m22[0m [1m[94m|[0m     path::{Component, Path, PathBuf},
+   [1m[94m|[0m            [1m[33m^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: unused import: `Parser as TsParser`[0m
+  [1m[94m--> [0msrc/lib.rs:24:25
+   [1m[94m|[0m
+[1m[94m24[0m [1m[94m|[0m use tree_sitter::{Node, Parser as TsParser};
+   [1m[94m|[0m                         [1m[33m^^^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: unused import: `walkdir::WalkDir`[0m
+  [1m[94m--> [0msrc/lib.rs:25:5
+   [1m[94m|[0m
+[1m[94m25[0m [1m[94m|[0m use walkdir::WalkDir;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+
+[1m[91merror[E0277][0m[1m: the trait bound `ScanResult: Default` is not satisfied[0m
+   [1m[94m--> [0msrc/lib.rs:494:8
+    [1m[94m|[0m
+[1m[94m494[0m [1m[94m|[0m     Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^^^^^^^[0m [1m[91munsatisfied trait bound[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: the trait `Default` is not implemented for `ScanResult`
+   [1m[94m--> [0msrc/lib.rs:66:1
+    [1m[94m|[0m
+[1m[94m 66[0m [1m[94m|[0m pub struct ScanResult {
+    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1mFor more information about this error, try `rustc --explain E0277`.[0m
+[1m[33mwarning[0m: `dotnet-crap` (lib) generated 3 warnings
+[1m[91merror[0m: could not compile `dotnet-crap` (lib) due to 1 previous error; 3 warnings emitted
+
+Caused by:
+  process didn't exit successfully: `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name dotnet_crap --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --forbid=unsafe_code --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=77a32f5a8159c764 -C extra-filename=-75a587a3d1a18363 --out-dir /tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps -L dependency=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps --extern anyhow=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libanyhow-2af0cc7ddb15f3f7.rmeta --extern clap=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libclap-8e74421947c29e52.rmeta --extern hex=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libhex-b0757a7bc7b6b2d3.rmeta --extern roxmltree=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libroxmltree-1fa369c42784ddf0.rmeta --extern same_file=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libsame_file-4f847cd9b41b73de.rmeta --extern serde=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libserde-c0653af92fb8333a.rmeta --extern serde_json=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libserde_json-906cb9383affae14.rmeta --extern sha2=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libsha2-381948c786df0976.rmeta --extern tempfile=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtempfile-add702d1c81690c2.rmeta --extern tree_sitter=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtree_sitter-0290f8f3b92aabfe.rmeta --extern tree_sitter_c_sharp=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libtree_sitter_c_sharp-84169dae1b8c00b1.rmeta --extern walkdir=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/deps/libwalkdir-e035f265a75fec69.rmeta -L native=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/build/tree-sitter-4619d7aba301294b/out -L native=/tmp/cargo-mutants-dotnet-crap-iz1F0g.tmp/target/debug/build/tree-sitter-c-sharp-c468f49c45b06dfc/out` (exit status: 1)
+
+*** result: Failure(101)
