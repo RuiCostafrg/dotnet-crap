@@ -1,6 +1,9 @@
 # Fresh Coverlet collection evidence (expanded validation in progress)
 
-Current production/test revision: `18fc47a221f58a4b23da5f6cb37d37fdc2db8fb1`.
+Last archived focused validation: `151356d` (strict completion-observation deadline),
+recorded in `focused-151356d.json` / `focused-151356d.log`. A subsequent literal
+source-prefix fix requires renewed final validation; current progress is not a
+final-tree pass. Final source/test/Cargo hashes will be captured after those gates.
 
 Last completed non-mutation validation revision: `dedf03e6d2aa30161475108fe036f3b3a270a916`.
 The implementation starts at `7aaae575`; `dedf03e` fixes review findings and the

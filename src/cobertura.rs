@@ -143,8 +143,8 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
             .filter(|child| child.is_text())
             .filter_map(|child| child.text())
             .collect::<String>();
-        let raw = text.trim();
-        if raw.is_empty() {
+        let raw = text.as_str();
+        if raw.trim().is_empty() {
             bail!("empty Cobertura source prefix");
         }
         let text = normalize_path(raw).context("invalid Cobertura source prefix")?;

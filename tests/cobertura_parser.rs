@@ -567,3 +567,14 @@ fn empty_packages_beside_class_records_do_not_discard_valid_evidence() {
     );
     assert!(format!("{:#}", fixture.parse().unwrap_err()).contains("no class records"));
 }
+
+#[test]
+/// Literal prefix whitespace must not transfer hits between two real selected directories.
+fn source_prefix_edge_whitespace_is_not_trimmed_into_another_source() {
+    let mut fixture = Fixture::new();
+    fixture.source("alpha/A.cs", "a\nb\n");
+    fixture.source(" alpha/A.cs", "a\nb\n");
+    fixture.report(&document(&[" alpha".into()], &[class("A.cs", &[(1, 1)])]));
+    let evidence = fixture.parse().unwrap();
+    assert_eq!(evidence.keys().collect::<Vec<_>>(), vec![" alpha/A.cs"]);
+}

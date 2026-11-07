@@ -98,7 +98,8 @@ supplied evidence for every callable. A callable without any supplied points
 retains absent coverage; a callable with only zero-hit points has coverage 0.
 Partial class files are distinct source identities and follow the same rules.
 
-Paths must resolve exactly within the scan root. No basename or suffix guessing,
+Paths must resolve exactly within the scan root. Source-prefix text is literal,
+including edge whitespace; XML comments do not truncate it. No basename or suffix guessing,
 network lookup, or implicit checkout mapping is allowed. UNC roots (including host-native Windows UNC paths) are unsupported in this
 first adapter. Windows drive-absolute paths are accepted on Windows; foreign
 Windows roots,
