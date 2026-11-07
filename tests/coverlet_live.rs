@@ -189,7 +189,7 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
     .unwrap();
     assert_eq!(report.report().functions.len(), 4);
     assert!(report.report().coverage_complete);
-    for (name, ratio, score) in [("Choose", 0.8, 2.016), ("Uncovered", 0.0, 2.0)] {
+    for (name, ratio, score) in [("Choose", 0.8, 2.032), ("Uncovered", 0.0, 2.0)] {
         let item = report
             .report()
             .functions

@@ -60,9 +60,14 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         bail!("collection requires selected sources");
     }
     snapshot.verify_sources()?;
-    let results = tempfile::Builder::new()
-        .prefix("dotnet-crap-coverlet-")
-        .tempdir()?;
+    let mut results_builder = tempfile::Builder::new();
+    results_builder.prefix("dotnet-crap-coverlet-");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        results_builder.permissions(fs::Permissions::from_mode(0o700));
+    }
+    let results = results_builder.tempdir()?;
     let status = Command::new(&options.command[0])
         .args(options.command[1..].iter().map(|arg| {
             if arg == "{results}" {

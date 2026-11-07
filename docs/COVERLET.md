@@ -31,7 +31,8 @@ are passed directly; there is no shell splitting or expansion. Supply the exact
 expected report count (projects times target frameworks), so partial solution
 collection cannot silently pass. An existing destination, including a symlink or
 hardlink, is an error. Its parent directory must exist; `.cs` destinations fail.
-Collection success exits 0; collection errors exit 2. Scan policy exits stay 0/1/2.
+`collect` is reserved as the first CLI argument; use `./collect` to scan a
+directory with that name. Collection success exits 0; collection errors exit 2. Scan policy exits stay 0/1/2.
 
 The entire child command, its dependencies, and test code are trusted executable
 code. The caller must pin the collector, choose the runner and format explicitly,
@@ -82,7 +83,9 @@ retains absent coverage; a callable with only zero-hit points has coverage 0.
 Partial class files are distinct source identities and follow the same rules.
 
 Paths must resolve exactly within the scan root. No basename or suffix guessing,
-network lookup, or implicit checkout mapping is allowed. Foreign Windows roots,
+network lookup, or implicit checkout mapping is allowed. UNC roots (including host-native Windows UNC paths) are unsupported in this
+first adapter. Windows drive-absolute paths are accepted on Windows; foreign
+Windows roots,
 SourceLink URLs and deterministic `/_/` paths without a resolvable exact local
 identity fail. Native evidence retains slash-separated root-relative identities.
 Tests cover host-native absolute paths and foreign Windows roots separately;

@@ -30,14 +30,14 @@ and decision lines appear as Coverlet sequence points, so they are included.
 
 | Project / callable | Source lines | Hand-counted hits | Line coverage | M | Expected CRAP |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Alpha / `Gauge.Choose` | `Gauge.First.cs:6-10` | 4 / 5 | 0.8 | 2 | 2.016 |
+| Alpha / `Gauge.Choose` | `Gauge.First.cs:6-10` | 4 / 5 | 0.8 | 2 | 2.032 |
 | Alpha / `Gauge.Full` | `Gauge.First.cs:13-17` | 5 / 5 | 1.0 | 2 | 2.0 |
 | Alpha / `Gauge.Uncovered` | `Gauge.Second.cs:5` | 0 / 1 | 0.0 | 1 | 2.0 |
 | Beta / `OtherGauge.Full` | `OtherGauge.cs:6-10` | 5 / 5 | 1.0 | 2 | 2.0 |
 
 `Choose` takes only the positive branch: its opening brace, decision, positive
 return and closing brace are hit, while its fallback return is not. Its score
-is `2² × 0.2³ + 2 = 2.016`. `Full` and `OtherGauge.Full` take both branches,
+is `2² × 0.2³ + 2 = 2.032`. `Full` and `OtherGauge.Full` take both branches,
 so all five sequence-point lines have hits and the score is `M = 2`. The
 uncovered expression-bodied method has complexity one and zero covered lines,
 so its score is `1² × 1³ + 1 = 2`.

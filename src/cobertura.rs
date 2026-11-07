@@ -30,7 +30,7 @@ pub type LineEvidence = BTreeMap<String, BTreeMap<u32, u64>>;
 ///
 /// Reports may mention other real files inside `root`; their evidence is
 /// ignored. Any path that does not resolve exactly, escapes the root, is a
-/// foreign Windows root, or is an unmapped SourceLink/deterministic path is an
+/// foreign Windows root or any UNC root, or is an unmapped SourceLink/deterministic path is an
 /// error. At least one report is required.
 pub fn parse_reports(
     root: &Path,
@@ -325,8 +325,7 @@ fn normalize_path(raw: &str) -> Result<String> {
         }
     }
     if path.starts_with("//") {
-        #[cfg(not(windows))]
-        bail!("foreign Windows/UNC root is not supported: {raw}");
+        bail!("Windows/UNC roots are not supported: {raw}");
     }
     if path.starts_with("/_/") || path == "/_" || path.starts_with("_/") {
         bail!("unmapped deterministic/SourceLink path is not supported: {raw}");

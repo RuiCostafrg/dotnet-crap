@@ -51,8 +51,8 @@ limits. Run the bundled example with `cargo run --example scan -- <root>`.
 
 The initial [native coverage format](examples/COVERAGE.md) uses root-relative
 source paths and SHA-256 hashes of exact source bytes. It rejects stale coverage.
-It is an input contract, not a built-in Coverlet collector; use reports produced
-by a trusted test pipeline.
+Fresh Coverlet evidence can be collected with `dotnet-crap collect` using an
+explicit trusted command; see [collection and runner limits](docs/COVERLET.md).
 The initial denominator is the supplied coverage points inside each callable;
 producers must include zero-hit points. `--require-coverage` requires some
 evidence per callable, rather than proving complete statement coverage.

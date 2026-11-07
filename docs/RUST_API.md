@@ -236,6 +236,7 @@ It is public and shares the API's current lack of a stability guarantee.
 
 - Git or GitHub pull-request selection, configuration files, and baselines.
 - XML or HTML output.
-- Coverage collection from .NET tools.
+- Microsoft coverage and OpenCover adapters (the explicit Coverlet collector is
+  available separately from scanning).
 - Semantic (Roslyn) analysis.
 - Any stability promise beyond this document.

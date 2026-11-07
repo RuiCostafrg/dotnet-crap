@@ -456,3 +456,22 @@ fn zero_hit_only_evidence_is_preserved_as_zero() {
         &BTreeMap::from([(1, 0), (2, 0)])
     );
 }
+
+#[test]
+fn noncanonical_filenames_are_rejected_even_when_they_name_existing_files() {
+    for filename in ["./src/A.cs", "src/./A.cs", "src//A.cs", "src/A.cs/"] {
+        let mut fixture = Fixture::new();
+        fixture.source("src/A.cs", "a\nb\n");
+        fixture.report(&document(&[], &[class(filename, &[(1, 1)])]));
+        assert!(fixture.parse().is_err(), "accepted {filename}");
+    }
+}
+
+#[test]
+fn unc_paths_are_explicitly_unsupported_on_every_host() {
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    fixture.report(&document(&[], &[class(r"\\server\share\A.cs", &[(1, 1)])]));
+    let error = format!("{:#}", fixture.parse().unwrap_err());
+    assert!(error.contains("UNC"), "{error}");
+}

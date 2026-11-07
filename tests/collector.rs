@@ -204,3 +204,96 @@ fn incomplete_or_extra_project_reports_are_errors() {
         assert!(!options.output.exists());
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn private_results_permissions_are_restricted_even_under_permissive_umask() {
+    let (dir, options) = fixture(REPORT);
+    let script = format!("import stat\n{REPORT}\nassert stat.S_IMODE(p.stat().st_mode) == 0o700, oct(p.stat().st_mode)");
+    let output = std::process::Command::new("bash")
+        .args(["-c", "umask 000; exec \"$@\"", "private-collector"])
+        .arg(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("collect")
+        .arg("--root")
+        .arg(dir.path())
+        .arg("--output")
+        .arg(&options.output)
+        .args(["--", "python3", "-c", &script, "{results}"])
+        .output()
+        .unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(options.output.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_trusted_program_can_accept_only_the_results_argument() {
+    use std::os::unix::fs::PermissionsExt;
+    let (dir, mut options) = fixture(REPORT);
+    let runner = dir.path().join("runner");
+    fs::write(&runner, format!("#!/usr/bin/env python3\n{REPORT}")).unwrap();
+    fs::set_permissions(&runner, fs::Permissions::from_mode(0o700)).unwrap();
+    options.command = vec![runner.into_os_string(), "{results}".into()];
+    collect(&options).unwrap();
+    assert!(options.output.exists());
+}
+
+#[test]
+fn cli_selected_paths_and_reserved_directory_spelling_are_preserved() {
+    let (dir, options) = fixture(REPORT);
+    fs::write(dir.path().join("Other.cs"), "not valid C sharp {").unwrap();
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .arg("collect")
+        .arg("--root")
+        .arg(dir.path())
+        .arg("--output")
+        .arg(&options.output)
+        .args(["--path", "C.cs", "--", "python3", "-c", REPORT, "{results}"])
+        .output()
+        .unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    fs::create_dir(dir.path().join("collect")).unwrap();
+    fs::copy(dir.path().join("C.cs"), dir.path().join("collect/C.cs")).unwrap();
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+        .current_dir(dir.path())
+        .args(["./collect", "--threshold", "100", "--format", "json"])
+        .output()
+        .unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["files_scanned"], 1);
+}
+
+#[test]
+fn an_extra_or_malformed_project_report_cannot_publish_partial_evidence() {
+    for invalid_second in [false, true] {
+        let (_dir, mut options) = fixture(REPORT);
+        options.expected_reports = if invalid_second { 2 } else { 1 };
+        options.command[2] = format!(
+            "{REPORT}\n(p/'second').mkdir()\n(p/'second'/'coverage.cobertura.xml').write_text({})",
+            if invalid_second {
+                "'<bad'"
+            } else {
+                "(p/'run'/'coverage.cobertura.xml').read_text()"
+            }
+        )
+        .into();
+        assert!(collect(&options).is_err());
+        assert!(!options.output.exists());
+    }
+}
