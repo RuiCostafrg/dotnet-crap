@@ -58,6 +58,7 @@ impl Fixture {
     }
 }
 
+/// Encode synthetic XML attributes without changing the path spelling under test.
 fn escape(value: &str) -> String {
     value
         .replace('&', "&amp;")
@@ -67,6 +68,7 @@ fn escape(value: &str) -> String {
         .replace('\'', "&apos;")
 }
 
+/// Build minimal package structure while leaving path ownership explicit in each test.
 fn document(prefixes: &[String], classes: &[String]) -> String {
     let sources = if prefixes.is_empty() {
         String::new()
@@ -85,6 +87,7 @@ fn document(prefixes: &[String], classes: &[String]) -> String {
     )
 }
 
+/// Include conflicting method-level hits to prove only class-level records contribute evidence.
 fn class(filename: &str, lines: &[(u32, u64)]) -> String {
     let line_xml = lines
         .iter()
@@ -98,6 +101,7 @@ fn class(filename: &str, lines: &[(u32, u64)]) -> String {
 }
 
 #[test]
+/// Keep zeros and maximum counts independently of class ordering or repeated instrumentation.
 fn merges_partial_classes_and_multiple_reports_by_maximum_hits() {
     let mut fixture = Fixture::new();
     fixture.source("src/Gauge.cs", "line1\nline2\nline3\nline4\nline5\n");
@@ -121,6 +125,7 @@ fn merges_partial_classes_and_multiple_reports_by_maximum_hits() {
 }
 
 #[test]
+/// Use distinct literal roots to ensure assembly union retains both source identities.
 fn merges_selected_files_from_multiple_assemblies() {
     let mut fixture = Fixture::new();
     fixture.source("Alpha/A.cs", "a\nb\nc\n");
@@ -147,6 +152,7 @@ fn merges_selected_files_from_multiple_assemblies() {
 }
 
 #[test]
+/// Equivalent trailing-slash prefixes must not create artificial path ambiguity.
 fn literal_source_prefixes_deduplicate_canonical_candidates() {
     let mut fixture = Fixture::new();
     fixture.source("lib/A.cs", "a\nb\nc\n");
@@ -162,6 +168,7 @@ fn literal_source_prefixes_deduplicate_canonical_candidates() {
 
 #[cfg(unix)]
 #[test]
+/// Coverlet may use / as a source prefix; containment applies to the resolved file.
 fn accepts_a_source_prefix_outside_the_root_only_for_a_contained_file() {
     let mut fixture = Fixture::new();
     fixture.source("B.cs", "a\nb\n");
@@ -182,6 +189,7 @@ fn accepts_a_source_prefix_outside_the_root_only_for_a_contained_file() {
 }
 
 #[test]
+/// A real unselected namesake must never lend hits to a selected file.
 fn unselected_root_files_are_ignored_without_basename_guessing() {
     let mut fixture = Fixture::new();
     fixture.source("src/A.cs", "a\nb\n");
@@ -196,6 +204,7 @@ fn unselected_root_files_are_ignored_without_basename_guessing() {
 }
 
 #[test]
+/// Retain exact root-relative identities without searching the tree by suffix.
 fn root_fallback_handles_an_exact_relative_file_when_prefixes_miss() {
     let mut fixture = Fixture::new();
     fixture.source("src/A.cs", "a\nb\n");
@@ -213,6 +222,7 @@ fn root_fallback_handles_an_exact_relative_file_when_prefixes_miss() {
 }
 
 #[test]
+/// A missing filename must not silently resolve to a similarly named selected file.
 fn unknown_relative_filename_is_not_suffix_matched() {
     let mut fixture = Fixture::new();
     fixture.source("src/A.cs", "a\nb\n");
@@ -223,6 +233,7 @@ fn unknown_relative_filename_is_not_suffix_matched() {
 }
 
 #[test]
+/// Two real prefix candidates require an error rather than arbitrary ownership.
 fn ambiguous_exact_candidates_are_rejected() {
     let mut fixture = Fixture::new();
     fixture.source("one/A.cs", "a\nb\n");
@@ -238,6 +249,7 @@ fn ambiguous_exact_candidates_are_rejected() {
 }
 
 #[test]
+/// Exercise host-native absolute identities separately from foreign-root rejection.
 fn absolute_paths_and_backslash_separators_resolve_exactly() {
     let mut fixture = Fixture::new();
     fixture.source("src/A.cs", "a\nb\nc\n");
@@ -270,6 +282,7 @@ fn absolute_paths_outside_the_root_are_rejected() {
 
 #[cfg(not(windows))]
 #[test]
+/// A drive from another host must not be reinterpreted as a relative Unix filename.
 fn foreign_windows_roots_are_rejected() {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");
@@ -280,6 +293,7 @@ fn foreign_windows_roots_are_rejected() {
 }
 
 #[test]
+/// Unmapped remote and compiler-placeholder identities cannot authenticate local source.
 fn source_link_and_deterministic_paths_are_rejected() {
     for filename in [
         "https://raw.githubusercontent.com/example/repo/main/A.cs",
@@ -322,6 +336,7 @@ fn source_link_and_deterministic_paths_are_rejected() {
 }
 
 #[test]
+/// Reject lexical parent traversal before filesystem normalization can hide it.
 fn parent_components_and_source_prefix_escapes_are_rejected() {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");
@@ -345,6 +360,7 @@ fn empty_report_slice_is_rejected() {
 }
 
 #[test]
+/// Require parser/security diagnostics, not a later missing-element failure.
 fn malformed_and_unsafe_xml_is_rejected() {
     let malformed = "<coverage><packages><package></coverage>";
     assert_xml_error(malformed);
@@ -359,6 +375,7 @@ fn malformed_and_unsafe_xml_is_rejected() {
     assert_xml_error(stylesheet);
 }
 
+/// Distinguish XML rejection from unrelated structural or source-resolution errors.
 fn assert_xml_error(xml: &str) {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");
@@ -371,6 +388,7 @@ fn assert_xml_error(xml: &str) {
 }
 
 #[test]
+/// Missing structural containers remain invalid even though empty classes are allowed.
 fn required_coverage_structure_is_enforced() {
     for xml in [
         "<not-coverage/>",
@@ -387,6 +405,7 @@ fn required_coverage_structure_is_enforced() {
 }
 
 #[test]
+/// Reject noncanonical numeric spellings, overflow and out-of-source evidence.
 fn invalid_line_numbers_and_hit_counts_are_rejected() {
     for line in [
         "<line number=\"0\" hits=\"1\"/>",
@@ -442,6 +461,7 @@ fn source_text_line_bounds_use_original_utf8() {
 }
 
 #[test]
+/// An uncovered method has present zero evidence, unlike a method with no supplied lines.
 fn zero_hit_only_evidence_is_preserved_as_zero() {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");
@@ -453,6 +473,7 @@ fn zero_hit_only_evidence_is_preserved_as_zero() {
 }
 
 #[test]
+/// Filesystem canonicalization must not hide ambiguous lexical path spellings.
 fn noncanonical_filenames_are_rejected_even_when_they_name_existing_files() {
     for filename in ["./src/A.cs", "src/./A.cs", "src//A.cs", "src/A.cs/"] {
         let mut fixture = Fixture::new();
@@ -472,6 +493,7 @@ fn unc_paths_are_explicitly_unsupported_on_every_host() {
 }
 
 #[test]
+/// Two selected namesakes make text truncation an observable evidence-ownership error.
 fn source_prefix_comments_and_cdata_cannot_truncate_ownership() {
     for prefix in ["alpha<!--split-->/beta", "alpha<![CDATA[/beta]]>"] {
         let mut fixture = Fixture::new();
@@ -494,6 +516,7 @@ fn source_prefix_comments_and_cdata_cannot_truncate_ownership() {
 }
 
 #[test]
+/// Zero executable lines must not manufacture a coverage denominator or abort other evidence.
 fn empty_selected_and_unselected_classes_leave_evidence_absent() {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");
@@ -523,4 +546,24 @@ fn oversized_xml_returns_a_controlled_error_before_allocation() {
         .unwrap();
     let error = format!("{:#}", fixture.parse().unwrap_err());
     assert!(error.contains("size limit"), "{error}");
+}
+
+#[test]
+/// Excluded assemblies are harmless beside real classes; a wholly classless report still fails.
+fn empty_packages_beside_class_records_do_not_discard_valid_evidence() {
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    let valid = document(&[], &[class("A.cs", &[(1, 1), (2, 0)])]);
+    fixture.report(&valid.replace(
+        "<packages>",
+        "<packages><package name=\"Excluded\"><classes/></package>",
+    ));
+    assert_eq!(
+        fixture.parse().unwrap()["A.cs"],
+        BTreeMap::from([(1, 1), (2, 0)])
+    );
+    fixture.report(
+        "<coverage><packages><package name=\"Excluded\"><classes/></package></packages></coverage>",
+    );
+    assert!(format!("{:#}", fixture.parse().unwrap_err()).contains("no class records"));
 }

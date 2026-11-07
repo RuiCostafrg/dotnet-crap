@@ -53,6 +53,7 @@ struct CollectArgs {
     timeout_seconds: u64,
 }
 
+/// Dispatch the reserved collection command while leaving ordinary scan argv unchanged.
 fn execute() -> Result<bool> {
     if std::env::args_os().nth(1).is_some_and(|a| a == "collect") {
         let args = CollectArgs::parse_from(

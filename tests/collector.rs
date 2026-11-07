@@ -5,6 +5,7 @@ use dotnet_crap::{
 use serde_json::Value;
 use std::{ffi::OsString, fs};
 
+/// Create a real source tree and direct argv so collection tests exercise filesystem boundaries.
 fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
     let dir = tempfile::tempdir().unwrap();
     fs::write(
@@ -32,6 +33,7 @@ p=pathlib.Path(sys.argv[1]); assert p.is_dir() and not list(p.iterdir())
 "#;
 
 #[test]
+/// CC 2 and one of two lines hit independently imply CRAP 2.5 with exact original-byte hashes.
 fn fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores() {
     let (_dir, options) = fixture(REPORT);
     collect(&options).unwrap();
@@ -67,6 +69,7 @@ fn fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores() {
 }
 
 #[test]
+/// Use valid stale XML and actual private paths so accidental stale import or leaked output is observable.
 fn failures_leave_no_evidence_and_private_directories_are_removed() {
     for script in [
         "import sys; sys.exit(3)",
@@ -103,6 +106,7 @@ fn failures_leave_no_evidence_and_private_directories_are_removed() {
 }
 
 #[test]
+/// A valid report cannot rescue failed tests or source changes after the snapshot.
 fn failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish() {
     for suffix in [
         "\nraise SystemExit(1)",
@@ -117,6 +121,7 @@ fn failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_pub
 }
 
 #[test]
+/// A side-effect marker proves invalid destinations are rejected before trusted code executes.
 fn invalid_commands_inputs_and_destinations_fail_before_execution() {
     for target in ["C.cs", "generated.CS", "existing", "missing/child.json"] {
         let (_dir, mut options) =
@@ -157,6 +162,7 @@ fn invalid_commands_inputs_and_destinations_fail_before_execution() {
 
 #[cfg(unix)]
 #[test]
+/// Protect source identities and reject linked reports before publication.
 fn rejects_linked_reports_and_existing_source_aliases() {
     use std::os::unix::fs::symlink;
     let (dir, mut options) = fixture("import pathlib,sys; pathlib.Path(sys.argv[1],'coverage.cobertura.xml').symlink_to(pathlib.Path('C.cs').absolute())");
@@ -173,6 +179,7 @@ fn rejects_linked_reports_and_existing_source_aliases() {
 }
 
 #[test]
+/// Collection success is 0 and invalid input is 2, independent of scan policy exits.
 fn cli_collect_uses_argv_and_keeps_standard_exit_mapping() {
     let (dir, options) = fixture(REPORT);
     let output = std::process::Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
@@ -205,6 +212,7 @@ fn cli_collect_uses_argv_and_keeps_standard_exit_mapping() {
 }
 
 #[test]
+/// Exact file-count validation rejects missing reports without inventing project identities.
 fn incomplete_or_extra_project_reports_are_errors() {
     for expected in [0, 2] {
         let (_dir, mut options) = fixture(REPORT);
@@ -216,6 +224,7 @@ fn incomplete_or_extra_project_reports_are_errors() {
 
 #[cfg(unix)]
 #[test]
+/// A separate process changes umask safely and verifies atomic owner-only directory creation.
 fn private_results_permissions_are_restricted_even_under_permissive_umask() {
     let (dir, options) = fixture(REPORT);
     let script = format!("import stat\n{REPORT}\nassert stat.S_IMODE(p.stat().st_mode) == 0o700, oct(p.stat().st_mode)");
@@ -253,6 +262,7 @@ fn a_trusted_program_can_accept_only_the_results_argument() {
 }
 
 #[test]
+/// An invalid unselected source exposes lost selection; ./collect retains ordinary scan behavior.
 fn cli_selected_paths_and_reserved_directory_spelling_are_preserved() {
     let (dir, options) = fixture(REPORT);
     fs::write(dir.path().join("Other.cs"), "not valid C sharp {").unwrap();
@@ -289,6 +299,7 @@ fn cli_selected_paths_and_reserved_directory_spelling_are_preserved() {
 }
 
 #[test]
+/// Validate the entire report set before any native artifact becomes visible.
 fn an_extra_or_malformed_project_report_cannot_publish_partial_evidence() {
     for invalid_second in [false, true] {
         let (_dir, mut options) = fixture(REPORT);
@@ -308,6 +319,7 @@ fn an_extra_or_malformed_project_report_cannot_publish_partial_evidence() {
 }
 
 #[test]
+/// A stalled immediate child must time out without waiting for its natural exit.
 fn deadline_reaps_the_child_and_publishes_nothing() {
     let (dir, mut options) = fixture("import time; time.sleep(30)");
     options.timeout = std::time::Duration::from_millis(50);
@@ -319,6 +331,7 @@ fn deadline_reaps_the_child_and_publishes_nothing() {
 }
 
 #[test]
+/// Duplicate hits cannot complete an unrelated callable; the later coverage gate must still fail.
 fn duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness() {
     let (_dir, mut options) = fixture(REPORT);
     fs::write(

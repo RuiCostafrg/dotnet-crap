@@ -83,15 +83,17 @@ fn import_report(
     if packages.is_empty() {
         bail!("<packages> contains no <package> elements");
     }
+    let mut found_class = false;
     for package in packages {
         let classes = only_child(package, "classes")?;
         let classes = child_elements(classes, "class");
-        if classes.is_empty() {
-            bail!("<classes> contains no <class> elements");
-        }
         for class in classes {
+            found_class = true;
             import_class(class, root, sources, &prefixes, evidence)?;
         }
+    }
+    if !found_class {
+        bail!("Cobertura report contains no class records");
     }
     Ok(())
 }

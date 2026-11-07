@@ -21,3 +21,5 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 - Cubic 4501284726 (discoverability): top-level help points to `dotnet-crap collect --help`.
 - Cubic 4501284732 (live provenance): fixture README links source-qualified evidence and identifies its initial observation separately. Final PR description/evidence will state actual completed results.
 - Cubic 4501284736 (output mode): documents intentionally private native evidence (normally 0600 on Unix). Sharing is an explicit caller action after collection, preserving safe staging.
+
+- CodeRabbit 4501301472 (empty packages): permits excluded/empty packages beside valid class records, but still rejects an entire report with no class records. Regression preserves both positive and zero-hit evidence when an empty package is present.

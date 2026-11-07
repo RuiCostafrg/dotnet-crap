@@ -1,6 +1,6 @@
 # Pinned VSTest and Coverlet collector fixture
 
-This fixture is a two-test-project VSTest solution. Each test project references
+This fixture is a four-test-project VSTest solution covering xUnit, MSTest and NUnit. Each test project references
 a library containing the measured C# sources, and each pins
 `Microsoft.NET.Test.Sdk` 17.12.0 and `coverlet.collector` 6.0.4. The test
 projects target `net10.0`; xUnit is pinned to 2.9.2 with the Visual Studio
@@ -16,8 +16,7 @@ DOTNET_CRAP_COVERLET_E2E=1 cargo test --test coverlet_live -- --exact pinned_cov
 The test invokes `dotnet test CoverletFixtures.sln
 --collect:XPlat Code Coverage --results-directory <fresh-temp-path> -m:1 --
 DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura` and
-requires exactly two nonempty `coverage.cobertura.xml` reports, one for each
-referenced library. The serial MSBuild setting avoids concurrent builds of
+requires exactly four nonempty `coverage.cobertura.xml` reports, one per test project; multiple projects intentionally cover the same library. The serial MSBuild setting avoids concurrent builds of
 shared fixture outputs. Outside the opt-in environment variable, the Rust test
 returns without launching .NET.
 
@@ -60,3 +59,14 @@ reports. Coverlet reported `Choose` as 4/5 line coverage (`0.8`), `Full` as
 5/5 (`1`), `Uncovered` as 0/1 (`0`), and Beta's `Full` as 5/5 (`1`). These
 observations are from the actual VSTest collector run on that host; other SDK,
 runtime, OS and test-runner combinations require their own live evidence.
+
+## Framework matrix
+
+All projects target .NET 10 and pin Test SDK 17.12.0 / Coverlet collector 6.0.4.
+The xUnit projects pin xUnit 2.9.2 / adapter 2.8.2; MSTest pins framework and
+adapter 4.5.2; NUnit pins framework 4.3.2 / NUnit3TestAdapter 5.0.0.
+MSTest repeats Alpha's branch calls and NUnit repeats Beta's branch calls, so
+maximum-hit union preserves the table above. The live harness verifies all four
+project assemblies appear and exactly four fresh attachments are produced.
+The MSTest and NUnit subdirectories record their separate real worker runs;
+source-qualified combined results belong in the feature evidence report.

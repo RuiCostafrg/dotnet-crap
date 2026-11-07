@@ -8,8 +8,9 @@ future work. No native schema or report completeness semantics change here.
 ## Invocation and trust boundary
 
 Pin `coverlet.collector` in the test project. The fixtures use **6.0.4**, with
-Microsoft.NET.Test.Sdk **17.12.0**, xUnit **2.9.2**, and the VSTest adapter
-**2.8.2**. These pins describe the tested fixture, not a promise that arbitrary
+Microsoft.NET.Test.Sdk **17.12.0**. The framework matrix pins xUnit **2.9.2** /
+adapter **2.8.2**, MSTest framework/adapter **4.5.2**, and NUnit **4.3.2** /
+NUnit3TestAdapter **5.0.0**. These pins describe the tested fixture, not a promise that arbitrary
 commands or other versions behave identically.
 
 ```sh

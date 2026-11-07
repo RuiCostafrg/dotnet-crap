@@ -26,7 +26,7 @@ pub struct CollectOptions {
     /// Use it as the value of `dotnet test --results-directory` and explicitly
     /// select XPlat Code Coverage with Cobertura format.
     pub command: Vec<OsString>,
-    /// Exact expected number of test-project/target Cobertura reports; must be positive.
+    /// Exact expected report-file count (not project identity); must be positive.
     pub expected_reports: usize,
     /// Deadline for the immediate trusted test process; must be nonzero.
     pub timeout: Duration,

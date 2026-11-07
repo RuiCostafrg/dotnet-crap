@@ -1,5 +1,6 @@
 use std::{fs, path::Path, process::Command};
 
+/// Inspect raw pinned collector method records independently of the production importer.
 fn method_block<'a>(xml: &'a str, name: &str) -> &'a str {
     let marker = format!("<method name=\"{name}\"");
     let start = xml
@@ -12,6 +13,7 @@ fn method_block<'a>(xml: &'a str, name: &str) -> &'a str {
     &xml[start..end]
 }
 
+/// Check physical line hits as well as the reporter summary against hand-derived expectations.
 fn assert_method(xml: &str, name: &str, line_rate: &str, expected_lines: &[(&str, &str)]) {
     let method = method_block(xml, name);
     assert!(
@@ -24,6 +26,7 @@ fn assert_method(xml: &str, name: &str, line_rate: &str, expected_lines: &[(&str
     }
 }
 
+/// Discover actual runner attachments in the fresh fixture directory without assuming GUID names.
 fn files_named(root: &Path, target: &str) -> Vec<std::path::PathBuf> {
     let mut pending = vec![root.to_path_buf()];
     let mut matches = Vec::new();
@@ -104,10 +107,22 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         String::from_utf8_lossy(&output.stderr)
     );
 
+    let runner_output = String::from_utf8_lossy(&output.stdout);
+    for assembly in [
+        "Alpha.Tests.dll",
+        "Beta.Tests.dll",
+        "MSTest.Tests.dll",
+        "NUnit.Tests.dll",
+    ] {
+        assert!(
+            runner_output.contains(assembly),
+            "test project not observed: {assembly}: {runner_output}"
+        );
+    }
     let reports = files_named(results.path(), "coverage.cobertura.xml");
     assert_eq!(
         reports.len(),
-        2,
+        4,
         "expected one fresh report per test project"
     );
     let contents: Vec<String> = reports
@@ -162,7 +177,7 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         paths: vec!["Alpha.Library".into(), "Beta.Library".into()],
         timeout: std::time::Duration::from_secs(600),
         output: native.clone(),
-        expected_reports: 2,
+        expected_reports: 4,
         command: [
             "dotnet",
             "test",
@@ -247,7 +262,9 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         "{diagnostic}"
     );
     assert!(
-        diagnostic.contains("Alpha.Tests.csproj") && diagnostic.contains("Beta.Tests.csproj"),
+        ["Alpha.Tests.csproj", "Beta.Tests.csproj"]
+            .iter()
+            .all(|name| diagnostic.contains(name)),
         "{diagnostic}"
     );
     failed.command.insert(2, "--solution".into());

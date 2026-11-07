@@ -67,8 +67,9 @@ aliases, including generated/unselected source hardlinks.
 
 The step-2 branch implements [Coverlet collection](COVERLET.md) with native v1
 line evidence; final validation is in progress. This does not complete the broader
-SDK/framework/runner matrix below. .NET 8, NUnit, MSTest and MTP collection are
-not certified by the pinned .NET 10/xUnit VSTest fixture.
+SDK/runner matrix below. The expanded pinned .NET 10 fixtures cover xUnit,
+MSTest and NUnit under VSTest; combined validation is in progress. .NET 8
+and MTP collection are not certified by these runs.
 
 1. Add a Rust `collect` command that snapshots selected source bytes **before**
    executing a trusted test command, then verifies them after completion.
