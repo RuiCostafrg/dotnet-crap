@@ -23,3 +23,5 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 - Cubic 4501284736 (output mode): documents intentionally private native evidence (normally 0600 on Unix). Sharing is an explicit caller action after collection, preserving safe staging.
 
 - CodeRabbit 4501301472 (empty packages): permits excluded/empty packages beside valid class records, but still rejects an entire report with no class records. Regression preserves both positive and zero-hit evidence when an empty package is present.
+
+- Final independent Sol review of `18fc47a` found no blocking production correctness/process-safety issue. Its two nonblocking findings are fixed: the combined harness now validates both Alpha and both Beta reports plus one passed, non-skipped test in every project, and the MSTest README reflects solution integration. Focused library/parser/collector tests independently passed (44 tests).

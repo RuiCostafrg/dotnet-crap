@@ -2,8 +2,8 @@
 
 This folder is a standalone MSTest test project that references
 `../Alpha.Library/Alpha.Library.csproj`, the same measured library used by
-`Alpha.Tests`. It is not yet listed in `CoverletFixtures.sln`; the solution
-and the Rust harness are integrated separately.
+`Alpha.Tests`. It is included in `CoverletFixtures.sln` and the Rust live harness alongside
+xUnit and NUnit.
 
 ## Pins
 

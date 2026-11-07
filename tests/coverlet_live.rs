@@ -114,9 +114,14 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         "MSTest.Tests.dll",
         "NUnit.Tests.dll",
     ] {
+        let summary = runner_output
+            .lines()
+            .find(|line| line.contains("Passed!") && line.contains(assembly))
+            .unwrap_or_else(|| panic!("no passed test summary for {assembly}: {runner_output}"));
+        let normalized = summary.split_whitespace().collect::<Vec<_>>().join(" ");
         assert!(
-            runner_output.contains(assembly),
-            "test project not observed: {assembly}: {runner_output}"
+            normalized.contains("Failed: 0, Passed: 1, Skipped: 0, Total: 1,"),
+            "{normalized}"
         );
     }
     let reports = files_named(results.path(), "coverage.cobertura.xml");
@@ -129,43 +134,53 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         .iter()
         .map(|path| fs::read_to_string(path).expect("read Coverlet Cobertura report"))
         .collect();
-    let alpha = contents
+    let alpha: Vec<_> = contents
         .iter()
-        .find(|xml| xml.contains("package name=\"Alpha.Library\""))
-        .expect("Alpha.Library report missing");
-    let beta = contents
+        .filter(|xml| xml.contains("package name=\"Alpha.Library\""))
+        .collect();
+    let beta: Vec<_> = contents
         .iter()
-        .find(|xml| xml.contains("package name=\"Beta.Library\""))
-        .expect("Beta.Library report missing");
+        .filter(|xml| xml.contains("package name=\"Beta.Library\""))
+        .collect();
+    assert_eq!(
+        alpha.len(),
+        2,
+        "xUnit and MSTest each produce Alpha evidence"
+    );
+    assert_eq!(beta.len(), 2, "xUnit and NUnit each produce Beta evidence");
 
     // See fixtures/coverlet/README.md for the independently derived line and CRAP expectations.
-    assert!(alpha.contains("filename=\"Gauge.First.cs\""));
-    assert!(alpha.contains("filename=\"Gauge.Second.cs\""));
-    assert_method(
-        alpha,
-        "Choose",
-        "0.8",
-        &[("6", "1"), ("7", "1"), ("8", "1"), ("9", "0"), ("10", "1")],
-    );
-    assert_method(
-        alpha,
-        "Full",
-        "1",
-        &[
-            ("13", "2"),
-            ("14", "2"),
-            ("15", "1"),
-            ("16", "1"),
-            ("17", "2"),
-        ],
-    );
-    assert_method(alpha, "Uncovered", "0", &[("5", "0")]);
-    assert_method(
-        beta,
-        "Full",
-        "1",
-        &[("6", "2"), ("7", "2"), ("8", "1"), ("9", "1"), ("10", "2")],
-    );
+    for alpha in alpha {
+        assert!(alpha.contains("filename=\"Gauge.First.cs\""));
+        assert!(alpha.contains("filename=\"Gauge.Second.cs\""));
+        assert_method(
+            alpha,
+            "Choose",
+            "0.8",
+            &[("6", "1"), ("7", "1"), ("8", "1"), ("9", "0"), ("10", "1")],
+        );
+        assert_method(
+            alpha,
+            "Full",
+            "1",
+            &[
+                ("13", "2"),
+                ("14", "2"),
+                ("15", "1"),
+                ("16", "1"),
+                ("17", "2"),
+            ],
+        );
+        assert_method(alpha, "Uncovered", "0", &[("5", "0")]);
+    }
+    for beta in beta {
+        assert_method(
+            beta,
+            "Full",
+            "1",
+            &[("6", "2"), ("7", "2"), ("8", "1"), ("9", "1"), ("10", "2")],
+        );
+    }
 
     use dotnet_crap::{
         collector::{collect, CollectOptions},
