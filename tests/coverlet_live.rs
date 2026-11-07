@@ -26,6 +26,21 @@ fn assert_method(xml: &str, name: &str, line_rate: &str, expected_lines: &[(&str
     }
 }
 
+/// Distinct call counts identify xUnit versus MSTest/NUnit without trusting report order.
+fn report_with_full_hits<'a>(reports: &[&'a String], line: &str, hits: &str) -> &'a str {
+    let point = format!("<line number=\"{line}\" hits=\"{hits}\"");
+    let matching: Vec<_> = reports
+        .iter()
+        .filter(|xml| method_block(xml, "Full").contains(&point))
+        .collect();
+    assert_eq!(
+        matching.len(),
+        1,
+        "expected exactly one Full report with {point}"
+    );
+    matching[0].as_str()
+}
+
 /// Discover actual runner attachments in the fresh fixture directory without assuming GUID names.
 fn files_named(root: &Path, target: &str) -> Vec<std::path::PathBuf> {
     let mut pending = vec![root.to_path_buf()];
@@ -150,7 +165,8 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
     assert_eq!(beta.len(), 2, "xUnit and NUnit each produce Beta evidence");
 
     // See fixtures/coverlet/README.md for the independently derived line and CRAP expectations.
-    for alpha in alpha {
+    for (calls, positives) in [("2", "1"), ("3", "2")] {
+        let alpha = report_with_full_hits(&alpha, "13", calls);
         assert!(alpha.contains("filename=\"Gauge.First.cs\""));
         assert!(alpha.contains("filename=\"Gauge.Second.cs\""));
         assert_method(
@@ -164,21 +180,26 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
             "Full",
             "1",
             &[
-                ("13", "2"),
-                ("14", "2"),
-                ("15", "1"),
+                ("13", calls),
+                ("14", calls),
+                ("15", positives),
                 ("16", "1"),
-                ("17", "2"),
+                ("17", calls),
             ],
         );
         assert_method(alpha, "Uncovered", "0", &[("5", "0")]);
-    }
-    for beta in beta {
+        let beta = report_with_full_hits(&beta, "6", calls);
         assert_method(
             beta,
             "Full",
             "1",
-            &[("6", "2"), ("7", "2"), ("8", "1"), ("9", "1"), ("10", "2")],
+            &[
+                ("6", calls),
+                ("7", calls),
+                ("8", positives),
+                ("9", "1"),
+                ("10", calls),
+            ],
         );
     }
 

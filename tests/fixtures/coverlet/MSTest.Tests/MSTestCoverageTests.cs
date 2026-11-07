@@ -13,5 +13,7 @@ public sealed class MSTestCoverageTests
         Assert.AreEqual(1, gauge.Choose(1));
         Assert.AreEqual(1, gauge.Full(1));
         Assert.AreEqual(0, gauge.Full(0));
+        // Distinguish this project's report from the paired xUnit project.
+        Assert.AreEqual(1, gauge.Full(1));
     }
 }

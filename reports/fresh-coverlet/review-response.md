@@ -33,3 +33,5 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 - Parent mapping audit: preserved literal source-prefix edge whitespace. A regression creates two real selected directories so trimming would demonstrably transfer evidence to the wrong source. This completes the same exact-path contract as the comment/CDATA fix.
 
 - Follow-up documentation findings 4501364351/4501416076/4501432383: clarified that every package still requires a `classes` container; the final evidence document will name the validated production/test revision explicitly, and its manifest will be regenerated after final validation rather than retaining historical hashes.
+
+- CodeRabbit review 5811662696 (nonblocking report distinction): MSTest/NUnit now add one extra positive Full call; the harness requires exactly one 2-call and one 3-call report per library. This verifies per-project evidence signatures without changing the supplied-line coverage or CRAP expectations.

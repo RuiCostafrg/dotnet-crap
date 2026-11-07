@@ -36,3 +36,8 @@ The generated Cobertura report recorded `OtherGauge` with `complexity="2"`,
 `line-rate="1"`, `branch-rate="1"`, and its conditional line as
 `condition-coverage="100% (2/2)"`. The observed fixture metric tuple is
 CC2, coverage 1, CRAP2.
+
+The current combined fixture adds one extra positive `Full(1)` call after this
+initial standalone observation, giving Full hits 3/3/2/1/3. Its paired xUnit
+report retains 2/2/1/1/2, so the live harness identifies both reports independently.
+The coverage fraction remains 1 and CRAP remains 2.

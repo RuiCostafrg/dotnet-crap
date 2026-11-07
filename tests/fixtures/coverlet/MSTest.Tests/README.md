@@ -100,3 +100,8 @@ run: `MSTest.TestAdapter/4.5.2`, `MSTest.TestFramework/4.5.2`,
   the runner output.
 - `evidence/mstest-run2-no-build.coverage.cobertura.xml`: the second run's
   report.
+
+The current combined fixture adds one extra positive `Full(1)` call after this
+initial standalone observation, giving Full hits 3/3/2/1/3. Its paired xUnit
+report retains 2/2/1/1/2, so the live harness identifies both reports independently.
+The coverage fraction remains 1 and CRAP remains 2.
