@@ -1,0 +1,23 @@
+src/main.rs:63:17: delete field paths from struct ScanOptions expression in execute
+src/main.rs:126:25: delete ! in run
+src/cobertura.rs:102:9: delete field allow_dtd from struct ParsingOptions expression in parse_document
+src/cobertura.rs:237:32: delete ! in resolve_filename
+src/cobertura.rs:238:53: replace || with && in resolve_filename
+src/cobertura.rs:238:32: replace || with && in resolve_filename
+src/cobertura.rs:238:35: delete ! in resolve_filename
+src/cobertura.rs:283:23: replace match guard error.kind() == std::io::ErrorKind::NotFound with true in add_candidate
+src/cobertura.rs:272:34: replace || with && in add_candidate
+src/cobertura.rs:314:13: replace && with || in normalize_path
+src/cobertura.rs:319:13: replace && with || in normalize_path
+src/cobertura.rs:318:13: replace && with || in normalize_path
+src/cobertura.rs:320:24: replace && with || in normalize_path
+src/cobertura.rs:331:48: replace || with && in normalize_path
+src/cobertura.rs:342:5: replace validate_filename -> Result<()> with Ok(())
+src/cobertura.rs:347:25: replace && with || in validate_filename
+src/cobertura.rs:352:24: replace || with && in validate_filename
+src/collector.rs:33:30: replace < with <= in collect
+src/collector.rs:52:35: replace || with && in collect
+src/collector.rs:87:58: replace && with || in collect
+src/collector.rs:120:21: delete ! in collect
+src/collector.rs:148:21: delete ! in validate_destination
+src/collector.rs:155:19: replace match guard e.kind() == std::io::ErrorKind::NotFound with true in validate_destination

@@ -1,0 +1,21 @@
+{
+  "revision": "dedf03e6d2aa30161475108fe036f3b3a270a916",
+  "command": "python3 scripts/mutation-gate.py",
+  "total": 282,
+  "files": {
+    "src/cobertura.rs": 70,
+    "src/collector.rs": 21,
+    "src/lib.rs": 161,
+    "src/main.rs": 13,
+    "src/sarif.rs": 17
+  },
+  "source_files": [
+    "src/cobertura.rs",
+    "src/collector.rs",
+    "src/lib.rs",
+    "src/main.rs",
+    "src/sarif.rs"
+  ],
+  "exclusions": [],
+  "notes": "Full standard gate invocation; every production module represented. Outcome verification occurs after completion."
+}

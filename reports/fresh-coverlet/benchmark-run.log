@@ -1,0 +1,46 @@
+   Compiling dotnet-crap v0.1.0 (/root/.t3/worktrees/dotnet-crap/feat-fresh-coverlet-coverage)
+    Finished `release` profile [optimized] target(s) in 29.08s
+{
+  "version": 1,
+  "platform": "Android-12-aarch64-64bit",
+  "binary_sha256": "d85f2bc0dc2472ac0257cdbf3950d986605ad01909a69ffb0501e137d7ac0619",
+  "files": 500,
+  "callables": 1000,
+  "source_bytes": 55890,
+  "coverage": false,
+  "runs": 7,
+  "samples_ms": [
+    1524.883229052648,
+    1854.1664580116048,
+    2054.227135027759,
+    1929.4583320152014,
+    1554.2242180090398,
+    2466.738019953482,
+    2261.828801012598
+  ],
+  "median_ms": 1929.4583320152014,
+  "min_ms": 1524.883229052648,
+  "max_ms": 2466.738019953482
+}
+{
+  "version": 1,
+  "platform": "Android-12-aarch64-64bit",
+  "binary_sha256": "d85f2bc0dc2472ac0257cdbf3950d986605ad01909a69ffb0501e137d7ac0619",
+  "files": 500,
+  "callables": 1000,
+  "source_bytes": 55890,
+  "coverage": true,
+  "runs": 7,
+  "samples_ms": [
+    1709.7778120078146,
+    2182.1456239558756,
+    1777.197916060686,
+    1323.8723950926214,
+    1680.7719790376723,
+    1321.6972390655428,
+    1058.225624030456
+  ],
+  "median_ms": 1680.7719790376723,
+  "min_ms": 1058.225624030456,
+  "max_ms": 2182.1456239558756
+}

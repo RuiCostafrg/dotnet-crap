@@ -82,17 +82,25 @@ Audit mutation configuration after moving files so no library source is omitted.
 
 Depends on step 1. Deliver the mapping contract and collector as reviewable slices.
 
-- [ ] Snapshot selected sources before running an explicitly supplied trusted
+- [x] Snapshot selected sources before running an explicitly supplied trusted
   test command; verify original bytes again before publishing evidence.
-- [ ] Collect pinned Coverlet Cobertura output from a fresh per-run directory.
+- [x] Collect pinned Coverlet Cobertura output from a fresh per-run directory.
   Reject old output, failed tests, missing reports and changed source.
-- [ ] Define sequence-point ownership, zero-hit points, multi-assembly merging,
+- [x] Define sequence-point ownership, zero-hit points, multi-assembly merging,
   same-line nesting and missing evidence before changing completeness semantics.
-- [ ] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
+- [x] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
   partial classes, malformed XML and unsafe XML external references.
 - [ ] Add real collector fixtures covering partial/full/uncovered code, a
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
+
+Implementation: `dedf03e` (collector/parser plus review fixes). Native v1 remains
+unchanged: supplied-line evidence, maximum-hit union across assemblies, zero-hit
+retention, and existing same-line nesting limits. Foreign roots, unmapped
+SourceLink/deterministic paths, and UNC paths are rejected rather than guessed.
+See [the mapping and command contract](docs/COVERLET.md). Live final-tree tests
+and the full mutation rerun are in progress; do not interpret the initial
+`7aaae57` mutation result as validation of the fixes.
 
 **Done when:** actual .NET collector runs produce independently checked scores;
 failures leave no new coverage artifact. Document any versioned format migration.
@@ -221,7 +229,7 @@ cargo fmt --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo test --locked --release
-DOTNET_CRAP_E2E=1 cargo test --locked
+DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/mutation-gate.py
 ```

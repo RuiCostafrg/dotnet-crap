@@ -1,0 +1,29 @@
+evidence=/root/.t3/worktrees/dotnet-crap/feat-fresh-coverlet-coverage/target/mutation-runs/run-wecjebmy/mutants.out
+Found 282 mutants to test
+ok       Unmutated baseline in 92s build + 11s test
+MISSED   src/main.rs:63:17: delete field paths from struct ScanOptions expression in execute in 6s build + 15s test
+MISSED   src/main.rs:126:25: delete ! in run in 7s build + 18s test
+MISSED   src/cobertura.rs:102:9: delete field allow_dtd from struct ParsingOptions expression in parse_document in 28s build + 14s test
+MISSED   src/cobertura.rs:237:32: delete ! in resolve_filename in 25s build + 12s test
+MISSED   src/cobertura.rs:238:53: replace || with && in resolve_filename in 29s build + 14s test
+MISSED   src/cobertura.rs:238:32: replace || with && in resolve_filename in 22s build + 14s test
+MISSED   src/cobertura.rs:238:35: delete ! in resolve_filename in 23s build + 14s test
+MISSED   src/cobertura.rs:283:23: replace match guard error.kind() == std::io::ErrorKind::NotFound with true in add_candidate in 24s build + 14s test
+MISSED   src/cobertura.rs:272:34: replace || with && in add_candidate in 19s build + 12s test
+MISSED   src/cobertura.rs:314:13: replace && with || in normalize_path in 25s build + 14s test
+MISSED   src/cobertura.rs:319:13: replace && with || in normalize_path in 27s build + 12s test
+MISSED   src/cobertura.rs:318:13: replace && with || in normalize_path in 26s build + 14s test
+MISSED   src/cobertura.rs:320:24: replace && with || in normalize_path in 24s build + 13s test
+MISSED   src/cobertura.rs:331:48: replace || with && in normalize_path in 23s build + 15s test
+MISSED   src/cobertura.rs:342:5: replace validate_filename -> Result<()> with Ok(()) in 24s build + 13s test
+MISSED   src/cobertura.rs:347:25: replace && with || in validate_filename in 23s build + 14s test
+MISSED   src/cobertura.rs:352:24: replace || with && in validate_filename in 21s build + 12s test
+MISSED   src/collector.rs:33:30: replace < with <= in collect in 24s build + 13s test
+MISSED   src/collector.rs:52:35: replace || with && in collect in 27s build + 15s test
+MISSED   src/collector.rs:87:58: replace && with || in collect in 25s build + 13s test
+MISSED   src/collector.rs:120:21: delete ! in collect in 26s build + 14s test
+MISSED   src/collector.rs:148:21: delete ! in validate_destination in 21s build + 13s test
+MISSED   src/collector.rs:155:19: replace match guard e.kind() == std::io::ErrorKind::NotFound with true in validate_destination in 21s build + 14s test
+282 mutants tested in 70m: 23 missed, 250 caught, 9 unviable
+total=282 caught=250 missed=23 timeout=0 unviable=9
+score=91.58% (caught / (caught + missed + timeout))

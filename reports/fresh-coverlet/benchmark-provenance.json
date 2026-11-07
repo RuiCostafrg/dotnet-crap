@@ -1,0 +1,30 @@
+{
+  "revision": "dedf03e6d2aa30161475108fe036f3b3a270a916",
+  "tree": "c7cc6bd41774f49bf85eaa885ba592995804909e",
+  "utc": "2026-11-07T10:01:00.402105+00:00",
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25) (built from a source tarball)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-linux-android\nrelease: 1.96.0\nLLVM version: 21.1.8\n",
+  "dotnet": ".NET SDK:\n Version:           10.0.109\n Commit:            901ca94124\n Workload version:  10.0.100-manifests.b0c14421\n MSBuild version:   18.0.11\n\nRuntime Environment:\n OS Name:     ubuntu\n OS Version:  26.04\n OS Platform: Linux\n RID:         linux-bionic-arm64\n Base Path:   /data/data/com.termux/files/usr/lib/dotnet/sdk/10.0.109/\n\n.NET workloads installed:\nThere are no installed workloads to display.\nConfigured to use workload sets when installing new manifests.\nNo workload sets are installed. Run \"dotnet workload restore\" to install a workload set.\n\nHost:\n  Version:      10.0.9\n  Architecture: arm64\n  Commit:       901ca94124\n\n.NET SDKs installed:\n  10.0.109 [/data/data/com.termux/files/usr/lib/dotnet/sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 10.0.9 [/data/data/com.termux/files/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 10.0.9 [/data/data/com.termux/files/usr/lib/dotnet/shared/Microsoft.NETCore.App]\n\nOther architectures found:\n  None\n\nEnvironment variables:\n  Not set\n\nglobal.json file:\n  Not found\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+  "binary_sha256": "d85f2bc0dc2472ac0257cdbf3950d986605ad01909a69ffb0501e137d7ac0619",
+  "commands": [
+    [
+      "cargo",
+      "build",
+      "--locked",
+      "--release"
+    ],
+    [
+      "python3",
+      "scripts/benchmark.py",
+      "--output",
+      "reports/fresh-coverlet/benchmark.json"
+    ],
+    [
+      "python3",
+      "scripts/benchmark.py",
+      "--coverage",
+      "--output",
+      "reports/fresh-coverlet/benchmark-coverage.json"
+    ]
+  ],
+  "notes": "Same runner, release binary, corpus; concurrent isolated mutation/debug/live builds may contend. Observational timings only; no performance comparison or speedup claim."
+}
