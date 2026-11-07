@@ -39,3 +39,5 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 - Live signature validation caught an incorrect parent expectation: Beta tests `value == 0`, so NUnit's additional Full(1) call increments its fallback return. Corrected NUnit hits to 3/3/1/2/3 (MSTest remains 3/3/2/1/3); both coverage ratios and CRAP scores remain unchanged.
 
 - CodeRabbit outside-diff review 5811728529 (superseded inventory wording): final evidence must replace intermediate current-run language with the completed source-qualified inventory and outcomes. Superseded/partial local runs remain explicitly excluded from final mutation-score claims.
+
+- Cubic 4501486384 (MSTest current calls): moved the additional Full(1) call and its hit signature into the Test section, and explicitly labeled the retained standalone XML as the earlier three-call observation. The manifest retains the validated-revision hash and separately records this documentation-only amendment; executable inputs are unchanged.

@@ -25,13 +25,19 @@ not Microsoft Testing Platform mode. This README makes no MTP claim.
 ## Test
 
 `MSTestCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches`
-makes the same calls as `Alpha.Tests`:
+makes the following calls, including an extra positive `Full(1)` call compared
+with `Alpha.Tests`:
 
 - `Gauge.Choose(1)` equals 1
 - `Gauge.Full(1)` equals 1
 - `Gauge.Full(0)` equals 0
+- `Gauge.Full(1)` equals 1 again
 
 `Gauge.Uncovered` is never called, so it stays at 0 of 1 line covered.
+The current fixture gives Full hits 3/3/2/1/3. Its paired xUnit report retains
+2/2/1/1/2, so the live harness identifies both reports independently. The
+coverage fraction remains 1 and CRAP remains 2. The standalone evidence below
+predates the extra call and records the original three-call test.
 
 ## Command
 
@@ -101,7 +107,3 @@ run: `MSTest.TestAdapter/4.5.2`, `MSTest.TestFramework/4.5.2`,
 - `evidence/mstest-run2-no-build.coverage.cobertura.xml`: the second run's
   report.
 
-The current combined fixture adds one extra positive `Full(1)` call after this
-initial standalone observation, giving Full hits 3/3/2/1/3. Its paired xUnit
-report retains 2/2/1/1/2, so the live harness identifies both reports independently.
-The coverage fraction remains 1 and CRAP remains 2.

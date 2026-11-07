@@ -1,6 +1,6 @@
 {
   "revision": "1cad955cbe5ec29590fb405174c495826de5f39f",
-  "validation_status": "Passed local validation and complete current-head CI; subsequent evidence-only changes must preserve these bytes",
+  "validation_status": "Historical validated input hashes at the named revision; executable inputs remain unchanged. Documentation-only amendments are listed separately.",
   "sha256": {
     "Cargo.lock": "57894258524cf964b6629bdb19b11f1fdb23e93e64b8fa9e08ea2264e110f83f",
     "Cargo.toml": "8055d7e4a0642f87574b30702657b0934f5cf02e137a72631dd9f24f84e8b99b",
@@ -47,5 +47,11 @@
     "tests/sarif.rs": "fd8e399cd005b41cf557273ff648840772088d9963b53d2b167ddf5d262a2ac0",
     "tests/test_benchmark.py": "8f3c7a70d55c08a08e112c281272b27e5ffaee9be31c8b20de99eaf72f2ce83c",
     "tests/test_mutation_tools.py": "b3372e4d73a45d17f37151d669d115064f09b24301d638c0609293576d994941"
+  },
+  "documentation_only_amendments": {
+    "tests/fixtures/coverlet/MSTest.Tests/README.md": {
+      "sha256": "a746255564a7bdea8a17b34efac6f104f70bb0926eadd99599946d2d2b80a24d",
+      "reason": "Move the extra Full(1) call into the current Test description; retain the original validated-revision hash above and distinguish historical standalone evidence."
+    }
   }
 }

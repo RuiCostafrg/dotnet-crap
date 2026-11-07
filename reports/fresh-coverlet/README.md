@@ -1,10 +1,13 @@
 # Fresh Coverlet collection evidence
 
 Current production/test revision: `1cad955cbe5ec29590fb405174c495826de5f39f`.
-The final evidence/plan follow-up changes no source, tests or Cargo inputs;
-[`tested-files.json`](tested-files.json) records their exact SHA-256 hashes.
+The final evidence/plan follow-up changes no production source, executable tests,
+fixture project/solution files or Cargo inputs. [`tested-files.json`](tested-files.json)
+records the validated revision's exact SHA-256 hashes and separately identifies
+a documentation-only correction to the MSTest fixture README.
 All checks passed at that revision. Before merging an evidence-only follow-up,
-verify its current-head checks and confirm these input bytes remain unchanged.
+verify its current-head checks and confirm executable input bytes remain unchanged and documentation amendments
+match their separately recorded hashes.
 
 ## Validation
 
