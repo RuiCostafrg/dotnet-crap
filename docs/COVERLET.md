@@ -39,7 +39,9 @@ hardlink, is an error. Its parent directory must exist; `.cs` destinations fail.
 `collect` is reserved as the first CLI argument; use `./collect` to scan a
 directory with that name. The child deadline defaults to 900 seconds
 (`--timeout-seconds`); a timeout
-kills and reaps the immediate process and publishes nothing. Descendant processes
+kills and reaps the immediate process and publishes nothing. Statuses first
+observed at or after the deadline are rejected even if the child has exited;
+this deliberately fails closed when observation is delayed. Descendant processes
 remain the trusted command's responsibility; this is not a process-tree sandbox.
 Collection success exits 0; collection errors exit 2. Scan policy exits stay 0/1/2.
 

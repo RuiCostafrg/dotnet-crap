@@ -52,7 +52,8 @@ host. Native v1 supplied-line completeness is unchanged. Same-line nesting,
 unmapped SourceLink/deterministic paths and UNC paths have explicit limits.
 The live harness tests real failed tests and an unsupported MTP-mode invocation;
 that rejection does not certify an MTP collector. Separate worker live runs
-verified MSTest 4.5.2 and NUnit 4.3.2 / adapter 5.0.0; combined current-source
+verified MSTest 4.5.2 and NUnit 4.3.2 / adapter 5.0.0 (the standalone NUnit
+worker run was not archived; its README is a narrative observation). Combined current-source
 validation is in progress. .NET 8 and actual MTP collection remain unverified; CI is configured to exercise .NET 10 on its
 Linux/macOS/Windows matrix but results must be inspected independently.
 

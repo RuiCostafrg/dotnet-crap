@@ -3,7 +3,7 @@
   "command": "python3 scripts/mutation-gate.py",
   "inventory_path": "/root/.t3/worktrees/dotnet-crap/feat-fresh-coverlet-coverage/target/mutation-runs/run-9vc6h4gr/mutants.out/mutants.json",
   "inventory_sha256": "ca5791ebe578cb77073d03f82411a6c23077c6f9ebd9c1276dea1eeef5269451",
-  "status": "Full final-source run in progress; outcomes pending",
+  "status": "Superseded by strict deadline observation fix; new final run required",
   "total": 295,
   "files": {
     "src/cobertura.rs": 81,
@@ -13,5 +13,12 @@
     "src/sarif.rs": 17
   },
   "exclusions": [],
-  "notes": "Generated from the actual current-run mutants.json, not from historical counts. All production Rust modules represented."
+  "notes": "Generated from the actual current-run mutants.json, not from historical counts. All production Rust modules represented.",
+  "source_files": [
+    "src/cobertura.rs",
+    "src/collector.rs",
+    "src/lib.rs",
+    "src/main.rs",
+    "src/sarif.rs"
+  ]
 }

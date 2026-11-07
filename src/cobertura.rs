@@ -26,8 +26,10 @@ pub type LineEvidence = BTreeMap<String, BTreeMap<u32, u64>>;
 ///
 /// `root` is the canonical source root used by a scan. `sources` is keyed by
 /// exact slash-separated root-relative selected paths and contains the original
-/// UTF-8 source text used to bound line numbers. Every report must contain the
-/// `coverage/packages/package/classes/class/lines/line` structure.
+/// UTF-8 source text used to bound line numbers. Every report must contain
+/// `coverage/packages/package/classes` and at least one class record overall.
+/// Each class requires a `lines` container, whose line records may be empty.
+/// Empty packages are permitted alongside class records.
 ///
 /// Reports may mention other real files inside `root`; their evidence is
 /// ignored. Any path that does not resolve exactly, escapes the root, is a

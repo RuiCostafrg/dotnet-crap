@@ -461,7 +461,7 @@ fn source_text_line_bounds_use_original_utf8() {
 }
 
 #[test]
-/// An uncovered method has present zero evidence, unlike a method with no supplied lines.
+/// Class-level zero-hit lines remain present evidence rather than being dropped.
 fn zero_hit_only_evidence_is_preserved_as_zero() {
     let mut fixture = Fixture::new();
     fixture.source("A.cs", "a\nb\n");

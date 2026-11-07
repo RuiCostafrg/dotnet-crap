@@ -90,7 +90,7 @@ Depends on step 1. Deliver the mapping contract and collector as reviewable slic
   same-line nesting and missing evidence before changing completeness semantics.
 - [x] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
   partial classes, malformed XML and unsafe XML external references.
-- [x] Add real collector fixtures covering partial/full/uncovered code, a
+- [ ] Add real collector fixtures covering partial/full/uncovered code, a
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
 

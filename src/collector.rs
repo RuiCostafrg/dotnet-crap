@@ -185,7 +185,7 @@ fn run_command(command: &mut Command, timeout: Duration) -> Result<ExitStatus> {
     let start = Instant::now();
     loop {
         match child.try_wait() {
-            Ok(Some(status)) => return Ok(status),
+            Ok(Some(status)) => return observed_completion(status, start.elapsed(), timeout),
             Ok(None) => {}
             Err(error) => {
                 let _ = child.kill();
@@ -200,4 +200,41 @@ fn run_command(command: &mut Command, timeout: Duration) -> Result<ExitStatus> {
         }
         std::thread::sleep(Duration::from_millis(10));
     }
+}
+
+/// Apply the completion-observation deadline independently of process scheduling.
+fn observed_completion(
+    status: ExitStatus,
+    elapsed: Duration,
+    timeout: Duration,
+) -> Result<ExitStatus> {
+    if elapsed >= timeout {
+        bail!("trusted test command timed out");
+    }
+    Ok(status)
+}
+
+#[cfg(test)]
+mod deadline_tests {
+    /// Even a successful child cannot publish when completion is observed at/after the deadline.
+    #[test]
+    fn completed_status_must_be_observed_strictly_before_deadline() {
+        let status = Command::new(std::env::current_exe().unwrap())
+            .arg("--list")
+            .output()
+            .unwrap()
+            .status;
+        assert!(status.success());
+        let deadline = Duration::from_millis(10);
+        for elapsed in [Duration::ZERO, Duration::from_millis(9)] {
+            assert!(observed_completion(status, elapsed, deadline)
+                .unwrap()
+                .success());
+        }
+        for elapsed in [Duration::from_millis(10), Duration::from_millis(11)] {
+            let error = observed_completion(status, elapsed, deadline).unwrap_err();
+            assert!(error.to_string().contains("timed out"));
+        }
+    }
+    use super::*;
 }
