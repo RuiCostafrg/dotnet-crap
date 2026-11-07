@@ -158,11 +158,9 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
     };
     let native = workspace.path().join("native.json");
     let options = CollectOptions {
-        scan: ScanOptions {
-            root: fixture.clone(),
-            paths: vec!["Alpha.Library".into(), "Beta.Library".into()],
-            ..Default::default()
-        },
+        root: fixture.clone(),
+        paths: vec!["Alpha.Library".into(), "Beta.Library".into()],
+        timeout: std::time::Duration::from_secs(600),
         output: native.clone(),
         expected_reports: 2,
         command: [
@@ -184,7 +182,9 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
     let report = scan(&ScanOptions {
         coverage: Some(native),
         require_coverage: true,
-        ..options.scan.clone()
+        root: options.root.clone(),
+        paths: options.paths.clone(),
+        ..Default::default()
     })
     .unwrap();
     assert_eq!(report.report().functions.len(), 4);
@@ -235,6 +235,22 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         r#"{"test":{"runner":"Microsoft.Testing.Platform"}}"#,
     )
     .unwrap();
+    let probe = Command::new("dotnet")
+        .current_dir(&fixture)
+        .args(["test", "--solution", "CoverletFixtures.sln"])
+        .output()
+        .unwrap();
+    assert!(!probe.status.success());
+    let diagnostic = String::from_utf8_lossy(&probe.stderr);
+    assert!(
+        diagnostic.contains("All projects must use that test runner"),
+        "{diagnostic}"
+    );
+    assert!(
+        diagnostic.contains("Alpha.Tests.csproj") && diagnostic.contains("Beta.Tests.csproj"),
+        "{diagnostic}"
+    );
+    failed.command.insert(2, "--solution".into());
     let error = collect(&failed).unwrap_err();
     assert!(
         error.to_string().contains("trusted test command failed"),

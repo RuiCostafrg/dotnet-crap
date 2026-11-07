@@ -108,7 +108,8 @@ Run formatting, clippy with warnings denied, locked debug/release tests and
 `DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked`. Run mutation tests on each final production
 change and again on the integrated head; a result for the foundation does not
 certify later feature branches. Mutation score and code coverage are different
-metrics. A test returning early without `DOTNET_CRAP_E2E` is not live .NET evidence.
+metrics. A test returning early without `DOTNET_CRAP_E2E` or the Coverlet-specific
+`DOTNET_CRAP_COVERLET_E2E=1` is not live .NET/collector evidence.
 
 Record performance with `python3 scripts/benchmark.py --output target/bench.json`
 and repeat with `--coverage`. Compare the same compiler/profile/corpus/runner;

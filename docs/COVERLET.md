@@ -28,11 +28,19 @@ path resolves against the invoking process's working directory; the child runs
 in the canonical source root. The command must contain exactly one standalone
 `{results}` argument, replaced with a new private temporary directory. Arguments
 are passed directly; there is no shell splitting or expansion. Supply the exact
-expected report count (projects times target frameworks), so partial solution
-collection cannot silently pass. An existing destination, including a symlink or
+expected report count (projects times target frameworks) to detect missing/extra
+report files. Cobertura does not identify test projects
+or frameworks: matching counts cannot prove that every intended project ran,
+especially when several projects cover the same library. The trusted command
+must execute the intended project/target set; duplicate reports are not project
+identity attestations. An existing destination, including a symlink or
 hardlink, is an error. Its parent directory must exist; `.cs` destinations fail.
 `collect` is reserved as the first CLI argument; use `./collect` to scan a
-directory with that name. Collection success exits 0; collection errors exit 2. Scan policy exits stay 0/1/2.
+directory with that name. The child deadline defaults to 900 seconds
+(`--timeout-seconds`); a timeout
+kills and reaps the immediate process and publishes nothing. Descendant processes
+remain the trusted command's responsibility; this is not a process-tree sandbox.
+Collection success exits 0; collection errors exit 2. Scan policy exits stay 0/1/2.
 
 The entire child command, its dependencies, and test code are trusted executable
 code. The caller must pin the collector, choose the runner and format explicitly,
@@ -73,6 +81,11 @@ for every target framework or assembly. Select a single target/run if that is th
 policy you need. Counts are not summed, so duplicate instrumentation cannot change
 scores or overflow during merging.
 
+Collection options select sources only (`root`, `paths`); scoring gates belong
+to a subsequent `scan`, not evidence production. Native evidence is staged with
+owner-only permissions on Unix (normally 0600); callers can explicitly grant
+read access after successful collection if needed.
+
 Existing syntax ownership is retained: nested callables own their line ranges,
 and outer callables exclude nested ranges. Same-line nested callables remain
 ambiguous because Cobertura has no usable column ownership. This adapter does
@@ -92,7 +105,9 @@ Tests cover host-native absolute paths and foreign Windows roots separately;
 rejecting a foreign drive on Unix is not evidence of a live Windows collector run.
 
 XML parsing rejects malformed XML, DTD/entity declarations, external references,
-invalid/zero/out-of-range line numbers and invalid hit counts. The parser does
+invalid/zero/out-of-range line numbers and invalid hit counts. Reports are
+limited to 16 MiB and 500,000 XML nodes before further
+processing. Empty class line lists leave evidence absent. The parser does
 not retrieve network or filesystem entities. Source hashes are generated from the
 pre-command snapshot, never from bytes first observed after tests.
 

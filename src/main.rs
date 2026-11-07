@@ -10,7 +10,8 @@ use walkdir::WalkDir;
 #[derive(Parser)]
 #[command(
     version,
-    about = "Score C# callables using cyclomatic complexity and source-bound coverage"
+    about = "Score C# callables using cyclomatic complexity and source-bound coverage",
+    after_help = "Fresh coverage collection: dotnet-crap collect --help"
 )]
 struct Args {
     #[arg(long, default_value = ".")]
@@ -48,6 +49,8 @@ struct CollectArgs {
     test_command: Vec<std::ffi::OsString>,
     #[arg(long, default_value_t = 1)]
     expected_reports: usize,
+    #[arg(long, default_value_t = 900)]
+    timeout_seconds: u64,
 }
 
 fn execute() -> Result<bool> {
@@ -58,14 +61,12 @@ fn execute() -> Result<bool> {
                 .chain(std::env::args_os().skip(2)),
         );
         dotnet_crap::collector::collect(&dotnet_crap::collector::CollectOptions {
-            scan: ScanOptions {
-                root: args.root,
-                paths: args.paths,
-                ..Default::default()
-            },
+            root: args.root,
+            paths: args.paths,
             output: args.output,
             command: args.test_command,
             expected_reports: args.expected_reports,
+            timeout: std::time::Duration::from_secs(args.timeout_seconds),
         })?;
         Ok(false)
     } else {

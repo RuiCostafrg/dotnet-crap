@@ -285,7 +285,6 @@ fn source_link_and_deterministic_paths_are_rejected() {
         "https://raw.githubusercontent.com/example/repo/main/A.cs",
         "file:///repo/A.cs",
         "/_/MyLibrary/A.cs",
-        "_/MyLibrary/A.cs",
     ] {
         let mut fixture = Fixture::new();
         fixture.source("A.cs", "a\nb\n");
@@ -366,10 +365,7 @@ fn assert_xml_error(xml: &str) {
     fixture.report(xml);
     let error = format!("{:#}", fixture.parse().unwrap_err());
     assert!(
-        error.contains("invalid Cobertura XML")
-            || error.contains("Cobertura report")
-            || error.contains("forbidden")
-            || error.contains("malformed"),
+        error.contains("forbidden") || error.contains("malformed"),
         "{error}"
     );
 }
@@ -382,7 +378,6 @@ fn required_coverage_structure_is_enforced() {
         "<coverage><packages><package/></packages></coverage>",
         "<coverage><packages><package><classes/></package></packages></coverage>",
         "<coverage><packages><package><classes><class filename=\"A.cs\"/></classes></package></packages></coverage>",
-        "<coverage><packages><package><classes><class filename=\"A.cs\"><lines/></class></classes></package></packages></coverage>",
     ] {
         let mut fixture = Fixture::new();
         fixture.source("A.cs", "a\nb\n");
@@ -474,4 +469,58 @@ fn unc_paths_are_explicitly_unsupported_on_every_host() {
     fixture.report(&document(&[], &[class(r"\\server\share\A.cs", &[(1, 1)])]));
     let error = format!("{:#}", fixture.parse().unwrap_err());
     assert!(error.contains("UNC"), "{error}");
+}
+
+#[test]
+fn source_prefix_comments_and_cdata_cannot_truncate_ownership() {
+    for prefix in ["alpha<!--split-->/beta", "alpha<![CDATA[/beta]]>"] {
+        let mut fixture = Fixture::new();
+        fixture.source("alpha/A.cs", "a\nb\n");
+        fixture.source("alpha/beta/A.cs", "a\nb\n");
+        fixture.report(
+            &document(&["placeholder".into()], &[class("A.cs", &[(1, 1)])])
+                .replace("placeholder", prefix),
+        );
+        let evidence = fixture.parse().unwrap();
+        assert_eq!(evidence.keys().collect::<Vec<_>>(), vec!["alpha/beta/A.cs"]);
+    }
+    let mut fixture = Fixture::new();
+    fixture.source("alpha/A.cs", "a\nb\n");
+    fixture.report(
+        &document(&["placeholder".into()], &[class("A.cs", &[(1, 1)])])
+            .replace("placeholder", "alpha<child/>"),
+    );
+    assert!(format!("{:#}", fixture.parse().unwrap_err()).contains("must not contain elements"));
+}
+
+#[test]
+fn empty_selected_and_unselected_classes_leave_evidence_absent() {
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    fixture.unselected("B.cs", "a\nb\n");
+    fixture.report(&document(&[], &[class("A.cs", &[]), class("B.cs", &[])]));
+    assert!(fixture.parse().unwrap().is_empty());
+}
+
+#[test]
+fn ordinary_underscore_directory_is_an_exact_local_path() {
+    let mut fixture = Fixture::new();
+    fixture.source("_/A.cs", "a\nb\n");
+    fixture.report(&document(&[], &[class("_/A.cs", &[(1, 1)])]));
+    assert_eq!(fixture.parse().unwrap()["_/A.cs"], BTreeMap::from([(1, 1)]));
+}
+
+#[test]
+fn oversized_xml_returns_a_controlled_error_before_allocation() {
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    fixture.report("<coverage/>");
+    fs::OpenOptions::new()
+        .write(true)
+        .open(&fixture.reports[0])
+        .unwrap()
+        .set_len(16 * 1024 * 1024 + 1)
+        .unwrap();
+    let error = format!("{:#}", fixture.parse().unwrap_err());
+    assert!(error.contains("size limit"), "{error}");
 }

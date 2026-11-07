@@ -15,6 +15,7 @@ use roxmltree::{Document, Node, ParsingOptions};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
+    io::Read,
     path::{Path, PathBuf},
 };
 
@@ -59,7 +60,16 @@ fn import_report(
     report: &Path,
     evidence: &mut LineEvidence,
 ) -> Result<()> {
-    let bytes = fs::read(report).with_context(|| format!("reading {}", report.display()))?;
+    const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
+    let file = fs::File::open(report).with_context(|| format!("reading {}", report.display()))?;
+    if file.metadata()?.len() > MAX_REPORT_BYTES {
+        bail!("Cobertura report exceeds 16 MiB size limit");
+    }
+    let mut bytes = Vec::new();
+    file.take(MAX_REPORT_BYTES + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > MAX_REPORT_BYTES {
+        bail!("Cobertura report exceeds 16 MiB size limit");
+    }
     let text = std::str::from_utf8(&bytes).context("Cobertura report is not UTF-8")?;
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let document = parse_document(text)?;
@@ -98,9 +108,14 @@ fn parse_document(text: &str) -> Result<Document<'_>> {
     if lower.contains("<?xml-stylesheet") {
         bail!("Cobertura report contains a forbidden external XML stylesheet");
     }
+    parse_with_node_limit(text, 500_000)
+}
+
+/// Bound DOM allocation independently of the byte limit.
+fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
     let options = ParsingOptions {
+        nodes_limit,
         allow_dtd: false,
-        ..ParsingOptions::default()
     };
     Document::parse_with_options(text, options).map_err(|error| anyhow!("malformed XML: {error}"))
 }
@@ -116,11 +131,18 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
     };
     let mut prefixes = Vec::new();
     for source in child_elements(sources, "source") {
-        let raw = source
-            .text()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-            .context("empty Cobertura source prefix")?;
+        if source.children().any(|child| child.is_element()) {
+            bail!("Cobertura source prefix must not contain elements");
+        }
+        let text = source
+            .children()
+            .filter(|child| child.is_text())
+            .filter_map(|child| child.text())
+            .collect::<String>();
+        let raw = text.trim();
+        if raw.is_empty() {
+            bail!("empty Cobertura source prefix");
+        }
         let text = normalize_path(raw).context("invalid Cobertura source prefix")?;
         let path = PathBuf::from(&text);
         prefixes.push(if is_host_absolute(&text) {
@@ -145,9 +167,7 @@ fn import_class(
         .context("Cobertura <class> is missing filename")?;
     let lines = only_child(class, "lines")?;
     let lines = child_elements(lines, "line");
-    if lines.is_empty() {
-        bail!("Cobertura <class> <lines> contains no <line> elements");
-    }
+
     let resolved = resolve_filename(root, prefixes, filename, sources)?;
     let source_line_count = match &resolved {
         Some(name) => Some(
@@ -173,6 +193,9 @@ fn import_class(
     let Some(name) = resolved else {
         return Ok(());
     };
+    if parsed.is_empty() {
+        return Ok(());
+    }
     let entry = evidence.entry(name).or_default();
     for (line, hits) in parsed {
         entry
@@ -327,7 +350,7 @@ fn normalize_path(raw: &str) -> Result<String> {
     if path.starts_with("//") {
         bail!("Windows/UNC roots are not supported: {raw}");
     }
-    if path.starts_with("/_/") || path == "/_" || path.starts_with("_/") {
+    if path.starts_with("/_/") || path == "/_" {
         bail!("unmapped deterministic/SourceLink path is not supported: {raw}");
     }
     if path.split('/').any(|part| part == "..") {
@@ -384,4 +407,14 @@ fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node
         bail!("duplicate <{name}> elements");
     }
     Ok(child)
+}
+
+#[cfg(test)]
+mod resource_tests {
+    #[test]
+    fn node_limit_rejects_excess_nodes_without_requiring_a_large_allocation() {
+        let text = "<coverage><a/></coverage>";
+        assert!(super::parse_with_node_limit(text, 2).is_err());
+        assert!(super::parse_with_node_limit(text, 3).is_ok());
+    }
 }

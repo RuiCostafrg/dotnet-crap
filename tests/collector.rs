@@ -13,10 +13,9 @@ fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
     )
     .unwrap();
     let options = CollectOptions {
-        scan: ScanOptions {
-            root: dir.path().to_owned(),
-            ..Default::default()
-        },
+        root: dir.path().to_owned(),
+        paths: vec![],
+        timeout: std::time::Duration::from_secs(60),
         output: dir.path().join("native.json"),
         expected_reports: 1,
         command: ["python3", "-c", script, "{results}"]
@@ -42,13 +41,17 @@ fn fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores() {
         native["files"]["C.cs"]["lines"],
         serde_json::json!({"3":1,"4":0})
     );
-    let source = fs::read(options.scan.root.join("C.cs")).unwrap();
+    let source = fs::read(options.root.join("C.cs")).unwrap();
     use sha2::Digest;
     assert_eq!(
         native["files"]["C.cs"]["sha256"],
         hex::encode(sha2::Sha256::digest(source))
     );
-    let mut scan_options = options.scan.clone();
+    let mut scan_options = ScanOptions {
+        root: options.root.clone(),
+        paths: options.paths.clone(),
+        ..Default::default()
+    };
     scan_options.coverage = Some(options.output.clone());
     let result = scan(&scan_options).unwrap();
     let f = &result.report().functions[0];
@@ -71,19 +74,23 @@ fn failures_leave_no_evidence_and_private_directories_are_removed() {
         "import pathlib,sys; pathlib.Path(sys.argv[1],'coverage.cobertura.xml').write_text('<bad')",
         "import pathlib,sys; pathlib.Path('C.cs').write_text('class Changed {}')",
     ] {
-        let (_dir, options) = fixture(script);
+        let tracked = format!(
+            "import pathlib,sys\npathlib.Path('results-path').write_text(sys.argv[1])\n{script}"
+        );
+        let (_dir, options) = fixture(&tracked);
         fs::write(
-            options.scan.root.join("coverage.cobertura.xml"),
-            "old output",
+            options.root.join("coverage.cobertura.xml"),
+            r#"<coverage><packages><package><classes><class filename="C.cs"><lines><line number="3" hits="1"/></lines></class></classes></package></packages></coverage>"#,
         )
         .unwrap();
         assert!(collect(&options).is_err(), "{script}");
         assert!(!options.output.exists());
-        assert!(!fs::read_dir(&options.scan.root).unwrap().any(|e| e
-            .unwrap()
-            .file_name()
-            .to_string_lossy()
-            .starts_with(".tmp")));
+        let results_path = fs::read_to_string(options.root.join("results-path")).unwrap();
+        assert!(!std::path::Path::new(&results_path).exists());
+        if script == "pass" {
+            let error = collect(&options).unwrap_err();
+            assert!(error.to_string().contains("found 0"), "{error:#}");
+        }
     }
     let (dir, mut options) = fixture(REPORT);
     options.command[2] = OsString::from(format!(
@@ -112,15 +119,17 @@ fn failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_pub
 #[test]
 fn invalid_commands_inputs_and_destinations_fail_before_execution() {
     for target in ["C.cs", "generated.CS", "existing", "missing/child.json"] {
-        let (_dir, mut options) = fixture("raise Exception('must not execute')");
-        fs::write(options.scan.root.join("existing"), "keep").unwrap();
-        options.output = options.scan.root.join(target);
+        let (_dir, mut options) =
+            fixture("import pathlib; pathlib.Path('executed').write_text('bad')");
+        fs::write(options.root.join("existing"), "keep").unwrap();
+        options.output = options.root.join(target);
         assert!(collect(&options).is_err());
+        assert!(!options.root.join("executed").exists());
         assert_eq!(
-            fs::read_to_string(options.scan.root.join("existing")).unwrap(),
+            fs::read_to_string(options.root.join("existing")).unwrap(),
             "keep"
         );
-        assert!(fs::read_to_string(options.scan.root.join("C.cs"))
+        assert!(fs::read_to_string(options.root.join("C.cs"))
             .unwrap()
             .starts_with("class C"));
     }
@@ -136,13 +145,13 @@ fn invalid_commands_inputs_and_destinations_fail_before_execution() {
         assert!(!options.output.exists());
     }
     let (_dir, mut options) = fixture(REPORT);
-    options.scan.coverage = Some("old.json".into());
+    options.timeout = std::time::Duration::ZERO;
     assert!(collect(&options).is_err());
-    options.scan.coverage = None;
-    options.scan.paths = vec!["absent.cs".into()];
+    options.timeout = std::time::Duration::from_secs(60);
+    options.paths = vec!["absent.cs".into()];
     assert!(collect(&options).is_err());
-    options.scan.paths.clear();
-    fs::remove_file(options.scan.root.join("C.cs")).unwrap();
+    options.paths.clear();
+    fs::remove_file(options.root.join("C.cs")).unwrap();
     assert!(collect(&options).is_err());
 }
 
@@ -296,4 +305,47 @@ fn an_extra_or_malformed_project_report_cannot_publish_partial_evidence() {
         assert!(collect(&options).is_err());
         assert!(!options.output.exists());
     }
+}
+
+#[test]
+fn deadline_reaps_the_child_and_publishes_nothing() {
+    let (dir, mut options) = fixture("import time; time.sleep(30)");
+    options.timeout = std::time::Duration::from_millis(50);
+    let started = std::time::Instant::now();
+    let error = collect(&options).unwrap_err();
+    assert!(error.to_string().contains("timed out"), "{error:#}");
+    assert!(started.elapsed() < std::time::Duration::from_secs(10));
+    assert!(!dir.path().join("native.json").exists());
+}
+
+#[test]
+fn duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness() {
+    let (_dir, mut options) = fixture(REPORT);
+    fs::write(
+        options.root.join("Missing.cs"),
+        "class Missing { int Unseen() => 0; }",
+    )
+    .unwrap();
+    options.expected_reports = 2;
+    options.command[2] = format!("{REPORT}\n(p/'second').mkdir()\n(p/'second'/'coverage.cobertura.xml').write_text((p/'run'/'coverage.cobertura.xml').read_text())").into();
+    collect(&options).unwrap();
+    let result = scan(&ScanOptions {
+        root: options.root.clone(),
+        coverage: Some(options.output),
+        require_coverage: true,
+        ..Default::default()
+    })
+    .unwrap();
+    assert!(!result.report().coverage_complete);
+    assert!(result.report().failed);
+    assert_eq!(
+        result
+            .report()
+            .functions
+            .iter()
+            .find(|f| f.name == "Unseen")
+            .unwrap()
+            .coverage,
+        None
+    );
 }

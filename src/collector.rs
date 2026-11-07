@@ -1,15 +1,25 @@
 //! Execute an explicitly trusted test command and publish fresh native evidence.
 use crate::{scan, ScanOptions};
 use anyhow::{bail, Context, Result};
-use std::{collections::BTreeMap, ffi::OsString, fs, io::Write, path::PathBuf, process::Command};
+use std::{
+    collections::BTreeMap,
+    ffi::OsString,
+    fs,
+    io::Write,
+    path::PathBuf,
+    process::{Command, ExitStatus},
+    time::{Duration, Instant},
+};
 use walkdir::WalkDir;
 
 /// Collection policy. The caller is responsible for trusting the entire command
 /// and pinning its Coverlet dependency. No shell is inserted by this API.
 #[derive(Debug, Clone)]
 pub struct CollectOptions {
-    /// Source selection; coverage must be absent.
-    pub scan: ScanOptions,
+    /// Root containing selected sources. Collection does not apply scoring gates.
+    pub root: PathBuf,
+    /// Selected files/directories, relative to root; empty selects the root.
+    pub paths: Vec<PathBuf>,
     /// New native v1 evidence destination. Existing destinations are rejected.
     pub output: PathBuf,
     /// Executable and argv, containing exactly one standalone `{results}` token.
@@ -18,6 +28,8 @@ pub struct CollectOptions {
     pub command: Vec<OsString>,
     /// Exact expected number of test-project/target Cobertura reports; must be positive.
     pub expected_reports: usize,
+    /// Deadline for the immediate trusted test process; must be nonzero.
+    pub timeout: Duration,
 }
 
 /// Snapshot selected bytes, run trusted tests in the canonical source root, then
@@ -27,8 +39,8 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     if options.expected_reports == 0 {
         bail!("expected report count must be positive");
     }
-    if options.scan.coverage.is_some() {
-        bail!("collection cannot use existing coverage");
+    if options.timeout.is_zero() {
+        bail!("test timeout must be positive");
     }
     if options.command.len() < 2
         || options.command[1..]
@@ -40,7 +52,12 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         bail!("test command requires exactly one standalone {{results}} argument");
     }
     validate_destination(&options.output)?;
-    let snapshot = scan(&options.scan)?;
+    let selection = ScanOptions {
+        root: options.root.clone(),
+        paths: options.paths.clone(),
+        ..Default::default()
+    };
+    let snapshot = scan(&selection)?;
     let mut sources = BTreeMap::new();
     let mut hashes = BTreeMap::new();
     for (path, hash) in &snapshot.source_hashes {
@@ -68,7 +85,8 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         results_builder.permissions(fs::Permissions::from_mode(0o700));
     }
     let results = results_builder.tempdir()?;
-    let status = Command::new(&options.command[0])
+    let mut command = Command::new(&options.command[0]);
+    command
         .args(options.command[1..].iter().map(|arg| {
             if arg == "{results}" {
                 results.path().as_os_str()
@@ -76,9 +94,8 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
                 arg.as_os_str()
             }
         }))
-        .current_dir(snapshot.root())
-        .status()
-        .context("starting trusted test command")?;
+        .current_dir(snapshot.root());
+    let status = run_command(&mut command, options.timeout)?;
     if !status.success() {
         bail!("trusted test command failed: {status}");
     }
@@ -129,7 +146,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     stage.write_all(b"\n")?;
     stage.as_file().sync_all()?;
     // Exercise the native validator and scoring on exactly the staged evidence.
-    let mut verify = options.scan.clone();
+    let mut verify = selection;
     verify.coverage = Some(stage.path().to_owned());
     scan(&verify)?;
     snapshot.verify_sources()?;
@@ -159,5 +176,28 @@ fn validate_destination(path: &std::path::Path) -> Result<()> {
         Ok(_) => bail!("coverage destination must not already exist"),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(e) => Err(e.into()),
+    }
+}
+
+/// Bound the immediate child, reaping it on timeout and on wait failures.
+fn run_command(command: &mut Command, timeout: Duration) -> Result<ExitStatus> {
+    let mut child = command.spawn().context("starting trusted test command")?;
+    let start = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return Ok(status),
+            Ok(None) => {}
+            Err(error) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(error).context("waiting for trusted test command");
+            }
+        }
+        if start.elapsed() >= timeout {
+            let _ = child.kill();
+            child.wait().context("reaping timed-out test command")?;
+            bail!("trusted test command timed out");
+        }
+        std::thread::sleep(Duration::from_millis(10));
     }
 }

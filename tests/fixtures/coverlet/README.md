@@ -14,7 +14,8 @@ DOTNET_CRAP_COVERLET_E2E=1 cargo test --test coverlet_live -- --exact pinned_cov
 ```
 
 The test invokes `dotnet test CoverletFixtures.sln
---collect:XPlat Code Coverage --results-directory <fresh-temp-path> -m:1` and
+--collect:XPlat Code Coverage --results-directory <fresh-temp-path> -m:1 --
+DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura` and
 requires exactly two nonempty `coverage.cobertura.xml` reports, one for each
 referenced library. The serial MSBuild setting avoids concurrent builds of
 shared fixture outputs. Outside the opt-in environment variable, the Rust test
@@ -49,6 +50,9 @@ and different filenames. This demonstrates why the source filename is part of
 the identity when a consumer merges partial-class records.
 
 ## Observed live run
+
+The initial local observation below preceded a source-qualified Rust integration
+run; see [current source-qualified evidence](../../../reports/fresh-coverlet/README.md).
 
 On 2026-11-06 this workspace had .NET SDK 10.0.109 and runtime 10.0.9 on
 Linux ARM64. The pinned collector run completed both tests and emitted two

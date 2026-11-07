@@ -1,14 +1,17 @@
 # Fresh Coverlet collection evidence (validation in progress)
 
-Production and test revision: `dedf03e6d2aa30161475108fe036f3b3a270a916`.
+Last completed non-mutation validation revision: `dedf03e6d2aa30161475108fe036f3b3a270a916`.
 The implementation starts at `7aaae575`; `dedf03e` fixes review findings and the
 live expected-score arithmetic. `tested-files.json` records exact source/test and
 Cargo input hashes, so later documentation commits can be checked for equality.
 
-Formatting, warnings-denied clippy, locked debug/release tests, Python contracts
-and actionlint 1.7.12 passed. Explicit live SDK/collector tests, packaging smoke,
-and the final full mutation rerun are in progress. This file must be finalized
-with their actual results before declaring step 2 complete.
+Formatting, warnings-denied clippy, locked debug/release tests, Python contracts,
+actionlint 1.7.12 and the full explicitly enabled live SDK/collector suite passed.
+Further PR review fixes and MSTest/NUnit fixtures are being integrated. They
+require fresh validation; the logs below do not certify those later changes. Supported-host packaging smoke
+passed in Ubuntu CI at `027815c`; the local Android/bionic installed launcher
+crashed with SIGABRT in the Mono runtime. That local smoke is not a pass.
+Launcher contracts and archive/repack checks passed locally before that failure.
 
 The independent Sol review found permissive results-directory permissions and an
 inconsistent UNC policy. The fix creates Unix directories atomically with 0700
@@ -24,8 +27,9 @@ covered means `2 + 4 * (1/5)^3 = 254/125 = 2.032`, not 2.016.
 `initial/` preserves the complete 282-entry inventory, outcome lists and gate log
 for `7aaae575`: 250 caught, 23 missed, 0 timeouts, 9 unviable; 91.58%. That result
 predates the review fixes and is not final-tree validation. No filters or blanket
-exclusions were added. The final run is
-`target/mutation-runs/run-2ntvch4c/mutants.out`; its outcomes are pending.
+exclusions were added. The subsequent local run at
+`target/mutation-runs/run-2ntvch4c/mutants.out` was stopped after additional PR
+review fixes made its source stale. Its partial outcomes are not a full score.
 `inventory-audit.json` confirms all five production modules are included.
 
 ## Benchmarks
@@ -48,4 +52,5 @@ that rejection does not certify an MTP collector. .NET 8, NUnit, MSTest and actu
 MTP collection remain unverified; CI is configured to exercise .NET 10 on its
 Linux/macOS/Windows matrix but results must be inspected independently.
 
-No release publication or PR merge is authorized or performed by this feature.
+Release publication remains disabled. The user subsequently authorized merging
+PR #15 only after current-head CI is green and review findings are handled.

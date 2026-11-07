@@ -90,7 +90,7 @@ Depends on step 1. Deliver the mapping contract and collector as reviewable slic
   same-line nesting and missing evidence before changing completeness semantics.
 - [x] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
   partial classes, malformed XML and unsafe XML external references.
-- [ ] Add real collector fixtures covering partial/full/uncovered code, a
+- [x] Add real collector fixtures covering partial/full/uncovered code, a
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
 
@@ -98,8 +98,8 @@ Implementation: `dedf03e` (collector/parser plus review fixes). Native v1 remain
 unchanged: supplied-line evidence, maximum-hit union across assemblies, zero-hit
 retention, and existing same-line nesting limits. Foreign roots, unmapped
 SourceLink/deterministic paths, and UNC paths are rejected rather than guessed.
-See [the mapping and command contract](docs/COVERLET.md). Live final-tree tests
-and the full mutation rerun are in progress; do not interpret the initial
+See [the mapping and command contract](docs/COVERLET.md). The full explicitly enabled
+live suite passed; the final mutation rerun is in progress; do not interpret the initial
 `7aaae57` mutation result as validation of the fixes.
 
 **Done when:** actual .NET collector runs produce independently checked scores;
@@ -213,8 +213,9 @@ run in separate prepared worktrees with agreed API ownership. Syntax fixtures an
 benchmark research can proceed independently; coordinate changes to analysis code.
 Baselines depend on stable identities; reporting can use the established report API.
 
-Use one feature branch and PR per bounded change. For step 2, Sol owns API integration and independent review; Luna owns live
-fixtures, Haiku mapping research, and DeepSeek Flash the parser. Use the explicitly
+Use one feature branch and PR per bounded change. For step 2, Sol owns API
+integration and independent review; Luna owns live fixtures, Haiku owns mapping
+research, and DeepSeek Flash owns the parser. Use the explicitly
 requested providers/models; report availability limitations without substitution.
 Do not let agents edit the same shared files concurrently. Integrate parent changes
 before validating a dependent PR; prefer a short stack over a long review chain.
