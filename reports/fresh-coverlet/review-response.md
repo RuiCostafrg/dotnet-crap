@@ -37,3 +37,5 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 - CodeRabbit review 5811662696 (nonblocking report distinction): MSTest/NUnit now add one extra positive Full call; the harness requires exactly one 2-call and one 3-call report per library. This verifies per-project evidence signatures without changing the supplied-line coverage or CRAP expectations.
 
 - Live signature validation caught an incorrect parent expectation: Beta tests `value == 0`, so NUnit's additional Full(1) call increments its fallback return. Corrected NUnit hits to 3/3/1/2/3 (MSTest remains 3/3/2/1/3); both coverage ratios and CRAP scores remain unchanged.
+
+- CodeRabbit outside-diff review 5811728529 (superseded inventory wording): final evidence must replace intermediate current-run language with the completed source-qualified inventory and outcomes. Superseded/partial local runs remain explicitly excluded from final mutation-score claims.

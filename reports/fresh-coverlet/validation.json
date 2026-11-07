@@ -1,0 +1,72 @@
+{
+  "revision": "1cad955cbe5ec29590fb405174c495826de5f39f",
+  "ci": {
+    "run": 42368570770,
+    "url": "https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570770",
+    "mutation_run": "https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570749",
+    "head_checks": "all completed, successful (review services may be skipped)",
+    "platforms": [
+      "ubuntu-24.04/linux-x64",
+      "macos-15/osx-arm64",
+      "windows-latest/win-x64"
+    ],
+    "live_flags": {
+      "DOTNET_CRAP_E2E": "1",
+      "DOTNET_CRAP_COVERLET_E2E": "1"
+    },
+    "logs": "ci/"
+  },
+  "local": [
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo clippy --locked --all-targets -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo test --locked",
+      "exit_code": 0,
+      "log": "debug.log"
+    },
+    {
+      "command": "cargo test --locked --release",
+      "exit_code": 0,
+      "log": "release.log"
+    },
+    {
+      "command": "DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked --test coverlet_live",
+      "exit_code": 0,
+      "log": "live.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+      "exit_code": 0,
+      "log": "python.log"
+    },
+    {
+      "command": "actionlint",
+      "version": "1.7.12",
+      "exit_code": 0
+    }
+  ],
+  "older_full_local_live": {
+    "revision": "8a28326490ee6ddc10667b41d87ad34d1c733f78",
+    "command": "DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked",
+    "exit_code": 0,
+    "log": "full-live-8a28326.log",
+    "note": "Historical full local suite; exact final-source full live coverage is independently certified by the linked three-platform CI run."
+  },
+  "mutation": {
+    "total": 297,
+    "caught": 262,
+    "missed": 24,
+    "timeout": 0,
+    "unviable": 11,
+    "score_percent": 91.60839160839161,
+    "source": "final/",
+    "quality_gate": "strictly greater than 90% caught among caught + missed + timeouts"
+  },
+  "local_packaging_smoke": "Not a pass: Android/bionic Mono apphost SIGABRT. Supported Ubuntu CI smoke passed; launcher/offline/pack archive contracts passed locally."
+}

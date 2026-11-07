@@ -78,7 +78,7 @@ reviewed in the evidence. Benchmarks in both modes are observational on this run
 and the complete production mutation inventory covers the extracted modules.
 Audit mutation configuration after moving files so no library source is omitted.
 
-### 2. Fresh Coverlet/Cobertura collection — in progress
+### 2. Fresh Coverlet/Cobertura collection — implemented in PR #15
 
 Depends on step 1. Deliver the mapping contract and collector as reviewable slices.
 
@@ -90,17 +90,25 @@ Depends on step 1. Deliver the mapping contract and collector as reviewable slic
   same-line nesting and missing evidence before changing completeness semantics.
 - [x] Reject ambiguous paths; test Windows roots, SourceLink/deterministic paths,
   partial classes, malformed XML and unsafe XML external references.
-- [ ] Add real collector fixtures covering partial/full/uncovered code, a
+- [x] Add real collector fixtures covering partial/full/uncovered code, a
   multi-project solution and collection failures. Verify supported SDK/test-runner
   combinations rather than assuming VSTest and Microsoft Testing Platform match.
 
-Implementation: `18fc47a` (collector/parser, review fixes and three-framework fixtures). Native v1 remains
-unchanged: supplied-line evidence, maximum-hit union across assemblies, zero-hit
-retention, and existing same-line nesting limits. Foreign roots, unmapped
-SourceLink/deterministic paths, and UNC paths are rejected rather than guessed.
-See [the mapping and command contract](docs/COVERLET.md). The prior xUnit live suite passed; combined xUnit/MSTest/NUnit live validation
-and the final-source mutation rerun are in progress; do not interpret the initial
-`7aaae57` mutation result as validation of the fixes.
+Implementation and validated source/test snapshot: `1cad955`;
+[PR #15](https://github.com/RuiCostafrg/dotnet-crap/pull/15).
+Native v1 remains unchanged: supplied-line evidence, maximum-hit union across
+assemblies, zero-hit retention and existing same-line nesting limits. Foreign
+roots, unmapped SourceLink/deterministic paths and UNC paths are rejected.
+See [the mapping/command contract](docs/COVERLET.md).
+
+Validation: locked debug/release, formatting, warnings-denied clippy, Python
+contracts, actionlint and actual .NET 10 VSTest collection for xUnit, MSTest and
+NUnit passed. Linux/macOS/Windows CI and supported Ubuntu packaging smoke passed.
+The full source-qualified mutation run tested 297 mutants: 262 caught, 24 missed,
+0 timeouts, 11 unviable; **91.61%**, with all five production modules represented
+and no blanket exclusions. [Complete evidence, inventory and survivor review](reports/fresh-coverlet/README.md).
+SDK 8 and actual MTP collection remain unverified; no parity is inferred from
+the negative MTP-mode SDK test. No release publication is enabled.
 
 **Done when:** actual .NET collector runs produce independently checked scores;
 failures leave no new coverage artifact. Document any versioned format migration.
@@ -178,8 +186,10 @@ Start profiling after step 1; repeat on each relevant production change.
   evaluate prefix counts or excluded-range skipping after measuring dense workloads.
 - [ ] Record runtime and peak memory with compiler, binary digest, source commit,
   corpus and individual samples. Keep correctness assertions in the harness.
-- [ ] Investigate the 3 recorded surviving mutants; strengthen independent
-  assertions where behavior matters and document genuinely equivalent cases.
+- [ ] Continue survivor investigation at named source revisions: the initial 3
+  cases and the 24 reviewed collector-tree survivors are qualified in their
+  evidence. Strengthen independent assertions where behavior matters; do not
+  declare uncovered boundaries or platform-specific cases globally equivalent.
 - [ ] Introduce performance budgets only after controlled, repeated measurements.
   Optimize measured bottlenecks without changing scoring semantics.
 

@@ -1,0 +1,892 @@
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	﻿2026-11-07T11:32:04.2345210Z Current runner version: '2.338.2'
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2368290Z ##[group]Runner Image Provisioner
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2369230Z Hosted Compute Agent
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2369640Z Version: 20261103.629
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2370140Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2370700Z Build Date: 2026-11-03T17:26:59Z
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2371350Z Worker ID: {ff03835e-2879-4cba-9d4f-9f98f67376c2}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2371940Z Region: westus
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2372370Z Cloud: MacCloud
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2372830Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2374190Z ##[group]Operating System
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2374700Z macOS
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2375090Z 15.8.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2375520Z 24H232
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2375910Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2376380Z ##[group]Runner Image
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2376790Z Image: macos-15-arm64
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2377230Z Version: 20261104.0514.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2378210Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20261104.0514/images/macos/macos-15-arm64-Readme.md
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2379480Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20261104.0514
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2380320Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2381250Z ##[group]GITHUB_TOKEN Permissions
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2383080Z Contents: read
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2383530Z Metadata: read
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2384080Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2385710Z Secret source: Actions
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2386440Z Cache mode: write
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2387180Z Prepare workflow directory
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2759680Z Prepare all required actions
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.2802160Z Getting action download info
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:04.6027820Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:05.1310990Z Download action repository 'dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec' (SHA:b725eda525362e7cf34af9a7243cac1e3f01a7ec)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:05.4888800Z Download action repository 'actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1' (SHA:26b0ec14cb23fa6904739307f278c14f94c95bf1)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Set up job	2026-11-07T11:32:06.1006600Z Complete job name: dotnet-e2e (macos-15, osx-arm64, dotnet-crap)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:32:06.1627420Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1628210Z with:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1628560Z   repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1631270Z   token: ***
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1631590Z   ssh-strict: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1631910Z   ssh-user: git
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1632240Z   persist-credentials: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1632580Z   clean: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1632920Z   sparse-checkout-cone-mode: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1633290Z   fetch-depth: 1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1633610Z   fetch-tags: false
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1633930Z   show-progress: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1634260Z   lfs: false
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1634560Z   submodules: false
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1634890Z   set-safe-directory: true
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.1635520Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7166490Z Syncing repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7168170Z ##[group]Getting Git version info
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7168740Z Working directory is '/Users/runner/work/dotnet-crap/dotnet-crap'
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7169740Z [command]/opt/homebrew/bin/git version
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7530450Z git version 2.56.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7554540Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7576100Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/9bb034e7-83ea-488b-b656-e4f4db4b5aae/.gitconfig'
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7590140Z Temporarily overriding HOME='/Users/runner/work/_temp/9bb034e7-83ea-488b-b656-e4f4db4b5aae' before making global git config changes
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7593850Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7598110Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7749410Z Deleting the contents of '/Users/runner/work/dotnet-crap/dotnet-crap'
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7751990Z ##[group]Initializing the repository
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.7755590Z [command]/opt/homebrew/bin/git init /Users/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8062140Z hint: Using 'master' as the name for the initial branch. This default branch name
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8063670Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8065130Z hint: to use in all of your new repositories, which will suppress this warning,
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8066480Z hint: call:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8119540Z hint:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8122580Z hint: 	git config --global init.defaultBranch <name>
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8123480Z hint:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8124200Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8125260Z hint: 'development'. The just-created branch can be renamed via this command:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8125970Z hint:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8126570Z hint: 	git branch -m <name>
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8127040Z hint:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8127700Z hint: Disable this message with "git config set advice.defaultBranchName false"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8128710Z Initialized empty Git repository in /Users/runner/work/dotnet-crap/dotnet-crap/.git/
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8130610Z [command]/opt/homebrew/bin/git remote add origin https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8213430Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8214340Z ##[group]Disabling automatic garbage collection
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8216440Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8268860Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8269620Z ##[group]Setting up auth
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8277020Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:06.8365840Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.0132590Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.0196810Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.1033450Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.1106290Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.1108240Z ##[group]Fetching the repository
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.1112360Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +76a45d29d47de392c069308bb1f64753152096e2:refs/remotes/pull/15/merge
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6821020Z From https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6822950Z  * [new ref]         76a45d29d47de392c069308bb1f64753152096e2 -> pull/15/merge
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6826030Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6826980Z ##[group]Determining the checkout info
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6828100Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6828850Z [command]/opt/homebrew/bin/git sparse-checkout disable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.6938860Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7012520Z ##[group]Checking out the ref
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7018650Z [command]/opt/homebrew/bin/git checkout --progress --force refs/remotes/pull/15/merge
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7285200Z HEAD is now at 76a45d2 Merge 1cad955cbe5ec29590fb405174c495826de5f39f into 8620f712871a3acb6d985f26f0a35fbf38d5db71
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7291740Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7418660Z [command]/opt/homebrew/bin/git log -1 --format=%H
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:07.7492500Z 76a45d29d47de392c069308bb1f64753152096e2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	﻿2026-11-07T11:32:07.8112590Z ##[group]Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8114100Z with:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8114750Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8115450Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8187680Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8279130Z ##[group]Run if [[ -z $toolchain ]]; then
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8280150Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8281520Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8282930Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8283710Z ^[[36;1m  exit 1^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8284550Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8285700Z ^[[36;1m  if [[ macOS == macOS ]]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8286990Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8288380Z ^[[36;1m  else^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8289410Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8290600Z ^[[36;1m  fi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8291400Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8292920Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8294110Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8295450Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8296750Z ^[[36;1melse^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8297300Z ^[[36;1m  delimiter=EOF^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8298110Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8299390Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8300510Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8351880Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8352830Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8353370Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8353940Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8897240Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=70]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.8911430Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9017580Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9019240Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9089690Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9091090Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9569690Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=65]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9578680Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9645500Z ##[group]Run if ! command -v rustup &>/dev/null; then
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9648610Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9650930Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9652670Z ^[[36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9653400Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9695980Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9696950Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9697560Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:07.9698230Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0023370Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=44]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0029690Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0044590Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0072420Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0122320Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0124140Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0126250Z ^[[36;1mflags=()^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0126960Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0127940Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0129290Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0130700Z ^[[36;1mlog=$(mktemp)^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0131300Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0132050Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0133440Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0134890Z ^[[36;1m    break^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0135430Z ^[[36;1m  else^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0135960Z ^[[36;1m    status=$?^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0136510Z ^[[36;1m  fi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0137210Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0138530Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0139680Z ^[[36;1m    exit "$status"^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0140240Z ^[[36;1m  fi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0141140Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0142180Z ^[[36;1m  sleep 30^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0142860Z ^[[36;1mdone^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0182220Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0183120Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0183770Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0184460Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0185030Z   targets: 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0185560Z   components: 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0186090Z   RUSTUP_PERMIT_COPY_RENAME: 1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.0186780Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.5336620Z info: syncing channel updates for stable-aarch64-apple-darwin
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8125250Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8368750Z   stable-aarch64-apple-darwin unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8369650Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8372780Z info: self-update is disabled for this build of rustup
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8373430Z info: any updates to rustup will need to be fetched with your system package manager
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8649210Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=857]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8657640Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8692610Z ##[group]Run rustup default "$toolchain" --force-non-host
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8693310Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8732030Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8732570Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8732990Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8733390Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.8733830Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.9401320Z info: using existing install for stable-aarch64-apple-darwin
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.9487530Z info: default toolchain set to stable-aarch64-apple-darwin
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:08.9489110Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0021070Z   stable-aarch64-apple-darwin unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0023090Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0065990Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=140]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0084310Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0139660Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0140740Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0141650Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0142450Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0217760Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0218480Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0218900Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0219320Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.0219740Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1459730Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=137]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1463650Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1511760Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1512310Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1512720Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1513210Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1549960Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1550590Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1550980Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1551340Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1825250Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=36]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1828320Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1946390Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1947000Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1947470Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1947870Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1985480Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1986050Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1986370Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1986730Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.1987070Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2339070Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=50]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2344120Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2392650Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2393320Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2394230Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2396120Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2396970Z ^[[36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2397660Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2398360Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2399100Z ^[[36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2399810Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2400250Z ^[[36;1m  fi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2401170Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2470610Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2471390Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2471740Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2472090Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2472420Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2472740Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.2473050Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3417260Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=107]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3421920Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3454290Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3455150Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3455850Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3456430Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3456840Z ^[[36;1mfi^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3491640Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3492110Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3492430Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3492780Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3493100Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3493420Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.3493720Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4026000Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=60]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4038660Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4124560Z ##[group]Run rustc +"$toolchain" --version --verbose
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4125120Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4160520Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4161190Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4161530Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4161940Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4162260Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4162570Z   toolchain: stable
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4162920Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4701320Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4703220Z binary: rustc
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4705160Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4706790Z commit-date: 2026-10-13
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4708040Z host: aarch64-apple-darwin
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4712740Z release: 1.99.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4713900Z LLVM version: 23.1.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:09.4729610Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=68]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:32:09.4858880Z ##[group]Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4859440Z with:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4859740Z   dotnet-version: 10.0.x
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4860060Z   cache: false
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4860330Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4860680Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4861010Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4861320Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.4861630Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:09.6470290Z [command]/Users/runner/work/_actions/actions/setup-dotnet/26b0ec14cb23fa6904739307f278c14f94c95bf1/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:10.2356040Z dotnet-install: .NET Core Runtime with version '10.0.14' is already installed.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:10.2431850Z [command]/Users/runner/work/_actions/actions/setup-dotnet/26b0ec14cb23fa6904739307f278c14f94c95bf1/externals/install-dotnet.sh --skip-non-versioned-files --channel 10.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:10.8447000Z dotnet-install: .NET Core SDK with version '10.0.403' is already installed.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	﻿2026-11-07T11:32:10.8710550Z ##[group]Run dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8711240Z ^[[36;1mdotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8756480Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8756810Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8757020Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8757240Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8757430Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8757630Z   DOTNET_ROOT: /Users/runner/.dotnet
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:10.8757870Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:18.4411080Z PASS runtime identifier is supported on this host
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:18.4412830Z PASS Windows executable name is unchanged
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:18.5406870Z PASS missing native binary reports an error and exits 2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:18.6500500Z PASS executable native runs directly with exact argv and exit code
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.4362250Z PASS exit codes are forwarded exactly for direct runs
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.5399050Z PASS non-executable native runs from a private copy and leaves the install untouched
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.6722910Z PASS private copy is removed after a non-zero child exit
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.8778210Z PASS read-only installs need no write access (exec and non-exec files)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.9884440Z PASS owner without execute permission falls back to a private copy
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:19.9978330Z PASS private copy preparation failure exits 2 without touching the install
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.0453100Z stderr-marker
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.0453690Z stdout-marker
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.0500340Z PASS in-process API forwards arguments and cleans its private copy
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.0506330Z 11 passed, 0 failed, 0 skipped
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	﻿2026-11-07T11:32:20.0883960Z ##[group]Run bash scripts/test-install-action.sh
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.0935900Z ^[[36;1mbash scripts/test-install-action.sh^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.0937000Z ^[[36;1mbash scripts/test-release-publish.sh^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1114260Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1117910Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1120060Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1121240Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1121910Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1122480Z   DOTNET_ROOT: /Users/runner/.dotnet
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.1125130Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:20.6356630Z PASS install-action: bounded HTTPS requests, checksum enforcement, and version validation
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.9006640Z PASS publish scripts: retry reuse, surfaced failures, NuGet skip-duplicate, absent-secret skip, trusted-main check
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	﻿2026-11-07T11:32:21.9402280Z ##[group]Run cargo test --locked
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9402750Z ^[[36;1mcargo test --locked^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9444190Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9444580Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9444910Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9445130Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9445310Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9445570Z   DOTNET_ROOT: /Users/runner/.dotnet
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9445960Z   DOTNET_CRAP_E2E: 1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9446130Z   DOTNET_CRAP_COVERLET_E2E: 1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9446440Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4566240Z ^[[1m^[[92m    Updating^[[0m crates.io index
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.8234840Z ^[[1m^[[92m Downloading^[[0m crates ...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9106990Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9253950Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9319440Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9355950Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9477700Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9538500Z ^[[1m^[[92m  Downloaded^[[0m anstream v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9596580Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.1.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.9621990Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0191880Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0212430Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0240240Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0270400Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0292810Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0316190Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0327890Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0343050Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0385990Z ^[[1m^[[92m  Downloaded^[[0m streaming-iterator v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0405040Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0440210Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0462190Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0500000Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.47
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0544020Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0839990Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0868250Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0893030Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0961990Z ^[[1m^[[92m  Downloaded^[[0m shlex v2.0.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.0981450Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.23
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1015920Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1042340Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1056810Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1086690Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1128090Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1156080Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1198480Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.104
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1583540Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1647650Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1712400Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.107
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1762360Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.27
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1824120Z ^[[1m^[[92m  Downloaded^[[0m roxmltree v0.20.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.2446100Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.2542120Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.27.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.2610430Z ^[[1m^[[92m  Downloaded^[[0m clap v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3186820Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3341310Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.13.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3421660Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3461410Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.20.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3546780Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3724610Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.14.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4153840Z ^[[1m^[[92m  Downloaded^[[0m cc v1.11.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4267540Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.17.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4419570Z ^[[1m^[[92m  Downloaded^[[0m regex v1.13.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4524040Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4684810Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5146800Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.154
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5284760Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter v0.25.10
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5405660Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5942470Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.11
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.6057910Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.6935550Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.8172820Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.191
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.9741390Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.1563410Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.1577860Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.191
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.1579190Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.3309200Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.7037180Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.9127530Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:26.2063280Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.0141160Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.1229010Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.5024160Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.9136860Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.0491900Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.1506090Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.6016940Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.6488350Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.6994840Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.7764900Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.9116870Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:31.1093300Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:31.1502310Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:32.0308110Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:32.1444330Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:32.7061180Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:32.8662610Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.0431370Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.1575660Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.2647880Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.3483990Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.4073820Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.5240870Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.5682600Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.6174490Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.8075290Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.8923510Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.3668920Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.4566630Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.5808660Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.9043430Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.9956350Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.13.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:37.2167890Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:38.5863550Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:38.8221240Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:38.9851160Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:38.9986110Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.1311860Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3226970Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3731830Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:40.6013140Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:42.3196410Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:43.1236510Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:45.6521950Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:45.8409760Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:46.1888490Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:46.3569660Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:46.5002390Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:46.5104940Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:46.7129920Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:47.8776060Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:48.3385790Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:48.4391670Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:48.7494990Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:49.3475530Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (/Users/runner/work/dotnet-crap/dotnet-crap)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.6111000Z ^[[1m^[[92m    Finished^[[0m `test` profile [unoptimized + debuginfo] target(s) in 32.50s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7011430Z ^[[1m^[[92m     Running^[[0m unittests src/lib.rs (target/debug/deps/dotnet_crap-c7c104d3195468e4)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7246460Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7350680Z running 5 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7378470Z ^[[1m^[[92m     Running^[[0m unittests src/main.rs (target/debug/deps/dotnet_crap-95153b2eef240021)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7488950Z test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7593170Z ^[[1m^[[92m     Running^[[0m tests/cli.rs (target/debug/deps/cli-d87b82b77440d799)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7594280Z test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7638990Z test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7747920Z test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7855950Z test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7986720Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8090520Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8196520Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8312910Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8431880Z running 0 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8533390Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8657900Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8834600Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8954520Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.9058270Z running 6 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.9159660Z test csharp_constructs_and_nested_ownership ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.9306820Z test coverage_and_gates ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.9412030Z test rejects_duplicate_and_invalid_coverage ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:55.0459130Z test selection_deduplication_exclusions_and_output_safety ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:55.0878640Z test threshold_empty_missing_coverage_and_input_errors ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.3427290Z fixture passed
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4438370Z ^[[1m^[[92m     Running^[[0m tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-d9d81b7fa8e8492b)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4439130Z test dotnet_fixture ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4543030Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4550680Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.68s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4551220Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4551350Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4551460Z running 28 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4590280Z test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4701640Z test absolute_paths_outside_the_root_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4797540Z test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4810780Z test class_filename_is_required ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4812100Z test ambiguous_exact_candidates_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4825110Z test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4826830Z test empty_report_slice_is_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4828310Z test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4830330Z test foreign_windows_roots_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4830880Z test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.4831520Z test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5262450Z test malformed_and_unsafe_xml_is_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5298360Z test merges_selected_files_from_multiple_assemblies ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5299080Z test ordinary_underscore_directory_is_an_exact_local_path ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5328020Z test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5438360Z test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5495400Z test parent_components_and_source_prefix_escapes_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5549780Z test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5554000Z ^[[1m^[[92m     Running^[[0m tests/collector.rs (target/debug/deps/collector-4d177e16e951834d)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5554590Z test required_coverage_structure_is_enforced ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5586210Z test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5658550Z test source_link_and_deterministic_paths_are_rejected ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5686440Z test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5689480Z test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5693590Z test unknown_relative_filename_is_not_suffix_matched ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5696380Z test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5698090Z test source_text_line_bounds_use_original_utf8 ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5699160Z test zero_hit_only_evidence_is_preserved_as_zero ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5701230Z test unselected_root_files_are_ignored_without_basename_guessing ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5701560Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5701950Z test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5702350Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5702400Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.5702810Z running 13 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.9779160Z test a_trusted_program_can_accept_only_the_results_argument ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:58.9852510Z test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.0646610Z test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.0694030Z test deadline_reaps_the_child_and_publishes_nothing ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.1065250Z test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.1758380Z test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.3100410Z test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.3740800Z test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.3786910Z test incomplete_or_extra_project_reports_are_errors ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.3807520Z test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.4502500Z test rejects_linked_reports_and_existing_source_aliases ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.5124770Z test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7654920Z test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7759590Z ^[[1m^[[92m     Running^[[0m tests/coverlet_live.rs (target/debug/deps/coverlet_live-50e77214acd56ec9)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7760870Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7771420Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7818710Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7920440Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.7954340Z running 1 test
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5458830Z   Determining projects to restore...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.4503250Z   Restored /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/NUnit.Tests/NUnit.Tests.csproj (in 233 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.4604760Z   Restored /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/MSTest.Tests/MSTest.Tests.csproj (in 243 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.4622280Z   Restored /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/Alpha.Tests.csproj (in 231 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.4694610Z   Restored /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Tests/Beta.Tests.csproj (in 3 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.4717050Z   2 of 6 projects are up-to-date for restore.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:15.9519240Z   Alpha.Library -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:16.1300800Z   Alpha.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:16.1478340Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:16.3642740Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:17.9802580Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:17.9909400Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 11 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.2830990Z   Beta.Library -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.4047430Z   Beta.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.4248500Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.8328880Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:20.1944110Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:20.1960030Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 7 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:20.4749970Z   NUnit.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:20.5009600Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:20.7619880Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:22.6023430Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:22.6055350Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 5 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:22.8541820Z   MSTest.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:22.8701860Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:23.1348570Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.2465910Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.2512390Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 18 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4366240Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4567660Z Attachments:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4568750Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-lr3vtN/9929cdae-da2e-4de5-955c-be081d01e225/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4776400Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-lr3vtN/5374cacb-2375-4324-bd18-4f64a360e593/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4876910Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-lr3vtN/69fdef46-4034-4b50-9779-9d573d5fe4c3/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:24.4892860Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-lr3vtN/a9b38102-e035-4c33-b956-faa7259eae48/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:25.6899660Z   Determining projects to restore...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:26.3140610Z   All projects are up-to-date for restore.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:26.6302200Z   Alpha.Library -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:26.8351260Z   Alpha.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:26.8689100Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:27.1808860Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.2026680Z [xUnit.net 00:00:00.17]     CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [FAIL]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4187690Z   Failed CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [13 ms]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4188940Z   Error Message:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4189740Z    Assert.Equal() Failure: Values differ
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4190620Z Expected: 77
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4191060Z Actual:   1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4191450Z   Stack Trace:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4192580Z      at CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches() in /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Alpha.Tests/AlphaCoverageTests.cs:line 12
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4194380Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4195330Z    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4238460Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.4258210Z Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 13 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.5973160Z   Beta.Library -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.6548000Z   Beta.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.6678840Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:28.8756440Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:30.1906070Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:30.1968850Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 10 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:30.3520070Z   NUnit.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:30.3671410Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:30.6491150Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:32.0146800Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:32.0248680Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 3 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:32.2320350Z   MSTest.Tests -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:32.2527240Z Test run for /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpolSMB7/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:32.4702860Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.7054930Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.7095350Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 23 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9565790Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9666710Z Attachments:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9682890Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-MiBYOy/19aed2fb-1704-4bad-8eff-12ad05b6d55c/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9686140Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-MiBYOy/07db2884-e213-47d0-b756-3c3c0ed80d3c/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9690550Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-MiBYOy/d2d3b45d-46e6-4a35-be3e-f990ce8a235c/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:33.9693040Z   /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-coverlet-MiBYOy/7ee33acc-4798-4ee2-8f8e-ef21c8fa559d/coverage.cobertura.xml
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7587410Z global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7685610Z The following test projects are using VSTest test runner:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7739220Z MSTest.Tests.csproj
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7740840Z NUnit.Tests.csproj
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7741250Z Alpha.Tests.csproj
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7804230Z Beta.Tests.csproj
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7805090Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.7805970Z See https://aka.ms/dotnet-test/mtp for more information.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9243830Z test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9348600Z ^[[1m^[[92m     Running^[[0m tests/csharp_callables.rs (target/debug/deps/csharp_callables-183748a060b3fff6)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9349000Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9381670Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 39.15s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9384930Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9385330Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9385700Z running 11 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9696980Z test coverage_is_owned_by_the_innermost_callable ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9725470Z test declaration_only_and_auto_forms_are_omitted ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9768140Z test existing_forms_keep_their_names_and_complexity ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9824060Z test expression_and_block_bodies_score_the_same_logic ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9839240Z test malformed_operator_is_an_input_error_without_report ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9882070Z test nested_callables_are_charged_only_to_their_owner ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9932470Z test operator_conversion_destructor_and_indexer_complexity ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9979930Z test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:38.9981240Z test source_spacing_does_not_change_names ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:39.0069210Z test text_output_names_callables_descriptively ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:39.7051660Z   Determining projects to restore...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.0534090Z   Restored /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpg4TWI7/Fixtures.csproj (in 52 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.3829400Z   Fixtures -> /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/.tmpg4TWI7/bin/Debug/net10.0/Fixtures.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.3977600Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4041440Z Build succeeded.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4042250Z     0 Warning(s)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4042730Z     0 Error(s)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4043050Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4043370Z Time Elapsed 00:00:01.26
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4311810Z test declaration_fixtures_are_valid_csharp ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4314370Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4321650Z ^[[1m^[[92m     Running^[[0m tests/library_api.rs (target/debug/deps/library_api-d5754cc27a2186fa)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4323770Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.49s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4324520Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4434210Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4435760Z running 9 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4563840Z test cli_preserves_symlink_output_targets ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4643560Z test cli_preserves_coverage_and_unselected_source_aliases ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4656110Z test library_defaults_match_documented_cli_defaults ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4658290Z test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.4659010Z test result_detects_source_byte_changes ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.5201950Z test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.5230160Z test serialization_and_captured_policy_keep_the_existing_contract ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.5256390Z test library_selection_deduplicates_and_rejects_root_escape ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6034030Z test coverage_empty_and_error_policies_match_cli ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6034450Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6034830Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6035200Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6038840Z ^[[1m^[[92m     Running^[[0m tests/live_coverage.rs (target/debug/deps/live_coverage-f10f06c323878cb7)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:40.6165830Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2655710Z running 1 test
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2659000Z test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2659830Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2660680Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.65s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2661690Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2665310Z ^[[1m^[[92m     Running^[[0m tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-a05fc4ea9e6d566e)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2809000Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2810300Z running 7 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.2919230Z test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.3124790Z test malformed_coverage_map_reports_expected_type ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.3520370Z test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.3540060Z test nested_source_selection_keeps_normal_directories ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.3630990Z test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.3692730Z test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4174890Z test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4175330Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4175720Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4176200Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4177610Z ^[[1m^[[92m     Running^[[0m tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-fa2c12755a30da85)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4279120Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4283180Z running 12 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4406610Z test branches ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4407160Z test decoding_errors_identify_the_file_and_escape_its_name ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4506060Z test encoding_paths_and_terminal_controls ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4572260Z test bom_encodings_bind_coverage_to_original_bytes ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4609740Z test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4664770Z test invalid_source_diagnostics_escape_filename_controls ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4807060Z test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4827210Z test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4888450Z test nested_ownership ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4935520Z test source_filenames_unrepresentable_in_native_coverage_fail_explicitly ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:44.4993740Z test stacked_switch ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3132260Z test execute_accuracy_fixtures_with_sdk ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3134380Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3135950Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.88s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3136890Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3146480Z ^[[1m^[[92m     Running^[[0m tests/sarif.rs (target/debug/deps/sarif-96885dcb0c6f4e00)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3326250Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3342740Z running 8 tests
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3344240Z test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3349580Z test file_uri_structure_is_checked_before_decoding ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3433940Z test same_named_overloads_have_distinct_fingerprints ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3453910Z test literal_backslashes_in_source_root_remain_literal_uri_bytes ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.3719100Z test score_threshold_empty_and_completeness_gates ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4020650Z test special_source_names_are_encoded_without_coverage_and_rejected_with_it ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4047860Z test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4075150Z test staged_output_keeps_failed_reports_and_protects_source ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4076330Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4077520Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4079590Z ^[[1m^[[92m   Doc-tests^[[0m dotnet_crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:48.4080280Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.1468050Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.1468760Z running 1 test
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.3193530Z test src/lib.rs - (line 7) - compile ... ok
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.3195090Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.3195510Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:49.3196320Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	﻿2026-11-07T11:33:49.3463390Z ##[group]Run cargo build --locked --release
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3463920Z ^[[36;1mcargo build --locked --release^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3670270Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3670700Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3670980Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3671280Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3671500Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3671790Z   DOTNET_ROOT: /Users/runner/.dotnet
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.3672210Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.7953430Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.7954560Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.191
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:49.7972700Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.3319450Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.4160840Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.4406220Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.6274420Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.6794270Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.7761470Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:50.8790760Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:51.4051500Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:51.6456310Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:51.8678450Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:51.8854500Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:52.1428790Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:52.2905730Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:52.4167130Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:52.7510270Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:53.2015100Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:53.7313890Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:53.8352880Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:53.9046490Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:54.4859280Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:54.9391390Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:56.9738650Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.0213390Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.0747560Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.2887060Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.5945140Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.8017750Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:57.8872050Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:58.0898070Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:58.1558620Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:58.6531050Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:58.8811560Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:01.6520700Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:01.7746130Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:01.8947200Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:02.1821590Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:02.3575560Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:02.5125820Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:02.7746960Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.13.2
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:03.1208070Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:03.5695700Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:04.3543360Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:04.5144110Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:06.1336660Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:13.8092480Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:14.0947020Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:15.4815970Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:18.6571400Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:18.8167650Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:19.0265620Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:19.3125230Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:19.5587110Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:19.9130600Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:20.8432350Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:22.4363640Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:24.0068130Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:24.1306230Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:24.4382260Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:24.7458870Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (/Users/runner/work/dotnet-crap/dotnet-crap)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:34:31.3144300Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 41.70s
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	﻿2026-11-07T11:34:31.3521920Z ##[group]Run mkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3522790Z ^[[36;1mmkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3523510Z ^[[36;1mcp "target/release/$NATIVE_EXE" "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID/$NATIVE_EXE"^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3524370Z ^[[36;1mbash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3525090Z ^[[36;1mversion="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3525740Z ^[[36;1mprintf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3527050Z ^[[36;1mNUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3528080Z ^[[36;1mtarget/tool/dotnet-crap --help^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3528460Z ^[[36;1mtarget/tool/dotnet-crap --version^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3528920Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3529460Z ^[[36;1mset +e^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3529810Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 0^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3530280Z ^[[36;1mcode=$?^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3530500Z ^[[36;1mset -e^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3530820Z ^[[36;1mtest "$code" = 1^[[0m
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3686030Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3686530Z env:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3686850Z   CARGO_HOME: /Users/runner/.cargo
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3687100Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3687430Z   CARGO_TERM_COLOR: always
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3687670Z   DOTNET_ROOT: /Users/runner/.dotnet
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3690310Z   DOTNET_CRAP_LOCAL_RID: osx-arm64
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3693170Z   NATIVE_EXE: dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:31.3693600Z ##[endgroup]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:32.7092220Z   Determining projects to restore...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:33.0266490Z   Restored /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-pack.kfYACJ/project/dotnet-crap-launcher.csproj (in 51 ms).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:33.6263450Z   dotnet-crap-launcher -> /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-pack.kfYACJ/project/bin/Release/net10.0/dotnet-crap-launcher.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:33.7427140Z   dotnet-crap-launcher -> /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-pack.kfYACJ/project/bin/Release/net10.0/dotnet-crap-launcher.dll
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:33.7552520Z   dotnet-crap-launcher -> /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-pack.kfYACJ/project/bin/Release/net10.0/publish/
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.0011460Z   Successfully created package '/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dotnet-crap-pack.kfYACJ/feed/dotnet-crap.0.1.0.nupkg'.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.0829200Z Packed /Users/runner/work/dotnet-crap/dotnet-crap/target/dotnet-tool-stage/feed/dotnet-crap.0.1.0.nupkg with 1 native binary file(s).
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.3658650Z Skipping NuGet package signature verification.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.6574370Z You can invoke the tool using the following command: dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.6676210Z Tool 'dotnet-crap' (version '0.1.0') was successfully installed.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8075250Z Score C# callables using cyclomatic complexity and source-bound coverage
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8078900Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8082540Z Usage: dotnet-crap [OPTIONS] [PATHS]...
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8082970Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8083300Z Arguments:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8083950Z   [PATHS]...  
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8084380Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8084780Z Options:
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8085330Z       --root <ROOT>            [default: .]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8085960Z       --threshold <THRESHOLD>  [default: 10]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8086720Z       --format <FORMAT>        [default: text] [possible values: text, json, sarif]
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8088450Z       --output <OUTPUT>        
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8088980Z       --coverage <COVERAGE>    
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8089560Z       --require-coverage       
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8091160Z       --fail-on-empty          
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8092570Z   -h, --help                   Print help
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8093180Z   -V, --version                Print version
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8093530Z 
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.8094630Z Fresh coverage collection: dotnet-crap collect --help
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:34.9057580Z dotnet-crap 0.1.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:35.0618560Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:35.0722710Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:35.2172320Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:34:35.2273130Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:34:35.3302640Z Post job cleanup.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:34:35.8898510Z Post job cleanup.
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.0922870Z [command]/opt/homebrew/bin/git version
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1326970Z git version 2.56.0
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1395560Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/22e44a08-eca7-450c-b69e-468db76dd5ee/.gitconfig'
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1412580Z Temporarily overriding HOME='/Users/runner/work/_temp/22e44a08-eca7-450c-b69e-468db76dd5ee' before making global git config changes
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1413920Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1415950Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1571900Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.1672030Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.3449350Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.3592250Z http.https://github.com/.extraheader
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.3627670Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:34:36.3802940Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Complete job	﻿2026-11-07T11:34:36.6742300Z Cleaning up orphan processes
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Complete job	2026-11-07T11:34:37.1792620Z Terminate orphan process: pid (7010) (VBCSCompiler)
+dotnet-e2e (macos-15, osx-arm64, dotnet-crap)	Complete job	2026-11-07T11:34:37.2099370Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

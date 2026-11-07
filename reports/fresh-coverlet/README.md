@@ -1,64 +1,107 @@
-# Fresh Coverlet collection evidence (expanded validation in progress)
+# Fresh Coverlet collection evidence
 
-Last archived focused validation: `151356d` (strict completion-observation deadline),
-recorded in `focused-151356d.json` / `focused-151356d.log`. A subsequent literal
-source-prefix fix requires renewed final validation; current progress is not a
-final-tree pass. Final source/test/Cargo hashes will be captured after those gates.
+Current production/test revision: `1cad955cbe5ec29590fb405174c495826de5f39f`.
+The final evidence/plan follow-up changes no source, tests or Cargo inputs;
+[`tested-files.json`](tested-files.json) records their exact SHA-256 hashes.
+All checks passed at that revision. Before merging an evidence-only follow-up,
+verify its current-head checks and confirm these input bytes remain unchanged.
 
-Last completed non-mutation validation revision: `dedf03e6d2aa30161475108fe036f3b3a270a916`.
-The implementation starts at `7aaae575`; `dedf03e` fixes review findings and the
-live expected-score arithmetic. `tested-files.json` records exact source/test and
-Cargo input hashes, so later documentation commits can be checked for equality.
+## Validation
 
-Formatting, warnings-denied clippy, locked debug/release tests, Python contracts,
-actionlint 1.7.12 and the full explicitly enabled live SDK/collector suite passed.
-Further PR review fixes and MSTest/NUnit fixtures are committed in `18fc47a`.
-Fresh validation is running; the older logs do not certify those later changes. Supported-host packaging smoke
-passed in Ubuntu CI at `027815c`; the local Android/bionic installed launcher
-crashed with SIGABRT in the Mono runtime. That local smoke is not a pass.
-Launcher contracts and archive/repack checks passed locally before that failure.
+[Complete CI run](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570770)
+passed Rust formatting, warnings-denied clippy, locked debug/release tests, Python
+contracts, packaging smoke, and full explicitly enabled .NET tests on Linux x64,
+macOS ARM64 and Windows x64. Both `DOTNET_CRAP_E2E=1` and
+`DOTNET_CRAP_COVERLET_E2E=1` were set in the SDK jobs. The separate
+[full production mutation run](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570749)
+passed on the same head. CI logs are retained in [`ci/`](ci/).
 
-The independent Sol review found permissive results-directory permissions and an
-inconsistent UNC policy. The fix creates Unix directories atomically with 0700
-permissions, tested in a subprocess with umask 000. UNC is explicitly rejected on
-all hosts, while native Windows drive paths remain supported by the parser.
-CLI `collect` is reserved; `./collect` selects a directory with that name. The
-review also identified stale documentation, now corrected. Parent integration
-review corrected the hand calculation for partial coverage: CC 2 and 4/5 lines
-covered means `2 + 4 * (1/5)^3 = 254/125 = 2.032`, not 2.016.
+Current-source local debug/release, Python and explicit collector runs also
+passed; see [`validation.json`](validation.json), `debug.log`, `release.log`,
+`python.log` and `live.log`. Actionlint 1.7.12 passed. The older complete local
+SDK suite at `8a28326` is separately labeled in `full-live-8a28326.log`; it is not
+substituted for the exact-head three-platform CI evidence.
 
-## Mutation provenance
+Live logs intentionally contain a failed xUnit assertion and an MTP-mode SDK
+rejection: these are passing negative tests verifying that no native evidence is
+published. The Rust live test exits 0. The MTP diagnostic names the VSTest projects
+under a correctly formed `--solution` invocation; it does not certify an MTP
+collector. Local packaging smoke is **not** claimed as passing: the Android/bionic
+Mono apphost crashed with SIGABRT. Launcher/offline/archive contracts passed
+locally, and the supported Ubuntu CI packaging smoke passed.
 
-`initial/` preserves the complete 282-entry inventory, outcome lists and gate log
-for `7aaae575`: 250 caught, 23 missed, 0 timeouts, 9 unviable; 91.58%. That result
-predates the review fixes and is not final-tree validation. No filters or blanket
-exclusions were added. The subsequent local run at
-`target/mutation-runs/run-2ntvch4c/mutants.out` was stopped after additional PR
-review fixes made its source stale. Its partial outcomes are not a full score.
-`inventory-audit.json` now refers to the new current-source invocation and
-confirms all five production modules are included; final outcomes are pending.
+## Actual collector and independent expectations
 
-## Benchmarks
+The four test projects use VSTest, .NET 10, Test SDK 17.12.0 and Coverlet collector
+6.0.4. Framework pins are xUnit 2.9.2 / adapter 2.8.2, MSTest framework/adapter
+4.5.2, and NUnit 4.3.2 / adapter 5.0.0. The local run used SDK 10.0.109/runtime
+10.0.9; CI installs .NET 10.0.x on its recorded supported hosts.
 
-`benchmark.json` and `benchmark-coverage.json` are fresh release measurements for
-`dedf03e`, with seven samples, 500 source files and 1,000 callables in each mode.
-`benchmark-provenance.json` records the source tree, compiler, commands and binary
-SHA-256. Other local builds could contend for resources. These observations make
-no speedup, regression, parser-throughput or portable latency claim. They do not
-reuse the historical API branch measurements.
+Hand calculations, derived from the physical source and branch calls:
 
-## Supported scope
+- `Choose`: one decision means CC 2; four of five supplied lines hit gives
+  `2 + 4 * (1/5)^3 = 254/125 = 2.032`.
+- Both `Full` methods: CC 2 and all five lines hit gives CRAP 2.
+- `Uncovered`: CC 1, with its executable line supplied at zero hits, gives CRAP 2.
 
-The pinned fixture is .NET SDK 10.0.109/runtime 10.0.9, VSTest, Coverlet collector
-6.0.4 and xUnit 2.9.2 (Test SDK 17.12.0, adapter 2.8.2), on this Linux-bionic ARM64
-host. Native v1 supplied-line completeness is unchanged. Same-line nesting,
-unmapped SourceLink/deterministic paths and UNC paths have explicit limits.
-The live harness tests real failed tests and an unsupported MTP-mode invocation;
-that rejection does not certify an MTP collector. Separate worker live runs
-verified MSTest 4.5.2 and NUnit 4.3.2 / adapter 5.0.0 (the standalone NUnit
-worker run was not archived; its README is a narrative observation). Combined current-source
-validation is in progress. .NET 8 and actual MTP collection remain unverified; CI is configured to exercise .NET 10 on its
-Linux/macOS/Windows matrix but results must be inspected independently.
+The harness requires one passed, non-skipped test per project and four fresh
+reports. Each library has exactly one two-call xUnit signature and one distinct
+three-call MSTest/NUnit signature. MSTest Full hits are 3/3/2/1/3; NUnit Full hits
+are 3/3/1/2/3 because Beta tests `value == 0`. Both keep coverage 1 and CRAP 2.
+It then exercises snapshot/verification/publication through the collector API,
+checks the native scan scores, and runs actual failure cases. Partial classes,
+multi-project union and zero-hit evidence are exercised directly.
 
-Release publication remains disabled. The user subsequently authorized merging
-PR #15 only after current-head CI is green and review findings are handled.
+The initial standalone NUnit worker run was not archived; its README is a
+narrative observation. The committed current-source combined logs and CI runs,
+not that observation, certify NUnit support. MSTest's retained standalone XML
+records an earlier two-call fixture, explicitly distinguished in its README.
+.NET 8 and actual MTP collection remain unverified. Native v1 supplied-line
+completeness and same-line nesting limits are unchanged; unmapped deterministic,
+SourceLink and UNC paths are rejected rather than guessed.
+
+## Full production mutation gate
+
+The complete downloaded CI artifact was independently checked using
+`scripts/mutation-gate.py` `read_inventory` and `check_score`:
+
+- 297 total: **262 caught, 24 missed, 0 timeouts, 11 unviable**.
+- **91.61%** caught among caught + missed + timeouts, strictly above 90%.
+- Inventory: `src/lib.rs` 161, `src/main.rs` 11, `src/cobertura.rs` 81,
+  `src/collector.rs` 27, `src/sarif.rs` 17.
+
+No file filters or blanket exclusions were added. [`inventory-audit.json`](inventory-audit.json)
+compares independently enumerated production modules with the real inventory,
+records its hash, and validates complete, disjoint outcome identities.
+[`final/`](final/) retains `mutants.json`, `outcomes.json`, all outcome lists,
+the gate log, and every unviable build diagnostic. The linked GitHub artifact
+also contains every per-mutant test/build log and diff.
+
+All 24 survivors and 11 unviable cases are reviewed in
+[`survivor-review.md`](survivor-review.md). Survivors include non-equivalent test
+gaps; they are not all declared equivalent or removed from the denominator.
+The initial full run at `7aaae575` remains in `initial/`, qualified to that older
+tree. Superseded partial local runs are not final score evidence. Once complete
+current-head CI evidence was obtained, the redundant local run was stopped.
+Historical measurements from `reports/reusable-api` were not reused.
+
+## Benchmarks and review
+
+`benchmark.json` and `benchmark-coverage.json` contain seven samples each over
+500 files / 1,000 callables. [`benchmark-provenance.json`](benchmark-provenance.json)
+records the compiler, exact source `40b5c45`, commands and measured binary digest.
+Rust sources, Cargo inputs and the benchmark harness are byte-identical between
+that revision and `1cad955`; only tests/fixtures and documentation changed.
+Concurrent local builds could contend for resources. These are observations,
+with no speedup, portable latency or collector-throughput claim. Dense nested
+coverage profiling remains step 8 work.
+
+Independent Sol review at `18fc47a` found no blocking production issue; its two
+fixture/documentation suggestions and later valid PR findings were integrated.
+The subsequent deadline boundary and literal-prefix fixes have explicit
+regressions. [`review-response.md`](review-response.md) records decisions.
+`focused-151356d.json` / `.log` are an explicitly historical parent check, not an
+independent or final-tree test claim.
+
+Release publication remains disabled. The user authorized merging PR #15 only
+after current-head CI is green and review findings are handled.

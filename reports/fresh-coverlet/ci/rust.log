@@ -1,0 +1,995 @@
+﻿2026-11-07T11:32:03.7354985Z Current runner version: '2.338.2'
+2026-11-07T11:32:03.7379027Z ##[group]Runner Image Provisioner
+2026-11-07T11:32:03.7380246Z Hosted Compute Agent
+2026-11-07T11:32:03.7380912Z Version: 20261028.624
+2026-11-07T11:32:03.7381551Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-07T11:32:03.7382339Z Build Date: 2026-10-28T21:51:42Z
+2026-11-07T11:32:03.7383044Z Worker ID: {2808acb2-47eb-48b3-aeaf-593739397129}
+2026-11-07T11:32:03.7383736Z Region: westcentralus
+2026-11-07T11:32:03.7384406Z Cloud: Azure
+2026-11-07T11:32:03.7384950Z ##[endgroup]
+2026-11-07T11:32:03.7386813Z ##[group]Operating System
+2026-11-07T11:32:03.7387535Z Ubuntu
+2026-11-07T11:32:03.7388050Z 24.04.5
+2026-11-07T11:32:03.7388676Z LTS
+2026-11-07T11:32:03.7389451Z ##[endgroup]
+2026-11-07T11:32:03.7390074Z ##[group]Runner Image
+2026-11-07T11:32:03.7390704Z Image: ubuntu-24.04
+2026-11-07T11:32:03.7391288Z Version: 20261101.360.1
+2026-11-07T11:32:03.7392655Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-07T11:32:03.7394259Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-07T11:32:03.7395256Z ##[endgroup]
+2026-11-07T11:32:03.7396416Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T11:32:03.7398554Z Contents: read
+2026-11-07T11:32:03.7399483Z Metadata: read
+2026-11-07T11:32:03.7400213Z ##[endgroup]
+2026-11-07T11:32:03.7402324Z Secret source: Actions
+2026-11-07T11:32:03.7403432Z Cache mode: write
+2026-11-07T11:32:03.7404475Z Prepare workflow directory
+2026-11-07T11:32:03.7792993Z Prepare all required actions
+2026-11-07T11:32:03.7840471Z Getting action download info
+2026-11-07T11:32:04.0786213Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-11-07T11:32:04.2371802Z Download action repository 'dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec' (SHA:b725eda525362e7cf34af9a7243cac1e3f01a7ec)
+2026-11-07T11:32:04.5960491Z Complete job name: rust
+2026-11-07T11:32:04.6837847Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+2026-11-07T11:32:04.6838907Z with:
+2026-11-07T11:32:04.6839595Z   repository: RuiCostafrg/dotnet-crap
+2026-11-07T11:32:04.6843600Z   token: ***
+2026-11-07T11:32:04.6844047Z   ssh-strict: true
+2026-11-07T11:32:04.6844500Z   ssh-user: git
+2026-11-07T11:32:04.6844952Z   persist-credentials: true
+2026-11-07T11:32:04.6845446Z   clean: true
+2026-11-07T11:32:04.6845894Z   sparse-checkout-cone-mode: true
+2026-11-07T11:32:04.6846414Z   fetch-depth: 1
+2026-11-07T11:32:04.6846856Z   fetch-tags: false
+2026-11-07T11:32:04.6847304Z   show-progress: true
+2026-11-07T11:32:04.6847749Z   lfs: false
+2026-11-07T11:32:04.6848174Z   submodules: false
+2026-11-07T11:32:04.6848626Z   set-safe-directory: true
+2026-11-07T11:32:04.6849533Z ##[endgroup]
+2026-11-07T11:32:04.9216482Z Syncing repository: RuiCostafrg/dotnet-crap
+2026-11-07T11:32:04.9219411Z ##[group]Getting Git version info
+2026-11-07T11:32:04.9220760Z Working directory is '/home/runner/work/dotnet-crap/dotnet-crap'
+2026-11-07T11:32:04.9222079Z [command]/usr/bin/git version
+2026-11-07T11:32:04.9296868Z git version 2.56.0
+2026-11-07T11:32:04.9333778Z ##[endgroup]
+2026-11-07T11:32:04.9356872Z Temporarily overriding HOME='/home/runner/work/_temp/bbfd9796-7765-44c6-9c02-e0fb4a5d639e' before making global git config changes
+2026-11-07T11:32:04.9359694Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T11:32:04.9362122Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+2026-11-07T11:32:04.9421170Z Deleting the contents of '/home/runner/work/dotnet-crap/dotnet-crap'
+2026-11-07T11:32:04.9424999Z ##[group]Initializing the repository
+2026-11-07T11:32:04.9431549Z [command]/usr/bin/git init /home/runner/work/dotnet-crap/dotnet-crap
+2026-11-07T11:32:04.9528627Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T11:32:04.9531424Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T11:32:04.9534875Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T11:32:04.9535889Z hint: call:
+2026-11-07T11:32:04.9537019Z hint:
+2026-11-07T11:32:04.9537757Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T11:32:04.9539107Z hint:
+2026-11-07T11:32:04.9540418Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T11:32:04.9542577Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T11:32:04.9544125Z hint:
+2026-11-07T11:32:04.9545065Z hint: 	git branch -m <name>
+2026-11-07T11:32:04.9545935Z hint:
+2026-11-07T11:32:04.9547116Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T11:32:04.9549094Z Initialized empty Git repository in /home/runner/work/dotnet-crap/dotnet-crap/.git/
+2026-11-07T11:32:04.9555723Z [command]/usr/bin/git remote add origin https://github.com/RuiCostafrg/dotnet-crap
+2026-11-07T11:32:04.9604881Z ##[endgroup]
+2026-11-07T11:32:04.9605816Z ##[group]Disabling automatic garbage collection
+2026-11-07T11:32:04.9609084Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-07T11:32:04.9644483Z ##[endgroup]
+2026-11-07T11:32:04.9645377Z ##[group]Setting up auth
+2026-11-07T11:32:04.9653117Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T11:32:04.9694565Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T11:32:05.0147930Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T11:32:05.0197143Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T11:32:05.0453084Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T11:32:05.0504752Z ##[endgroup]
+2026-11-07T11:32:05.0505973Z ##[group]Fetching the repository
+2026-11-07T11:32:05.0518256Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +76a45d29d47de392c069308bb1f64753152096e2:refs/remotes/pull/15/merge
+2026-11-07T11:32:05.5592554Z From https://github.com/RuiCostafrg/dotnet-crap
+2026-11-07T11:32:05.5606096Z  * [new ref]         76a45d29d47de392c069308bb1f64753152096e2 -> pull/15/merge
+2026-11-07T11:32:05.5610954Z ##[endgroup]
+2026-11-07T11:32:05.5612653Z ##[group]Determining the checkout info
+2026-11-07T11:32:05.5614470Z ##[endgroup]
+2026-11-07T11:32:05.5615665Z [command]/usr/bin/git sparse-checkout disable
+2026-11-07T11:32:05.5671174Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T11:32:05.5713052Z ##[group]Checking out the ref
+2026-11-07T11:32:05.5716965Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/15/merge
+2026-11-07T11:32:05.5862556Z Note: switching to 'refs/remotes/pull/15/merge'.
+2026-11-07T11:32:05.5863833Z 
+2026-11-07T11:32:05.5864777Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-07T11:32:05.5867010Z changes and commit them, and you can discard any commits you make in this
+2026-11-07T11:32:05.5869502Z state without impacting any branches by switching back to a branch.
+2026-11-07T11:32:05.5870581Z 
+2026-11-07T11:32:05.5871219Z If you want to create a new branch to retain commits you create, you may
+2026-11-07T11:32:05.5872506Z do so (now or later) by using -c with the switch command. Example:
+2026-11-07T11:32:05.5873700Z 
+2026-11-07T11:32:05.5874232Z   git switch -c <new-branch-name>
+2026-11-07T11:32:05.5874958Z 
+2026-11-07T11:32:05.5875277Z Or undo this operation with:
+2026-11-07T11:32:05.5875826Z 
+2026-11-07T11:32:05.5876131Z   git switch -
+2026-11-07T11:32:05.5876573Z 
+2026-11-07T11:32:05.5877623Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-07T11:32:05.5878648Z 
+2026-11-07T11:32:05.5880157Z HEAD is now at 76a45d2 Merge 1cad955cbe5ec29590fb405174c495826de5f39f into 8620f712871a3acb6d985f26f0a35fbf38d5db71
+2026-11-07T11:32:05.5885696Z ##[endgroup]
+2026-11-07T11:32:05.5932400Z [command]/usr/bin/git log -1 --format=%H
+2026-11-07T11:32:05.5965804Z 76a45d29d47de392c069308bb1f64753152096e2
+2026-11-07T11:32:05.6823507Z ##[group]Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+2026-11-07T11:32:05.6825107Z with:
+2026-11-07T11:32:05.6825961Z   components: rustfmt, clippy
+2026-11-07T11:32:05.6826988Z   toolchain: stable
+2026-11-07T11:32:05.6827878Z ##[endgroup]
+2026-11-07T11:32:05.6915595Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-07T11:32:05.6998843Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-07T11:32:05.7000425Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-07T11:32:05.7002378Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-07T11:32:05.7004508Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-11-07T11:32:05.7005706Z [36;1m  exit 1[0m
+2026-11-07T11:32:05.7007001Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-11-07T11:32:05.7008607Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-11-07T11:32:05.7010815Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:05.7013101Z [36;1m  else[0m
+2026-11-07T11:32:05.7015126Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:05.7016983Z [36;1m  fi[0m
+2026-11-07T11:32:05.7018148Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-11-07T11:32:05.7020491Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:05.7022345Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-11-07T11:32:05.7024388Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:05.7026342Z [36;1melse[0m
+2026-11-07T11:32:05.7027159Z [36;1m  delimiter=EOF[0m
+2026-11-07T11:32:05.7028372Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-11-07T11:32:05.7030494Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:05.7032155Z [36;1mfi[0m
+2026-11-07T11:32:05.7057239Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:05.7058551Z env:
+2026-11-07T11:32:05.7059528Z   toolchain: stable
+2026-11-07T11:32:05.7060372Z ##[endgroup]
+2026-11-07T11:32:05.7172770Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=25]
+2026-11-07T11:32:05.7181741Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-11-07T11:32:05.7241082Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-11-07T11:32:05.7242854Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-11-07T11:32:05.7262755Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:05.7264022Z ##[endgroup]
+2026-11-07T11:32:05.7328358Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=14]
+2026-11-07T11:32:05.7334867Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-11-07T11:32:05.7390641Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-11-07T11:32:05.7391963Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-11-07T11:32:05.7394649Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-11-07T11:32:05.7397675Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-11-07T11:32:05.7398845Z [36;1mfi[0m
+2026-11-07T11:32:05.7417819Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:05.7419057Z env:
+2026-11-07T11:32:05.7420148Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:05.7421117Z ##[endgroup]
+2026-11-07T11:32:05.7482465Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=14]
+2026-11-07T11:32:05.7488786Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-11-07T11:32:05.7503068Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-07T11:32:05.7522532Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-11-07T11:32:05.7568179Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-11-07T11:32:05.7570927Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-11-07T11:32:05.7572643Z [36;1mflags=()[0m
+2026-11-07T11:32:05.7573739Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-11-07T11:32:05.7575323Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-11-07T11:32:05.7577227Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-11-07T11:32:05.7578864Z [36;1mlog=$(mktemp)[0m
+2026-11-07T11:32:05.7580002Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-11-07T11:32:05.7581033Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-11-07T11:32:05.7583189Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-11-07T11:32:05.7585358Z [36;1m    break[0m
+2026-11-07T11:32:05.7586174Z [36;1m  else[0m
+2026-11-07T11:32:05.7586980Z [36;1m    status=$?[0m
+2026-11-07T11:32:05.7588156Z [36;1m  fi[0m
+2026-11-07T11:32:05.7590228Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-11-07T11:32:05.7593758Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-11-07T11:32:05.7596981Z [36;1m    exit "$status"[0m
+2026-11-07T11:32:05.7598587Z [36;1m  fi[0m
+2026-11-07T11:32:05.7601259Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-11-07T11:32:05.7603848Z [36;1m  sleep 30[0m
+2026-11-07T11:32:05.7604682Z [36;1mdone[0m
+2026-11-07T11:32:05.7624161Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:05.7625418Z env:
+2026-11-07T11:32:05.7626191Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:05.7627171Z   toolchain: stable
+2026-11-07T11:32:05.7627972Z   targets: 
+2026-11-07T11:32:05.7628746Z   components: rustfmt, clippy
+2026-11-07T11:32:05.7630008Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-11-07T11:32:05.7630963Z ##[endgroup]
+2026-11-07T11:32:07.6637063Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-11-07T11:32:08.0896567Z info: latest update on 2026-10-15 for version 1.99.1 (58cf8f9c3 2026-10-13)
+2026-11-07T11:32:08.1177225Z info: component clippy is up to date
+2026-11-07T11:32:08.1178010Z info: component rustfmt is up to date
+2026-11-07T11:32:08.1189700Z 
+2026-11-07T11:32:08.1274396Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+2026-11-07T11:32:08.1275463Z 
+2026-11-07T11:32:08.1339834Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=2381]
+2026-11-07T11:32:08.1352932Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-11-07T11:32:08.1386796Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-11-07T11:32:08.1387261Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-11-07T11:32:08.1407912Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.1408551Z env:
+2026-11-07T11:32:08.1408806Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.1409365Z   toolchain: stable
+2026-11-07T11:32:08.1409760Z ##[endgroup]
+2026-11-07T11:32:08.1501583Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-11-07T11:32:08.1520285Z 
+2026-11-07T11:32:08.1522219Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-11-07T11:32:08.1605036Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+2026-11-07T11:32:08.1605702Z 
+2026-11-07T11:32:08.1624284Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=27]
+2026-11-07T11:32:08.1628657Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-11-07T11:32:08.1660719Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-11-07T11:32:08.1661662Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-11-07T11:32:08.1662400Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-11-07T11:32:08.1662972Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-11-07T11:32:08.1683272Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.1683670Z env:
+2026-11-07T11:32:08.1683942Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.1684262Z   toolchain: stable
+2026-11-07T11:32:08.1684515Z ##[endgroup]
+2026-11-07T11:32:08.2581721Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=95]
+2026-11-07T11:32:08.2584838Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-11-07T11:32:08.2644979Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-11-07T11:32:08.2645441Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-11-07T11:32:08.2645832Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-11-07T11:32:08.2646163Z [36;1mfi[0m
+2026-11-07T11:32:08.2667043Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.2667454Z env:
+2026-11-07T11:32:08.2667708Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.2668013Z ##[endgroup]
+2026-11-07T11:32:08.2716316Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=13]
+2026-11-07T11:32:08.2718773Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-11-07T11:32:08.2804650Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-11-07T11:32:08.2805083Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-11-07T11:32:08.2805468Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-11-07T11:32:08.2805815Z [36;1mfi[0m
+2026-11-07T11:32:08.2824883Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.2825286Z env:
+2026-11-07T11:32:08.2825539Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.2825858Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.2826127Z ##[endgroup]
+2026-11-07T11:32:08.2873478Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=15]
+2026-11-07T11:32:08.2877588Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-11-07T11:32:08.2908471Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-11-07T11:32:08.2909036Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-11-07T11:32:08.2910105Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-11-07T11:32:08.2910912Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-11-07T11:32:08.2911567Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-07T11:32:08.2912402Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-11-07T11:32:08.2912987Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-11-07T11:32:08.2913650Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-07T11:32:08.2914355Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-11-07T11:32:08.2914764Z [36;1m  fi[0m
+2026-11-07T11:32:08.2915002Z [36;1mfi[0m
+2026-11-07T11:32:08.2933650Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.2934047Z env:
+2026-11-07T11:32:08.2934302Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.2934619Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.2934903Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:08.2935182Z   toolchain: stable
+2026-11-07T11:32:08.2935441Z ##[endgroup]
+2026-11-07T11:32:08.3252619Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=37]
+2026-11-07T11:32:08.3257202Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-11-07T11:32:08.3287509Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-11-07T11:32:08.3288364Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-11-07T11:32:08.3289117Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-11-07T11:32:08.3290005Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-11-07T11:32:08.3290376Z [36;1mfi[0m
+2026-11-07T11:32:08.3311279Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.3311688Z env:
+2026-11-07T11:32:08.3311941Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.3312255Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.3312541Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:08.3312829Z   toolchain: stable
+2026-11-07T11:32:08.3313084Z ##[endgroup]
+2026-11-07T11:32:08.3489643Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=23]
+2026-11-07T11:32:08.3494947Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-11-07T11:32:08.3524299Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-11-07T11:32:08.3524731Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-11-07T11:32:08.3545399Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-07T11:32:08.3545803Z env:
+2026-11-07T11:32:08.3546052Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.3546362Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.3546637Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:08.3546937Z   toolchain: stable
+2026-11-07T11:32:08.3547190Z ##[endgroup]
+2026-11-07T11:32:08.3697069Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+2026-11-07T11:32:08.3697654Z binary: rustc
+2026-11-07T11:32:08.3698226Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-07T11:32:08.3698841Z commit-date: 2026-10-13
+2026-11-07T11:32:08.3699675Z host: x86_64-unknown-linux-gnu
+2026-11-07T11:32:08.3700113Z release: 1.99.1
+2026-11-07T11:32:08.3700635Z LLVM version: 23.1.1
+2026-11-07T11:32:08.3721271Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=22]
+2026-11-07T11:32:08.3792177Z ##[group]Run python3 -m unittest discover -s tests -p 'test_*.py'
+2026-11-07T11:32:08.3792736Z [36;1mpython3 -m unittest discover -s tests -p 'test_*.py'[0m
+2026-11-07T11:32:08.3813577Z shell: /usr/bin/bash -e {0}
+2026-11-07T11:32:08.3813882Z env:
+2026-11-07T11:32:08.3814131Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.3814443Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.3814720Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:08.3815001Z ##[endgroup]
+2026-11-07T11:32:08.7304252Z evidence=/tmp/tmpy9q7ihyp/run-g6c3jitf/mutants.out
+2026-11-07T11:32:08.7305684Z evidence=/tmp/tmpy9q7ihyp/run-es_mfqx4/mutants.out
+2026-11-07T11:32:08.7323533Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7324358Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7325089Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7342062Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7342983Z evidence=/tmp/tmp33ngw2d4/run-62fy9tdq/mutants.out
+2026-11-07T11:32:08.7347754Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7350856Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7351401Z evidence=/tmp/tmp33ngw2d4/run-7ccs0nmv/mutants.out
+2026-11-07T11:32:08.7354666Z evidence=/tmp/tmp33ngw2d4/run-5qxtiz79/mutants.out
+2026-11-07T11:32:08.7359935Z evidence=/tmp/tmp33ngw2d4/run-dvorrbya/mutants.out
+2026-11-07T11:32:08.7380451Z evidence=/tmp/tmphdxq9yz2/run-w1ovwoys/mutants.out
+2026-11-07T11:32:08.7424591Z evidence=/tmp/tmpi3z6kqun/run-q1mddfkb/mutants.out
+2026-11-07T11:32:08.7430387Z total=1 caught=0 missed=1 timeout=0 unviable=0
+2026-11-07T11:32:08.7438447Z evidence=/tmp/tmp5lri9od9/run-ke93_cp4/mutants.out
+2026-11-07T11:32:08.7444214Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7447178Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7447681Z evidence=/tmp/tmp5lri9od9/run-abznkxzr/mutants.out
+2026-11-07T11:32:08.7453115Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7456568Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7457095Z evidence=/tmp/tmp5lri9od9/run-tx9d8jde/mutants.out
+2026-11-07T11:32:08.7462838Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7468549Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7469398Z evidence=/tmp/tmp5lri9od9/run-mbhqsdb_/mutants.out
+2026-11-07T11:32:08.7474311Z total=1 caught=1 missed=0 timeout=0 unviable=0
+2026-11-07T11:32:08.7486195Z ...............
+2026-11-07T11:32:08.7486843Z ----------------------------------------------------------------------
+2026-11-07T11:32:08.7487541Z Ran 15 tests in 0.192s
+2026-11-07T11:32:08.7487855Z 
+2026-11-07T11:32:08.7488024Z OK
+2026-11-07T11:32:08.7488702Z score=100.00% (caught / (caught + missed + timeout))
+2026-11-07T11:32:08.7682819Z ##[group]Run cargo fmt --check
+2026-11-07T11:32:08.7683191Z [36;1mcargo fmt --check[0m
+2026-11-07T11:32:08.7704711Z shell: /usr/bin/bash -e {0}
+2026-11-07T11:32:08.7705011Z env:
+2026-11-07T11:32:08.7705258Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:08.7705568Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:08.7705841Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:08.7706118Z ##[endgroup]
+2026-11-07T11:32:10.8790222Z ##[group]Run cargo clippy --locked --all-targets -- -D warnings
+2026-11-07T11:32:10.8790888Z [36;1mcargo clippy --locked --all-targets -- -D warnings[0m
+2026-11-07T11:32:10.8810613Z shell: /usr/bin/bash -e {0}
+2026-11-07T11:32:10.8811032Z env:
+2026-11-07T11:32:10.8811340Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:10.8811699Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:10.8812090Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:10.8812446Z ##[endgroup]
+2026-11-07T11:32:11.6788528Z [1m[92m    Updating[0m crates.io index
+2026-11-07T11:32:12.1577720Z [1m[92m Downloading[0m crates ...
+2026-11-07T11:32:12.2727163Z [1m[92m  Downloaded[0m anstyle-query v1.1.5
+2026-11-07T11:32:12.2864225Z [1m[92m  Downloaded[0m anstream v1.0.0
+2026-11-07T11:32:12.2911570Z [1m[92m  Downloaded[0m anstyle v1.0.14
+2026-11-07T11:32:12.2947053Z [1m[92m  Downloaded[0m anstyle-parse v1.0.0
+2026-11-07T11:32:12.3187331Z [1m[92m  Downloaded[0m heck v0.5.0
+2026-11-07T11:32:12.3201516Z [1m[92m  Downloaded[0m colorchoice v1.0.5
+2026-11-07T11:32:12.3209797Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+2026-11-07T11:32:12.3223005Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+2026-11-07T11:32:12.3231259Z [1m[92m  Downloaded[0m errno v0.3.14
+2026-11-07T11:32:12.3248149Z [1m[92m  Downloaded[0m equivalent v1.0.3
+2026-11-07T11:32:12.3257683Z [1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+2026-11-07T11:32:12.3266286Z [1m[92m  Downloaded[0m clap_lex v1.1.1
+2026-11-07T11:32:12.3276917Z [1m[92m  Downloaded[0m hex v0.4.3
+2026-11-07T11:32:12.3295110Z [1m[92m  Downloaded[0m utf8parse v0.2.2
+2026-11-07T11:32:12.3356538Z [1m[92m  Downloaded[0m cfg-if v1.0.5
+2026-11-07T11:32:12.3370963Z [1m[92m  Downloaded[0m strsim v0.11.1
+2026-11-07T11:32:12.3384692Z [1m[92m  Downloaded[0m same-file v1.0.6
+2026-11-07T11:32:12.3397506Z [1m[92m  Downloaded[0m tree-sitter-language v0.1.9
+2026-11-07T11:32:12.3415511Z [1m[92m  Downloaded[0m aho-corasick v1.1.5
+2026-11-07T11:32:12.3474025Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-11-07T11:32:12.3488825Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+2026-11-07T11:32:12.3498187Z [1m[92m  Downloaded[0m digest v0.10.7
+2026-11-07T11:32:12.3514602Z [1m[92m  Downloaded[0m fastrand v2.5.0
+2026-11-07T11:32:12.3529013Z [1m[92m  Downloaded[0m generic-array v0.14.7
+2026-11-07T11:32:12.3543764Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-11-07T11:32:12.3558029Z [1m[92m  Downloaded[0m find-msvc-tools v0.1.15
+2026-11-07T11:32:12.3576194Z [1m[92m  Downloaded[0m quote v1.0.47
+2026-11-07T11:32:12.3606974Z [1m[92m  Downloaded[0m shlex v2.0.1
+2026-11-07T11:32:12.3621128Z [1m[92m  Downloaded[0m foldhash v0.2.0
+2026-11-07T11:32:12.3635461Z [1m[92m  Downloaded[0m sha2 v0.10.9
+2026-11-07T11:32:12.3666554Z [1m[92m  Downloaded[0m streaming-iterator v0.1.9
+2026-11-07T11:32:12.3677468Z [1m[92m  Downloaded[0m walkdir v2.5.0
+2026-11-07T11:32:12.3694319Z [1m[92m  Downloaded[0m zmij v1.0.23
+2026-11-07T11:32:12.3714546Z [1m[92m  Downloaded[0m anyhow v1.0.104
+2026-11-07T11:32:12.3753257Z [1m[92m  Downloaded[0m clap_derive v4.6.7
+2026-11-07T11:32:12.3775331Z [1m[92m  Downloaded[0m tempfile v3.27.0
+2026-11-07T11:32:12.3804295Z [1m[92m  Downloaded[0m unicode-ident v1.0.27
+2026-11-07T11:32:12.3842192Z [1m[92m  Downloaded[0m roxmltree v0.20.0
+2026-11-07T11:32:12.3990099Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-11-07T11:32:12.4014453Z [1m[92m  Downloaded[0m proc-macro2 v1.0.107
+2026-11-07T11:32:12.4041266Z [1m[92m  Downloaded[0m serde_derive v1.0.229
+2026-11-07T11:32:12.4069763Z [1m[92m  Downloaded[0m serde_core v1.0.229
+2026-11-07T11:32:12.4094353Z [1m[92m  Downloaded[0m clap v4.6.7
+2026-11-07T11:32:12.4225382Z [1m[92m  Downloaded[0m getrandom v0.4.3
+2026-11-07T11:32:12.4260435Z [1m[92m  Downloaded[0m bitflags v2.13.2
+2026-11-07T11:32:12.4302231Z [1m[92m  Downloaded[0m serde v1.0.229
+2026-11-07T11:32:12.4334229Z [1m[92m  Downloaded[0m memchr v2.8.3
+2026-11-07T11:32:12.4385439Z [1m[92m  Downloaded[0m typenum v1.20.1
+2026-11-07T11:32:12.4417992Z [1m[92m  Downloaded[0m indexmap v2.14.2
+2026-11-07T11:32:12.4458085Z [1m[92m  Downloaded[0m hashbrown v0.17.1
+2026-11-07T11:32:12.4506654Z [1m[92m  Downloaded[0m cc v1.11.0
+2026-11-07T11:32:12.4546076Z [1m[92m  Downloaded[0m serde_json v1.0.154
+2026-11-07T11:32:12.4614724Z [1m[92m  Downloaded[0m regex v1.13.1
+2026-11-07T11:32:12.4664407Z [1m[92m  Downloaded[0m clap_builder v4.6.7
+2026-11-07T11:32:12.4725839Z [1m[92m  Downloaded[0m tree-sitter v0.25.10
+2026-11-07T11:32:12.4782708Z [1m[92m  Downloaded[0m syn v3.0.9
+2026-11-07T11:32:12.4882591Z [1m[92m  Downloaded[0m regex-syntax v0.8.11
+2026-11-07T11:32:12.4947715Z [1m[92m  Downloaded[0m rustix v1.1.6
+2026-11-07T11:32:12.5199693Z [1m[92m  Downloaded[0m regex-automata v0.4.18
+2026-11-07T11:32:12.5331536Z [1m[92m  Downloaded[0m libc v0.2.191
+2026-11-07T11:32:12.5772556Z [1m[92m  Downloaded[0m tree-sitter-c-sharp v0.23.5
+2026-11-07T11:32:12.6141427Z [1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+2026-11-07T11:32:12.7137478Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-07T11:32:12.7138363Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-07T11:32:12.7139445Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-07T11:32:12.7140375Z [1m[92m   Compiling[0m unicode-ident v1.0.27
+2026-11-07T11:32:15.2595628Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-07T11:32:15.3563243Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-07T11:32:15.3890807Z [1m[92m   Compiling[0m find-msvc-tools v0.1.15
+2026-11-07T11:32:15.6881799Z [1m[92m   Compiling[0m cc v1.11.0
+2026-11-07T11:32:16.9303894Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-07T11:32:17.2391460Z [1m[92m   Compiling[0m tree-sitter-language v0.1.9
+2026-11-07T11:32:17.2586789Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-07T11:32:17.2767367Z [1m[92m   Compiling[0m equivalent v1.0.3
+2026-11-07T11:32:17.3090726Z [1m[92m   Compiling[0m serde_json v1.0.154
+2026-11-07T11:32:17.3411695Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-11-07T11:32:17.3908493Z [1m[92m    Checking[0m typenum v1.20.1
+2026-11-07T11:32:17.4320341Z [1m[92m    Checking[0m memchr v2.8.3
+2026-11-07T11:32:17.9100687Z [1m[92m   Compiling[0m indexmap v2.14.2
+2026-11-07T11:32:18.4214561Z [1m[92m   Compiling[0m syn v3.0.9
+2026-11-07T11:32:18.6506082Z [1m[92m   Compiling[0m libc v0.2.191
+2026-11-07T11:32:19.0590678Z [1m[92m   Compiling[0m foldhash v0.2.0
+2026-11-07T11:32:19.1863806Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-07T11:32:19.3230631Z [1m[92m    Checking[0m utf8parse v0.2.2
+2026-11-07T11:32:19.5660655Z [1m[92m    Checking[0m anstyle-parse v1.0.0
+2026-11-07T11:32:19.6380778Z [1m[92m    Checking[0m aho-corasick v1.1.5
+2026-11-07T11:32:19.6551640Z [1m[92m    Checking[0m regex-syntax v0.8.11
+2026-11-07T11:32:20.4300800Z [1m[92m   Compiling[0m rustix v1.1.6
+2026-11-07T11:32:20.6666001Z [1m[92m    Checking[0m colorchoice v1.0.5
+2026-11-07T11:32:20.7269115Z [1m[92m    Checking[0m anstyle v1.0.14
+2026-11-07T11:32:20.8420501Z [1m[92m    Checking[0m cfg-if v1.0.5
+2026-11-07T11:32:20.8720474Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-11-07T11:32:21.0020848Z [1m[92m    Checking[0m is_terminal_polyfill v1.70.2
+2026-11-07T11:32:21.0440330Z [1m[92m    Checking[0m anstyle-query v1.1.5
+2026-11-07T11:32:21.0770525Z [1m[92m    Checking[0m anstream v1.0.0
+2026-11-07T11:32:21.1595160Z [1m[92m    Checking[0m regex-automata v0.4.18
+2026-11-07T11:32:21.8260762Z [1m[92m   Compiling[0m tree-sitter v0.25.10
+2026-11-07T11:32:22.0750716Z [1m[92m    Checking[0m block-buffer v0.10.4
+2026-11-07T11:32:22.1480691Z [1m[92m    Checking[0m crypto-common v0.1.7
+2026-11-07T11:32:22.2272573Z [1m[92m   Compiling[0m tree-sitter-c-sharp v0.23.5
+2026-11-07T11:32:22.4790393Z [1m[92m   Compiling[0m heck v0.5.0
+2026-11-07T11:32:22.5590495Z [1m[92m    Checking[0m bitflags v2.13.2
+2026-11-07T11:32:22.6200543Z [1m[92m    Checking[0m strsim v0.11.1
+2026-11-07T11:32:22.6627069Z [1m[92m    Checking[0m linux-raw-sys v0.12.1
+2026-11-07T11:32:22.7579456Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-07T11:32:22.7655122Z [1m[92m    Checking[0m clap_lex v1.1.1
+2026-11-07T11:32:22.8490639Z [1m[92m   Compiling[0m anyhow v1.0.104
+2026-11-07T11:32:22.9548255Z [1m[92m    Checking[0m clap_builder v4.6.7
+2026-11-07T11:32:23.0930868Z [1m[92m    Checking[0m regex v1.13.1
+2026-11-07T11:32:23.3500518Z [1m[92m   Compiling[0m clap_derive v4.6.7
+2026-11-07T11:32:24.2786616Z [1m[92m    Checking[0m digest v0.10.7
+2026-11-07T11:32:24.3637957Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-07T11:32:25.0960599Z [1m[92m    Checking[0m fastrand v2.5.0
+2026-11-07T11:32:25.1960465Z [1m[92m    Checking[0m cpufeatures v0.2.17
+2026-11-07T11:32:25.3120617Z [1m[92m    Checking[0m streaming-iterator v0.1.9
+2026-11-07T11:32:25.4900053Z [1m[92m    Checking[0m once_cell v1.21.4
+2026-11-07T11:32:25.5850524Z [1m[92m    Checking[0m same-file v1.0.6
+2026-11-07T11:32:25.6321115Z [1m[92m    Checking[0m walkdir v2.5.0
+2026-11-07T11:32:25.7270855Z [1m[92m    Checking[0m tempfile v3.27.0
+2026-11-07T11:32:26.5511914Z [1m[92m    Checking[0m sha2 v0.10.9
+2026-11-07T11:32:26.7254609Z [1m[92m    Checking[0m clap v4.6.7
+2026-11-07T11:32:26.8945683Z [1m[92m    Checking[0m hex v0.4.3
+2026-11-07T11:32:27.0810778Z [1m[92m    Checking[0m roxmltree v0.20.0
+2026-11-07T11:32:36.9379985Z [1m[92m    Checking[0m dotnet-crap v0.1.0 (/home/runner/work/dotnet-crap/dotnet-crap)
+2026-11-07T11:32:38.2741625Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 27.26s
+2026-11-07T11:32:38.3187234Z ##[group]Run cargo test --locked
+2026-11-07T11:32:38.3187564Z [36;1mcargo test --locked[0m
+2026-11-07T11:32:38.3206649Z shell: /usr/bin/bash -e {0}
+2026-11-07T11:32:38.3206898Z env:
+2026-11-07T11:32:38.3207097Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:38.3207361Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:38.3207586Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:38.3207807Z ##[endgroup]
+2026-11-07T11:32:38.4144761Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-07T11:32:38.4146123Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-07T11:32:38.4159635Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-07T11:32:38.4190900Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-07T11:32:38.5871157Z [1m[92m   Compiling[0m utf8parse v0.2.2
+2026-11-07T11:32:38.6474525Z [1m[92m   Compiling[0m anstyle-parse v1.0.0
+2026-11-07T11:32:38.7081085Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-11-07T11:32:38.7717335Z [1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+2026-11-07T11:32:38.8170643Z [1m[92m   Compiling[0m colorchoice v1.0.5
+2026-11-07T11:32:38.8730525Z [1m[92m   Compiling[0m serde_json v1.0.154
+2026-11-07T11:32:39.0941466Z [1m[92m   Compiling[0m aho-corasick v1.1.5
+2026-11-07T11:32:39.1740988Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-07T11:32:39.8540569Z [1m[92m   Compiling[0m anstyle-query v1.1.5
+2026-11-07T11:32:39.8990912Z [1m[92m   Compiling[0m anstyle v1.0.14
+2026-11-07T11:32:40.0630696Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-07T11:32:40.0846024Z [1m[92m   Compiling[0m tree-sitter v0.25.10
+2026-11-07T11:32:40.0910045Z [1m[92m   Compiling[0m anstream v1.0.0
+2026-11-07T11:32:40.2180483Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-07T11:32:40.2920608Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-07T11:32:40.3457550Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-07T11:32:40.3530909Z [1m[92m   Compiling[0m libc v0.2.191
+2026-11-07T11:32:41.4240447Z [1m[92m   Compiling[0m regex-automata v0.4.18
+2026-11-07T11:32:41.4710504Z [1m[92m   Compiling[0m tree-sitter-language v0.1.9
+2026-11-07T11:32:41.5023007Z [1m[92m   Compiling[0m linux-raw-sys v0.12.1
+2026-11-07T11:32:41.8760566Z [1m[92m   Compiling[0m bitflags v2.13.2
+2026-11-07T11:32:41.9080575Z [1m[92m   Compiling[0m strsim v0.11.1
+2026-11-07T11:32:42.0557363Z [1m[92m   Compiling[0m clap_lex v1.1.1
+2026-11-07T11:32:42.2250683Z [1m[92m   Compiling[0m clap_builder v4.6.7
+2026-11-07T11:32:42.2457525Z [1m[92m   Compiling[0m rustix v1.1.6
+2026-11-07T11:32:42.7441174Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-11-07T11:32:42.8700578Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-07T11:32:44.3770536Z [1m[92m   Compiling[0m regex v1.13.1
+2026-11-07T11:32:44.4440552Z [1m[92m   Compiling[0m same-file v1.0.6
+2026-11-07T11:32:44.5370242Z [1m[92m   Compiling[0m streaming-iterator v0.1.9
+2026-11-07T11:32:44.8120547Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-07T11:32:44.8150015Z [1m[92m   Compiling[0m fastrand v2.5.0
+2026-11-07T11:32:44.9590857Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-07T11:32:44.9903340Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-07T11:32:45.0130665Z [1m[92m   Compiling[0m tempfile v3.27.0
+2026-11-07T11:32:45.4040651Z [1m[92m   Compiling[0m walkdir v2.5.0
+2026-11-07T11:32:45.5257271Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-07T11:32:45.6950924Z [1m[92m   Compiling[0m clap v4.6.7
+2026-11-07T11:32:45.7216671Z [1m[92m   Compiling[0m tree-sitter-c-sharp v0.23.5
+2026-11-07T11:32:46.0760634Z [1m[92m   Compiling[0m anyhow v1.0.104
+2026-11-07T11:32:46.1113617Z [1m[92m   Compiling[0m roxmltree v0.20.0
+2026-11-07T11:32:46.4030707Z [1m[92m   Compiling[0m hex v0.4.3
+2026-11-07T11:32:46.6632049Z [1m[92m   Compiling[0m dotnet-crap v0.1.0 (/home/runner/work/dotnet-crap/dotnet-crap)
+2026-11-07T11:32:49.5114088Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 11.17s
+2026-11-07T11:32:49.5166648Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/dotnet_crap-cf15f8e098643ca3)
+2026-11-07T11:32:49.5177413Z 
+2026-11-07T11:32:49.5177551Z running 5 tests
+2026-11-07T11:32:49.5186592Z test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+2026-11-07T11:32:49.5187299Z test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+2026-11-07T11:32:49.5189813Z test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+2026-11-07T11:32:49.5191855Z test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+2026-11-07T11:32:49.5200434Z test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+2026-11-07T11:32:49.5201144Z 
+2026-11-07T11:32:49.5201649Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:32:49.5202240Z 
+2026-11-07T11:32:49.5204370Z [1m[92m     Running[0m unittests src/main.rs (target/debug/deps/dotnet_crap-28a0ad722b362c34)
+2026-11-07T11:32:49.5212414Z 
+2026-11-07T11:32:49.5212605Z running 0 tests
+2026-11-07T11:32:49.5212835Z 
+2026-11-07T11:32:49.5213125Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:32:49.5213471Z 
+2026-11-07T11:32:49.5215249Z [1m[92m     Running[0m tests/cli.rs (target/debug/deps/cli-f2ec84386126aa6c)
+2026-11-07T11:32:49.5224987Z 
+2026-11-07T11:32:49.5225127Z running 6 tests
+2026-11-07T11:32:49.5230850Z test dotnet_fixture ... ok
+2026-11-07T11:32:49.5272672Z test csharp_constructs_and_nested_ownership ... ok
+2026-11-07T11:32:49.5308945Z test rejects_duplicate_and_invalid_coverage ... ok
+2026-11-07T11:32:49.5311764Z test coverage_and_gates ... ok
+2026-11-07T11:32:49.5337579Z test selection_deduplication_exclusions_and_output_safety ... ok
+2026-11-07T11:32:49.5439346Z test threshold_empty_missing_coverage_and_input_errors ... ok
+2026-11-07T11:32:49.5439825Z 
+2026-11-07T11:32:49.5440291Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-07T11:32:49.5440823Z 
+2026-11-07T11:32:49.5441654Z [1m[92m     Running[0m tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34e8d2eec119951d)
+2026-11-07T11:32:49.5451936Z 
+2026-11-07T11:32:49.5452107Z running 28 tests
+2026-11-07T11:32:49.5461797Z test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+2026-11-07T11:32:49.5472677Z test absolute_paths_outside_the_root_are_rejected ... ok
+2026-11-07T11:32:49.5473923Z test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+2026-11-07T11:32:49.5474954Z test ambiguous_exact_candidates_are_rejected ... ok
+2026-11-07T11:32:49.5475682Z test empty_report_slice_is_rejected ... ok
+2026-11-07T11:32:49.5476347Z test class_filename_is_required ... ok
+2026-11-07T11:32:49.5477034Z test foreign_windows_roots_are_rejected ... ok
+2026-11-07T11:32:49.5477933Z test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+2026-11-07T11:32:49.5479031Z test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+2026-11-07T11:32:49.5491426Z test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+2026-11-07T11:32:49.5492543Z test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+2026-11-07T11:32:49.5500622Z test malformed_and_unsafe_xml_is_rejected ... ok
+2026-11-07T11:32:49.5501514Z test merges_selected_files_from_multiple_assemblies ... ok
+2026-11-07T11:32:49.5511030Z test ordinary_underscore_directory_is_an_exact_local_path ... ok
+2026-11-07T11:32:49.5512093Z test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+2026-11-07T11:32:49.5520978Z test parent_components_and_source_prefix_escapes_are_rejected ... ok
+2026-11-07T11:32:49.5522106Z test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+2026-11-07T11:32:49.5523500Z test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+2026-11-07T11:32:49.5549543Z test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+2026-11-07T11:32:49.5551114Z test required_coverage_structure_is_enforced ... ok
+2026-11-07T11:32:49.5552194Z test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+2026-11-07T11:32:49.5553241Z test source_text_line_bounds_use_original_utf8 ... ok
+2026-11-07T11:32:49.5554156Z test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+2026-11-07T11:32:49.5560502Z test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+2026-11-07T11:32:49.5560944Z test unknown_relative_filename_is_not_suffix_matched ... ok
+2026-11-07T11:32:49.5561354Z test source_link_and_deterministic_paths_are_rejected ... ok
+2026-11-07T11:32:49.5561790Z test unselected_root_files_are_ignored_without_basename_guessing ... ok
+2026-11-07T11:32:49.5565076Z test zero_hit_only_evidence_is_preserved_as_zero ... ok
+2026-11-07T11:32:49.5565334Z 
+2026-11-07T11:32:49.5565580Z test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-07T11:32:49.5565937Z 
+2026-11-07T11:32:49.5568124Z [1m[92m     Running[0m tests/collector.rs (target/debug/deps/collector-edcfee6eaf2e1ce1)
+2026-11-07T11:32:49.5578531Z 
+2026-11-07T11:32:49.5580132Z running 13 tests
+2026-11-07T11:32:49.6031389Z test a_trusted_program_can_accept_only_the_results_argument ... ok
+2026-11-07T11:32:49.6071489Z test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+2026-11-07T11:32:49.6092716Z test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+2026-11-07T11:32:49.6422782Z test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+2026-11-07T11:32:49.6517396Z test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+2026-11-07T11:32:49.6565379Z test deadline_reaps_the_child_and_publishes_nothing ... ok
+2026-11-07T11:32:49.6906532Z test incomplete_or_extra_project_reports_are_errors ... ok
+2026-11-07T11:32:49.6922699Z test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+2026-11-07T11:32:49.6960122Z test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+2026-11-07T11:32:49.7377737Z test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+2026-11-07T11:32:49.7392204Z test rejects_linked_reports_and_existing_source_aliases ... ok
+2026-11-07T11:32:49.7417776Z test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+2026-11-07T11:32:49.8522954Z test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+2026-11-07T11:32:49.8523506Z 
+2026-11-07T11:32:49.8523926Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+2026-11-07T11:32:49.8524488Z 
+2026-11-07T11:32:49.8527246Z [1m[92m     Running[0m tests/coverlet_live.rs (target/debug/deps/coverlet_live-780f233b5f1f0b91)
+2026-11-07T11:32:49.8538197Z 
+2026-11-07T11:32:49.8538351Z running 1 test
+2026-11-07T11:32:49.8541185Z test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+2026-11-07T11:32:49.8541705Z 
+2026-11-07T11:32:49.8542070Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:32:49.8542449Z 
+2026-11-07T11:32:49.8543459Z [1m[92m     Running[0m tests/csharp_callables.rs (target/debug/deps/csharp_callables-d1475587fe9816c8)
+2026-11-07T11:32:49.8553527Z 
+2026-11-07T11:32:49.8553689Z running 11 tests
+2026-11-07T11:32:49.8573989Z test declaration_fixtures_are_valid_csharp ... ok
+2026-11-07T11:32:49.8599861Z test existing_forms_keep_their_names_and_complexity ... ok
+2026-11-07T11:32:49.8604303Z test coverage_is_owned_by_the_innermost_callable ... ok
+2026-11-07T11:32:49.8605377Z test expression_and_block_bodies_score_the_same_logic ... ok
+2026-11-07T11:32:49.8617518Z test malformed_operator_is_an_input_error_without_report ... ok
+2026-11-07T11:32:49.8623403Z test declaration_only_and_auto_forms_are_omitted ... ok
+2026-11-07T11:32:49.8646840Z test nested_callables_are_charged_only_to_their_owner ... ok
+2026-11-07T11:32:49.8660623Z test source_spacing_does_not_change_names ... ok
+2026-11-07T11:32:49.8661775Z test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+2026-11-07T11:32:49.8685785Z test operator_conversion_destructor_and_indexer_complexity ... ok
+2026-11-07T11:32:49.8699415Z test text_output_names_callables_descriptively ... ok
+2026-11-07T11:32:49.8699861Z 
+2026-11-07T11:32:49.8700282Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-07T11:32:49.8700916Z 
+2026-11-07T11:32:49.8702205Z [1m[92m     Running[0m tests/library_api.rs (target/debug/deps/library_api-2a8c08c1f3dd440f)
+2026-11-07T11:32:49.8712268Z 
+2026-11-07T11:32:49.8712445Z running 9 tests
+2026-11-07T11:32:49.8735132Z test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+2026-11-07T11:32:49.8736891Z test library_defaults_match_documented_cli_defaults ... ok
+2026-11-07T11:32:49.8743439Z test cli_preserves_symlink_output_targets ... ok
+2026-11-07T11:32:49.8763130Z test result_detects_source_byte_changes ... ok
+2026-11-07T11:32:49.8786612Z test cli_preserves_coverage_and_unselected_source_aliases ... ok
+2026-11-07T11:32:49.8800617Z test serialization_and_captured_policy_keep_the_existing_contract ... ok
+2026-11-07T11:32:49.8963902Z test library_selection_deduplicates_and_rejects_root_escape ... ok
+2026-11-07T11:32:49.8982356Z test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+2026-11-07T11:32:49.9240231Z test coverage_empty_and_error_policies_match_cli ... ok
+2026-11-07T11:32:49.9240505Z 
+2026-11-07T11:32:49.9240785Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+2026-11-07T11:32:49.9241145Z 
+2026-11-07T11:32:49.9244242Z [1m[92m     Running[0m tests/live_coverage.rs (target/debug/deps/live_coverage-62668ea65a11b230)
+2026-11-07T11:32:49.9253124Z 
+2026-11-07T11:32:49.9253290Z running 1 test
+2026-11-07T11:32:49.9255778Z test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+2026-11-07T11:32:49.9256296Z 
+2026-11-07T11:32:49.9256777Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:32:49.9257363Z 
+2026-11-07T11:32:49.9258117Z [1m[92m     Running[0m tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-bb315d2649e585df)
+2026-11-07T11:32:49.9267742Z 
+2026-11-07T11:32:49.9267957Z running 7 tests
+2026-11-07T11:32:49.9293240Z test malformed_coverage_map_reports_expected_type ... ok
+2026-11-07T11:32:49.9307744Z test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+2026-11-07T11:32:49.9319912Z test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+2026-11-07T11:32:49.9323590Z test nested_source_selection_keeps_normal_directories ... ok
+2026-11-07T11:32:49.9333856Z test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+2026-11-07T11:32:49.9377750Z test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+2026-11-07T11:32:49.9595699Z test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+2026-11-07T11:32:49.9596275Z 
+2026-11-07T11:32:49.9596737Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-11-07T11:32:49.9597251Z 
+2026-11-07T11:32:49.9598550Z [1m[92m     Running[0m tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-660f28ac03d81d1e)
+2026-11-07T11:32:49.9607370Z 
+2026-11-07T11:32:49.9607510Z running 13 tests
+2026-11-07T11:32:49.9680103Z test branches ... ok
+2026-11-07T11:32:49.9682536Z test decoding_errors_identify_the_file_and_escape_its_name ... ok
+2026-11-07T11:32:49.9700097Z test execute_accuracy_fixtures_with_sdk ... ok
+2026-11-07T11:32:49.9705111Z test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+2026-11-07T11:32:49.9731336Z test invalid_source_diagnostics_escape_filename_controls ... ok
+2026-11-07T11:32:49.9750239Z test encoding_paths_and_terminal_controls ... ok
+2026-11-07T11:32:49.9770068Z test invalid_utf8_filenames_fail_instead_of_collapsing_source_identity ... ok
+2026-11-07T11:32:49.9810614Z test bom_encodings_bind_coverage_to_original_bytes ... ok
+2026-11-07T11:32:49.9823484Z test nested_ownership ... ok
+2026-11-07T11:32:49.9858574Z test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+2026-11-07T11:32:49.9869760Z test source_filenames_unrepresentable_in_native_coverage_fail_explicitly ... ok
+2026-11-07T11:32:49.9881349Z test stacked_switch ... ok
+2026-11-07T11:32:50.0149918Z test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+2026-11-07T11:32:50.0150535Z 
+2026-11-07T11:32:50.0151053Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+2026-11-07T11:32:50.0151780Z 
+2026-11-07T11:32:50.0153041Z [1m[92m     Running[0m tests/sarif.rs (target/debug/deps/sarif-9dee76fd5a99218b)
+2026-11-07T11:32:50.0162629Z 
+2026-11-07T11:32:50.0162799Z running 10 tests
+2026-11-07T11:32:50.0184808Z test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+2026-11-07T11:32:50.0196918Z test file_uri_structure_is_checked_before_decoding ... ok
+2026-11-07T11:32:50.0198399Z test non_utf8_source_filename_is_rejected_without_lossy_report_identity ... ok
+2026-11-07T11:32:50.0199968Z test non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri ... ok
+2026-11-07T11:32:50.0201117Z test literal_backslashes_in_source_root_remain_literal_uri_bytes ... ok
+2026-11-07T11:32:50.0211657Z test same_named_overloads_have_distinct_fingerprints ... ok
+2026-11-07T11:32:50.0254487Z test staged_output_keeps_failed_reports_and_protects_source ... ok
+2026-11-07T11:32:50.0303476Z test score_threshold_empty_and_completeness_gates ... ok
+2026-11-07T11:32:50.0321365Z test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+2026-11-07T11:32:50.0322302Z test special_source_names_are_encoded_without_coverage_and_rejected_with_it ... ok
+2026-11-07T11:32:50.0322892Z 
+2026-11-07T11:32:50.0323306Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-07T11:32:50.0323907Z 
+2026-11-07T11:32:50.0324229Z [1m[92m   Doc-tests[0m dotnet_crap
+2026-11-07T11:32:51.1555258Z 
+2026-11-07T11:32:51.1555747Z running 1 test
+2026-11-07T11:32:51.1982228Z test src/lib.rs - (line 7) - compile ... ok
+2026-11-07T11:32:51.1982671Z 
+2026-11-07T11:32:51.1983134Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+2026-11-07T11:32:51.1983774Z 
+2026-11-07T11:32:51.2133862Z ##[group]Run cargo test --locked --release
+2026-11-07T11:32:51.2134473Z [36;1mcargo test --locked --release[0m
+2026-11-07T11:32:51.2155849Z shell: /usr/bin/bash -e {0}
+2026-11-07T11:32:51.2156095Z env:
+2026-11-07T11:32:51.2156288Z   CARGO_HOME: /home/runner/.cargo
+2026-11-07T11:32:51.2156542Z   CARGO_INCREMENTAL: 0
+2026-11-07T11:32:51.2156763Z   CARGO_TERM_COLOR: always
+2026-11-07T11:32:51.2156994Z ##[endgroup]
+2026-11-07T11:32:51.2718058Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-11-07T11:32:51.2718919Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-11-07T11:32:51.2719967Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-11-07T11:32:51.2720959Z [1m[92m   Compiling[0m quote v1.0.47
+2026-11-07T11:32:51.3994709Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-11-07T11:32:51.4191132Z [1m[92m   Compiling[0m find-msvc-tools v0.1.15
+2026-11-07T11:32:51.4733995Z [1m[92m   Compiling[0m unicode-ident v1.0.27
+2026-11-07T11:32:51.5170487Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-11-07T11:32:51.5308949Z [1m[92m   Compiling[0m cc v1.11.0
+2026-11-07T11:32:51.5990713Z [1m[92m   Compiling[0m tree-sitter-language v0.1.9
+2026-11-07T11:32:51.6160664Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-11-07T11:32:51.7282206Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-11-07T11:32:51.8087714Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-11-07T11:32:52.3140492Z [1m[92m   Compiling[0m serde_json v1.0.154
+2026-11-07T11:32:52.3370656Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-11-07T11:32:52.4033016Z [1m[92m   Compiling[0m equivalent v1.0.3
+2026-11-07T11:32:52.4393357Z [1m[92m   Compiling[0m indexmap v2.14.2
+2026-11-07T11:32:53.0030307Z [1m[92m   Compiling[0m syn v3.0.9
+2026-11-07T11:32:53.5662109Z [1m[92m   Compiling[0m foldhash v0.2.0
+2026-11-07T11:32:54.0751583Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-11-07T11:32:54.1240564Z [1m[92m   Compiling[0m utf8parse v0.2.2
+2026-11-07T11:32:54.1866790Z [1m[92m   Compiling[0m libc v0.2.191
+2026-11-07T11:32:54.3380947Z [1m[92m   Compiling[0m anstyle-parse v1.0.0
+2026-11-07T11:32:54.4830626Z [1m[92m   Compiling[0m aho-corasick v1.1.5
+2026-11-07T11:32:54.5010334Z [1m[92m   Compiling[0m cfg-if v1.0.5
+2026-11-07T11:32:54.5266968Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-11-07T11:32:54.6407010Z [1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+2026-11-07T11:32:54.6880813Z [1m[92m   Compiling[0m anstyle-query v1.1.5
+2026-11-07T11:32:54.7393144Z [1m[92m   Compiling[0m anstyle v1.0.14
+2026-11-07T11:32:54.9680699Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-11-07T11:32:56.6588286Z [1m[92m   Compiling[0m rustix v1.1.6
+2026-11-07T11:32:56.7443057Z [1m[92m   Compiling[0m colorchoice v1.0.5
+2026-11-07T11:32:56.7960924Z [1m[92m   Compiling[0m anstream v1.0.0
+2026-11-07T11:32:56.8970564Z [1m[92m   Compiling[0m tree-sitter v0.25.10
+2026-11-07T11:32:57.0310710Z [1m[92m   Compiling[0m regex-automata v0.4.18
+2026-11-07T11:33:00.9344377Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-11-07T11:33:01.0283791Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-11-07T11:33:01.0950785Z [1m[92m   Compiling[0m tree-sitter-c-sharp v0.23.5
+2026-11-07T11:33:01.1630695Z [1m[92m   Compiling[0m linux-raw-sys v0.12.1
+2026-11-07T11:33:01.2360611Z [1m[92m   Compiling[0m strsim v0.11.1
+2026-11-07T11:33:01.5360796Z [1m[92m   Compiling[0m serde v1.0.229
+2026-11-07T11:33:01.7072015Z [1m[92m   Compiling[0m clap_lex v1.1.1
+2026-11-07T11:33:01.9940953Z [1m[92m   Compiling[0m heck v0.5.0
+2026-11-07T11:33:02.1280654Z [1m[92m   Compiling[0m bitflags v2.13.2
+2026-11-07T11:33:02.2014506Z [1m[92m   Compiling[0m anyhow v1.0.104
+2026-11-07T11:33:02.4671090Z [1m[92m   Compiling[0m clap_derive v4.6.7
+2026-11-07T11:33:03.3921591Z [1m[92m   Compiling[0m clap_builder v4.6.7
+2026-11-07T11:33:06.3131315Z [1m[92m   Compiling[0m digest v0.10.7
+2026-11-07T11:33:06.4760526Z [1m[92m   Compiling[0m regex v1.13.1
+2026-11-07T11:33:09.0590631Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-11-07T11:33:10.1525013Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-11-07T11:33:10.3920600Z [1m[92m   Compiling[0m streaming-iterator v0.1.9
+2026-11-07T11:33:10.6770620Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-11-07T11:33:10.8686878Z [1m[92m   Compiling[0m same-file v1.0.6
+2026-11-07T11:33:10.9640113Z [1m[92m   Compiling[0m fastrand v2.5.0
+2026-11-07T11:33:11.2333383Z [1m[92m   Compiling[0m tempfile v3.27.0
+2026-11-07T11:33:12.5530697Z [1m[92m   Compiling[0m walkdir v2.5.0
+2026-11-07T11:33:13.3030654Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-11-07T11:33:15.3610700Z [1m[92m   Compiling[0m clap v4.6.7
+2026-11-07T11:33:15.6131717Z [1m[92m   Compiling[0m roxmltree v0.20.0
+2026-11-07T11:33:15.8681576Z [1m[92m   Compiling[0m hex v0.4.3
+2026-11-07T11:33:16.7145187Z [1m[92m   Compiling[0m dotnet-crap v0.1.0 (/home/runner/work/dotnet-crap/dotnet-crap)
+2026-11-07T11:33:25.0845631Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 33.85s
+2026-11-07T11:33:25.0894976Z [1m[92m     Running[0m unittests src/lib.rs (target/release/deps/dotnet_crap-22e3b639c86eb8c3)
+2026-11-07T11:33:25.0906274Z 
+2026-11-07T11:33:25.0906463Z running 5 tests
+2026-11-07T11:33:25.0913380Z test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+2026-11-07T11:33:25.0914535Z test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+2026-11-07T11:33:25.0918085Z test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+2026-11-07T11:33:25.0919035Z test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+2026-11-07T11:33:25.0924362Z test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+2026-11-07T11:33:25.0925107Z 
+2026-11-07T11:33:25.0925534Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:33:25.0926136Z 
+2026-11-07T11:33:25.0926827Z [1m[92m     Running[0m unittests src/main.rs (target/release/deps/dotnet_crap-6b4997b55941e444)
+2026-11-07T11:33:25.0935607Z 
+2026-11-07T11:33:25.0935824Z running 0 tests
+2026-11-07T11:33:25.0937211Z 
+2026-11-07T11:33:25.0937632Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:33:25.0938126Z 
+2026-11-07T11:33:25.0938474Z [1m[92m     Running[0m tests/cli.rs (target/release/deps/cli-ce7931952f21a7f4)
+2026-11-07T11:33:25.0947963Z 
+2026-11-07T11:33:25.0948113Z running 6 tests
+2026-11-07T11:33:25.0970590Z test dotnet_fixture ... ok
+2026-11-07T11:33:25.0975513Z test csharp_constructs_and_nested_ownership ... ok
+2026-11-07T11:33:25.1016479Z test coverage_and_gates ... ok
+2026-11-07T11:33:25.1032553Z test rejects_duplicate_and_invalid_coverage ... ok
+2026-11-07T11:33:25.1041179Z test selection_deduplication_exclusions_and_output_safety ... ok
+2026-11-07T11:33:25.1108224Z test threshold_empty_missing_coverage_and_input_errors ... ok
+2026-11-07T11:33:25.1108584Z 
+2026-11-07T11:33:25.1108856Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-07T11:33:25.1109560Z 
+2026-11-07T11:33:25.1112087Z [1m[92m     Running[0m tests/cobertura_parser.rs (target/release/deps/cobertura_parser-d6a592505f4aee41)
+2026-11-07T11:33:25.1120759Z 
+2026-11-07T11:33:25.1120939Z running 28 tests
+2026-11-07T11:33:25.1128363Z test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+2026-11-07T11:33:25.1131873Z test class_filename_is_required ... ok
+2026-11-07T11:33:25.1136479Z test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+2026-11-07T11:33:25.1137937Z test empty_report_slice_is_rejected ... ok
+2026-11-07T11:33:25.1142674Z test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+2026-11-07T11:33:25.1145710Z test foreign_windows_roots_are_rejected ... ok
+2026-11-07T11:33:25.1166055Z test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+2026-11-07T11:33:25.1184141Z test absolute_paths_outside_the_root_are_rejected ... ok
+2026-11-07T11:33:25.1186248Z test ambiguous_exact_candidates_are_rejected ... ok
+2026-11-07T11:33:25.1187270Z test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+2026-11-07T11:33:25.1188391Z test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+2026-11-07T11:33:25.1189794Z test merges_selected_files_from_multiple_assemblies ... ok
+2026-11-07T11:33:25.1190907Z test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+2026-11-07T11:33:25.1191892Z test malformed_and_unsafe_xml_is_rejected ... ok
+2026-11-07T11:33:25.1192973Z test ordinary_underscore_directory_is_an_exact_local_path ... ok
+2026-11-07T11:33:25.1193668Z test parent_components_and_source_prefix_escapes_are_rejected ... ok
+2026-11-07T11:33:25.1200806Z test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+2026-11-07T11:33:25.1205088Z test required_coverage_structure_is_enforced ... ok
+2026-11-07T11:33:25.1206153Z test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+2026-11-07T11:33:25.1208468Z test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+2026-11-07T11:33:25.1214888Z test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+2026-11-07T11:33:25.1221261Z test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+2026-11-07T11:33:25.1226679Z test source_text_line_bounds_use_original_utf8 ... ok
+2026-11-07T11:33:25.1227848Z test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+2026-11-07T11:33:25.1228766Z test unknown_relative_filename_is_not_suffix_matched ... ok
+2026-11-07T11:33:25.1229892Z test source_link_and_deterministic_paths_are_rejected ... ok
+2026-11-07T11:33:25.1232805Z test unselected_root_files_are_ignored_without_basename_guessing ... ok
+2026-11-07T11:33:25.1235479Z test zero_hit_only_evidence_is_preserved_as_zero ... ok
+2026-11-07T11:33:25.1235903Z 
+2026-11-07T11:33:25.1236334Z test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-07T11:33:25.1236963Z 
+2026-11-07T11:33:25.1238484Z [1m[92m     Running[0m tests/collector.rs (target/release/deps/collector-f8df7d233e2c0940)
+2026-11-07T11:33:25.1246376Z 
+2026-11-07T11:33:25.1246624Z running 13 tests
+2026-11-07T11:33:25.1680440Z test a_trusted_program_can_accept_only_the_results_argument ... ok
+2026-11-07T11:33:25.1726869Z test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+2026-11-07T11:33:25.1740736Z test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+2026-11-07T11:33:25.2083344Z test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+2026-11-07T11:33:25.2164097Z test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+2026-11-07T11:33:25.2206198Z test deadline_reaps_the_child_and_publishes_nothing ... ok
+2026-11-07T11:33:25.2602202Z test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+2026-11-07T11:33:25.2621202Z test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+2026-11-07T11:33:25.2640132Z test incomplete_or_extra_project_reports_are_errors ... ok
+2026-11-07T11:33:25.2982229Z test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+2026-11-07T11:33:25.2985494Z test rejects_linked_reports_and_existing_source_aliases ... ok
+2026-11-07T11:33:25.3120001Z test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+2026-11-07T11:33:25.4163736Z test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+2026-11-07T11:33:25.4164426Z 
+2026-11-07T11:33:25.4164881Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+2026-11-07T11:33:25.4165620Z 
+2026-11-07T11:33:25.4168330Z [1m[92m     Running[0m tests/coverlet_live.rs (target/release/deps/coverlet_live-57c7884882cf7ea0)
+2026-11-07T11:33:25.4178675Z 
+2026-11-07T11:33:25.4178821Z running 1 test
+2026-11-07T11:33:25.4181942Z test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+2026-11-07T11:33:25.4182512Z 
+2026-11-07T11:33:25.4182938Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:33:25.4183540Z 
+2026-11-07T11:33:25.4184284Z [1m[92m     Running[0m tests/csharp_callables.rs (target/release/deps/csharp_callables-a600ef7a4abf5bf1)
+2026-11-07T11:33:25.4193515Z 
+2026-11-07T11:33:25.4193742Z running 11 tests
+2026-11-07T11:33:25.4220369Z test declaration_fixtures_are_valid_csharp ... ok
+2026-11-07T11:33:25.4226232Z test existing_forms_keep_their_names_and_complexity ... ok
+2026-11-07T11:33:25.4227184Z test coverage_is_owned_by_the_innermost_callable ... ok
+2026-11-07T11:33:25.4228099Z test expression_and_block_bodies_score_the_same_logic ... ok
+2026-11-07T11:33:25.4237055Z test declaration_only_and_auto_forms_are_omitted ... ok
+2026-11-07T11:33:25.4250189Z test malformed_operator_is_an_input_error_without_report ... ok
+2026-11-07T11:33:25.4255096Z test nested_callables_are_charged_only_to_their_owner ... ok
+2026-11-07T11:33:25.4255734Z test source_spacing_does_not_change_names ... ok
+2026-11-07T11:33:25.4262212Z test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+2026-11-07T11:33:25.4269386Z test operator_conversion_destructor_and_indexer_complexity ... ok
+2026-11-07T11:33:25.4283243Z test text_output_names_callables_descriptively ... ok
+2026-11-07T11:33:25.4283810Z 
+2026-11-07T11:33:25.4284101Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-07T11:33:25.4284463Z 
+2026-11-07T11:33:25.4286041Z [1m[92m     Running[0m tests/library_api.rs (target/release/deps/library_api-94df6172a129c27a)
+2026-11-07T11:33:25.4295249Z 
+2026-11-07T11:33:25.4295400Z running 9 tests
+2026-11-07T11:33:25.4311022Z test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+2026-11-07T11:33:25.4316273Z test library_defaults_match_documented_cli_defaults ... ok
+2026-11-07T11:33:25.4330035Z test cli_preserves_symlink_output_targets ... ok
+2026-11-07T11:33:25.4339857Z test result_detects_source_byte_changes ... ok
+2026-11-07T11:33:25.4355752Z test cli_preserves_coverage_and_unselected_source_aliases ... ok
+2026-11-07T11:33:25.4361041Z test serialization_and_captured_policy_keep_the_existing_contract ... ok
+2026-11-07T11:33:25.4484803Z test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+2026-11-07T11:33:25.4492160Z test library_selection_deduplicates_and_rejects_root_escape ... ok
+2026-11-07T11:33:25.4686504Z test coverage_empty_and_error_policies_match_cli ... ok
+2026-11-07T11:33:25.4687063Z 
+2026-11-07T11:33:25.4687576Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+2026-11-07T11:33:25.4688312Z 
+2026-11-07T11:33:25.4690587Z [1m[92m     Running[0m tests/live_coverage.rs (target/release/deps/live_coverage-7375a0c1753c24ea)
+2026-11-07T11:33:25.4699802Z 
+2026-11-07T11:33:25.4699976Z running 1 test
+2026-11-07T11:33:25.4702279Z test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+2026-11-07T11:33:25.4702665Z 
+2026-11-07T11:33:25.4702947Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-07T11:33:25.4703393Z 
+2026-11-07T11:33:25.4704909Z [1m[92m     Running[0m tests/mutation_contracts.rs (target/release/deps/mutation_contracts-8fdb7815b27bdba4)
+2026-11-07T11:33:25.4714170Z 
+2026-11-07T11:33:25.4714340Z running 7 tests
+2026-11-07T11:33:25.4736546Z test malformed_coverage_map_reports_expected_type ... ok
+2026-11-07T11:33:25.4748752Z test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+2026-11-07T11:33:25.4750315Z test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+2026-11-07T11:33:25.4765650Z test nested_source_selection_keeps_normal_directories ... ok
+2026-11-07T11:33:25.4766788Z test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+2026-11-07T11:33:25.4793141Z test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+2026-11-07T11:33:25.4969652Z test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+2026-11-07T11:33:25.4970303Z 
+2026-11-07T11:33:25.4970772Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-11-07T11:33:25.4971411Z 
+2026-11-07T11:33:25.4972253Z [1m[92m     Running[0m tests/real_csharp_accuracy.rs (target/release/deps/real_csharp_accuracy-39740e2558d0d8fa)
+2026-11-07T11:33:25.4981024Z 
+2026-11-07T11:33:25.4981174Z running 13 tests
+2026-11-07T11:33:25.5023954Z test branches ... ok
+2026-11-07T11:33:25.5037985Z test decoding_errors_identify_the_file_and_escape_its_name ... ok
+2026-11-07T11:33:25.5039827Z test execute_accuracy_fixtures_with_sdk ... ok
+2026-11-07T11:33:25.5068153Z test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+2026-11-07T11:33:25.5093993Z test invalid_source_diagnostics_escape_filename_controls ... ok
+2026-11-07T11:33:25.5105254Z test encoding_paths_and_terminal_controls ... ok
+2026-11-07T11:33:25.5115984Z test invalid_utf8_filenames_fail_instead_of_collapsing_source_identity ... ok
+2026-11-07T11:33:25.5141023Z test bom_encodings_bind_coverage_to_original_bytes ... ok
+2026-11-07T11:33:25.5162270Z test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+2026-11-07T11:33:25.5163126Z test nested_ownership ... ok
+2026-11-07T11:33:25.5165780Z test source_filenames_unrepresentable_in_native_coverage_fail_explicitly ... ok
+2026-11-07T11:33:25.5182073Z test stacked_switch ... ok
+2026-11-07T11:33:25.5191696Z test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+2026-11-07T11:33:25.5192187Z 
+2026-11-07T11:33:25.5192648Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-07T11:33:25.5193249Z 
+2026-11-07T11:33:25.5194433Z [1m[92m     Running[0m tests/sarif.rs (target/release/deps/sarif-4b533c6ae58d4edc)
+2026-11-07T11:33:25.5203785Z 
+2026-11-07T11:33:25.5203935Z running 10 tests
+2026-11-07T11:33:25.5224831Z test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+2026-11-07T11:33:25.5225857Z test file_uri_structure_is_checked_before_decoding ... ok
+2026-11-07T11:33:25.5226416Z test non_utf8_source_filename_is_rejected_without_lossy_report_identity ... ok
+2026-11-07T11:33:25.5227176Z test non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri ... ok
+2026-11-07T11:33:25.5227713Z test literal_backslashes_in_source_root_remain_literal_uri_bytes ... ok
+2026-11-07T11:33:25.5234054Z test same_named_overloads_have_distinct_fingerprints ... ok
+2026-11-07T11:33:25.5276754Z test staged_output_keeps_failed_reports_and_protects_source ... ok
+2026-11-07T11:33:25.5303994Z test score_threshold_empty_and_completeness_gates ... ok
+2026-11-07T11:33:25.5311436Z test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+2026-11-07T11:33:25.5320507Z test special_source_names_are_encoded_without_coverage_and_rejected_with_it ... ok
+2026-11-07T11:33:25.5321092Z 
+2026-11-07T11:33:25.5321570Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-07T11:33:25.5322189Z 
+2026-11-07T11:33:25.5322934Z [1m[92m   Doc-tests[0m dotnet_crap
+2026-11-07T11:33:25.5755641Z 
+2026-11-07T11:33:25.5756415Z running 1 test
+2026-11-07T11:33:25.6036162Z test src/lib.rs - (line 7) - compile ... ok
+2026-11-07T11:33:25.6036664Z 
+2026-11-07T11:33:25.6037188Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-11-07T11:33:25.6037977Z 
+2026-11-07T11:33:25.6227269Z Post job cleanup.
+2026-11-07T11:33:25.7154901Z [command]/usr/bin/git version
+2026-11-07T11:33:25.7207488Z git version 2.56.0
+2026-11-07T11:33:25.7253422Z Temporarily overriding HOME='/home/runner/work/_temp/b0fbbf09-ae55-4092-9baf-b53e6a86db8f' before making global git config changes
+2026-11-07T11:33:25.7254693Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T11:33:25.7261062Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+2026-11-07T11:33:25.7308430Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T11:33:25.7349891Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T11:33:25.7630297Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T11:33:25.7672390Z http.https://github.com/.extraheader
+2026-11-07T11:33:25.7686492Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T11:33:25.7726058Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T11:33:25.8222505Z Cleaning up orphan processes
+2026-11-07T11:33:25.8590971Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -76,12 +76,15 @@ unmarked items remain proposed.
    parent-path survivor is qualified to this runner in the report.
    Merged at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`; historical evidence above
    remains qualified to its named source revisions.
-6. **Fresh Coverlet coverage — in progress:** snapshot source before a trusted test process,
+6. **Fresh Coverlet coverage — implemented in PR #15:** snapshot source before a trusted test process,
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual
    pinned .NET collector fixtures, failures, multiple assemblies and uncovered code.
-   Implemented at `18fc47a`, including xUnit/MSTest/NUnit fixtures; combined final
-   live/mutation validation is in progress.
+   Validated source/test snapshot `1cad955` includes xUnit/MSTest/NUnit fixtures.
+   Full live CI passed on Linux/macOS/Windows with .NET 10/VSTest; complete
+   mutation evidence records 262 caught, 24 missed, 0 timeouts and 11 unviable
+   out of 297, scoring 91.61% without exclusions. See the
+   [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
    rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
