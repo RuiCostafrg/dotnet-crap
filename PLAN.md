@@ -114,6 +114,44 @@ the negative MTP-mode SDK test. No release publication is enabled.
 failures leave no new coverage artifact. Document any versioned format migration.
 Add OpenCover/Microsoft coverage adapters in later PRs with their own evidence.
 
+### 2a. Behavior-preserving architecture boundaries — in progress
+
+Independent audits (Claude Sonnet 5.5 and OpenCode GLM-5.3 Flash) reviewed
+module boundaries, errors, process isolation, duplicated path logic and
+testability. Ranked by value per review risk:
+
+1. **Split `src/lib.rs` (710 lines, six concerns) into cohesive modules.**
+   `analysis` (callable recognition, naming, complexity and the traversal, moved
+   verbatim), `evidence` (native v1 schema and validation), `selection` (source
+   walk), `source` (decoding), `report` (typed report and text rendering).
+   `lib.rs` keeps `scan` orchestration and crate-root re-exports, so the
+   documented API paths are unchanged. Rationale: the collector already reaches
+   into private lib internals; later config/selection/baseline work needs seams.
+2. **Library-owned report writer (`output`).** Move the CLI's alias, symlink,
+   `.cs` and staged-persist protections into a documented
+   `output::write_report`, sharing the destination-parent and C#-path helpers
+   with the collector. `main.rs` becomes a thin clap/exit adapter, and library
+   callers no longer need to "reproduce each check".
+3. **Separate pure collection planning from process execution.** Extract
+   command validation, `{results}` substitution, report discovery and evidence
+   assembly from `collector::collect`; `run_command` stays the only process code.
+4. **Typed library errors.** Replace `anyhow` in the library with
+   `dotnet_crap::Error` (a matchable `ErrorKind` enum plus the existing message
+   and `source()` chain). Messages and `{:#}` chains stay byte-identical, so CLI
+   stderr is unchanged; the CLI maps every library error to exit 2 as today. Add
+   `Debug` to `ScanResult`, `Report` and `Item`.
+
+Deliberately not done: splitting `cobertura.rs` (424 lines but one cohesive
+contract), merging the native-evidence and Cobertura path validators (different
+contracts and messages), restructuring `scan` error order, or a multi-crate
+workspace. The coverage traversal hot path belongs to step 8; it moves verbatim,
+with only its three error constructors adapted in item 4.
+
+Delivery: PR A (items 1–3, no output change) and stacked PR B (item 4, API
+change documented in [Rust API](docs/RUST_API.md)). Each PR must pass the
+standard gate including live xUnit/MSTest/NUnit Coverlet tests, and the full
+mutation inventory must name every new production module.
+
 ### 3. Versioned configuration and deterministic selection
 
 - [ ] Add strict `dotnet-crap.json` parsing with unknown-field rejection and
