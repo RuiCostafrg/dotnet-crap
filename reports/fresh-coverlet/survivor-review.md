@@ -1,7 +1,8 @@
 # Mutation survivor review
 
 Source/test revision: `1cad955cbe5ec29590fb405174c495826de5f39f`.
-Full CI run: 42368570749; cargo-mutants 27.1.0. Exact identities are retained in
+Mutation workflow run: 42368570749 (complete CI run: 42368570770); both checked out
+PR merge commit `76a45d2` (`1cad955` merged into base `8620f71`); cargo-mutants 27.1.0. Exact identities are retained in
 `final/missed.txt` and `final/unviable.txt`; this review does not exclude any.
 The gate counts timeouts as viable non-kills (there were none).
 
@@ -35,7 +36,10 @@ The gate counts timeouts as viable non-kills (there were none).
   `:310` accepts every canonicalization error as NotFound, which can change
   handling of permission/NotADirectory failures for supplied snapshot identities.
   Not all such filesystem errors are covered on the recorded host.
-- **Windows/URI discrimination (4):** `cobertura.rs:341`, `:345`, `:346`, `:347`.
+- **Equivalent drive/scheme guard (1):** `cobertura.rs:341`. `drive_absolute`
+  implies `scheme_like`, and the later conjunction is false otherwise, so this
+  mutation is equivalent on every platform. It is not excluded from the score.
+- **Windows/URI discrimination (3):** `cobertura.rs:345`, `:346`, `:347`.
   On the Linux mutation runner colon-bearing foreign paths still reject through
   another branch. Windows acceptance of host drive paths could distinguish these
   conditions. The real Windows CI path tests pass, but this was not a Windows

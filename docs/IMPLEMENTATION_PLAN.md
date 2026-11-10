@@ -83,7 +83,8 @@ unmarked items remain proposed.
    Validated source/test snapshot `1cad955` includes xUnit/MSTest/NUnit fixtures.
    Full live CI passed on Linux/macOS/Windows with .NET 10/VSTest; complete
    mutation evidence records 262 caught, 24 missed, 0 timeouts and 11 unviable
-   out of 297, scoring 91.61% without exclusions. See the
+   out of 297, scoring 91.61% (262/286 viable mutants; the 11 unviable are
+   excluded from the denominator) without exclusions. See the
    [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
    rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP

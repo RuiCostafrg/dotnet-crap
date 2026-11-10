@@ -17,7 +17,11 @@ contracts, packaging smoke, and full explicitly enabled .NET tests on Linux x64,
 macOS ARM64 and Windows x64. Both `DOTNET_CRAP_E2E=1` and
 `DOTNET_CRAP_COVERLET_E2E=1` were set in the SDK jobs. The separate
 [full production mutation run](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570749)
-passed on the same head. CI logs are retained in [`ci/`](ci/).
+passed on the same head. Both runs checked out PR merge commit `76a45d2`
+(`1cad955` merged into base `8620f71`). CI logs are retained in [`ci/`](ci/).
+The documentation-only head `98ffe1b` reran every check successfully
+([CI](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42371057237),
+[mutation](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42371057282)).
 
 Current-source local debug/release, Python and explicit collector runs also
 passed; see [`validation.json`](validation.json), `debug.log`, `release.log`,

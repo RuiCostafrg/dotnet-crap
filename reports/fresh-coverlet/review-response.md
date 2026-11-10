@@ -28,7 +28,7 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 
 - Follow-up Cubic findings 4501329615/18/19/21/22/26: kept the expanded live-validation checklist pending until combined validation lands; restored the independently enumerated source-module list in the audit; clarified class-level zero-hit and optional-line documentation; identified the standalone NUnit observation as unarchived; and reject child statuses first observed at or after the deadline. CodeRabbit 4501331329 and Cubic 4501329613 refer to the stale MSTest README already corrected in `4fdff9e`.
 
-- Cubic 4501335130 (review-test provenance): explicitly separated the historical independent review note from current parent validation, captured the current focused command/log/revision, and captured a source-qualified parent validation record. Existing `tested-files.json` data is historical until final validation finishes; regenerate it from the final production/test/Cargo inputs, then verify any later evidence-only commit preserves those bytes.
+- Cubic 4501335130 (review-test provenance): explicitly separated the historical independent review note from current parent validation, captured the current focused command/log/revision, and captured a source-qualified parent validation record. `tested-files.json` was regenerated from the final `1cad955` production/test/Cargo inputs; later evidence-only commits preserve those bytes.
 
 - Parent mapping audit: preserved literal source-prefix edge whitespace. A regression creates two real selected directories so trimming would demonstrably transfer evidence to the wrong source. This completes the same exact-path contract as the comment/CDATA fix.
 
@@ -38,6 +38,8 @@ This is an integration record, not a substitute for rerunning final-tree gates.
 
 - Live signature validation caught an incorrect parent expectation: Beta tests `value == 0`, so NUnit's additional Full(1) call increments its fallback return. Corrected NUnit hits to 3/3/1/2/3 (MSTest remains 3/3/2/1/3); both coverage ratios and CRAP scores remain unchanged.
 
-- CodeRabbit outside-diff review 5811728529 (superseded inventory wording): final evidence must replace intermediate current-run language with the completed source-qualified inventory and outcomes. Superseded/partial local runs remain explicitly excluded from final mutation-score claims.
+- CodeRabbit outside-diff review 5811728529 (superseded inventory wording): replaced the intermediate current-run language in `README.md` and `inventory-audit.json` with the completed inventory and outcomes for source revision `1cad955` (262 caught, 24 missed, 0 timeouts, 11 unviable). Superseded/partial local runs remain explicitly excluded from final mutation-score claims.
 
 - Cubic 4501486384 (MSTest current calls): moved the additional Full(1) call and its hit signature into the Test section, and explicitly labeled the retained standalone XML as the earlier three-call observation. The manifest retains the validated-revision hash and separately records this documentation-only amendment; executable inputs are unchanged.
+
+- Cubic follow-up on `bbfe293` (provenance): recorded the tested PR merge commit `76a45d2` and base `8620f71`; separated mutation run 42368570749 from complete CI run 42368570770; named the skipped non-required review services; recorded the current-head rerun (42371057237/42371057282 on `98ffe1b`); relabeled benchmark provenance as the production source revision (src/Cargo unchanged from `40b5c45` through `1cad955`); stated the mutation score denominator; listed `cobertura.rs:341` separately as equivalent on every platform (still counted as missed).

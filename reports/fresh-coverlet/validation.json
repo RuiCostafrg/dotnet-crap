@@ -1,10 +1,12 @@
 {
   "revision": "1cad955cbe5ec29590fb405174c495826de5f39f",
+  "tested_merge_commit": "76a45d29d47de392c069308bb1f64753152096e2",
+  "tested_merge_base": "8620f712871a3acb6d985f26f0a35fbf38d5db71",
   "ci": {
     "run": 42368570770,
     "url": "https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570770",
     "mutation_run": "https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42368570749",
-    "head_checks": "all completed, successful (review services may be skipped)",
+    "head_checks": "All GitHub Actions checks (rust, audit, packaging-smoke, dotnet-e2e on 3 platforms, mutation) completed successfully. CodeRabbit and Sourcery reported 'skipping'; neither is a required merge check.",
     "platforms": [
       "ubuntu-24.04/linux-x64",
       "macos-15/osx-arm64",
@@ -14,7 +16,13 @@
       "DOTNET_CRAP_E2E": "1",
       "DOTNET_CRAP_COVERLET_E2E": "1"
     },
-    "logs": "ci/"
+    "logs": "ci/",
+    "current_head_rerun": {
+      "revision": "98ffe1b859df98c3fa966042cc97c5a2585a726b",
+      "ci_run": 42371057237,
+      "mutation_run": 42371057282,
+      "result": "all GitHub Actions checks successful; executable inputs identical to 1cad955"
+    }
   },
   "local": [
     {
