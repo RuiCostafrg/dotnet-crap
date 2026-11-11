@@ -120,6 +120,8 @@ pub(crate) use source::decode_source;
 pub mod cobertura;
 /// Explicit trusted-process collection, separate from pure scanning.
 pub mod collector;
+/// Safe publication of rendered scan reports.
+pub mod output;
 mod sarif;
 
 /// Validate inputs and scan selected C# sources.

@@ -1,12 +1,15 @@
 //! Execute an explicitly trusted test command and publish fresh native evidence.
-use crate::{scan, ScanOptions};
+use crate::{
+    output::{destination_parent, is_csharp_path},
+    scan, ScanOptions,
+};
 use anyhow::{bail, Context, Result};
 use std::{
     collections::BTreeMap,
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fs,
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, ExitStatus},
     time::{Duration, Instant},
 };
@@ -36,21 +39,7 @@ pub struct CollectOptions {
 /// validate all fresh Cobertura reports before atomically creating `output`.
 /// Errors leave no new coverage artifact. This operation never runs during scan.
 pub fn collect(options: &CollectOptions) -> Result<()> {
-    if options.expected_reports == 0 {
-        bail!("expected report count must be positive");
-    }
-    if options.timeout.is_zero() {
-        bail!("test timeout must be positive");
-    }
-    if options.command.len() < 2
-        || options.command[1..]
-            .iter()
-            .filter(|a| *a == "{results}")
-            .count()
-            != 1
-    {
-        bail!("test command requires exactly one standalone {{results}} argument");
-    }
+    validate_options(options)?;
     validate_destination(&options.output)?;
     let selection = ScanOptions {
         root: options.root.clone(),
@@ -87,60 +76,17 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     let results = results_builder.tempdir()?;
     let mut command = Command::new(&options.command[0]);
     command
-        .args(options.command[1..].iter().map(|arg| {
-            if arg == "{results}" {
-                results.path().as_os_str()
-            } else {
-                arg.as_os_str()
-            }
-        }))
+        .args(results_args(&options.command, results.path()))
         .current_dir(snapshot.root());
     let status = run_command(&mut command, options.timeout)?;
     if !status.success() {
         bail!("trusted test command failed: {status}");
     }
     snapshot.verify_sources()?;
-    let mut reports = Vec::new();
-    for entry in WalkDir::new(results.path()).follow_links(false) {
-        let entry = entry?;
-        if entry.file_type().is_symlink() {
-            bail!("collector results cannot contain symbolic links");
-        }
-        if entry.file_name() == "coverage.cobertura.xml" && entry.file_type().is_file() {
-            reports.push(entry.into_path());
-        }
-    }
-    reports.sort();
-    if reports.len() != options.expected_reports {
-        bail!(
-            "expected {} fresh coverage.cobertura.xml reports, found {}",
-            options.expected_reports,
-            reports.len()
-        );
-    }
+    let reports = find_reports(results.path(), options.expected_reports)?;
     let lines = crate::cobertura::parse_reports(snapshot.root(), &sources, &reports)?;
-    let files = lines
-        .into_iter()
-        .map(|(name, points)| {
-            let sha256 = hashes[&name].clone();
-            (
-                name,
-                crate::CoverageFile {
-                    sha256,
-                    lines: points
-                        .into_iter()
-                        .map(|(line, hits)| (line.to_string(), hits))
-                        .collect(),
-                },
-            )
-        })
-        .collect();
-    let evidence = crate::Coverage { version: 1, files };
-    let parent = options
-        .output
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or(std::path::Path::new("."));
+    let evidence = build_evidence(lines, &hashes);
+    let parent = destination_parent(&options.output);
     let mut stage = tempfile::NamedTempFile::new_in(parent)?;
     serde_json::to_writer_pretty(&mut stage, &evidence)?;
     stage.write_all(b"\n")?;
@@ -157,18 +103,93 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     Ok(())
 }
 
+/// Enforce collection policy before any filesystem or process work.
+fn validate_options(options: &CollectOptions) -> Result<()> {
+    if options.expected_reports == 0 {
+        bail!("expected report count must be positive");
+    }
+    if options.timeout.is_zero() {
+        bail!("test timeout must be positive");
+    }
+    if options.command.len() < 2
+        || options.command[1..]
+            .iter()
+            .filter(|a| *a == "{results}")
+            .count()
+            != 1
+    {
+        bail!("test command requires exactly one standalone {{results}} argument");
+    }
+    Ok(())
+}
+
+/// Substitute the single standalone `{results}` argument in the trusted command.
+fn results_args<'a>(command: &'a [OsString], results: &'a Path) -> Vec<&'a OsStr> {
+    command[1..]
+        .iter()
+        .map(|arg| {
+            if arg == "{results}" {
+                results.as_os_str()
+            } else {
+                arg.as_os_str()
+            }
+        })
+        .collect()
+}
+
+/// Find and sort fresh Cobertura reports, rejecting links and count mismatches.
+fn find_reports(results: &Path, expected: usize) -> Result<Vec<PathBuf>> {
+    let mut reports = Vec::new();
+    for entry in WalkDir::new(results).follow_links(false) {
+        let entry = entry?;
+        if entry.file_type().is_symlink() {
+            bail!("collector results cannot contain symbolic links");
+        }
+        if entry.file_name() == "coverage.cobertura.xml" && entry.file_type().is_file() {
+            reports.push(entry.into_path());
+        }
+    }
+    reports.sort();
+    if reports.len() != expected {
+        bail!(
+            "expected {} fresh coverage.cobertura.xml reports, found {}",
+            expected,
+            reports.len()
+        );
+    }
+    Ok(reports)
+}
+
+/// Convert parsed line evidence and source hashes into native coverage.
+fn build_evidence(
+    lines: crate::cobertura::LineEvidence,
+    hashes: &BTreeMap<String, String>,
+) -> crate::Coverage {
+    let files = lines
+        .into_iter()
+        .map(|(name, points)| {
+            let sha256 = hashes[&name].clone();
+            (
+                name,
+                crate::CoverageFile {
+                    sha256,
+                    lines: points
+                        .into_iter()
+                        .map(|(line, hits)| (line.to_string(), hits))
+                        .collect(),
+                },
+            )
+        })
+        .collect();
+    crate::Coverage { version: 1, files }
+}
+
 /// Refuse existing destinations (including hardlinks/symlinks) and C# names.
 fn validate_destination(path: &std::path::Path) -> Result<()> {
-    if path
-        .extension()
-        .is_some_and(|e| e.eq_ignore_ascii_case("cs"))
-    {
+    if is_csharp_path(path) {
         bail!("coverage output cannot overwrite C# source");
     }
-    let parent = path
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or(std::path::Path::new("."));
+    let parent = destination_parent(path);
     if !parent.is_dir() {
         bail!("coverage destination parent must be an existing directory");
     }
@@ -236,5 +257,144 @@ mod deadline_tests {
             assert!(error.to_string().contains("timed out"));
         }
     }
+    fn options() -> CollectOptions {
+        CollectOptions {
+            root: PathBuf::from("."),
+            paths: Vec::new(),
+            output: PathBuf::from("coverage.json"),
+            command: vec![OsString::from("dotnet"), OsString::from("{results}")],
+            expected_reports: 1,
+            timeout: Duration::from_secs(1),
+        }
+    }
+
+    #[test]
+    fn validate_options_rejects_zero_expected_reports() {
+        let mut options = options();
+        options.expected_reports = 0;
+        let error = validate_options(&options).unwrap_err();
+        assert_eq!(error.to_string(), "expected report count must be positive");
+    }
+
+    #[test]
+    fn validate_options_rejects_zero_timeout() {
+        let mut options = options();
+        options.timeout = Duration::ZERO;
+        let error = validate_options(&options).unwrap_err();
+        assert_eq!(error.to_string(), "test timeout must be positive");
+    }
+
+    #[test]
+    fn validate_options_accepts_one_standalone_results_argument() {
+        // Length two also proves the minimum-length check is not too strict.
+        assert!(validate_options(&options()).is_ok());
+    }
+
+    #[test]
+    fn validate_options_rejects_wrong_results_argument_forms() {
+        for command in [
+            vec!["dotnet"],
+            vec!["dotnet", "test"],
+            vec!["dotnet", "{results}", "{results}"],
+            vec!["{results}", "test"],
+        ] {
+            let mut options = options();
+            options.command = command.into_iter().map(OsString::from).collect();
+            let error = validate_options(&options).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "test command requires exactly one standalone {results} argument"
+            );
+        }
+    }
+
+    #[test]
+    fn results_args_replaces_only_standalone_exact_tokens() {
+        let command: Vec<OsString> = [
+            "dotnet",
+            "test",
+            "--x={results}",
+            "{results}",
+            "{results}x",
+            "plain",
+        ]
+        .into_iter()
+        .map(OsString::from)
+        .collect();
+        let results = Path::new("/tmp/dotnet-crap-results");
+        assert_eq!(
+            results_args(&command, results),
+            vec![
+                OsStr::new("test"),
+                OsStr::new("--x={results}"),
+                results.as_os_str(),
+                OsStr::new("{results}x"),
+                OsStr::new("plain"),
+            ]
+        );
+    }
+
+    #[test]
+    fn find_reports_reports_count_mismatch() {
+        let results = tempfile::tempdir().unwrap();
+        let error = find_reports(results.path(), 1).unwrap_err();
+        assert!(error.to_string().contains("found 0"));
+        assert!(error.to_string().contains("expected 1 fresh"));
+    }
+
+    #[test]
+    fn find_reports_accepts_empty_results_when_zero_expected() {
+        let results = tempfile::tempdir().unwrap();
+        assert!(find_reports(results.path(), 0).unwrap().is_empty());
+    }
+
+    #[test]
+    fn find_reports_sorts_and_counts_reports() {
+        let results = tempfile::tempdir().unwrap();
+        let nested = results.path().join("a");
+        std::fs::create_dir(&nested).unwrap();
+        std::fs::write(
+            results.path().join("coverage.cobertura.xml"),
+            b"<coverage/>",
+        )
+        .unwrap();
+        std::fs::write(nested.join("coverage.cobertura.xml"), b"<coverage/>").unwrap();
+        let reports = find_reports(results.path(), 2).unwrap();
+        let mut sorted = reports.clone();
+        sorted.sort();
+        assert_eq!(reports, sorted);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn find_reports_rejects_symbolic_links() {
+        let results = tempfile::tempdir().unwrap();
+        let target = results.path().join("coverage.cobertura.xml");
+        std::fs::write(&target, b"<coverage/>").unwrap();
+        std::os::unix::fs::symlink(&target, results.path().join("link.xml")).unwrap();
+        let error = find_reports(results.path(), 1).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "collector results cannot contain symbolic links"
+        );
+    }
+
+    #[test]
+    fn build_evidence_stringifies_lines_and_copies_hashes() {
+        let mut lines = crate::cobertura::LineEvidence::new();
+        let mut points = BTreeMap::new();
+        points.insert(5u32, 2u64);
+        points.insert(12u32, 0u64);
+        lines.insert("src/a.cs".to_owned(), points);
+        let hashes = BTreeMap::from([("src/a.cs".to_owned(), "abc123".to_owned())]);
+        let evidence = build_evidence(lines, &hashes);
+        assert_eq!(evidence.version, 1);
+        let file = &evidence.files["src/a.cs"];
+        assert_eq!(file.sha256, "abc123");
+        assert_eq!(file.lines.len(), 2);
+        assert_eq!(file.lines.get("5"), Some(&2));
+        assert_eq!(file.lines.get("12"), Some(&0));
+    }
+
     use super::*;
 }
