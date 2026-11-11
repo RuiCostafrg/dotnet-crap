@@ -6,6 +6,7 @@ scores. Each sample records wall time and the child's own peak resident set size
 (via wait4), and the output records the provenance needed to reproduce it.
 """
 import argparse
+import bisect
 import datetime
 import hashlib
 import json
@@ -17,7 +18,6 @@ import statistics
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 from pathlib import Path
 
@@ -84,35 +84,84 @@ def write_output(path, binary, encoded):
             temporary.unlink(missing_ok=True)
 
 
-def max_rss_kib(rusage):
+# Measuring spawner, run as a fresh `python -I -S` interpreter. On Linux, exec
+# folds the spawning address space's RSS high-water mark into the new process's
+# ru_maxrss, so spawning the CLI directly from this harness (which holds the
+# generated corpus in memory) would floor every sample at the harness's RSS. The
+# small spawner lowers that floor; `rss_floor_kib` records it. The spawner puts
+# the CLI in its own process group, kills the whole group on timeout, and reports
+# wall nanoseconds, the CLI's own ru_maxrss, its exit code and a timeout flag.
+SPAWNER = """
+import os, signal, sys, time
+timeout, fd, argv = float(sys.argv[1]), int(sys.argv[2]), sys.argv[3:]
+os.set_inheritable(fd, False)
+started = time.perf_counter_ns()
+pid = os.fork()
+if pid == 0:
+    try:
+        os.setpgid(0, 0)
+        os.execv(argv[0], argv)
+    finally:
+        os._exit(127)
+expired = []
+def expire(signum, frame):
+    expired.append(True)
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except ProcessLookupError:  # the child has not created its group yet
+        os.kill(pid, signal.SIGKILL)
+signal.signal(signal.SIGALRM, expire)
+signal.setitimer(signal.ITIMER_REAL, timeout)
+_, status, usage = os.wait4(pid, 0)
+elapsed = time.perf_counter_ns() - started
+signal.setitimer(signal.ITIMER_REAL, 0)
+code = os.waitstatus_to_exitcode(status)
+os.write(fd, f"{elapsed} {usage.ru_maxrss} {code} {int(bool(expired))}".encode())
+"""
+
+
+def max_rss_kib(maxrss):
     """Normalize ru_maxrss: Linux reports KiB, macOS reports bytes."""
-    return rusage.ru_maxrss // 1024 if sys.platform == "darwin" else rusage.ru_maxrss
+    return maxrss // 1024 if sys.platform == "darwin" else maxrss
 
 
 def run_measured(command, timeout):
-    """Run argv without a shell; return (elapsed ms, child peak RSS KiB, stdout bytes)."""
-    with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
-        started = time.perf_counter()
-        # Audited: --binary intentionally selects a local executable. argv
-        # is passed without a shell; quoting elements would corrupt paths.
-        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, shell=False)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit, python.lang.security.audit.dangerous-subprocess-use-tainted-env-args
-        timer = threading.Timer(timeout, process.kill)
-        timer.start()
-        try:
-            # Blocking wait4 reaps exactly this child and returns its own rusage.
-            _, status, rusage = os.wait4(process.pid, 0)
-        finally:
-            timer.cancel()
-        elapsed = (time.perf_counter() - started) * 1000
-        process.returncode = os.waitstatus_to_exitcode(status)
-        if elapsed >= timeout * 1000:
-            raise subprocess.TimeoutExpired(command, timeout)
-        stdout.seek(0)
-        stderr.seek(0)
-        output, errors = stdout.read(), stderr.read()
-    if process.returncode != 0:
-        raise subprocess.CalledProcessError(process.returncode, command, output, errors)
-    return elapsed, max_rss_kib(rusage), output
+    """Run argv without a shell; return (elapsed ms, CLI peak RSS KiB, stdout bytes).
+
+    argv[0] must be an absolute executable path.
+    """
+    read_end, write_end = os.pipe()
+    try:
+        with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+            # Audited: --binary intentionally selects a local executable. argv
+            # is passed without a shell; quoting elements would corrupt paths.
+            spawner = [sys.executable, "-I", "-S", "-c", SPAWNER, repr(float(timeout)), str(write_end), *command]
+            subprocess.run(spawner, stdout=stdout, stderr=stderr, pass_fds=(write_end,), shell=False,  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit, python.lang.security.audit.dangerous-subprocess-use-tainted-env-args
+                           check=True, timeout=timeout + 60)
+            os.close(write_end)
+            write_end = None
+            with os.fdopen(read_end, "rb") as result:
+                read_end = None
+                fields = result.read().split()
+            stdout.seek(0)
+            stderr.seek(0)
+            output, errors = stdout.read(), stderr.read()
+    finally:
+        for fd in (read_end, write_end):
+            if fd is not None:
+                os.close(fd)
+    elapsed_ns, maxrss, code, expired = (int(field) for field in fields)
+    if expired:
+        raise subprocess.TimeoutExpired(command, timeout)
+    if code != 0:
+        raise subprocess.CalledProcessError(code, command, output, errors)
+    return elapsed_ns / 1e6, max_rss_kib(maxrss), output
+
+
+def rss_floor_kib():
+    """Peak RSS reported for a trivial program through the same spawner."""
+    true = shutil.which("true") or "/usr/bin/true"
+    return statistics.median(run_measured([str(Path(true).resolve())], 30)[1] for _ in range(3))
 
 
 def command_text(argv):
@@ -153,6 +202,7 @@ def provenance(binary_digest, rustc):
         "source_commit": commit,
         "source_dirty": None if status is None else bool(status),
         "binary_sha256": binary_digest,
+        "load_average": list(os.getloadavg()) if hasattr(os, "getloadavg") else None,
     }
 
 
@@ -196,8 +246,10 @@ def parse_args(argv=None):
         parser.error("--max-median-ms must be finite and positive")
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error("--timeout must be finite and positive")
-    if args.mode == "collect" and os.name == "nt":
-        parser.error("collect mode uses a POSIX shell replay command")
+    if args.baseline is not None and args.runs % 2:
+        parser.error("--baseline needs an even --runs so ABBA order is balanced")
+    if os.name == "nt" or not hasattr(os, "wait4"):
+        parser.error("the benchmark harness supports Linux and macOS only")
     return parser, args
 
 
@@ -207,10 +259,12 @@ def span_point_visits(workload):
     This is a deterministic corpus property: the number of per-point visits made
     by a scorer that walks each callable's whole span (before nested exclusion).
     """
+    lines = {name: sorted(int(line) for line in data["lines"])
+             for name, data in workload.native_coverage["files"].items()}
     visits = 0
     for item in workload.expected:
-        lines = workload.native_coverage["files"].get(item["file"], {}).get("lines", {})
-        visits += sum(item["line"] <= int(line) <= item["end_line"] for line in lines)
+        points = lines.get(item["file"], [])
+        visits += bisect.bisect_right(points, item["end_line"]) - bisect.bisect_left(points, item["line"])
     return visits
 
 
@@ -292,9 +346,10 @@ def main(argv=None):
                 rss[label].append(peak)
             return stdout
 
+        floor = rss_floor_kib()
         for run in range(args.warmup + args.runs):
             # Alternate ABBA order so drift and cache effects do not favor one binary.
-            order = labels if run % 2 == 0 else labels[::-1]
+            order = labels if (run - args.warmup) % 2 == 0 else labels[::-1]
             outputs = {label: invoke(label, run) for label in order}
             if baseline and outputs["candidate"] != outputs["baseline"]:
                 raise ValueError("candidate and baseline outputs are not byte-identical")
@@ -313,6 +368,7 @@ def main(argv=None):
         "source_bytes": workload.source_bytes,
         "warmup": args.warmup,
         "runs": args.runs,
+        "rss_floor_kib": floor,
         **summarize(samples["candidate"], rss["candidate"]),
     }
     if baseline:

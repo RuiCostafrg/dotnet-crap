@@ -31,11 +31,12 @@ jobs:
         with:
           toolchain: 1.96.0
       - name: Build head and base with the same toolchain
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || 'origin/main' }}
         run: |
+          # On pull_request HEAD is the merge commit; its first parent is the
+          # base branch tip it was merged onto, so only this PR's changes differ.
+          if [ "${{ github.event_name }}" = pull_request ]; then base=HEAD^1; else base=origin/main; fi
           cargo build --locked --release
-          git worktree add ../base "$BASE_SHA"
+          git worktree add ../base "$base"
           cargo build --locked --release --manifest-path ../base/Cargo.toml --target-dir ../base-target
           git rev-parse HEAD > target/head-commit.txt
           git -C ../base rev-parse HEAD > target/base-commit.txt
@@ -44,7 +45,7 @@ jobs:
           mkdir -p target/benchmarks
           for workload in small-files dense-file many-callables deep-nesting solution; do
             for mode in scan scan-coverage collect; do
-              python3 scripts/benchmark.py --workload "$workload" --mode "$mode" --runs 7 \
+              python3 scripts/benchmark.py --workload "$workload" --mode "$mode" --runs 8 \
                 --baseline ../base-target/release/dotnet-crap \
                 --output "target/benchmarks/$workload-$mode.json" > /dev/null
             done
@@ -69,6 +70,9 @@ jobs:
           sudo apt-get install -y -q linux-tools-common "linux-tools-$(uname -r)"
           sudo sysctl -w kernel.perf_event_paranoid=1
           mkdir -p target/profiles
+          # Separate profiling build: frame pointers and symbols for call graphs.
+          RUSTFLAGS="-C force-frame-pointers=yes" CARGO_PROFILE_RELEASE_DEBUG=line-tables-only \
+            cargo build --locked --release --target-dir target/profile-build
           for workload in dense-file deep-nesting; do
             dir="$(mktemp -d)"
             python3 - "$workload" "$dir" <<'EOF'
@@ -80,7 +84,7 @@ jobs:
           (pathlib.Path(sys.argv[2]) / "coverage.json").write_text(json.dumps(workload.native_coverage))
           EOF
             perf record -F 2999 -g -o "target/profiles/$workload.data" -- \
-              target/release/dotnet-crap --root "$dir/corpus" --coverage "$dir/coverage.json" \
+              target/profile-build/release/dotnet-crap --root "$dir/corpus" --coverage "$dir/coverage.json" \
               --format json --threshold 1000000000000 > /dev/null
             perf report -i "target/profiles/$workload.data" --stdio --no-children --percent-limit 1 \
               > "target/profiles/$workload.txt"

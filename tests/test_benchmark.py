@@ -117,9 +117,8 @@ class BenchmarkTests(unittest.TestCase):
 
     def test_rss_units_are_normalized_to_kibibytes(self):
         """Linux reports ru_maxrss in KiB and macOS in bytes."""
-        usage = SimpleNamespace(ru_maxrss=4096)
         expected = 4 if __import__('sys').platform == "darwin" else 4096
-        self.assertEqual(benchmark.max_rss_kib(usage), expected)
+        self.assertEqual(benchmark.max_rss_kib(4096), expected)
 
     def test_cli_keeps_historical_flags_and_rejects_conflicts(self):
         """--files/--coverage keep their meaning; inconsistent selections are usage errors."""
@@ -160,13 +159,49 @@ class BenchmarkTests(unittest.TestCase):
                 output = Path(tmp) / "m.json"
                 with __import__('contextlib').redirect_stdout(__import__('io').StringIO()):
                     code = benchmark.main(["--binary", binary, "--baseline", binary, "--workload", "solution",
-                                           "--scale", "2", "--mode", mode, "--runs", "3", "--output", str(output)])
+                                           "--scale", "2", "--mode", mode, "--runs", "4", "--output", str(output)])
                 self.assertEqual(code, 0)
                 result = json.loads(output.read_text())
-                self.assertEqual(len(result["samples_ms"]), 3)
-                self.assertEqual(len(result["baseline"]["peak_rss_kib"]), 3)
+                self.assertEqual(len(result["samples_ms"]), 4)
+                self.assertEqual(len(result["baseline"]["peak_rss_kib"]), 4)
+                self.assertGreater(result["rss_floor_kib"], 0)
                 self.assertTrue(result["baseline"]["outputs_byte_identical"])
                 self.assertEqual(result["provenance"]["binary_sha256"], result["baseline"]["binary_sha256"])
+
+    @unittest.skipIf(__import__('os').name == 'nt', 'Unix process fixture')
+    def test_rss_is_not_floored_by_the_harness_footprint(self):
+        """A large harness heap must not leak into the measured program's ru_maxrss."""
+        ballast = bytearray(256 * 1024 * 1024)
+        for offset in range(0, len(ballast), 4096):
+            ballast[offset] = 1
+        _, rss, _ = benchmark.run_measured([str(Path(__import__('shutil').which("true")).resolve())], 10)
+        self.assertLess(rss, 128 * 1024)
+        self.assertLessEqual(benchmark.rss_floor_kib(), 128 * 1024)
+        del ballast
+
+    @unittest.skipIf(__import__('os').name == 'nt', 'Unix process fixture')
+    def test_timeout_kills_the_whole_process_group(self):
+        """Grandchildren (for example the collector's replay shell) do not outlive a timeout."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pidfile = Path(tmp) / "pid"
+            with self.assertRaises(subprocess.TimeoutExpired):
+                benchmark.run_measured(["/bin/sh", "-c", f'sleep 30 & echo $! > "{pidfile}"; wait'], 0.5)
+            pid = int(pidfile.read_text())
+            for _ in range(100):
+                try:
+                    __import__('os').kill(pid, 0)
+                except ProcessLookupError:
+                    break
+                __import__('time').sleep(0.02)
+            else:
+                self.fail("grandchild survived the timeout")
+
+    def test_baseline_requires_even_runs(self):
+        """Balanced ABBA order needs an even number of measured runs."""
+        with self.assertRaises(SystemExit), __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
+            benchmark.parse_args(["--baseline", "x", "--runs", "7"])
+        _, args = benchmark.parse_args(["--baseline", "x", "--runs", "8"])
+        self.assertEqual(args.runs, 8)
 
 
 if __name__ == "__main__":
