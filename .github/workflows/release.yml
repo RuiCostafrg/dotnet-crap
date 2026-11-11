@@ -71,8 +71,8 @@ jobs:
       version: ${{ needs.build.outputs.version }}
   verify-action:
     needs: build
-    # No SARIF upload happens from a tag ref (the cell is limited to branches),
-    # but the reusable workflow declares the permission it may use.
+    # One cell uploads the CI fixture's SARIF (category dotnet-crap-action-ci)
+    # to exercise upload-sarif; nothing else may write security events.
     permissions:
       contents: read
       security-events: write

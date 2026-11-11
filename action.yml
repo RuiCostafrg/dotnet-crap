@@ -1,13 +1,102 @@
-name: Set up dotnet-crap
-description: Install a pinned native dotnet-crap release with SHA-256 verification
+# Reference this action by full commit SHA with the release as a comment:
+#   uses: RuiCostafrg/dotnet-crap@<full commit SHA> # vX.Y.Z
+name: dotnet-crap
+description: Install a provenance-verified dotnet-crap release and optionally run the C# CRAP gate with SARIF upload.
+author: RuiCostafrg
+branding:
+  icon: check-circle
+  color: orange
 inputs:
   version:
-    description: Exact release version without the v prefix
+    description: >-
+      Published dotnet-crap release to install, such as 0.1.0 (a leading v is
+      accepted; `latest` is not). Required, so CI stays reproducible.
     required: true
+  scan:
+    description: Run dotnet-crap after installing it.
+    default: 'false'
+  args:
+    description: >-
+      dotnet-crap arguments for the scan, one per line. Lines are passed as-is,
+      never evaluated by a shell. Blank lines are ignored.
+    default: ''
+  working-directory:
+    description: Directory to run the scan in.
+    default: '.'
+  sarif:
+    description: >-
+      Write the scan's report as SARIF (requires scan). The scan runs once with
+      --format sarif --output, and a summary of its results is printed.
+    default: 'false'
+  upload-sarif:
+    description: >-
+      Upload the SARIF report to GitHub code scanning. Requires sarif, and
+      security-events write permission in the calling job.
+    default: 'false'
+  sarif-category:
+    description: >-
+      Code scanning category for the uploaded report. Empty uses
+      upload-sarif's default, which is derived from the workflow and job.
+      Set distinct values when one job uploads several scans.
+    default: ''
+  token:
+    description: Token used by gh to download release assets and verify attestations (read access is enough).
+    default: ${{ github.token }}
+outputs:
+  version:
+    description: Installed dotnet-crap version.
+    value: ${{ steps.install.outputs.version }}
+  target:
+    description: Installed release target triple.
+    value: ${{ steps.install.outputs.target }}
+  bin-dir:
+    description: Directory containing dotnet-crap, added to PATH.
+    value: ${{ steps.install.outputs.bin-dir }}
+  executable:
+    description: Full path of the installed dotnet-crap executable.
+    value: ${{ steps.install.outputs.executable }}
+  exit-code:
+    description: Scan exit code (0 pass, 1 gate failure, 2 invalid input) when scan is true.
+    value: ${{ steps.scan.outputs.exit-code }}
+  sarif-file:
+    description: SARIF report path when sarif is true.
+    value: ${{ steps.scan.outputs.sarif-file }}
 runs:
   using: composite
   steps:
-    - shell: bash
+    - name: Install verified dotnet-crap release
+      id: install
+      shell: bash
       env:
-        DOTNET_CRAP_VERSION: ${{ inputs.version }}
-      run: bash "$GITHUB_ACTION_PATH/scripts/install-action.sh"
+        GH_TOKEN: ${{ inputs.token }}
+        DOTNET_CRAP_ACTION_VERSION: ${{ inputs.version }}
+        DOTNET_CRAP_ACTION_SCAN: ${{ inputs.scan }}
+        DOTNET_CRAP_ACTION_SARIF: ${{ inputs.sarif }}
+        DOTNET_CRAP_ACTION_UPLOAD: ${{ inputs.upload-sarif }}
+      run: bash "$GITHUB_ACTION_PATH/action/install.sh"
+    - name: Run dotnet-crap
+      id: scan
+      if: inputs.scan == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DOTNET_CRAP_ACTION_EXECUTABLE: ${{ steps.install.outputs.executable }}
+        DOTNET_CRAP_ACTION_ARGS: ${{ inputs.args }}
+        DOTNET_CRAP_ACTION_SARIF: ${{ inputs.sarif }}
+      run: bash "$GITHUB_ACTION_PATH/action/scan.sh"
+    - name: Upload SARIF to code scanning
+      if: inputs.scan == 'true' && inputs.upload-sarif == 'true' && steps.scan.outputs.sarif-file != ''
+      uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-file }}
+        category: ${{ inputs.sarif-category }}
+    - name: Report the gate result
+      if: inputs.scan == 'true'
+      shell: bash
+      env:
+        STATUS: ${{ steps.scan.outputs.exit-code }}
+      run: |
+        if [[ "$STATUS" != 0 ]]; then
+          echo "::error title=dotnet-crap::CRAP gate exited with $STATUS (1 = gate failure, 2 = invalid input)"
+          exit "$STATUS"
+        fi
