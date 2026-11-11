@@ -1,0 +1,7 @@
+src/collector.rs:45:9: delete field root from struct ScanOptions expression in collect
+src/collector.rs:46:9: delete field paths from struct ScanOptions expression in collect
+src/collector.rs:142:5: replace find_reports -> Result<Vec<PathBuf>> with Ok(vec![])
+src/collector.rs:142:5: replace find_reports -> Result<Vec<PathBuf>> with Ok(vec![Default::default()])
+src/collector.rs:148:58: replace && with || in find_reports
+src/collector.rs:148:30: replace == with != in find_reports
+src/collector.rs:153:22: replace != with == in find_reports

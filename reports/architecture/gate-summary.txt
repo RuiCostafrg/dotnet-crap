@@ -1,0 +1,125 @@
+## PR B gate at 816dee0 (source-identical to 5745f83)
+sha=816dee0e794f322b141d5027e108711045aa2ab2
+rc=0 :: cargo fmt --check
+rc=0 :: cargo clippy --locked --all-targets -- -D warnings
+     Running unittests src/lib.rs (target/debug/deps/dotnet_crap-eadd0bc2e094f8f9)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running unittests src/main.rs (target/debug/deps/dotnet_crap-e759c95345e6bca3)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/cli.rs (target/debug/deps/cli-be1a35777a268810)
+test dotnet_fixture ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+     Running tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34653dfea3378fe6)
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+     Running tests/collector.rs (target/debug/deps/collector-d3bc3b0de6afc8e3)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.97s
+     Running tests/coverlet_live.rs (target/debug/deps/coverlet_live-625f54aebaab6350)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/csharp_callables.rs (target/debug/deps/csharp_callables-931611ae13911cc1)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/error_kinds.rs (target/debug/deps/error_kinds-7bf906ab1c260685)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/library_api.rs (target/debug/deps/library_api-a8eaa7b69fee46fd)
+test result_detects_source_byte_changes ... ok
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.77s
+     Running tests/live_coverage.rs (target/debug/deps/live_coverage-3e4f5cc93abb6488)
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-259f8d8fd6d09dfb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-585db246c3274d89)
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+     Running tests/sarif.rs (target/debug/deps/sarif-e7ff3f07b54fc50b)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+rc=0 :: cargo test --locked
+     Running unittests src/lib.rs (target/release/deps/dotnet_crap-3f5874530f728014)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running unittests src/main.rs (target/release/deps/dotnet_crap-30c1541f309f7eab)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/cli.rs (target/release/deps/cli-7e24697b16270fb0)
+test dotnet_fixture ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+     Running tests/cobertura_parser.rs (target/release/deps/cobertura_parser-c20b2fdde8a84f45)
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/collector.rs (target/release/deps/collector-90c7b283906fd0ac)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s
+     Running tests/coverlet_live.rs (target/release/deps/coverlet_live-3afd6bf0bc05d143)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/csharp_callables.rs (target/release/deps/csharp_callables-530e0e1e026b2a50)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+     Running tests/error_kinds.rs (target/release/deps/error_kinds-1e148532e05b9f7a)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/library_api.rs (target/release/deps/library_api-d3c73baa5b8a6dda)
+test result_detects_source_byte_changes ... ok
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.28s
+     Running tests/live_coverage.rs (target/release/deps/live_coverage-6d34139509c99979)
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/mutation_contracts.rs (target/release/deps/mutation_contracts-f4a51c06cc2ddab9)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s
+     Running tests/real_csharp_accuracy.rs (target/release/deps/real_csharp_accuracy-3cd162fe88b1a68d)
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.42s
+     Running tests/sarif.rs (target/release/deps/sarif-4e0dd3ba8b47f214)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+rc=0 :: cargo test --locked --release
+     Running unittests src/lib.rs (target/debug/deps/dotnet_crap-eadd0bc2e094f8f9)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running unittests src/main.rs (target/debug/deps/dotnet_crap-e759c95345e6bca3)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/cli.rs (target/debug/deps/cli-be1a35777a268810)
+test dotnet_fixture ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.59s
+     Running tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34653dfea3378fe6)
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/collector.rs (target/debug/deps/collector-d3bc3b0de6afc8e3)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s
+     Running tests/coverlet_live.rs (target/debug/deps/coverlet_live-625f54aebaab6350)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 239.90s
+     Running tests/csharp_callables.rs (target/debug/deps/csharp_callables-931611ae13911cc1)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.60s
+     Running tests/error_kinds.rs (target/debug/deps/error_kinds-7bf906ab1c260685)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/library_api.rs (target/debug/deps/library_api-a8eaa7b69fee46fd)
+test result_detects_source_byte_changes ... ok
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.82s
+     Running tests/live_coverage.rs (target/debug/deps/live_coverage-3e4f5cc93abb6488)
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 34.77s
+     Running tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-259f8d8fd6d09dfb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.60s
+     Running tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-585db246c3274d89)
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.22s
+     Running tests/sarif.rs (target/debug/deps/sarif-e7ff3f07b54fc50b)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+rc=0 :: env DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked
+Ran 15 tests in 1.040s
+OK
+rc=0 :: python3 -m unittest discover -s tests -p test_*.py
+rc=0 :: cargo doc --no-deps --locked
+
+## PR A live suites at dd01ca3
+     Running tests/cli.rs (target/debug/deps/cli-be1a35777a268810)
+test dotnet_fixture ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.72s
+     Running tests/coverlet_live.rs (target/debug/deps/coverlet_live-625f54aebaab6350)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 326.92s
+     Running tests/live_coverage.rs (target/debug/deps/live_coverage-3e4f5cc93abb6488)
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.49s
+     Running tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-585db246c3274d89)
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 37.05s
+rc=0
+

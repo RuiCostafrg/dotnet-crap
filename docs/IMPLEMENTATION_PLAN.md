@@ -87,9 +87,14 @@ unmarked items remain proposed.
    excluded from the denominator) without exclusions. See the
    [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
-   rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
+   rejects unsupported remaps/UNC paths. VSTest originally used pinned Coverlet 6.0.4 (now 10.1.0); MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
    with their own fixtures.
+6a. **Architecture boundaries — merged in PRs #17/#18:** behavior-preserving module split
+   of `lib.rs`, a library-owned safe report writer, pure collector planning and
+   typed `dotnet_crap::Error`. Ranked rationale and exclusions are in
+   [PLAN.md step 2a](../PLAN.md). JSON/SARIF/text output, scores, error text and
+   exit codes are unchanged; the traversal hot path ([PLAN.md step 8](../PLAN.md)) is moved verbatim.
 7. **Selection policy:** strict versioned config and include/exclude/ignore behavior,
    followed by Git merge-base selection and then GitHub PR resolution. Explicit CLI
    booleans override config. Test dirty trees, shallow history, renames, deletions,

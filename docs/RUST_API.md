@@ -9,17 +9,17 @@ or a git revision. No semantic-versioning guarantee is made for this surface yet
 The documented surface is:
 
 ```rust
-dotnet_crap::{ScanOptions, scan, ReportFormat}
+dotnet_crap::{ScanOptions, scan, ReportFormat, Error, ErrorKind, Result}
 ```
 
-plus the `ScanResult`, `Report`, and `Item` types described below.
+plus the `ScanResult`, `Report`, and `Item` types and `output::write_report`
+described below.
 
 ## Consuming the package
 
 ```toml
 [dependencies]
 dotnet-crap = { path = "../dotnet-crap" }
-anyhow = "1"
 # Or pin a reviewed revision:
 # dotnet-crap = { git = "https://github.com/RuiCostafrg/dotnet-crap", rev = "<full commit SHA>" }
 ```
@@ -33,7 +33,7 @@ CLI, or a prebuilt native executable, when Rust is not available.
 ```rust
 use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
 
-fn run() -> anyhow::Result<()> {
+fn run() -> dotnet_crap::Result<()> {
     let result = scan(&ScanOptions {
         root: "src".into(),
         threshold: 10.0,
@@ -76,7 +76,7 @@ fn main() {
 
 `scan` distinguishes input errors from successful scans and their policy decisions:
 
-- **`Err(anyhow::Error)`**: the scan could not produce a trustworthy result. This
+- **`Err(dotnet_crap::Error)`**: the scan could not produce a trustworthy result. This
   covers an invalid threshold, a missing or non-directory root, a path outside
   `root`, an unreadable file, non-UTF-8 or malformed UTF-16 source, a C# syntax
   error in any selected file, invalid or stale coverage, a coverage line outside
@@ -90,6 +90,39 @@ fn main() {
 
 The library does not map outcomes to process exit codes. The bundled example
 exits 2 on errors but leaves policy failures as successful process exits (see below).
+
+### Errors
+
+Every fallible operation (`scan`, `ScanResult::verify_sources`,
+`ScanResult::render`, `output::write_report`, `collector::collect` and
+`cobertura::parse_reports`) returns `dotnet_crap::Result<T>`, an alias for
+`Result<T, dotnet_crap::Error>`. `Error` implements `std::error::Error`, `Send`,
+`Sync`, `Debug` and `Display`, so `?` converts it into `anyhow::Error` or
+`Box<dyn Error>`.
+
+Match on `error.kind()`, never on message text. `error.get_ref()` exposes the
+wrapped underlying error, such as a `std::io::Error`, for downcasting. `ErrorKind` is
+`#[non_exhaustive]`:
+
+| Kind | Cause |
+| --- | --- |
+| `InvalidInput` | Invalid threshold, root, input path or collection options. |
+| `Io` | Reading or walking the source tree, a coverage file, a Cobertura report or the results directory failed. |
+| `Source` | A source is not valid UTF-8/UTF-16, its path cannot be a native coverage key, or the C# parser could not be initialized. |
+| `Syntax` | A selected file is not valid C#. |
+| `SourceChanged` | Selected source bytes changed after the scan read them. |
+| `Coverage` | Native coverage JSON is invalid, unsupported, stale or outside its file. |
+| `Cobertura` | A Cobertura report was rejected by the strict importer. |
+| `ResourceLimit` | A syntax-tree or callable traversal budget, or complexity, overflowed. |
+| `Collection` | The trusted test command could not start, failed, timed out or produced the wrong reports. |
+| `Output` | A report or coverage destination was rejected or could not be written. |
+| `Render` | A report could not be serialized, such as SARIF for a non-UTF-8 root. |
+
+`Display` writes the outermost message. The alternate form `{:#}` appends each
+underlying cause after `": "`, exactly like `anyhow`'s `{:#}`, so CLI diagnostics
+are unchanged. Message wording is diagnostic and may change; the kind is the
+contract. Errors from operations that wrap others (for example
+`collector::collect` running `scan`) keep the inner operation's kind.
 
 ### `Report` and `Item`
 
@@ -124,8 +157,8 @@ These fields are public and match the current JSON output.
 - `input_paths() -> &[PathBuf]`: the selected source files, then the coverage
   path exactly as supplied, if any. Source entries are absolute paths produced
   by the walk; do not rely on their exact form beyond "selected inputs".
-- `verify_sources() -> anyhow::Result<()>`: see below.
-- `render(ReportFormat) -> anyhow::Result<String>`: see below.
+- `verify_sources() -> dotnet_crap::Result<()>`: see below.
+- `render(ReportFormat) -> dotnet_crap::Result<String>`: see below.
 
 ## Rendering
 
@@ -167,18 +200,23 @@ not a guarantee against a later edit.
 
 ## Writing report files
 
-The library does not write report files. Output protection belongs to the CLI
-adapter, which:
+`render` is not a file writer. Use `output::write_report(&result, &rendered, path)`,
+the same function the CLI uses for `--output`. It:
 
 - refuses to write output over a `.cs` file;
 - refuses a symbolic link as output;
 - refuses output that is the same file as a selected source, the coverage input,
   or any `.cs` file under the root;
 - stages the report in a temporary file in the destination directory, verifies
-  sources again, and then persists it.
+  sources again, and then persists it over `path`.
 
-If Rust code needs to write reports, call the CLI, or reproduce each of these
-checks. Do not treat `render` as a safe file writer.
+Call `verify_sources` after rendering and before `write_report`, as the CLI does;
+`write_report` verifies again after staging. Exit codes remain the caller's choice.
+
+The alias check compares `path` with `input_paths()`, which holds the coverage
+path exactly as supplied. If the coverage path is relative, call `write_report`
+from the same working directory as `scan`, or pass an absolute coverage path.
+Otherwise a relative coverage input cannot be recognized as an alias.
 
 ## Coverage input
 

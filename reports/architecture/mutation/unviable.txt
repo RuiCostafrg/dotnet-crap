@@ -1,0 +1,22 @@
+src/lib.rs:76:9: replace ScanResult::report -> &Report with Box::leak(Box::new(Default::default()))
+src/lib.rs:80:9: replace ScanResult::root -> &Path with Box::leak(Box::new(Default::default()))
+src/lib.rs:139:5: replace scan -> Result<ScanResult> with Ok(Default::default())
+src/evidence.rs:33:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::from_iter([(String::new(), Default::default())]))
+src/evidence.rs:33:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::from_iter([("xyzzy".into(), Default::default())]))
+src/evidence.rs:58:5: replace read -> Result<Coverage> with Ok(Default::default())
+src/cobertura.rs:80:27: replace > with < in import_report
+src/cobertura.rs:114:5: replace parse_document -> Result<Document<'_>> with Ok(Default::default())
+src/cobertura.rs:138:5: replace parse_with_node_limit -> Result<Document<'_>> with Ok(Default::default())
+src/cobertura.rs:218:32: replace > with < in import_class
+src/cobertura.rs:459:5: replace child_elements -> Vec<Node<'a, 'input>> with vec![Default::default()]
+src/cobertura.rs:466:5: replace only_child -> Result<Node<'a, 'input>> with Ok(Default::default())
+src/collector.rs:132:5: replace results_args -> Vec<&'a OsStr> with vec![Box::leak(Box::new(Default::default()))]
+src/collector.rs:176:5: replace build_evidence -> crate::Coverage with Default::default()
+src/error.rs:75:9: replace Error::kind -> ErrorKind with Default::default()
+src/error.rs:110:9: replace <impl StdError for Error>::source -> Option<&(dyn StdError +'static)> with Some(Box::leak(Box::new(Default::default())))
+src/error.rs:140:9: replace <impl ResultExt<T> for std::result::Result<T, E>>::context -> Result<T> with Ok(Default::default())
+src/error.rs:143:9: replace <impl ResultExt<T> for std::result::Result<T, E>>::with_context -> Result<T> with Ok(Default::default())
+src/error.rs:152:9: replace <impl ResultExt<T> for std::result::Result<T, E>>::kind -> Result<T> with Ok(Default::default())
+src/error.rs:167:9: replace <impl OptionExt<T> for Option<T>>::context -> Result<T> with Ok(Default::default())
+src/error.rs:174:9: replace <impl From<std::io::Error> for Error>::from -> Self with Default::default()
+src/output.rs:49:5: replace destination_parent -> &Path with Box::leak(Box::new(Default::default()))
