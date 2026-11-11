@@ -1,0 +1,10 @@
+# In-process phase timings (throwaway example calling the public scan API; tree-sitter parse and one bare named-node walk timed separately). Head source 01d756c, release profile, rustc 1.96.0, shared noisy runner.
+bytes=1112000 nodes=355001 parse=1.017052292s walk=79.975573ms scan_total=1.590490104s render_json=11.356146ms out=1831730
+bytes=1112000 nodes=355001 parse=858.9725ms walk=68.465417ms scan_total=1.433705416s render_json=29.949583ms out=1831730
+bytes=1112000 nodes=355001 parse=844.896041ms walk=70.009583ms scan_total=2.177876093s render_json=33.87375ms out=1831730
+bytes=158863 nodes=38018 parse=122.965678ms walk=9.996771ms scan_total=379.589374ms render_json=4.427136ms out=707276
+bytes=158863 nodes=38018 parse=110.261927ms walk=17.071407ms scan_total=143.856198ms render_json=5.606511ms out=707276
+bytes=158863 nodes=38018 parse=96.939427ms walk=11.551146ms scan_total=149.618177ms render_json=6.713385ms out=707276
+bytes=372890 nodes=104001 parse=241.604375ms walk=26.481198ms scan_total=447.772604ms render_json=8.474531ms out=1840024
+bytes=372890 nodes=104001 parse=221.450052ms walk=21.871094ms scan_total=374.130312ms render_json=11.504635ms out=1840024
+bytes=372890 nodes=104001 parse=248.536458ms walk=26.496979ms scan_total=382.388333ms render_json=11.125677ms out=1840024

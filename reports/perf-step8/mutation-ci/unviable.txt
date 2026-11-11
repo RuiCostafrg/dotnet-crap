@@ -1,0 +1,11 @@
+src/lib.rs:77:9: replace ScanResult::report -> &Report with Box::leak(Box::new(Default::default()))
+src/lib.rs:81:9: replace ScanResult::root -> &Path with Box::leak(Box::new(Default::default()))
+src/lib.rs:156:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::from_iter([(String::new(), Default::default())]))
+src/lib.rs:156:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::from_iter([("xyzzy".into(), Default::default())]))
+src/lib.rs:563:5: replace scan -> Result<ScanResult> with Ok(Default::default())
+src/cobertura.rs:80:27: replace > with < in import_report
+src/cobertura.rs:122:5: replace parse_document -> Result<Document<'_>> with Ok(Default::default())
+src/cobertura.rs:137:5: replace parse_with_node_limit -> Result<Document<'_>> with Ok(Default::default())
+src/cobertura.rs:227:32: replace > with < in import_class
+src/cobertura.rs:435:5: replace child_elements -> Vec<Node<'a, 'input>> with vec![Default::default()]
+src/cobertura.rs:442:5: replace only_child -> Result<Node<'a, 'input>> with Ok(Default::default())

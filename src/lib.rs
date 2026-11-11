@@ -202,10 +202,11 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
             }
         }
         let points = cov.map(|c| {
-            c.lines
-                .iter()
-                .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits))
-                .collect()
+            analysis::CoverageIndex::new(
+                c.lines
+                    .iter()
+                    .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits)),
+            )
         });
         analysis::collect(
             tree.root_node(),
