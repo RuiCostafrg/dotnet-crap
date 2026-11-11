@@ -178,20 +178,27 @@ cases consistently and generated artifacts validate against their contracts.
 ### 8. Performance and remaining mutation survivors
 
 Start profiling after step 1; repeat on each relevant production change.
+Progress: [step 8 performance evidence](reports/perf-step8/README.md) (PR pending).
 
-- [ ] Add dense single-file coverage, many-callable, deep-nesting and larger
-  solution workloads alongside the existing many-small-files benchmark.
-- [ ] Profile aggregate coverage-point visits across deeply nested callables.
-  The current traversal budgets bound syntax nodes, not repeated coverage work;
-  evaluate prefix counts or excluded-range skipping after measuring dense workloads.
-- [ ] Record runtime and peak memory with compiler, binary digest, source commit,
+- [x] Add dense single-file coverage, many-callable, deep-nesting and larger
+  solution workloads alongside the existing many-small-files benchmark. The
+  harness also replays Coverlet-shaped Cobertura through `collect`.
+- [x] Profile aggregate coverage-point visits across deeply nested callables.
+  The old scorer's work is recorded deterministically as `span_point_visits`.
+  Prefix counts over sorted points replaced per-point span walks, and per-class
+  Cobertura resolution and line counting were memoized. Both changes keep outputs
+  byte-identical. Sampling profilers were unavailable on the local runner; the
+  Benchmark workflow records a Linux `perf` profile.
+- [x] Record runtime and peak memory with compiler, binary digest, source commit,
   corpus and individual samples. Keep correctness assertions in the harness.
 - [ ] Continue survivor investigation at named source revisions: the initial 3
   cases and the 24 reviewed collector-tree survivors are qualified in their
   evidence. Strengthen independent assertions where behavior matters; do not
   declare uncovered boundaries or platform-specific cases globally equivalent.
 - [ ] Introduce performance budgets only after controlled, repeated measurements.
-  Optimize measured bottlenecks without changing scoring semantics.
+  Optimize measured bottlenecks without changing scoring semantics. No budgets
+  yet: the local evidence comes from a shared PRoot runner, and CI timings are
+  same-job observations.
 
 **Done when:** comparisons use the same runner/toolchain/corpus, and every
 performance claim has reproducible measurements. Do not infer portable limits

@@ -107,6 +107,17 @@ unmarked items remain proposed.
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
 
+12. **Performance (PLAN step 8) — in progress, PR pending:** benchmark
+    workloads for dense files, many callables, deep nesting, multi-project
+    solutions and Coverlet-shaped Cobertura replay. Every sample records wall
+    time and CLI peak RSS with full provenance, and `--baseline` runs two binaries
+    in alternating order with byte-identity checks. Prefix-count coverage
+    scoring and memoized Cobertura resolution are proven byte-identical on all
+    fixtures and workloads. Same-runner speedups are claimed only where samples
+    separate: dense-file and many-callables collect, and deep nesting with
+    coverage at 12000 lambdas. See the [evidence](../reports/perf-step8/README.md).
+    Budgets remain deferred.
+
 ## Evidence required before integration
 
 Run formatting, clippy with warnings denied, locked debug/release tests and
@@ -117,7 +128,9 @@ metrics. A test returning early without `DOTNET_CRAP_E2E` or the Coverlet-specif
 `DOTNET_CRAP_COVERLET_E2E=1` is not live .NET/collector evidence.
 
 Record performance with `python3 scripts/benchmark.py --output target/bench.json`
-and repeat with `--coverage`. Compare the same compiler/profile/corpus/runner;
+and repeat with `--coverage`. Select other workloads and modes with `--workload`
+and `--mode`, and compare two binaries with `--baseline` (see
+[BENCHMARKS.md](BENCHMARKS.md)). Compare the same compiler/profile/corpus/runner;
 shared-runner results are observational and do not establish a portable latency SLA.
 The harness checks that the complete expected corpus was scanned and exits nonzero
 for subprocess failures, invalid output, or an explicitly exceeded median budget.
