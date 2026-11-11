@@ -1,0 +1,17 @@
+{
+  "revision": "18a78933be82a9ca1c1de14bc0c743038b29cda8",
+  "production_source_note": "src/ at 18a7893 equals src/ at the current branch head; later commits change only reports/docs",
+  "command": "python3 scripts/mutation-gate.py",
+  "runner": "GitHub Actions ubuntu-latest, cargo-mutants 27.1.0",
+  "workflow_run": 42991034520,
+  "workflow_url": "https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42991034520",
+  "inventory_sha256": "f9af49dc9739abe002967783edadd218195b7080a6c25475a8c0efaafeed903d",
+  "total": 312,
+  "caught": 277,
+  "missed": 24,
+  "timeout": 0,
+  "unviable": 11,
+  "score": "277/301 = 92.03% of viable mutants (unviable excluded, timeouts would count against)",
+  "exclusions": "none",
+  "survivors": "Identical set (modulo line numbers) to the 24 reviewed in reports/fresh-coverlet/survivor-review.md; none is in code changed by this PR. Versus the fresh-coverlet inventory, 36 mutants are new (CoverageIndex::count, merge_ranges, span_counts, span_coverage) and all 36 are caught; 21 mutants of the replaced inline loop in collect no longer exist. The Cobertura memoization adds no mutants (no mutable operators or return values)."
+}

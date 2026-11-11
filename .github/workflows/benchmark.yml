@@ -1,0 +1,103 @@
+name: Benchmark
+# Observational, same-runner comparisons only. Each job builds the base and the
+# head on one runner with one toolchain and measures them in alternating order on
+# identical generated corpora; the harness rejects non-identical outputs. Never
+# compare numbers across jobs, runners or toolchains. No timing gates.
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'scripts/benchmark.py'
+      - 'scripts/bench_workloads.py'
+      - '.github/workflows/benchmark.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: 1.96.0
+      - name: Build head and base with the same toolchain
+        run: |
+          # On pull_request HEAD is the merge commit; its first parent is the
+          # base branch tip it was merged onto, so only this PR's changes differ.
+          if [ "${{ github.event_name }}" = pull_request ]; then base=HEAD^1; else base=origin/main; fi
+          cargo build --locked --release
+          git worktree add ../base "$base"
+          cargo build --locked --release --manifest-path ../base/Cargo.toml --target-dir ../base-target
+          git rev-parse HEAD > target/head-commit.txt
+          git -C ../base rev-parse HEAD > target/base-commit.txt
+      - name: Measure every workload and mode
+        run: |
+          mkdir -p target/benchmarks
+          for workload in small-files dense-file many-callables deep-nesting solution; do
+            for mode in scan scan-coverage collect; do
+              python3 scripts/benchmark.py --workload "$workload" --mode "$mode" --runs 8 \
+                --baseline ../base-target/release/dotnet-crap \
+                --output "target/benchmarks/$workload-$mode.json" > /dev/null
+            done
+          done
+          python3 - <<'EOF'
+          import json, pathlib
+          rows = ["| workload | mode | base median ms | head median ms | base RSS KiB | head RSS KiB |", "|---|---|---|---|---|---|"]
+          for path in sorted(pathlib.Path("target/benchmarks").glob("*.json")):
+              r = json.loads(path.read_text())
+              b = r["baseline"]
+              rows.append(f"| {r['workload']} | {r['mode']} | {b['median_ms']:.1f} | {r['median_ms']:.1f} | {b['median_peak_rss_kib']} | {r['median_peak_rss_kib']} |")
+          text = "\n".join(rows) + "\n"
+          pathlib.Path("target/benchmarks/summary.md").write_text(text)
+          print(text)
+          EOF
+          cat target/benchmarks/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Profile the head binary with perf (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q linux-tools-common "linux-tools-$(uname -r)"
+          sudo sysctl -w kernel.perf_event_paranoid=1
+          mkdir -p target/profiles
+          # Separate profiling build: frame pointers and symbols for call graphs.
+          RUSTFLAGS="-C force-frame-pointers=yes" CARGO_PROFILE_RELEASE_DEBUG=line-tables-only \
+            cargo build --locked --release --target-dir target/profile-build
+          for workload in dense-file deep-nesting; do
+            dir="$(mktemp -d)"
+            python3 - "$workload" "$dir" <<'EOF'
+          import json, pathlib, sys
+          sys.path.insert(0, "scripts")
+          import bench_workloads
+          root = pathlib.Path(sys.argv[2]) / "corpus"
+          workload = bench_workloads.generate(sys.argv[1], root, bench_workloads.DEFAULT_SCALE[sys.argv[1]])
+          (pathlib.Path(sys.argv[2]) / "coverage.json").write_text(json.dumps(workload.native_coverage))
+          EOF
+            perf record -F 2999 -g -o "target/profiles/$workload.data" -- \
+              target/profile-build/release/dotnet-crap --root "$dir/corpus" --coverage "$dir/coverage.json" \
+              --format json --threshold 1000000000000 > /dev/null
+            perf report -i "target/profiles/$workload.data" --stdio --no-children --percent-limit 1 \
+              > "target/profiles/$workload.txt"
+            rm "target/profiles/$workload.data"
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: benchmark-${{ matrix.os }}
+          path: |
+            target/benchmarks
+            target/profiles
+            target/head-commit.txt
+            target/base-commit.txt
+          if-no-files-found: warn

@@ -57,9 +57,10 @@ Apply the local runtime settings your machine needs before running these. For ex
 The tag-triggered workflow checks out the event commit and uploads build and
 package artifacts. It has read-only repository contents permission and does not
 create a GitHub release or publish a NuGet package. Automatic publication is
-unavailable until a future publication workflow is reviewed and host protections
-can be enforced. The current repository plan cannot enforce required reviewers.
-This does not prevent a maintainer who can change workflows from adding one.
+unavailable until a future publication workflow is reviewed. The protected
+`release` environment (owner approval, `v*` tags only) and tag rulesets are already
+enforced; see [docs/SECURITY_PARITY.md](../docs/SECURITY_PARITY.md). Those
+protections do not prevent a maintainer who can change workflows from adding a job.
 
 The standalone publication scripts and their offline tests remain as preparatory
 tooling. The GitHub release helper requires existing assets to match byte for byte

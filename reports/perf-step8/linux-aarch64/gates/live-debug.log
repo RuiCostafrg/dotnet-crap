@@ -1,0 +1,312 @@
+# source 01d756c5a5450b50e68c8fe8bec90605844dfa23, dotnet 10.0.109
+# DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked
+   Compiling dotnet-crap v0.1.0 (/root/.t3/worktrees/dotnet-crap/perf-step8-benchmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.57s
+     Running unittests src/lib.rs (target/debug/deps/dotnet_crap-eadd0bc2e094f8f9)
+
+running 15 tests
+test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+test cobertura::dense_class_regression_tests::resolution_error_on_later_class_with_different_filename_still_surfaces ... ok
+test cobertura::dense_class_regression_tests::out_of_range_line_in_later_class_is_rejected_with_the_same_message ... ok
+test cobertura::dense_class_regression_tests::resolution_memoization_does_not_leak_across_reports ... ok
+test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+test tests::collect_owns_coverage_by_innermost_callable_with_nested_lambdas ... ok
+test tests::coverage_index_handles_empty_points_and_out_of_span_lines ... ok
+test tests::coverage_index_sorts_points_given_in_string_key_order ... ok
+test cobertura::dense_class_regression_tests::many_classes_for_one_file_merge_by_maximum_hits ... ok
+test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+test tests::merge_ranges_merges_touching_overlapping_and_nested_intervals ... ok
+test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+test cobertura::dense_class_regression_tests::cached_line_count_of_one_source_does_not_bound_another ... ok
+test tests::coverage_index_and_clipped_subtraction_match_brute_force ... ok
+test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running unittests src/main.rs (target/debug/deps/dotnet_crap-e759c95345e6bca3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/cli.rs (target/debug/deps/cli-be1a35777a268810)
+
+running 6 tests
+test csharp_constructs_and_nested_ownership ... ok
+test coverage_and_gates ... ok
+test rejects_duplicate_and_invalid_coverage ... ok
+test selection_deduplication_exclusions_and_output_safety ... ok
+test threshold_empty_missing_coverage_and_input_errors ... ok
+fixture passed
+test dotnet_fixture ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 47.38s
+
+     Running tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34653dfea3378fe6)
+
+running 28 tests
+test class_filename_is_required ... ok
+test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+test ambiguous_exact_candidates_are_rejected ... ok
+test empty_report_slice_is_rejected ... ok
+test absolute_paths_outside_the_root_are_rejected ... ok
+test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+test foreign_windows_roots_are_rejected ... ok
+test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+test ordinary_underscore_directory_is_an_exact_local_path ... ok
+test merges_selected_files_from_multiple_assemblies ... ok
+test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+test parent_components_and_source_prefix_escapes_are_rejected ... ok
+test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+test required_coverage_structure_is_enforced ... ok
+test malformed_and_unsafe_xml_is_rejected ... ok
+test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+test source_text_line_bounds_use_original_utf8 ... ok
+test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+test unknown_relative_filename_is_not_suffix_matched ... ok
+test unselected_root_files_are_ignored_without_basename_guessing ... ok
+test zero_hit_only_evidence_is_preserved_as_zero ... ok
+test source_link_and_deterministic_paths_are_rejected ... ok
+test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/collector.rs (target/debug/deps/collector-d3bc3b0de6afc8e3)
+
+running 13 tests
+test deadline_reaps_the_child_and_publishes_nothing ... ok
+test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+test a_trusted_program_can_accept_only_the_results_argument ... ok
+test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+test rejects_linked_reports_and_existing_source_aliases ... ok
+test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+test incomplete_or_extra_project_reports_are_errors ... ok
+test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.59s
+
+     Running tests/coverlet_live.rs (target/debug/deps/coverlet_live-625f54aebaab6350)
+
+running 1 test
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Alpha.Library -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+  Alpha.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 123 ms - Alpha.Tests.dll (net10.0)
+  Beta.Library -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+  Beta.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 413 ms - Beta.Tests.dll (net10.0)
+  NUnit.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 153 ms - NUnit.Tests.dll (net10.0)
+  MSTest.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 112 ms - MSTest.Tests.dll (net10.0)
+
+Attachments:
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-0nLBB0/05faeb34-89c7-4e81-b081-7a5bbcd3ec8a/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-0nLBB0/0dcd3c2f-6cda-4ca9-903a-05b3b7cb9472/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-0nLBB0/7147c700-0c59-4e19-a580-25c150240fcb/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-0nLBB0/21fea531-de9c-49be-aeb4-2a629ceca9e2/coverage.cobertura.xml
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Alpha.Library -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+  Alpha.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.54]     CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [FAIL]
+  Failed CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [159 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 77
+Actual:   1
+  Stack Trace:
+     at CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches() in /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Alpha.Tests/AlphaCoverageTests.cs:line 12
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 159 ms - Alpha.Tests.dll (net10.0)
+  Beta.Library -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+  Beta.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 109 ms - Beta.Tests.dll (net10.0)
+  NUnit.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 145 ms - NUnit.Tests.dll (net10.0)
+  MSTest.Tests -> /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+Test run for /data/data/com.termux/files/usr/tmp/.tmpMj4WSP/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 69 ms - MSTest.Tests.dll (net10.0)
+
+Attachments:
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-GmGxsF/773bbc01-6497-4d9e-9ef7-691511ba2c3e/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-GmGxsF/03de9ea8-4af9-4148-ad59-c8d353f16c40/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-GmGxsF/c897441b-2aed-41c1-bb13-2d9954ac8c67/coverage.cobertura.xml
+  /data/data/com.termux/files/usr/tmp/dotnet-crap-coverlet-GmGxsF/8ec6ed9c-285c-43e1-8e24-0e836256d89a/coverage.cobertura.xml
+global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
+NUnit.Tests.csproj
+Beta.Tests.csproj
+MSTest.Tests.csproj
+Alpha.Tests.csproj
+
+See https://aka.ms/dotnet-test/mtp for more information.
+Get projects properties with MSBuild didn't execute properly with exit code: 1.
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 499.19s
+
+     Running tests/csharp_callables.rs (target/debug/deps/csharp_callables-931611ae13911cc1)
+
+running 11 tests
+test expression_and_block_bodies_score_the_same_logic ... ok
+test operator_conversion_destructor_and_indexer_complexity ... ok
+test nested_callables_are_charged_only_to_their_owner ... ok
+test coverage_is_owned_by_the_innermost_callable ... ok
+test malformed_operator_is_an_input_error_without_report ... ok
+test text_output_names_callables_descriptively ... ok
+test source_spacing_does_not_change_names ... ok
+test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+test existing_forms_keep_their_names_and_complexity ... ok
+test declaration_only_and_auto_forms_are_omitted ... ok
+  Determining projects to restore...
+  Restored /data/data/com.termux/files/usr/tmp/.tmptwbNuw/Fixtures.csproj (in 359 ms).
+  Fixtures -> /data/data/com.termux/files/usr/tmp/.tmptwbNuw/bin/Debug/net10.0/Fixtures.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:23.12
+test declaration_fixtures_are_valid_csharp ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.24s
+
+     Running tests/library_api.rs (target/debug/deps/library_api-a8eaa7b69fee46fd)
+
+running 9 tests
+test library_defaults_match_documented_cli_defaults ... ok
+test serialization_and_captured_policy_keep_the_existing_contract ... ok
+test result_detects_source_byte_changes ... ok
+test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+test cli_preserves_symlink_output_targets ... ok
+test cli_preserves_coverage_and_unselected_source_aliases ... ok
+test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+test library_selection_deduplicates_and_rejects_root_escape ... ok
+test coverage_empty_and_error_policies_match_cli ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.11s
+
+     Running tests/live_coverage.rs (target/debug/deps/live_coverage-3e4f5cc93abb6488)
+
+running 1 test
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 51.64s
+
+     Running tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-259f8d8fd6d09dfb)
+
+running 7 tests
+test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+test nested_source_selection_keeps_normal_directories ... ok
+test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+test malformed_coverage_map_reports_expected_type ... ok
+test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.82s
+
+     Running tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-585db246c3274d89)
+
+running 13 tests
+test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+test invalid_source_diagnostics_escape_filename_controls ... ok
+test invalid_utf8_filenames_fail_instead_of_collapsing_source_identity ... ok
+test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+test branches ... ok
+test source_filenames_unrepresentable_in_native_coverage_fail_explicitly ... ok
+test encoding_paths_and_terminal_controls ... ok
+test nested_ownership ... ok
+test stacked_switch ... ok
+test decoding_errors_identify_the_file_and_escape_its_name ... ok
+test bom_encodings_bind_coverage_to_original_bytes ... ok
+test execute_accuracy_fixtures_with_sdk has been running for over 60 seconds
+test execute_accuracy_fixtures_with_sdk ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 60.40s
+
+     Running tests/sarif.rs (target/debug/deps/sarif-e7ff3f07b54fc50b)
+
+running 10 tests
+test file_uri_structure_is_checked_before_decoding ... ok
+test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+test same_named_overloads_have_distinct_fingerprints ... ok
+test non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri ... ok
+test non_utf8_source_filename_is_rejected_without_lossy_report_identity ... ok
+test staged_output_keeps_failed_reports_and_protects_source ... ok
+test literal_backslashes_in_source_root_remain_literal_uri_bytes ... ok
+test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+test special_source_names_are_encoded_without_coverage_and_rejected_with_it ... ok
+test score_threshold_empty_and_completeness_gates ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+   Doc-tests dotnet_crap
+
+running 1 test
+test src/lib.rs - (line 7) - compile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+

@@ -1,5 +1,9 @@
 # Parity implementation batches
 
+The initial implementation batch is merged. See [PLAN.md](../PLAN.md) for the
+current ordered backlog, acceptance criteria and integration gates. This document
+retains the original batch design and broader milestone context.
+
 All production changes belong to `RuiCostafrg/dotnet-crap`. The sibling
 TypeScript repository is a read-only behavioral reference, inspected at commit
 `4d86589163270ab81cd3b0603a27d558f17bfe04` on 2026-11-04. The detailed
@@ -9,7 +13,7 @@ turns that map into reviewable implementation batches; it does not claim parity.
 ## Architecture and repository boundaries
 
 Keep the Rust application and .NET packaging in this repository. Preserve
-`src/main.rs` as the eventual thin clap/process adapter, extracting cohesive
+`src/main.rs` as the thin clap/process adapter, extracting cohesive
 `analysis`, `coverage`, `selection`, `config`, `baseline`, and `report` modules
 behind `src/lib.rs`. Define scan options and typed reports at the library boundary;
 keep filesystem/process policy outside pure scoring and rendering. Extract modules
@@ -43,28 +47,54 @@ Do not merge feature PRs automatically.
 
 ## Initial batch review stack
 
-The initial batch is implemented as separate, unmerged PRs. The branch stack is
+The initial batch was implemented as separate PRs. The original branch stack was
 [#2 plan/performance](https://github.com/RuiCostafrg/dotnet-crap/pull/2), then
 [#3 mutation gate](https://github.com/RuiCostafrg/dotnet-crap/pull/3), then
 [#4 SARIF](https://github.com/RuiCostafrg/dotnet-crap/pull/4), then
 [#5 C# callables](https://github.com/RuiCostafrg/dotnet-crap/pull/5).
-The final branch includes the complete batch so its CI mutation job evaluates all
-production sources together. Per-feature historical measurements remain evidence
-for their recorded SHAs; they do not substitute for this combined run. No PR is
-merged automatically. Subsequent batches below remain planned, not implemented.
+PRs #2–#9 are now merged into `main` at `c1c78cd`. The final reviewed tree's full
+mutation run caught 171 of 174 viable mutants (98.28%), with 3 missed, no timeouts
+and 2 unviable. Historical measurements remain qualified to their recorded SHAs.
+Tag workflows build artifacts; automatic publication remains disabled. The reusable
+API batch below is now merged in PR #11;
+remaining batches stay planned.
 
 ## Subsequent feature PRs, in dependency order
 
-Each numbered item is a separate proposed PR, not an implemented feature.
+Each numbered item is a separate bounded change. Status is explicit below;
+unmarked items remain proposed.
 
-5. **Reusable API:** extract the existing scanner and typed report into a library;
-   keep JSON/exit contracts unchanged. Public API examples and CLI equivalence
-   checks must pass before downstream additions depend on it.
-6. **Fresh Coverlet coverage:** snapshot source before a trusted test process,
+5. **Reusable API — merged in PR #11:** commit `c80bbd0`
+   extracts the scanner, coverage validation and typed reports behind `src/lib.rs`.
+   The CLI owns destinations, staging and exits. The example and CLI/library
+   equivalence tests preserve JSON order, SARIF identities and gate behavior;
+   review-driven tests were added in `a285bf5`. Debug/release, live SDK, Python,
+   formatting and clippy checks passed. Full mutation evidence for `c80bbd0`:
+   178 caught, 3 missed, 0 timeouts, 5 unviable (98.34%). See the
+   [evidence and survivor review](../reports/reusable-api/README.md).
+   A targeted recheck catches the two library survivors; the remaining output
+   parent-path survivor is qualified to this runner in the report.
+   Merged at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`; historical evidence above
+   remains qualified to its named source revisions.
+6. **Fresh Coverlet coverage — implemented in PR #15:** snapshot source before a trusted test process,
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual
    pinned .NET collector fixtures, failures, multiple assemblies and uncovered code.
-   OpenCover/Microsoft formats follow as separate PRs with their own fixtures.
+   Validated source/test snapshot `1cad955` includes xUnit/MSTest/NUnit fixtures.
+   Full live CI passed on Linux/macOS/Windows with .NET 10/VSTest; complete
+   mutation evidence records 262 caught, 24 missed, 0 timeouts and 11 unviable
+   out of 297, scoring 91.61% (262/286 viable mutants; the 11 unviable are
+   excluded from the denominator) without exclusions. See the
+   [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
+   The [mapping contract](COVERLET.md) retains native v1 line evidence and
+   rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
+   parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
+   with their own fixtures.
+6a. **Architecture boundaries — open PRs #17/#18:** behavior-preserving module split
+   of `lib.rs`, a library-owned safe report writer, pure collector planning and
+   typed `dotnet_crap::Error`. Ranked rationale and exclusions are in
+   [PLAN.md step 2a](../PLAN.md). JSON/SARIF/text output, scores, error text and
+   exit codes are unchanged; the traversal hot path ([PLAN.md step 8](../PLAN.md)) is moved verbatim.
 7. **Selection policy:** strict versioned config and include/exclude/ignore behavior,
    followed by Git merge-base selection and then GitHub PR resolution. Explicit CLI
    booleans override config. Test dirty trees, shallow history, renames, deletions,
@@ -78,20 +108,39 @@ Each numbered item is a separate proposed PR, not an implemented feature.
 10. **Modern syntax and resource bounds:** top-level code, patterns, records,
     primary constructors and a documented preprocessor policy; iterative traversal
     with depth/resource stress tests and measured profiling before optimization.
-11. **Release/adoption:** schemas, dependency/workflow audits, provenance and installed
+11. **Release/adoption:** host protections, CODEOWNERS, Dependabot, actionlint and
+    scheduled cargo/NuGet advisories now match typescript-crap
+    ([parity record](SECURITY_PARITY.md)); remaining: schemas, provenance and installed
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
+
+12. **Performance (PLAN step 8) — in progress in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19):** benchmark
+    workloads for dense files, many callables, deep nesting, multi-project
+    solutions and Coverlet-shaped Cobertura replay. Every sample records wall
+    time and CLI peak RSS with full provenance, and `--baseline` runs two binaries
+    in alternating order with byte-identity checks. Prefix-count coverage
+    scoring and memoized Cobertura resolution are proven byte-identical on all
+    fixtures and workloads. Same-runner speedups are claimed only where samples
+    separate: dense-file and many-callables collect, and deep nesting with
+    coverage at 12000 lambdas. See the [evidence](../reports/perf-step8/README.md).
+    The full mutation gate on `18a7893` caught 277 of 301 viable mutants (92.03%):
+    24 missed, 0 timeouts, 11 unviable, no exclusions. The survivors are the same set
+    already reviewed for PR #15, and all 36 mutants in the new scoring helpers are
+    caught ([audit](../reports/perf-step8/mutation-ci/audit.json)). Budgets remain deferred.
 
 ## Evidence required before integration
 
 Run formatting, clippy with warnings denied, locked debug/release tests and
-`DOTNET_CRAP_E2E=1 cargo test --locked`. Run mutation tests on each final production
+`DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked`. Run mutation tests on each final production
 change and again on the integrated head; a result for the foundation does not
 certify later feature branches. Mutation score and code coverage are different
-metrics. A test returning early without `DOTNET_CRAP_E2E` is not live .NET evidence.
+metrics. A test returning early without `DOTNET_CRAP_E2E` or the Coverlet-specific
+`DOTNET_CRAP_COVERLET_E2E=1` is not live .NET/collector evidence.
 
 Record performance with `python3 scripts/benchmark.py --output target/bench.json`
-and repeat with `--coverage`. Compare the same compiler/profile/corpus/runner;
+and repeat with `--coverage`. Select other workloads and modes with `--workload`
+and `--mode`, and compare two binaries with `--baseline` (see
+[BENCHMARKS.md](BENCHMARKS.md)). Compare the same compiler/profile/corpus/runner;
 shared-runner results are observational and do not establish a portable latency SLA.
 The harness checks that the complete expected corpus was scanned and exits nonzero
 for subprocess failures, invalid output, or an explicitly exceeded median budget.

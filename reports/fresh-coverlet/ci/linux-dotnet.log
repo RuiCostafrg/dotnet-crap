@@ -1,0 +1,907 @@
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	﻿2026-11-07T11:32:03.0429706Z Current runner version: '2.338.2'
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0453917Z ##[group]Runner Image Provisioner
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0454854Z Hosted Compute Agent
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0455476Z Version: 20261028.624
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0456084Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0456787Z Build Date: 2026-10-28T21:51:42Z
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0457478Z Worker ID: {72b34d34-947e-4d95-a92d-8b7f6289684a}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0458453Z Region: eastus2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0459145Z Cloud: Azure
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0459671Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0461046Z ##[group]Operating System
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0461695Z Ubuntu
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0462269Z 24.04.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0462818Z LTS
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0463341Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0463885Z ##[group]Runner Image
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0464460Z Image: ubuntu-24.04
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0464989Z Version: 20261101.360.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0465972Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0467694Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0468898Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0469978Z ##[group]GITHUB_TOKEN Permissions
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0472322Z Contents: read
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0472889Z Metadata: read
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0473430Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0475596Z Secret source: Actions
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0476455Z Cache mode: write
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0477384Z Prepare workflow directory
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0846087Z Prepare all required actions
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.0894787Z Getting action download info
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.2660447Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.3964540Z Download action repository 'dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec' (SHA:b725eda525362e7cf34af9a7243cac1e3f01a7ec)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.5026317Z Download action repository 'actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1' (SHA:26b0ec14cb23fa6904739307f278c14f94c95bf1)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Set up job	2026-11-07T11:32:03.8557758Z Complete job name: dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:32:03.9382195Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9383812Z with:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9384452Z   repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9390605Z   token: ***
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9391262Z   ssh-strict: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9391828Z   ssh-user: git
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9392620Z   persist-credentials: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9393284Z   clean: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9393830Z   sparse-checkout-cone-mode: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9394538Z   fetch-depth: 1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9395086Z   fetch-tags: false
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9395655Z   show-progress: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9396277Z   lfs: false
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9396990Z   submodules: false
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9397628Z   set-safe-directory: true
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:03.9398760Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.1977498Z Syncing repository: RuiCostafrg/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.1980058Z ##[group]Getting Git version info
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.1980976Z Working directory is '/home/runner/work/dotnet-crap/dotnet-crap'
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.1982888Z [command]/usr/bin/git version
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2065696Z git version 2.56.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2084127Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2098818Z Temporarily overriding HOME='/home/runner/work/_temp/1ce6b77d-a311-4ffb-8510-a198e860f5fb' before making global git config changes
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2101260Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2103533Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2152116Z Deleting the contents of '/home/runner/work/dotnet-crap/dotnet-crap'
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2155646Z ##[group]Initializing the repository
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2160582Z [command]/usr/bin/git init /home/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2248964Z hint: Using 'master' as the name for the initial branch. This default branch name
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2251397Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2253349Z hint: to use in all of your new repositories, which will suppress this warning,
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2254912Z hint: call:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2256071Z hint:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2257321Z hint: 	git config --global init.defaultBranch <name>
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2258807Z hint:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2260129Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2261918Z hint: 'development'. The just-created branch can be renamed via this command:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2263451Z hint:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2264529Z hint: 	git branch -m <name>
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2265578Z hint:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2267583Z hint: Disable this message with "git config set advice.defaultBranchName false"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2269694Z Initialized empty Git repository in /home/runner/work/dotnet-crap/dotnet-crap/.git/
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2272951Z [command]/usr/bin/git remote add origin https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2319089Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2320781Z ##[group]Disabling automatic garbage collection
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2323111Z [command]/usr/bin/git config --local gc.auto 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2359166Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2360749Z ##[group]Setting up auth
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2364807Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2396763Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2731638Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2767105Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.2969803Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3010504Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3012049Z ##[group]Fetching the repository
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.3024555Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +76a45d29d47de392c069308bb1f64753152096e2:refs/remotes/pull/15/merge
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5734371Z From https://github.com/RuiCostafrg/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5737301Z  * [new ref]         76a45d29d47de392c069308bb1f64753152096e2 -> pull/15/merge
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5743795Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5746436Z ##[group]Determining the checkout info
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5749681Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5751290Z [command]/usr/bin/git sparse-checkout disable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5802159Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5833597Z ##[group]Checking out the ref
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5837390Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/15/merge
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5947090Z Note: switching to 'refs/remotes/pull/15/merge'.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5948814Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5949685Z You are in 'detached HEAD' state. You can look around, make experimental
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5951976Z changes and commit them, and you can discard any commits you make in this
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5954186Z state without impacting any branches by switching back to a branch.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5955842Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5957095Z If you want to create a new branch to retain commits you create, you may
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5959694Z do so (now or later) by using -c with the switch command. Example:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5960881Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5961552Z   git switch -c <new-branch-name>
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5963194Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5963998Z Or undo this operation with:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5965253Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5965974Z   git switch -
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5966798Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5968058Z Turn off this advice by setting config variable advice.detachedHead to false
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5969875Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5971609Z HEAD is now at 76a45d2 Merge 1cad955cbe5ec29590fb405174c495826de5f39f into 8620f712871a3acb6d985f26f0a35fbf38d5db71
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.5977229Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.6003087Z [command]/usr/bin/git log -1 --format=%H
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:32:04.6026416Z 76a45d29d47de392c069308bb1f64753152096e2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	﻿2026-11-07T11:32:04.6694450Z ##[group]Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6696133Z with:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6697089Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6698306Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6796182Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6893361Z ##[group]Run if [[ -z $toolchain ]]; then
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6894968Z ^[[36;1mif [[ -z $toolchain ]]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6896990Z ^[[36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6899478Z ^[[36;1m  echo "'toolchain' is a required input" >&2^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6900820Z ^[[36;1m  exit 1^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6902236Z ^[[36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6904040Z ^[[36;1m  if [[ Linux == macOS ]]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6906212Z ^[[36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6908637Z ^[[36;1m  else^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6910353Z ^[[36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6912367Z ^[[36;1m  fi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6913709Z ^[[36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6915895Z ^[[36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6917871Z ^[[36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6920433Z ^[[36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6922507Z ^[[36;1melse^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6923495Z ^[[36;1m  delimiter=EOF^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6924855Z ^[[36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6926981Z ^[[36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6929022Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6948452Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6950114Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6951250Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.6952337Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7061952Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=26]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7071134Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7189752Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7191734Z ^[[36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7206163Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7207680Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7269028Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=19]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7276175Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7345049Z ##[group]Run if ! command -v rustup &>/dev/null; then
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7346571Z ^[[36;1mif ! command -v rustup &>/dev/null; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7349618Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7352400Z ^[[36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7353731Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7367001Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7368672Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7369673Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7370823Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7426890Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=14]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7434663Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7451472Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7471184Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7527295Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7530119Z ^[[36;1mset -f  # split targets and components on commas and whitespace, without glob expansion^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7531926Z ^[[36;1mflags=()^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7533179Z ^[[36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7534853Z ^[[36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7536851Z ^[[36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7538751Z ^[[36;1mlog=$(mktemp)^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7539820Z ^[[36;1mtrap 'rm -f "$log"' EXIT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7541026Z ^[[36;1mfor attempt in 1 2 3 4 5; do^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7543186Z ^[[36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7545373Z ^[[36;1m    break^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7546358Z ^[[36;1m  else^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7547307Z ^[[36;1m    status=$?^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7548507Z ^[[36;1m  fi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7549790Z ^[[36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7551908Z ^[[36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7553820Z ^[[36;1m    exit "$status"^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7554920Z ^[[36;1m  fi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7556420Z ^[[36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7558274Z ^[[36;1m  sleep 30^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7559285Z ^[[36;1mdone^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7572286Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7573809Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7574843Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7576029Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7577156Z   targets: 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7578281Z   components: 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7579371Z   RUSTUP_PERMIT_COPY_RENAME: 1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.7580535Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:04.9534692Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0540762Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0614898Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0616640Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0666443Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=319]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0679107Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0734658Z ##[group]Run rustup default "$toolchain" --force-non-host
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0736218Z ^[[36;1mrustup default "$toolchain" --force-non-host^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0752496Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0753870Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0754795Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0756092Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0757024Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0844637Z info: using existing install for stable-x86_64-unknown-linux-gnu
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0857354Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0858988Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0926500Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0928199Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0948717Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=26]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.0957115Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1016456Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1020177Z ^[[36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1022675Z ^[[36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1024683Z ^[[36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1040027Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1041388Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1042307Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1043375Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1044300Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1363604Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=40]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1371406Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1426785Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1428422Z ^[[36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1429794Z ^[[36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1431080Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1445683Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1447037Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1447954Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1449268Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1506392Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=13]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1513393Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1566386Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1567817Z ^[[36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1569668Z ^[[36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1570917Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1584705Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1586076Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1587034Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1588527Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1589562Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1643625Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=12]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1651977Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1709547Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1711598Z ^[[36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1714349Z ^[[36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1717179Z ^[[36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1719982Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1722207Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1724438Z ^[[36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1726819Z ^[[36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1729097Z ^[[36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1730619Z ^[[36;1m  fi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1731616Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1745482Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1746885Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1747880Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1749263Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1750277Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1751310Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.1752245Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2020171Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=36]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2029349Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2083382Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2085935Z ^[[36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2088289Z ^[[36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2090123Z ^[[36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2091362Z ^[[36;1mfi^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2105133Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2106522Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2107429Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2108864Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2109935Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2110924Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2111903Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2275519Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=24]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2285153Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2339967Z ##[group]Run rustc +"$toolchain" --version --verbose
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2341341Z ^[[36;1mrustc +"$toolchain" --version --verbose^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2355401Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2356671Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2357558Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2358905Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2359894Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2360930Z   toolchain: stable
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2361810Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2495647Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2497190Z binary: rustc
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2498729Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2500499Z commit-date: 2026-10-13
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2501846Z host: x86_64-unknown-linux-gnu
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2503206Z release: 1.99.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2504418Z LLVM version: 23.1.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec	2026-11-07T11:32:05.2521903Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=23]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:32:05.2704390Z ##[group]Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2705843Z with:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2706710Z   dotnet-version: 10.0.x
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2707700Z   cache: false
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2708693Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2709595Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2710778Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2711981Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.2712992Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.4069286Z [command]/home/runner/work/_actions/actions/setup-dotnet/26b0ec14cb23fa6904739307f278c14f94c95bf1/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.6979731Z dotnet-install: .NET Core Runtime with version '10.0.14' is already installed.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.7004153Z [command]/home/runner/work/_actions/actions/setup-dotnet/26b0ec14cb23fa6904739307f278c14f94c95bf1/externals/install-dotnet.sh --skip-non-versioned-files --channel 10.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	2026-11-07T11:32:05.9355923Z dotnet-install: .NET Core SDK with version '10.0.403' is already installed.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	﻿2026-11-07T11:32:05.9544373Z ##[group]Run dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9546492Z ^[[36;1mdotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9567261Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9569335Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9570226Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9571263Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9572285Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9573292Z   DOTNET_ROOT: /usr/share/dotnet
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:05.9574338Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.6003367Z PASS runtime identifier is supported on this host
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.6030157Z PASS Windows executable name is unchanged
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.6759858Z PASS missing native binary reports an error and exits 2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:20.7502358Z PASS executable native runs directly with exact argv and exit code
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.0920490Z PASS exit codes are forwarded exactly for direct runs
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.1662117Z PASS non-executable native runs from a private copy and leaves the install untouched
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.2418636Z PASS private copy is removed after a non-zero child exit
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.3740438Z PASS read-only installs need no write access (exec and non-exec files)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4541437Z PASS owner without execute permission falls back to a private copy
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4646513Z PASS private copy preparation failure exits 2 without touching the install
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4695827Z stdout-marker
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4697589Z stderr-marker
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4831137Z PASS in-process API forwards arguments and cleans its private copy
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Launcher process and permission contracts	2026-11-07T11:32:21.4832300Z 11 passed, 0 failed, 0 skipped
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	﻿2026-11-07T11:32:21.5108955Z ##[group]Run bash scripts/test-install-action.sh
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5109429Z ^[[36;1mbash scripts/test-install-action.sh^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5109754Z ^[[36;1mbash scripts/test-release-publish.sh^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5123898Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5124242Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5124466Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5124733Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5124965Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5125201Z   DOTNET_ROOT: /usr/share/dotnet
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5125438Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.5636472Z PASS install-action: bounded HTTPS requests, checksum enforcement, and version validation
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Installer and immutable-publication contracts	2026-11-07T11:32:21.8247488Z PASS publish scripts: retry reuse, surfaced failures, NuGet skip-duplicate, absent-secret skip, trusted-main check
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	﻿2026-11-07T11:32:21.8364049Z ##[group]Run cargo test --locked
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8364546Z ^[[36;1mcargo test --locked^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8384141Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8384768Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8385127Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8385521Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8385864Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8386210Z   DOTNET_ROOT: /usr/share/dotnet
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8386635Z   DOTNET_CRAP_E2E: 1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8387006Z   DOTNET_CRAP_COVERLET_E2E: 1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.8387369Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:21.9472218Z ^[[1m^[[92m    Updating^[[0m crates.io index
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.2659329Z ^[[1m^[[92m Downloading^[[0m crates ...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3315759Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3341515Z ^[[1m^[[92m  Downloaded^[[0m anstream v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3360856Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3399675Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.14
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3400329Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3409394Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3429453Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3449467Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3450502Z ^[[1m^[[92m  Downloaded^[[0m roxmltree v0.20.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3521865Z ^[[1m^[[92m  Downloaded^[[0m shlex v2.0.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3532184Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.104
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3570168Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.14.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3603279Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3619313Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3672448Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3698996Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3715396Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter v0.25.10
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3773228Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3785462Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3794573Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3804652Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3812369Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3819872Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3833791Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3844732Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3856800Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3864823Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3873880Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3886109Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.47
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3907651Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3922664Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3931981Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3951309Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.1.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3962120Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3977387Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3987898Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.3999191Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4018488Z ^[[1m^[[92m  Downloaded^[[0m streaming-iterator v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4028616Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.27.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4049473Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.27
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4072737Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4093101Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.107
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4118584Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.23
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4134123Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4165551Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4190857Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.13.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4216105Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4238634Z ^[[1m^[[92m  Downloaded^[[0m clap v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4292584Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4326202Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.20.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4351115Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4392649Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.154
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4435540Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.17.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4470398Z ^[[1m^[[92m  Downloaded^[[0m regex v1.13.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4506932Z ^[[1m^[[92m  Downloaded^[[0m cc v1.11.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4536354Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4605250Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.11
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4658660Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.4869118Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.5015210Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.191
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.5394261Z ^[[1m^[[92m  Downloaded^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.5765811Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.12.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.6953027Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.6959965Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.6960924Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:22.6961843Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.1718777Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.2249716Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3769770Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.3909730Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.4571413Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5224920Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.5389620Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.6349819Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.7626290Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:23.8609808Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.2549931Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.3890283Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.4051291Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.4449270Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:24.4477202Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.3549761Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.3959809Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.6720046Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.191
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.8041245Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:25.9539991Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:26.0309737Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:26.1709800Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:26.2091017Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.3773312Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.4239883Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.4613370Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.4989664Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.5449760Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.5799332Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.7359855Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:28.8509748Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.3329695Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.3979954Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.4479714Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.6029815Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.7913289Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.8321154Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.12.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:29.9239608Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.13.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.0959645Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.1409907Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.2539479Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:30.4167162Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:31.0796333Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:31.4819124Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:32.6955399Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:33.0389801Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.3179799Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.3408647Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.4438307Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.6980483Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.8556870Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:34.9923763Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.3528865Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.6260702Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.7669894Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:35.9714423Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.1109484Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:36.6477202Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (/home/runner/work/dotnet-crap/dotnet-crap)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.2892321Z ^[[1m^[[92m    Finished^[[0m `test` profile [unoptimized + debuginfo] target(s) in 17.41s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3116915Z ^[[1m^[[92m     Running^[[0m unittests src/lib.rs (target/debug/deps/dotnet_crap-cf15f8e098643ca3)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3129924Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3130227Z running 5 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3135312Z test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3136450Z test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3137188Z test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3138545Z test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3143843Z test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3144364Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3144762Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3145202Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3147007Z ^[[1m^[[92m     Running^[[0m unittests src/main.rs (target/debug/deps/dotnet_crap-28a0ad722b362c34)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3155225Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3155383Z running 0 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3155594Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3156303Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3156843Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3157632Z ^[[1m^[[92m     Running^[[0m tests/cli.rs (target/debug/deps/cli-f2ec84386126aa6c)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3166081Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3166343Z running 6 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3219138Z test csharp_constructs_and_nested_ownership ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3239210Z test coverage_and_gates ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3263969Z test rejects_duplicate_and_invalid_coverage ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3338775Z test selection_deduplication_exclusions_and_output_safety ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:39.3439114Z test threshold_empty_missing_coverage_and_input_errors ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:40.9989709Z fixture passed
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0460526Z test dotnet_fixture ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0460995Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0461704Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.73s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0462217Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0476024Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0476473Z running 28 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0477726Z ^[[1m^[[92m     Running^[[0m tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34e8d2eec119951d)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0531597Z test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0532352Z test ambiguous_exact_candidates_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0532929Z test absolute_paths_outside_the_root_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0534564Z test empty_report_slice_is_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0540362Z test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0546539Z test class_filename_is_required ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0565321Z test foreign_windows_roots_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0586271Z test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0597958Z test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0599210Z test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0600363Z test merges_selected_files_from_multiple_assemblies ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0601072Z test malformed_and_unsafe_xml_is_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0601918Z test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0602836Z test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0603851Z test ordinary_underscore_directory_is_an_exact_local_path ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0604630Z test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0605516Z test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0606573Z test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0612230Z test parent_components_and_source_prefix_escapes_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0613160Z test source_prefix_edge_whitespace_is_not_trimmed_into_another_source ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0614426Z test source_link_and_deterministic_paths_are_rejected ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0615364Z test required_coverage_structure_is_enforced ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0616060Z test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0616712Z test source_text_line_bounds_use_original_utf8 ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0617286Z test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0617960Z test unselected_root_files_are_ignored_without_basename_guessing ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0618854Z test zero_hit_only_evidence_is_preserved_as_zero ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0619434Z test unknown_relative_filename_is_not_suffix_matched ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0619780Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0620184Z test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0620677Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0621226Z ^[[1m^[[92m     Running^[[0m tests/collector.rs (target/debug/deps/collector-edcfee6eaf2e1ce1)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0631679Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.0631849Z running 13 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1160257Z test a_trusted_program_can_accept_only_the_results_argument ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1207975Z test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1309699Z test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1672886Z test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1689912Z test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.1711439Z test deadline_reaps_the_child_and_publishes_nothing ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2139521Z test incomplete_or_extra_project_reports_are_errors ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2143327Z test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2292722Z test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2657376Z test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2729650Z test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.2853642Z test rejects_linked_reports_and_existing_source_aliases ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3921840Z test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3922521Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3923146Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3923472Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3927761Z ^[[1m^[[92m     Running^[[0m tests/coverlet_live.rs (target/debug/deps/coverlet_live-780f233b5f1f0b91)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3939282Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:41.3939650Z running 1 test
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.0219214Z   Determining projects to restore...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.4557400Z   All projects are up-to-date for restore.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.7566943Z   Alpha.Library -> /tmp/.tmp9uZ1Eo/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8146988Z   Alpha.Tests -> /tmp/.tmp9uZ1Eo/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.8246302Z Test run for /tmp/.tmp9uZ1Eo/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:54.9750836Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.0844827Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.0890002Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 6 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.2146297Z   Beta.Library -> /tmp/.tmp9uZ1Eo/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.2661568Z   Beta.Tests -> /tmp/.tmp9uZ1Eo/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.2749715Z Test run for /tmp/.tmp9uZ1Eo/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:56.4269606Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:57.6326285Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:57.6389422Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 8 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:57.7733143Z   NUnit.Tests -> /tmp/.tmp9uZ1Eo/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:57.7870698Z Test run for /tmp/.tmp9uZ1Eo/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:57.9324800Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.1384274Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.1429152Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 6 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.2371603Z   MSTest.Tests -> /tmp/.tmp9uZ1Eo/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.2443667Z Test run for /tmp/.tmp9uZ1Eo/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:32:59.3910082Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.5087760Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.5148541Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 28 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7336449Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7341198Z Attachments:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7342264Z   /tmp/dotnet-crap-coverlet-ZurZET/fc72b7da-49c8-4e76-9a4a-82a29160013d/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7343237Z   /tmp/dotnet-crap-coverlet-ZurZET/8419fa7a-0ec2-41da-82b3-9d5941d12611/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7344311Z   /tmp/dotnet-crap-coverlet-ZurZET/20b9a6bf-f12c-421c-b67d-f7668ce31123/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:00.7345342Z   /tmp/dotnet-crap-coverlet-ZurZET/7ec13464-d8a9-46db-a6b1-a5344bcb1000/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:01.4116460Z   Determining projects to restore...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:01.8470396Z   All projects are up-to-date for restore.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:02.1644441Z   Alpha.Library -> /tmp/.tmp9uZ1Eo/fixture/Alpha.Library/bin/Debug/net10.0/Alpha.Library.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:02.2718780Z   Alpha.Tests -> /tmp/.tmp9uZ1Eo/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:02.2812429Z Test run for /tmp/.tmp9uZ1Eo/fixture/Alpha.Tests/bin/Debug/net10.0/Alpha.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:02.4346624Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.2744374Z [xUnit.net 00:00:00.13]     CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [FAIL]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5424547Z   Failed CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches [8 ms]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5425795Z   Error Message:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5426377Z    Assert.Equal() Failure: Values differ
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5426822Z Expected: 77
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5427194Z Actual:   1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5427469Z   Stack Trace:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5428655Z      at CoverletFixtures.Alpha.Tests.AlphaCoverageTests.Exercises_one_branch_of_partial_method_and_both_full_method_branches() in /tmp/.tmp9uZ1Eo/fixture/Alpha.Tests/AlphaCoverageTests.cs:line 12
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5430192Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5431040Z    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5494816Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.5530023Z Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 8 ms - Alpha.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.6758020Z   Beta.Library -> /tmp/.tmp9uZ1Eo/fixture/Beta.Library/bin/Debug/net10.0/Beta.Library.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.8734779Z   Beta.Tests -> /tmp/.tmp9uZ1Eo/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:03.8841688Z Test run for /tmp/.tmp9uZ1Eo/fixture/Beta.Tests/bin/Debug/net10.0/Beta.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:04.0339884Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:05.1699733Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:05.1747745Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 8 ms - Beta.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:05.3141947Z   NUnit.Tests -> /tmp/.tmp9uZ1Eo/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:05.3275202Z Test run for /tmp/.tmp9uZ1Eo/fixture/NUnit.Tests/bin/Debug/net10.0/NUnit.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:05.4821743Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:06.6136978Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:06.6201591Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 4 ms - NUnit.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:06.7423852Z   MSTest.Tests -> /tmp/.tmp9uZ1Eo/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:06.8310647Z Test run for /tmp/.tmp9uZ1Eo/fixture/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:06.9764685Z A total of 1 test files matched the specified pattern.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.0894457Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.0955930Z Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 28 ms - MSTest.Tests.dll (net10.0)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2626263Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2631401Z Attachments:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2632397Z   /tmp/dotnet-crap-coverlet-TuUt02/12bd49bb-c354-4e5d-b78d-ef60b2447227/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2634713Z   /tmp/dotnet-crap-coverlet-TuUt02/8b46c54a-76fa-4d22-ab4a-0f22a32edef9/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2636812Z   /tmp/dotnet-crap-coverlet-TuUt02/16467cc2-c6c5-469a-8361-69fa3d319db6/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:08.2638079Z   /tmp/dotnet-crap-coverlet-TuUt02/42d2e2b4-30d9-4af8-a1f2-5203c6b32717/coverage.cobertura.xml
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2002646Z global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2003595Z The following test projects are using VSTest test runner:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2004069Z MSTest.Tests.csproj
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2004390Z NUnit.Tests.csproj
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2004696Z Beta.Tests.csproj
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2004984Z Alpha.Tests.csproj
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2005196Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.2005763Z See https://aka.ms/dotnet-test/mtp for more information.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3569490Z test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3594224Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3620870Z ^[[1m^[[92m     Running^[[0m tests/csharp_callables.rs (target/debug/deps/csharp_callables-d1475587fe9816c8)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3622043Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.96s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3648817Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3673955Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3674674Z running 11 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3699248Z test coverage_is_owned_by_the_innermost_callable ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3730540Z test existing_forms_keep_their_names_and_complexity ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3780190Z test declaration_only_and_auto_forms_are_omitted ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3787090Z test expression_and_block_bodies_score_the_same_logic ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3818886Z test malformed_operator_is_an_input_error_without_report ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3878948Z test nested_callables_are_charged_only_to_their_owner ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3892099Z test signature_names_distinguish_checked_conversions_and_params_indexers ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3969270Z test operator_conversion_destructor_and_indexer_complexity ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3970116Z test source_spacing_does_not_change_names ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:12.3970795Z test text_output_names_callables_descriptively ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:13.3845737Z   Determining projects to restore...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:13.9807472Z   Restored /tmp/.tmp65KmtE/Fixtures.csproj (in 101 ms).
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4601646Z   Fixtures -> /tmp/.tmp65KmtE/bin/Debug/net10.0/Fixtures.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4835186Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4869256Z Build succeeded.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4893935Z     0 Warning(s)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4919187Z     0 Error(s)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4919527Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.4919762Z Time Elapsed 00:00:01.67
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5359946Z ^[[1m^[[92m     Running^[[0m tests/library_api.rs (target/debug/deps/library_api-2a8c08c1f3dd440f)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5360858Z test declaration_fixtures_are_valid_csharp ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5378638Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5421673Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.18s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5468770Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5481254Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5509018Z running 9 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5527445Z test cli_preserves_symlink_output_targets ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5568962Z test library_defaults_match_documented_cli_defaults ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5570117Z test coverage_inputs_and_sparse_nested_ownership_are_retained ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5573616Z test result_detects_source_byte_changes ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5619753Z test cli_preserves_coverage_and_unselected_source_aliases ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.5649474Z test serialization_and_captured_policy_keep_the_existing_contract ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6026288Z test library_selection_deduplicates_and_rejects_root_escape ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6069211Z test scan_has_independent_results_and_matches_cli_in_all_formats ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6393705Z test coverage_empty_and_error_policies_match_cli ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6401096Z ^[[1m^[[92m     Running^[[0m tests/live_coverage.rs (target/debug/deps/live_coverage-62668ea65a11b230)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6401760Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6419211Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6428740Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6457342Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:14.6506616Z running 1 test
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0493140Z test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0493571Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0493870Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.41s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0494277Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0494973Z ^[[1m^[[92m     Running^[[0m tests/mutation_contracts.rs (target/debug/deps/mutation_contracts-bb315d2649e585df)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0504048Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0504457Z running 7 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0526172Z test malformed_coverage_map_reports_expected_type ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0548555Z test coverage_ownership_and_locations_use_exact_callable_boundaries ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0549801Z test nested_source_selection_keeps_normal_directories ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0566907Z test switch_arms_and_initialized_auto_properties_are_distinct ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0592915Z test text_reports_coverage_requirement_only_when_unsatisfied ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0647550Z test existing_relative_reports_are_replaced_without_alias_false_positives ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0903241Z test coverage_global_path_hash_and_line_contracts_are_independent ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0903686Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0904166Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0904581Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0905989Z ^[[1m^[[92m     Running^[[0m tests/real_csharp_accuracy.rs (target/debug/deps/real_csharp_accuracy-660f28ac03d81d1e)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0914527Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0914722Z running 13 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0965875Z test branches ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.0982654Z test decoding_errors_identify_the_file_and_escape_its_name ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1019829Z test encoding_paths_and_terminal_controls ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1038770Z test internal_dot_coverage_components_are_rejected_before_lookup ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1066995Z test invalid_source_diagnostics_escape_filename_controls ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1087047Z test invalid_utf8_filenames_fail_instead_of_collapsing_source_identity ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1198981Z test long_nested_ranges_exclude_only_the_local_callable_span ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1271350Z test nested_ownership ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1321346Z test bom_encodings_bind_coverage_to_original_bytes ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1360334Z test source_filenames_unrepresentable_in_native_coverage_fail_explicitly ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1367686Z test stacked_switch ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:18.1426751Z test deep_syntax_is_scored_without_recursive_rust_traversal ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.3995802Z test execute_accuracy_fixtures_with_sdk ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.3996159Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.3996481Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.31s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.3996793Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.3998490Z ^[[1m^[[92m     Running^[[0m tests/sarif.rs (target/debug/deps/sarif-9dee76fd5a99218b)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4007560Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4008012Z running 10 tests
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4017250Z test file_uri_structure_is_checked_before_decoding ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4033240Z test file_uri_expectations_distinguish_drive_paths_and_unc_authorities ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4035562Z test non_utf8_source_filename_is_rejected_without_lossy_report_identity ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4036556Z test non_utf8_source_root_is_rejected_instead_of_fabricating_a_uri ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4040083Z test same_named_overloads_have_distinct_fingerprints ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4059547Z test literal_backslashes_in_source_root_remain_literal_uri_bytes ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4126864Z test staged_output_keeps_failed_reports_and_protects_source ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4141258Z test unicode_uri_regions_and_fingerprints_are_deterministic ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4146539Z test score_threshold_empty_and_completeness_gates ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4159138Z test special_source_names_are_encoded_without_coverage_and_rejected_with_it ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4159527Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4159840Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4160308Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.4161177Z ^[[1m^[[92m   Doc-tests^[[0m dotnet_crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5232183Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5232554Z running 1 test
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5609160Z test src/lib.rs - (line 7) - compile ... ok
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5609457Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5618272Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo test --locked	2026-11-07T11:33:21.5619156Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	﻿2026-11-07T11:33:21.5754759Z ##[group]Run cargo build --locked --release
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5755274Z ^[[36;1mcargo build --locked --release^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5774559Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5775075Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5775374Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5775740Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5776085Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5776439Z   DOTNET_ROOT: /usr/share/dotnet
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.5776794Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.6245998Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.23
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.6246812Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.107
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.6247604Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.6248364Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.15
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.7405303Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.47
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.7650090Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.27
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.8140346Z ^[[1m^[[92m   Compiling^[[0m shlex v2.0.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.8299458Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.8589254Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.8989457Z ^[[1m^[[92m   Compiling^[[0m cc v1.11.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:21.9219681Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-language v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.0180433Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.17.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.0289453Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.154
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.0995449Z ^[[1m^[[92m   Compiling^[[0m typenum v1.20.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.5470919Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.5489167Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:22.5739397Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.14.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:23.1369761Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:23.5680595Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:23.6579810Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:23.7629950Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:23.8855925Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.191
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.1647246Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.2970065Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.4499870Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.4863443Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.5310010Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:24.5732552Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.11
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.4739919Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.4829254Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.5729938Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.14
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.6629865Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.7295844Z ^[[1m^[[92m   Compiling^[[0m anstream v1.0.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.7890509Z ^[[1m^[[92m   Compiling^[[0m tree-sitter v0.25.10
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:26.9042541Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.18
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.4589786Z ^[[1m^[[92m   Compiling^[[0m tree-sitter-c-sharp v0.23.5
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.5789836Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.6642928Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.7100507Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.7209351Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.1.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:30.9980157Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.104
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:31.2219750Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.12.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:31.5449816Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.13.2
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:31.5883567Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:31.7279631Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:31.8479926Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:33.0310051Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:33.6430130Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:35.0959549Z ^[[1m^[[92m   Compiling^[[0m regex v1.13.1
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:37.9789654Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.229
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.2759633Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.3619594Z ^[[1m^[[92m   Compiling^[[0m streaming-iterator v0.1.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.5949576Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.6479834Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.6780695Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.4
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.8349653Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.27.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:40.8510800Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:42.3300603Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:43.0729586Z ^[[1m^[[92m   Compiling^[[0m clap v4.6.7
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:43.6810581Z ^[[1m^[[92m   Compiling^[[0m roxmltree v0.20.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:45.1779762Z ^[[1m^[[92m   Compiling^[[0m hex v0.4.3
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:45.3960200Z ^[[1m^[[92m   Compiling^[[0m dotnet-crap v0.1.0 (/home/runner/work/dotnet-crap/dotnet-crap)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Run cargo build --locked --release	2026-11-07T11:33:48.8999334Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 27.31s
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	﻿2026-11-07T11:33:48.9101413Z ##[group]Run mkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9101942Z ^[[36;1mmkdir -p "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID"^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9102476Z ^[[36;1mcp "target/release/$NATIVE_EXE" "target/dotnet-tool-stage/$DOTNET_CRAP_LOCAL_RID/$NATIVE_EXE"^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9103214Z ^[[36;1mbash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9103831Z ^[[36;1mversion="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' Cargo.toml | head -1)"^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9104457Z ^[[36;1mprintf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9105557Z ^[[36;1mNUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9106476Z ^[[36;1mtarget/tool/dotnet-crap --help^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9106766Z ^[[36;1mtarget/tool/dotnet-crap --version^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9107200Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9107614Z ^[[36;1mset +e^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9107910Z ^[[36;1mtarget/tool/dotnet-crap --root examples/Fixture --threshold 0^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9108423Z ^[[36;1mcode=$?^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9109087Z ^[[36;1mset -e^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9109366Z ^[[36;1mtest "$code" = 1^[[0m
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9122562Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9122897Z env:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9123120Z   CARGO_HOME: /home/runner/.cargo
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9123378Z   CARGO_INCREMENTAL: 0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9123619Z   CARGO_TERM_COLOR: always
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9123852Z   DOTNET_ROOT: /usr/share/dotnet
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9124105Z   DOTNET_CRAP_LOCAL_RID: linux-x64
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9124364Z   NATIVE_EXE: dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:48.9124599Z ##[endgroup]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:49.4829183Z   Determining projects to restore...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:49.8617516Z   Restored /tmp/dotnet-crap-pack.gJyBj6/project/dotnet-crap-launcher.csproj (in 70 ms).
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:50.2252770Z   dotnet-crap-launcher -> /tmp/dotnet-crap-pack.gJyBj6/project/bin/Release/net10.0/dotnet-crap-launcher.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:50.3245780Z   dotnet-crap-launcher -> /tmp/dotnet-crap-pack.gJyBj6/project/bin/Release/net10.0/dotnet-crap-launcher.dll
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:50.3404640Z   dotnet-crap-launcher -> /tmp/dotnet-crap-pack.gJyBj6/project/bin/Release/net10.0/publish/
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:50.7953527Z   Successfully created package '/tmp/dotnet-crap-pack.gJyBj6/feed/dotnet-crap.0.1.0.nupkg'.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:50.8374865Z Packed /home/runner/work/dotnet-crap/dotnet-crap/target/dotnet-tool-stage/feed/dotnet-crap.0.1.0.nupkg with 1 native binary file(s).
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.3700125Z You can invoke the tool using the following command: dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4302976Z Tool 'dotnet-crap' (version '0.1.0') was successfully installed.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4303927Z Score C# callables using cyclomatic complexity and source-bound coverage
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4304774Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4305176Z Usage: dotnet-crap [OPTIONS] [PATHS]...
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4305692Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4305934Z Arguments:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4306422Z   [PATHS]...  
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4306905Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4307160Z Options:
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4307683Z       --root <ROOT>            [default: .]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4308529Z       --threshold <THRESHOLD>  [default: 10]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4309536Z       --format <FORMAT>        [default: text] [possible values: text, json, sarif]
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4310379Z       --output <OUTPUT>        
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4311335Z       --coverage <COVERAGE>    
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4313035Z       --require-coverage       
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4313646Z       --fail-on-empty          
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4314348Z   -h, --help                   Print help
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4315241Z   -V, --version                Print version
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4315656Z 
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4316032Z Fresh coverage collection: dotnet-crap collect --help
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.4779621Z dotnet-crap 0.1.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.5396453Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.5397483Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.5978612Z Program.cs:4 Choose complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Pack local tool and run real .NET fixture	2026-11-07T11:33:51.5979719Z Program.cs:9 Main complexity=3 coverage=absent CRAP=12.00
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1	﻿2026-11-07T11:33:51.6196376Z Post job cleanup.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-11-07T11:33:51.7573175Z Post job cleanup.
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8546399Z [command]/usr/bin/git version
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8594491Z git version 2.56.0
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8635931Z Temporarily overriding HOME='/home/runner/work/_temp/84a2ff30-d73f-4bc1-8d1e-464a4914bee0' before making global git config changes
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8637127Z Adding repository directory to the temporary git global config as a safe directory
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8642213Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dotnet-crap/dotnet-crap
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8681503Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8715379Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8940043Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8963460Z http.https://github.com/.extraheader
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.8974665Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-11-07T11:33:51.9024395Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	﻿2026-11-07T11:33:51.9385077Z Cleaning up orphan processes
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	2026-11-07T11:33:51.9652811Z Terminate orphan process: pid (2588) (VBCSCompiler)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	2026-11-07T11:33:51.9685747Z Terminate orphan process: pid (5169) (dotnet)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	2026-11-07T11:33:51.9713722Z Terminate orphan process: pid (5170) (dotnet)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	2026-11-07T11:33:51.9739499Z Terminate orphan process: pid (5171) (dotnet)
+dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)	Complete job	2026-11-07T11:33:51.9824435Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

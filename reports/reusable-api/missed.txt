@@ -1,0 +1,3 @@
+src/lib.rs:411:26: replace <= with > in collect
+src/lib.rs:429:20: replace > with >= in collect
+src/main.rs:83:25: delete ! in run

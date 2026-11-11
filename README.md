@@ -41,12 +41,20 @@ Missing required coverage and empty-selection gate failures also exit 1.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
+## Rust library
+
+The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
+code can scan and render reports without starting the CLI. Gate failures are
+reported by `ScanResult::report().failed`; input errors are returned as `Err`.
+See the [Rust API guide](docs/RUST_API.md) for consumption, verification, and
+limits. Run the bundled example with `cargo run --example scan -- <root>`.
+
 ## Coverage and scope
 
 The initial [native coverage format](examples/COVERAGE.md) uses root-relative
 source paths and SHA-256 hashes of exact source bytes. It rejects stale coverage.
-It is an input contract, not a built-in Coverlet collector; use reports produced
-by a trusted test pipeline.
+Fresh Coverlet evidence can be collected with `dotnet-crap collect` using an
+explicit trusted command; see [collection and runner limits](docs/COVERLET.md).
 The initial denominator is the supplied coverage points inside each callable;
 producers must include zero-hit points. `--require-coverage` requires some
 evidence per callable, rather than proving complete statement coverage.
@@ -63,8 +71,8 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
 The release workflow builds platform binaries and a .NET 10 tool package as
 workflow artifacts; it does not publish a release. Automatic publication is
-unavailable until a future publication workflow is reviewed and host protections
-can be enforced. If a release is published in the future, download an archive and its checksum
+unavailable until a future publication workflow is reviewed. The host protections
+it will rely on are already enforced (see [docs/SECURITY_PARITY.md](docs/SECURITY_PARITY.md)). If a release is published in the future, download an archive and its checksum
 from [GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases), or
 install the published NuGet package:
 
@@ -96,3 +104,6 @@ not supported release targets.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for checks, including the live .NET fixture
 suite, and [SECURITY.md](SECURITY.md) for coverage trust and release verification.
 Licensed under [MIT](LICENSE).
+
+Fresh pinned Coverlet collection is available through `dotnet-crap collect`; see
+[the command, mapping contract and runner limits](docs/COVERLET.md).

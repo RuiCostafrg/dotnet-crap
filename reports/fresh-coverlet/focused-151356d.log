@@ -1,0 +1,64 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.69s
+     Running unittests src/lib.rs (target/debug/deps/dotnet_crap-eadd0bc2e094f8f9)
+
+running 5 tests
+test cobertura::resource_tests::node_limit_rejects_excess_nodes_without_requiring_a_large_allocation ... ok
+test sarif::tests::source_root_file_uris_cover_release_platform_paths ... ok
+test tests::traversal_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+test tests::callable_budget_counts_nodes_and_accepts_the_exact_limit ... ok
+test collector::deadline_tests::completed_status_must_be_observed_strictly_before_deadline ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/cobertura_parser.rs (target/debug/deps/cobertura_parser-34653dfea3378fe6)
+
+running 27 tests
+test class_filename_is_required ... ok
+test accepts_a_source_prefix_outside_the_root_only_for_a_contained_file ... ok
+test ambiguous_exact_candidates_are_rejected ... ok
+test empty_report_slice_is_rejected ... ok
+test absolute_paths_outside_the_root_are_rejected ... ok
+test foreign_windows_roots_are_rejected ... ok
+test empty_packages_beside_class_records_do_not_discard_valid_evidence ... ok
+test empty_selected_and_unselected_classes_leave_evidence_absent ... ok
+test literal_source_prefixes_deduplicate_canonical_candidates ... ok
+test merges_partial_classes_and_multiple_reports_by_maximum_hits ... ok
+test absolute_paths_and_backslash_separators_resolve_exactly ... ok
+test merges_selected_files_from_multiple_assemblies ... ok
+test oversized_xml_returns_a_controlled_error_before_allocation ... ok
+test ordinary_underscore_directory_is_an_exact_local_path ... ok
+test parent_components_and_source_prefix_escapes_are_rejected ... ok
+test malformed_and_unsafe_xml_is_rejected ... ok
+test root_fallback_handles_an_exact_relative_file_when_prefixes_miss ... ok
+test source_text_line_bounds_use_original_utf8 ... ok
+test required_coverage_structure_is_enforced ... ok
+test unc_paths_are_explicitly_unsupported_on_every_host ... ok
+test source_prefix_comments_and_cdata_cannot_truncate_ownership ... ok
+test unknown_relative_filename_is_not_suffix_matched ... ok
+test noncanonical_filenames_are_rejected_even_when_they_name_existing_files ... ok
+test unselected_root_files_are_ignored_without_basename_guessing ... ok
+test zero_hit_only_evidence_is_preserved_as_zero ... ok
+test source_link_and_deterministic_paths_are_rejected ... ok
+test invalid_line_numbers_and_hit_counts_are_rejected ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/collector.rs (target/debug/deps/collector-d3bc3b0de6afc8e3)
+
+running 13 tests
+test deadline_reaps_the_child_and_publishes_nothing ... ok
+test fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores ... ok
+test a_trusted_program_can_accept_only_the_results_argument ... ok
+test invalid_commands_inputs_and_destinations_fail_before_execution ... ok
+test cli_selected_paths_and_reserved_directory_spelling_are_preserved ... ok
+test cli_collect_uses_argv_and_keeps_standard_exit_mapping ... ok
+test private_results_permissions_are_restricted_even_under_permissive_umask ... ok
+test duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness ... ok
+test rejects_linked_reports_and_existing_source_aliases ... ok
+test an_extra_or_malformed_project_report_cannot_publish_partial_evidence ... ok
+test incomplete_or_extra_project_reports_are_errors ... ok
+test failed_test_with_valid_report_and_changed_source_with_valid_report_do_not_publish ... ok
+test failures_leave_no_evidence_and_private_directories_are_removed ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.84s
+

@@ -2,6 +2,18 @@
 
 Install cargo-mutants 27.1.0 (`cargo install cargo-mutants --version 27.1.0 --locked`), then run `python3 scripts/mutation-gate.py`. The script runs the complete production inventory with two workers, a 120 second test timeout and a 600 second build timeout. It requires strictly more than 90% caught among caught + missed + timed out mutants. Unviable mutants are excluded; timeouts are not kills. Missing or incomplete output fails the gate. The mutation workflow runs this same command. Each invocation writes to a unique `target/mutation-runs/run-*` directory, so concurrent runs cannot mix evidence. The complete invocation output is retained and uploaded by CI. Generated output is ignored by Git.
 
+## Reusable API measurement
+
+The complete **local** run for `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d`
+tested 186 mutants:
+178 caught, 3 missed, 0 timed out, and 5 unviable (**98.34%**). The audited inventory
+covers `src/lib.rs` (161), `src/sarif.rs` (17) and `src/main.rs` (8), with no
+production-source exclusions. [Inventory, outcomes and survivor review](../reports/reusable-api/README.md)
+are committed separately from the historical measurements below. Additional tests
+added after this full run do not retroactively change its score. This is local
+evidence only, not validation of the current PR head in CI; the PR mutation
+workflow must independently pass before merge.
+
 ## Qualified historical measurements
 
 On quality head `318889605edb3e8258c38d0c29d862895bef688b`, the completed run reported 112 total: 109 caught, 1 missed, 0 timed out, and 2 unviable (99.09%). [Run 41932905187](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/41932905187).
