@@ -1,5 +1,5 @@
 //! Safe publication of rendered scan reports.
-use anyhow::{bail, Result};
+use crate::error::{fail, ErrorKind, Result, ResultExt};
 use std::{io::Write, path::Path};
 use walkdir::WalkDir;
 
@@ -10,35 +10,37 @@ use walkdir::WalkDir;
 /// before the staged file replaces `path`.
 pub fn write_report(result: &crate::ScanResult, rendered: &str, path: &Path) -> Result<()> {
     if is_csharp_path(path) {
-        bail!("report output cannot overwrite C# source");
+        fail!(Output, "report output cannot overwrite C# source");
     }
     if std::fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink()) {
-        bail!("report output cannot be a symbolic link");
+        fail!(Output, "report output cannot be a symbolic link");
     }
     if path.exists() {
         for input in result.input_paths().iter() {
-            if same_file::is_same_file(path, input)? {
-                bail!("report output aliases an input");
+            if same_file::is_same_file(path, input).kind(ErrorKind::Io)? {
+                fail!(Output, "report output aliases an input");
             }
         }
         // Also protect ignored/generated/unselected sources. Do not follow
         // directory links while looking for aliases.
         for entry in WalkDir::new(result.root()).follow_links(false) {
-            let entry = entry?;
+            let entry = entry.kind(ErrorKind::Io)?;
             if is_csharp_path(entry.path())
                 && entry.path().is_file()
-                && same_file::is_same_file(path, entry.path())?
+                && same_file::is_same_file(path, entry.path()).kind(ErrorKind::Io)?
             {
-                bail!("report output aliases C# source");
+                fail!(Output, "report output aliases C# source");
             }
         }
     }
     let parent = destination_parent(path);
-    let mut staged = tempfile::NamedTempFile::new_in(parent)?;
-    staged.write_all(rendered.as_bytes())?;
-    staged.as_file().sync_all()?;
+    let mut staged = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
+    staged
+        .write_all(rendered.as_bytes())
+        .kind(ErrorKind::Output)?;
+    staged.as_file().sync_all().kind(ErrorKind::Output)?;
     result.verify_sources()?;
-    staged.persist(path)?;
+    staged.persist(path).kind(ErrorKind::Output)?;
     Ok(())
 }
 

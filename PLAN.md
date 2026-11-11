@@ -118,7 +118,7 @@ the negative MTP-mode SDK test. No release publication is enabled.
 failures leave no new coverage artifact. Document any versioned format migration.
 Add OpenCover/Microsoft coverage adapters in later PRs with their own evidence.
 
-### 2a. Behavior-preserving architecture boundaries — items 1–3 in PR #17
+### 2a. Behavior-preserving architecture boundaries — PRs #17 and #18
 
 Independent audits (Claude Sonnet 5.5 and OpenCode GLM-5.3 Flash) reviewed
 module boundaries, errors, process isolation, duplicated path logic and
@@ -165,7 +165,14 @@ Delivery: [PR #17](https://github.com/RuiCostafrg/dotnet-crap/pull/17) (items
 documented in [Rust API](docs/RUST_API.md)). Both are open, not merged.
 PR #17 passed formatting, warnings-denied clippy and locked tests, and live
 .NET 10 Coverlet collection for xUnit/MSTest/NUnit on Linux. `collect` moved
-byte-for-byte. Each PR must pass the
+byte-for-byte.
+PR #18 head `5745f83` passed the complete standard gate: formatting, clippy,
+debug/release/live tests, Python contracts and docs. Its full mutation run, with no
+exclusions, tested 323 mutants: 279 caught, 22 missed, 0 timeouts, 22 unviable,
+**92.69%**. All 12 production files are represented, and the seven new modules have
+no survivors. 21 survivors repeat the reviewed PR #15 cases. The one new survivor
+is killed by a test added afterwards (targeted recheck: 7/7 caught).
+[Evidence, inventory and survivor review](reports/architecture/README.md). Each PR must pass the
 standard gate including live xUnit/MSTest/NUnit Coverlet tests, and the full
 mutation inventory must name every new production module.
 

@@ -53,7 +53,7 @@ impl Fixture {
         self.reports.push(path);
     }
 
-    fn parse(&self) -> anyhow::Result<LineEvidence> {
+    fn parse(&self) -> dotnet_crap::Result<LineEvidence> {
         parse_reports(self.root(), &self.sources, &self.reports)
     }
 }

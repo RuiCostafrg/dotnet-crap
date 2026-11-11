@@ -1,6 +1,6 @@
 //! Input path resolution and C# source file discovery.
 
-use anyhow::{bail, Context, Result};
+use crate::error::{fail, ErrorKind, Result, ResultExt};
 use std::{
     collections::BTreeSet,
     path::{Path, PathBuf},
@@ -25,12 +25,15 @@ pub(crate) fn select(root: &Path, paths: &[PathBuf]) -> Result<BTreeSet<PathBuf>
         } else {
             root.join(path)
         };
-        let candidate = candidate.canonicalize().context("invalid input path")?;
+        let candidate = candidate
+            .canonicalize()
+            .context(ErrorKind::InvalidInput, "invalid input path")?;
         if !candidate.starts_with(root) {
-            bail!("input path escapes root");
+            fail!(InvalidInput, "input path escapes root");
         }
         if candidate
-            .strip_prefix(root)?
+            .strip_prefix(root)
+            .kind(ErrorKind::InvalidInput)?
             .components()
             .any(|part| part.as_os_str().to_str().is_some_and(is_excluded_dir_name))
         {
@@ -46,7 +49,7 @@ pub(crate) fn select(root: &Path, paths: &[PathBuf]) -> Result<BTreeSet<PathBuf>
                         || e.file_type().is_dir() && is_excluded_dir_name(n.as_ref()))
             })
         {
-            let e = entry?;
+            let e = entry.kind(ErrorKind::Io)?;
             if e.file_type().is_file()
                 && e.path()
                     .extension()
