@@ -142,8 +142,8 @@ testability. Ranked by value per review risk:
 4. **Typed library errors.** Replace `anyhow` in the library with
    `dotnet_crap::Error` (a matchable `ErrorKind` enum plus the existing message
    and `source()` chain). Messages and `{:#}` chains stay byte-identical, so CLI
-   stderr is unchanged; the CLI maps every library error to exit 2 as today. Add
-   `Debug` to `ScanResult`, `Report` and `Item`.
+   stderr is unchanged; the CLI maps every library error to exit 2 as today.
+   (`Debug` for `ScanResult`, `Report` and `Item` landed with item 1.)
 
 Deliberately not done: unifying the scanner's and collector's native-coverage
 key derivation (`lib.rs` rejects `\` while the collector first rewrites it to
