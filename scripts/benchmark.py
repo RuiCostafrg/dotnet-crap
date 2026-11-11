@@ -152,7 +152,8 @@ def run_measured(command, timeout):
                 os.close(fd)
     elapsed_ns, maxrss, code, expired = (int(field) for field in fields)
     if expired:
-        raise subprocess.TimeoutExpired(command, timeout)
+        # Audited: constructs the timeout exception for reporting; nothing runs here.
+        raise subprocess.TimeoutExpired(command, timeout)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit
     if code != 0:
         raise subprocess.CalledProcessError(code, command, output, errors)
     return elapsed_ns / 1e6, max_rss_kib(maxrss), output
@@ -167,7 +168,9 @@ def rss_floor_kib():
 def command_text(argv):
     """Return trimmed stdout of a provenance probe, or None if unavailable."""
     try:
-        return subprocess.run(argv, capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+        # Audited: fixed provenance probes (git, sysctl, and the --rustc executable
+        # the user names) passed as argv without a shell; quoting would corrupt them.
+        return subprocess.run(argv, capture_output=True, text=True, check=True, timeout=30, shell=False).stdout.strip()  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit, python.lang.security.audit.dangerous-subprocess-use-tainted-env-args
     except (OSError, subprocess.SubprocessError):
         return None
 

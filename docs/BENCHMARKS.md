@@ -100,8 +100,15 @@ directory must be writable, and it cannot be a symlink or alias a measured
 executable. Other external output paths are supported.
 
 The `--binary` and `--baseline` options intentionally execute the selected local
-programs. Commands use an argv list with `shell=False`; no shell interprets path
-or argument text. The two generic dynamic-subprocess audit warnings are
-suppressed only at the reviewed call site for that reason. Quoting argv elements
-with shlex would alter literal paths and is not a security fix for this execution
-model.
+programs, and `--rustc` names the compiler whose `rustc -vV` output is recorded.
+Commands use argv lists with `shell=False`; no shell interprets path or argument
+text. The generic dynamic-subprocess audit warnings are suppressed only at
+reviewed sites, each with an inline reason:
+
+- the measuring spawner invocation;
+- the provenance probe helper (`git`, `sysctl`, `--rustc`);
+- the line that constructs the `TimeoutExpired` exception it reports, which runs
+  nothing.
+
+Quoting argv elements with shlex would alter literal paths and is not a security
+fix for this execution model.
