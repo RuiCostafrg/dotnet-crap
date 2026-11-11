@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  # Shipped launcher, its tests, and the NUnit/MSTest/xUnit + Coverlet fixtures.
+  # Fixture versions back recorded coverage evidence: a bump that changes hit
+  # signatures must refresh that evidence in the same PR, so they are grouped.
+  - package-ecosystem: nuget
+    directories:
+      - /packaging/dotnet-crap-launcher
+      - /packaging/tests/DotnetCrapLauncher.Tests
+      - /examples/Fixture
+      - /examples/CoverageFixture
+      - /tests/fixtures/accuracy
+      - /tests/fixtures/coverlet/*
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dotnet-test-fixtures:
+        patterns: ['*']
