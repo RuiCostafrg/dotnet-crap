@@ -368,10 +368,13 @@ mod deadline_tests {
         )
         .unwrap();
         std::fs::write(nested.join("coverage.cobertura.xml"), b"<coverage/>").unwrap();
-        let reports = find_reports(results.path(), 2).unwrap();
-        let mut sorted = reports.clone();
-        sorted.sort();
-        assert_eq!(reports, sorted);
+        assert_eq!(
+            find_reports(results.path(), 2).unwrap(),
+            vec![
+                nested.join("coverage.cobertura.xml"),
+                results.path().join("coverage.cobertura.xml"),
+            ]
+        );
     }
 
     /// Only regular files named `coverage.cobertura.xml` count; other files and

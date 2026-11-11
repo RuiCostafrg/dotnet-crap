@@ -181,6 +181,11 @@ the same function the CLI uses for `--output`. It:
 Call `verify_sources` after rendering and before `write_report`, as the CLI does;
 `write_report` verifies again after staging. Exit codes remain the caller's choice.
 
+The alias check compares `path` with `input_paths()`, which holds the coverage
+path exactly as supplied. If the coverage path is relative, call `write_report`
+from the same working directory as `scan`, or pass an absolute coverage path.
+Otherwise a relative coverage input cannot be recognized as an alias.
+
 ## Coverage input
 
 The native coverage format is documented in [examples/COVERAGE.md](../examples/COVERAGE.md).

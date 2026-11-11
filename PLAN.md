@@ -151,7 +151,10 @@ key derivation (`lib.rs` rejects `\` while the collector first rewrites it to
 splitting `cobertura.rs` (424 lines but one cohesive
 contract), merging the native-evidence and Cobertura path validators (different
 contracts and messages), restructuring `scan` error order, or a multi-crate
-workspace. The coverage traversal hot path belongs to step 8; it moves verbatim,
+workspace. Follow-up: `input_paths()` keeps a relative coverage path as
+supplied, so `output::write_report` alias checks depend on an unchanged working
+directory (documented in the Rust API; resolving it at scan time is an API change).
+The coverage traversal hot path belongs to step 8; it moves verbatim,
 with only its three error constructors adapted in item 4.
 
 Delivery: [PR #17](https://github.com/RuiCostafrg/dotnet-crap/pull/17) (items

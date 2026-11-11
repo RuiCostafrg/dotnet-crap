@@ -94,7 +94,7 @@ unmarked items remain proposed.
    of `lib.rs`, a library-owned safe report writer, pure collector planning and
    typed `dotnet_crap::Error`. Ranked rationale and exclusions are in
    [PLAN.md step 2a](../PLAN.md). JSON/SARIF/text output, scores, error text and
-   exit codes are unchanged; the traversal hot path (step 8) is moved verbatim.
+   exit codes are unchanged; the traversal hot path ([PLAN.md step 8](../PLAN.md)) is moved verbatim.
 7. **Selection policy:** strict versioned config and include/exclude/ignore behavior,
    followed by Git merge-base selection and then GitHub PR resolution. Explicit CLI
    booleans override config. Test dirty trees, shallow history, renames, deletions,
