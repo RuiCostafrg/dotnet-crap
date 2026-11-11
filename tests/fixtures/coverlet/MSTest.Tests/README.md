@@ -9,8 +9,8 @@ xUnit and NUnit.
 
 | Package | Version | Role |
 | --- | --- | --- |
-| `Microsoft.NET.Test.Sdk` | 17.12.0 | VSTest host (`TestHost` 17.12.0 resolved) |
-| `coverlet.collector` | 6.0.4 | Coverlet data collector (`PrivateAssets=all`) |
+| `Microsoft.NET.Test.Sdk` | 18.12.0 | VSTest host (`TestHost` 18.12.0 resolved) |
+| `coverlet.collector` | 10.1.0 | Coverlet data collector (`PrivateAssets=all`) |
 | `MSTest.TestFramework` | 4.5.2 | MSTest attributes and `Assert` |
 | `MSTest.TestAdapter` | 4.5.2 | MSTest adapter for VSTest (pulls `MSTest.Analyzers` 4.5.2) |
 
@@ -94,8 +94,8 @@ class records, as in the Alpha fixture.
 
 Resolved versions were verified from `obj/project.assets.json` of the temporary
 run: `MSTest.TestAdapter/4.5.2`, `MSTest.TestFramework/4.5.2`,
-`MSTest.Analyzers/4.5.2`, `Microsoft.NET.Test.Sdk/17.12.0`,
-`coverlet.collector/6.0.4`, `Microsoft.TestPlatform.TestHost/17.12.0`.
+`MSTest.Analyzers/4.5.2`, `Microsoft.NET.Test.Sdk/18.12.0`,
+`coverlet.collector/10.1.0`, `Microsoft.TestPlatform.TestHost/18.12.0`.
 
 ## Files
 

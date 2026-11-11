@@ -47,7 +47,7 @@ fn parameter_types(list: Option<Node<'_>>, source: &str) -> String {
         let ty = if child.kind() == "parameter" {
             child.child_by_field_name("type")
         } else {
-            (list.field_name_for_child(i as u32) == Some("type")).then_some(child)
+            (list.field_name_for_child(i) == Some("type")).then_some(child)
         };
         if let Some(ty) = ty {
             types.push(normalized_text(ty, source));

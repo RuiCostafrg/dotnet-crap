@@ -87,7 +87,7 @@ unmarked items remain proposed.
    excluded from the denominator) without exclusions. See the
    [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
-   rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
+   rejects unsupported remaps/UNC paths. VSTest originally used pinned Coverlet 6.0.4 (now 10.1.0); MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
    with their own fixtures.
 6a. **Architecture boundaries — open PRs #17/#18:** behavior-preserving module split
