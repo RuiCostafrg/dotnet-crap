@@ -1,0 +1,8 @@
+src/cobertura.rs:73:45: replace * with + in import_report
+src/cobertura.rs:73:38: replace * with + in import_report
+src/cobertura.rs:75:31: replace > with == in import_report
+src/cobertura.rs:75:31: replace > with >= in import_report
+src/cobertura.rs:79:32: replace + with - in import_report
+src/cobertura.rs:79:32: replace + with * in import_report
+src/cobertura.rs:80:27: replace > with == in import_report
+src/cobertura.rs:80:27: replace > with >= in import_report

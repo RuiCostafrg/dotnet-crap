@@ -1,0 +1,21 @@
+{
+  "runner": "Android 12 / Qualcomm KONA (aarch64), Ubuntu 26.04 userland under PRoot; shared with other concurrently running build/test sessions",
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25) (built from a source tarball)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-linux-android\nrelease: 1.96.0\nLLVM version: 21.1.8\n",
+  "profile": "release (cargo build --locked --release)",
+  "baseline": {
+    "source_commit": "59136eaea524918e2eda1ed42ab325726bce07a1",
+    "note": "src/ and Cargo inputs identical to origin/main 77003a6 (main only added scripts/local-ci.sh and docs/local-ci.md)",
+    "binary_sha256": "e938e2cc8251a814f0a6676d0cec1f84865a915ba511218d23490e50a1a6b62f"
+  },
+  "candidate": {
+    "source_commit": "01d756c5a5450b50e68c8fe8bec90605844dfa23",
+    "binary_sha256": "14d26c4a789cc4784cd79146da6f22c8cce80f3c68f9d857a0953da72d000f20"
+  },
+  "reproducibility": "Rebuilding the candidate from the rebased commit reproduced the identical binary digest; the baseline digest equals the one recorded in reports/fresh-coverlet/benchmark-provenance.json for the same production source.",
+  "commands": [
+    "for w in small-files dense-file many-callables deep-nesting solution; do for m in scan scan-coverage collect; do python3 scripts/benchmark.py --binary HEAD_BIN --baseline BASE_BIN --workload $w --mode $m --runs 12 --timeout 300 --output reports/perf-step8/linux-aarch64/compare/$w-$m.json; done; done",
+    "for s in 3000 6000 12000; do python3 scripts/benchmark.py --binary HEAD_BIN --baseline BASE_BIN --workload deep-nesting --scale $s --mode scan-coverage --runs 8 --timeout 600 --output reports/perf-step8/linux-aarch64/scaling/deep-nesting-scan-coverage-$s.json; done",
+    "for s in 2000 4000 8000; do python3 scripts/benchmark.py --binary HEAD_BIN --baseline BASE_BIN --workload dense-file --scale $s --mode collect --runs 8 --timeout 600 --output reports/perf-step8/linux-aarch64/scaling/dense-file-collect-$s.json; done"
+  ],
+  "claim_rule": "A difference is claimed only when every candidate sample is faster than every baseline sample in the same --baseline invocation (candidate max < baseline min). Everything else is reported as no measurable difference on this runner."
+}
