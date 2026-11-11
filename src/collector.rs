@@ -376,6 +376,18 @@ mod deadline_tests {
 
     #[cfg(unix)]
     #[test]
+    /// Only regular files named `coverage.cobertura.xml` count; other files and
+    /// a directory with the report name are ignored rather than miscounted.
+    #[test]
+    fn find_reports_counts_only_regular_report_files() {
+        let results = tempfile::tempdir().unwrap();
+        let report = results.path().join("coverage.cobertura.xml");
+        std::fs::write(&report, b"<coverage/>").unwrap();
+        std::fs::write(results.path().join("other.xml"), b"<coverage/>").unwrap();
+        std::fs::create_dir_all(results.path().join("d").join("coverage.cobertura.xml")).unwrap();
+        assert_eq!(find_reports(results.path(), 1).unwrap(), vec![report]);
+    }
+
     /// Links in the results directory are rejected.
     fn find_reports_rejects_symbolic_links() {
         let results = tempfile::tempdir().unwrap();
