@@ -23,8 +23,10 @@ secrets. Only two jobs can publish: one creates the attested GitHub release and
 one stages npm packages with trusted publishing (OIDC, no npm token). Both wait
 for owner approval in the `release` environment, check out no code, run no
 compiled binary, and are disabled unless the repository variable
-`DOTNET_CRAP_PUBLISH` is `true`. That variable must stay unset until tag and
-branch rulesets and the environment's required reviewer are enforced. The
+`DOTNET_CRAP_PUBLISH` is `true`. It was set only after tag and branch rulesets
+and the environment's required reviewer were enforced; unsetting it switches
+publication off. npm trusted publishing allows only staged publication, so every
+npm version also needs the owner's 2FA approval before it becomes public. The
 Homebrew tap pulls and verifies the attested formula itself; this repository
 holds no tap token. Removing these controls requires a maintainer who can change
 workflows, so workflow changes need review like code.

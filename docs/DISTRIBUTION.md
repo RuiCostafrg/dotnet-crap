@@ -9,9 +9,11 @@ Linux and macOS are the supported targets for the new channels. A Windows
 archive is still built because the .NET tool package bundles `win-x64`, but no
 new channel installs it.
 
-**Nothing in this repository publishes until the owner enables it** (see
-[Publication prerequisites](#publication-prerequisites)). Every channel is
-validated before publication against the exact candidate assets built in CI.
+Publication happens only from an owner-pushed `v*` tag, after every channel is
+validated against the exact candidate assets built in CI and the owner approves
+the `release` environment (see
+[Publication prerequisites](#publication-prerequisites)). No release has been
+published yet.
 
 ## Release assets (`release-assets` artifact)
 
@@ -85,14 +87,21 @@ verification against an actual published release is pending the first release.
 ## Publication prerequisites
 
 Publication jobs run only for a `v*` tag push **and** when the repository
-variable `DOTNET_CRAP_PUBLISH` is `true`. Before setting it, the owner must:
+variable `DOTNET_CRAP_PUBLISH` is `true`. Unsetting the variable switches
+publication off again. It was set on 2026-11-11, after all of these were in place:
 
-- protect `v*` tags and `main` with rulesets (only the owner may create tags);
-- configure the `release` environment with the owner as required reviewer,
-  self-review allowed, deployment restricted to `v*` tags;
-- create the npm packages and configure npm trusted publishing for
-  `RuiCostafrg/dotnet-crap`, workflow `release.yml`, environment `release`;
-- add a `dotnet-crap` sync to the tap (see `packaging/homebrew/README.md`).
+- [x] Rulesets protect `main` and `v*` tags (only the owner creates tags; release
+  tags cannot move or be deleted).
+- [x] The `release` environment has the owner as required reviewer (self-review
+  allowed, no admin bypass) and deploys only from `v*` tags.
+- [x] npm packages `dotnet-crap`, `dotnet-crap-linux-x64`, `dotnet-crap-linux-arm64`,
+  `dotnet-crap-darwin-x64` and `dotnet-crap-darwin-arm64` exist as `0.0.0`
+  placeholders, each with trusted publishing for `RuiCostafrg/dotnet-crap`,
+  workflow `release.yml`, environment `release`, **stage publish only**: every
+  release version stays private until the owner approves its stage with 2FA.
+- [x] The tap syncs `dotnet-crap.rb`
+  ([homebrew-tap#18](https://github.com/RuiCostafrg/homebrew-tap/pull/18)); before
+  the first release its verify job is a successful no-op.
 
 No secrets are required: the GitHub release uses `GITHUB_TOKEN`, npm uses OIDC.
 NuGet.org publication of the .NET tool is not automated yet; the attested

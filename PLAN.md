@@ -216,10 +216,11 @@ or speedups from unrelated shared-runner timings.
   provenance-verifying GitHub Action. Every PR builds the candidate release and
   installs it through npm/pnpm/Yarn/Bun, the shell installer, a local Homebrew
   tap, the .NET tool, and the Action against NUnit and MSTest projects with
-  fresh Coverlet Cobertura coverage on Ubuntu and macOS. Publication jobs exist
-  but stay disabled (`DOTNET_CRAP_PUBLISH`) until the protections above are
-  enforced, npm trusted publishing is configured, and the tap sync covers
-  `dotnet-crap.rb`. Nothing has been published.
+  fresh Coverlet Cobertura coverage on Ubuntu and macOS. The publication
+  prerequisites are in place (rulesets, `release` environment, npm placeholders
+  with stage-only trusted publishing, tap sync in homebrew-tap#18) and
+  `DOTNET_CRAP_PUBLISH` is set. Nothing has been published; the first tagged
+  release and its published-path verification remain.
 - [ ] Automate NuGet.org publication of the .NET tool (trusted publishing) once
   package-ID ownership is verified.
 - [ ] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
