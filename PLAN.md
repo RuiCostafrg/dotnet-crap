@@ -141,7 +141,10 @@ testability. Ranked by value per review risk:
    stderr is unchanged; the CLI maps every library error to exit 2 as today. Add
    `Debug` to `ScanResult`, `Report` and `Item`.
 
-Deliberately not done: splitting `cobertura.rs` (424 lines but one cohesive
+Deliberately not done: unifying the scanner's and collector's native-coverage
+key derivation (`lib.rs` rejects `\` while the collector first rewrites it to
+`/`, with different messages; a follow-up should define one contract),
+splitting `cobertura.rs` (424 lines but one cohesive
 contract), merging the native-evidence and Cobertura path validators (different
 contracts and messages), restructuring `scan` error order, or a multi-crate
 workspace. The coverage traversal hot path belongs to step 8; it moves verbatim,
