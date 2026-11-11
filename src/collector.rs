@@ -374,8 +374,6 @@ mod deadline_tests {
         assert_eq!(reports, sorted);
     }
 
-    #[cfg(unix)]
-    #[test]
     /// Only regular files named `coverage.cobertura.xml` count; other files and
     /// a directory with the report name are ignored rather than miscounted.
     #[test]
@@ -388,6 +386,8 @@ mod deadline_tests {
         assert_eq!(find_reports(results.path(), 1).unwrap(), vec![report]);
     }
 
+    #[cfg(unix)]
+    #[test]
     /// Links in the results directory are rejected.
     fn find_reports_rejects_symbolic_links() {
         let results = tempfile::tempdir().unwrap();
