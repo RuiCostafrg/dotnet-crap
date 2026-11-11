@@ -31,11 +31,15 @@ Keep one Rust package. Extract cohesive modules when they acquire a consumer;
 avoid empty modules or a multi-crate workspace without a concrete need.
 
 - `src/main.rs`: clap arguments, process exits and CLI orchestration.
-- `src/lib.rs`: typed scan options, reports and supported public operations.
+- `src/lib.rs`: typed scan options, `ScanResult`, `scan` orchestration and
+  crate-root re-exports of the documented API.
 - `analysis`: syntax traversal, callable ownership and complexity.
-- `coverage`: evidence validation and collector adapters.
-- `report`: text/JSON/SARIF rendering, then XML and HTML.
-- `selection`, `config`, `baseline`: add with their respective feature PRs.
+- `evidence` (native v1), `cobertura` and `collector`: coverage evidence
+  validation, import and trusted-process collection.
+- `selection` and `source`: source discovery and decoding.
+- `report`, `sarif` and `output`: typed reports, text/JSON/SARIF rendering and
+  safe report publication; XML and HTML follow.
+- `config`, `baseline`: add with their respective feature PRs.
 
 Keep trusted-process execution separate from scanning and pure scoring. Keep
 safe output staging and source-alias checks explicit at filesystem boundaries.
@@ -113,6 +117,57 @@ the negative MTP-mode SDK test. No release publication is enabled.
 **Done when:** actual .NET collector runs produce independently checked scores;
 failures leave no new coverage artifact. Document any versioned format migration.
 Add OpenCover/Microsoft coverage adapters in later PRs with their own evidence.
+
+### 2a. Behavior-preserving architecture boundaries — items 1–3 in PR #17
+
+Independent audits (Claude Sonnet 5.5 and OpenCode GLM-5.3 Flash) reviewed
+module boundaries, errors, process isolation, duplicated path logic and
+testability. Ranked by value per review risk:
+
+1. **Split `src/lib.rs` (710 lines, six concerns) into cohesive modules.**
+   `analysis` (callable recognition, naming, complexity and the traversal, moved
+   verbatim), `evidence` (native v1 schema and validation), `selection` (source
+   walk), `source` (decoding), `report` (typed report and text rendering).
+   `lib.rs` keeps `scan` orchestration and crate-root re-exports, so the
+   documented API paths are unchanged. Rationale: the collector already reaches
+   into private lib internals; later config/selection/baseline work needs seams.
+2. **Library-owned report writer (`output`).** Move the CLI's alias, symlink,
+   `.cs` and staged-persist protections into a documented
+   `output::write_report`, sharing the destination-parent and C#-path helpers
+   with the collector. `main.rs` becomes a thin clap/exit adapter, and library
+   callers no longer need to "reproduce each check".
+3. **Separate pure collection planning from process execution.** Extract
+   command validation, `{results}` substitution, report discovery and evidence
+   assembly from `collector::collect`; `run_command` stays the only process code.
+4. **Typed library errors.** Replace `anyhow` in the library with
+   `dotnet_crap::Error` (a matchable `ErrorKind` enum plus the existing message
+   and `source()` chain). Messages and `{:#}` chains stay byte-identical, so CLI
+   stderr is unchanged; the CLI maps every library error to exit 2 as today.
+   (`Debug` for `ScanResult`, `Report` and `Item` landed with item 1.)
+
+Deliberately not done: unifying the scanner's and collector's native-coverage
+key derivation (`lib.rs` rejects `\` while the collector first rewrites it to
+`/`, with different messages; a follow-up should define one contract),
+splitting `cobertura.rs` (424 lines but one cohesive
+contract), merging the native-evidence and Cobertura path validators (different
+contracts and messages), restructuring `scan` error order, or a multi-crate
+workspace. Follow-up: `input_paths()` keeps a relative coverage path as
+supplied, so `output::write_report` alias checks depend on an unchanged working
+directory (documented in the Rust API; resolving it at scan time is an API change).
+Step 8's prefix-sum `CoverageIndex` traversal (PR #19) merged first. The merge
+of `main` into PR #17 moved it, with its tests, verbatim into `analysis.rs`.
+The coverage traversal hot path belongs to step 8; it moves verbatim,
+with only its three error constructors adapted in item 4.
+
+Delivery: [PR #17](https://github.com/RuiCostafrg/dotnet-crap/pull/17) (items
+1–3, no output change) and stacked
+[PR #18](https://github.com/RuiCostafrg/dotnet-crap/pull/18) (item 4, API change
+documented in [Rust API](docs/RUST_API.md)). Both are open, not merged.
+PR #17 passed formatting, warnings-denied clippy and locked tests, and live
+.NET 10 Coverlet collection for xUnit/MSTest/NUnit on Linux. `collect` moved
+byte-for-byte. Each PR must pass the
+standard gate including live xUnit/MSTest/NUnit Coverlet tests, and the full
+mutation inventory must name every new production module.
 
 ### 3. Versioned configuration and deterministic selection
 

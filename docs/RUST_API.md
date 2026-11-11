@@ -12,7 +12,8 @@ The documented surface is:
 dotnet_crap::{ScanOptions, scan, ReportFormat}
 ```
 
-plus the `ScanResult`, `Report`, and `Item` types described below.
+plus the `ScanResult`, `Report`, and `Item` types and `output::write_report`
+described below.
 
 ## Consuming the package
 
@@ -167,18 +168,23 @@ not a guarantee against a later edit.
 
 ## Writing report files
 
-The library does not write report files. Output protection belongs to the CLI
-adapter, which:
+`render` is not a file writer. Use `output::write_report(&result, &rendered, path)`,
+the same function the CLI uses for `--output`. It:
 
 - refuses to write output over a `.cs` file;
 - refuses a symbolic link as output;
 - refuses output that is the same file as a selected source, the coverage input,
   or any `.cs` file under the root;
 - stages the report in a temporary file in the destination directory, verifies
-  sources again, and then persists it.
+  sources again, and then persists it over `path`.
 
-If Rust code needs to write reports, call the CLI, or reproduce each of these
-checks. Do not treat `render` as a safe file writer.
+Call `verify_sources` after rendering and before `write_report`, as the CLI does;
+`write_report` verifies again after staging. Exit codes remain the caller's choice.
+
+The alias check compares `path` with `input_paths()`, which holds the coverage
+path exactly as supplied. If the coverage path is relative, call `write_report`
+from the same working directory as `scan`, or pass an absolute coverage path.
+Otherwise a relative coverage input cannot be recognized as an alias.
 
 ## Coverage input
 
