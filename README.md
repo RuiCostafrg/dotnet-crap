@@ -69,8 +69,8 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
 The release workflow builds platform binaries and a .NET 10 tool package as
 workflow artifacts; it does not publish a release. Automatic publication is
-unavailable until a future publication workflow is reviewed and host protections
-can be enforced. If a release is published in the future, download an archive and its checksum
+unavailable until a future publication workflow is reviewed. The host protections
+it will rely on are already enforced (see [docs/SECURITY_PARITY.md](docs/SECURITY_PARITY.md)). If a release is published in the future, download an archive and its checksum
 from [GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases), or
 install the published NuGet package:
 
