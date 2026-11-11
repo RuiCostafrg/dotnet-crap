@@ -1,0 +1,10 @@
+Test run for /tmp/mstest-live.68UJ6T/coverlet/MSTest.Tests/bin/Debug/net10.0/MSTest.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2-dev (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 71 ms - MSTest.Tests.dll (net10.0)
+
+Attachments:
+  /tmp/mstest-live.68UJ6T/results2/edac41cb-3442-4409-9475-d266cb9ea084/coverage.cobertura.xml

@@ -56,7 +56,7 @@ PRs #2–#9 are now merged into `main` at `c1c78cd`. The final reviewed tree's f
 mutation run caught 171 of 174 viable mutants (98.28%), with 3 missed, no timeouts
 and 2 unviable. Historical measurements remain qualified to their recorded SHAs.
 Tag workflows build artifacts; automatic publication remains disabled. The reusable
-API batch below is now implemented on its feature branch;
+API batch below is now merged in PR #11;
 remaining batches stay planned.
 
 ## Subsequent feature PRs, in dependency order
@@ -64,7 +64,7 @@ remaining batches stay planned.
 Each numbered item is a separate bounded change. Status is explicit below;
 unmarked items remain proposed.
 
-5. **Reusable API — implemented on `feat/reusable-rust-api`:** commit `c80bbd0`
+5. **Reusable API — merged in PR #11:** commit `c80bbd0`
    extracts the scanner, coverage validation and typed reports behind `src/lib.rs`.
    The CLI owns destinations, staging and exits. The example and CLI/library
    equivalence tests preserve JSON order, SARIF identities and gate behavior;
@@ -74,12 +74,22 @@ unmarked items remain proposed.
    [evidence and survivor review](../reports/reusable-api/README.md).
    A targeted recheck catches the two library survivors; the remaining output
    parent-path survivor is qualified to this runner in the report.
-   This branch is not yet merged; integrate it before dependent work.
-6. **Fresh Coverlet coverage:** snapshot source before a trusted test process,
+   Merged at `e8153b8ec9b09f200da1d48cb065eae6f539a2de`; historical evidence above
+   remains qualified to its named source revisions.
+6. **Fresh Coverlet coverage — implemented in PR #15:** snapshot source before a trusted test process,
    import explicitly selected Cobertura, verify source afterwards, reject stale or
    ambiguous mappings, and publish atomically only on success. Exercise actual
    pinned .NET collector fixtures, failures, multiple assemblies and uncovered code.
-   OpenCover/Microsoft formats follow as separate PRs with their own fixtures.
+   Validated source/test snapshot `1cad955` includes xUnit/MSTest/NUnit fixtures.
+   Full live CI passed on Linux/macOS/Windows with .NET 10/VSTest; complete
+   mutation evidence records 262 caught, 24 missed, 0 timeouts and 11 unviable
+   out of 297, scoring 91.61% (262/286 viable mutants; the 11 unviable are
+   excluded from the denominator) without exclusions. See the
+   [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
+   The [mapping contract](COVERLET.md) retains native v1 line evidence and
+   rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
+   parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
+   with their own fixtures.
 7. **Selection policy:** strict versioned config and include/exclude/ignore behavior,
    followed by Git merge-base selection and then GitHub PR resolution. Explicit CLI
    booleans override config. Test dirty trees, shallow history, renames, deletions,
@@ -100,10 +110,11 @@ unmarked items remain proposed.
 ## Evidence required before integration
 
 Run formatting, clippy with warnings denied, locked debug/release tests and
-`DOTNET_CRAP_E2E=1 cargo test --locked`. Run mutation tests on each final production
+`DOTNET_CRAP_E2E=1 DOTNET_CRAP_COVERLET_E2E=1 cargo test --locked`. Run mutation tests on each final production
 change and again on the integrated head; a result for the foundation does not
 certify later feature branches. Mutation score and code coverage are different
-metrics. A test returning early without `DOTNET_CRAP_E2E` is not live .NET evidence.
+metrics. A test returning early without `DOTNET_CRAP_E2E` or the Coverlet-specific
+`DOTNET_CRAP_COVERLET_E2E=1` is not live .NET/collector evidence.
 
 Record performance with `python3 scripts/benchmark.py --output target/bench.json`
 and repeat with `--coverage`. Compare the same compiler/profile/corpus/runner;

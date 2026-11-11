@@ -14,7 +14,7 @@ are replaced by .NET workflows rather than ported literally.
 | Root and multiple path selection | `.cs` files, deduplication, root containment | Implemented; bin/obj/.git and generated suffixes excluded |
 | Ignore rules, config include/exclude | `.gitignore`, `.ignore`, `dotnet-crap.json` | Phase 3 |
 | Source-hashed native coverage | Version 1 path/hash/line map | Implemented; reduced completeness contract below |
-| Fresh V8/Istanbul/LCOV collectors | Fresh Coverlet and Microsoft coverage collection | Phase 2 |
+| Fresh V8/Istanbul/LCOV collectors | Fresh Coverlet and Microsoft coverage collection | Coverlet/VSTest implemented in PR #15; Microsoft/MTP adapters remain planned |
 | Every executable statement-start line | C# sequence points with callable ownership | Phase 2; current denominator is supplied points |
 | Changed-file and PR selection | Git merge-base and authenticated `gh` discovery | Phase 3 |
 | Project policy and boolean overrides | Versioned config and explicit CLI precedence | Phase 3 |
@@ -65,7 +65,14 @@ aliases, including generated/unselected source hardlinks.
 
 ## Phase 2: real coverage collection and complete evidence
 
-1. Add a Rust `coverage` command that snapshots selected source bytes **before**
+[PR #15](https://github.com/RuiCostafrg/dotnet-crap/pull/15) implements
+[Coverlet collection](COVERLET.md) with native v1 line evidence; source-qualified
+validation is recorded in [the evidence report](../reports/fresh-coverlet/README.md). This does not complete the broader
+SDK/runner matrix below. The expanded pinned .NET 10 fixtures cover xUnit,
+MSTest and NUnit under VSTest; combined validation passed. .NET 8
+and MTP collection are not certified by these runs.
+
+1. Add a Rust `collect` command that snapshots selected source bytes **before**
    executing a trusted test command, then verifies them after completion.
 2. Collect Coverlet with an explicit Cobertura format. Add OpenCover and Microsoft
    `dotnet-coverage` import after that. Pin collector versions in fixtures; do not

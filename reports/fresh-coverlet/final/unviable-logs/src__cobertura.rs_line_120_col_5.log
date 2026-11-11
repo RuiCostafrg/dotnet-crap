@@ -1,0 +1,118 @@
+
+*** src/cobertura.rs:120:5: replace parse_with_node_limit -> Result<Document<'_>> with Ok(Default::default())
+
+*** mutation diff:
+--- src/cobertura.rs
++++ replace parse_with_node_limit -> Result<Document<'_>> with Ok(Default::default())
+@@ -112,21 +112,17 @@
+     if lower.contains("<?xml-stylesheet") {
+         bail!("Cobertura report contains a forbidden external XML stylesheet");
+     }
+     parse_with_node_limit(text, 500_000)
+ }
+ 
+ /// Bound DOM allocation independently of the byte limit.
+ fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
+-    let options = ParsingOptions {
+-        nodes_limit,
+-        allow_dtd: false,
+-    };
+-    Document::parse_with_options(text, options).map_err(|error| anyhow!("malformed XML: {error}"))
++    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// Read literal `<sources><source>` prefixes, anchoring relative prefixes at root.
+ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> {
+     let sources = child_elements(coverage, "sources");
+     if sources.len() > 1 {
+         bail!("duplicate <sources> elements");
+     }
+
+
+*** /home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo test --no-run --verbose --package=dotnet-crap@0.1.0 --locked
+[1m[92m       Fresh[0m memchr v2.8.3
+[1m[92m       Fresh[0m shlex v2.0.1
+[1m[92m       Fresh[0m version_check v0.9.5
+[1m[92m       Fresh[0m find-msvc-tools v0.1.15
+[1m[92m       Fresh[0m unicode-ident v1.0.27
+[1m[92m       Fresh[0m proc-macro2 v1.0.107
+[1m[92m       Fresh[0m cc v1.11.0
+[1m[92m       Fresh[0m zmij v1.0.23
+[1m[92m       Fresh[0m quote v1.0.47
+[1m[92m       Fresh[0m itoa v1.0.18
+[1m[92m       Fresh[0m equivalent v1.0.3
+[1m[92m       Fresh[0m typenum v1.20.1
+[1m[92m       Fresh[0m hashbrown v0.17.1
+[1m[92m       Fresh[0m indexmap v2.14.2
+[1m[92m       Fresh[0m generic-array v0.14.7
+[1m[92m       Fresh[0m syn v3.0.9
+[1m[92m       Fresh[0m utf8parse v0.2.2
+[1m[92m       Fresh[0m foldhash v0.2.0
+[1m[92m       Fresh[0m anstyle-parse v1.0.0
+[1m[92m       Fresh[0m aho-corasick v1.1.5
+[1m[92m       Fresh[0m regex-syntax v0.8.11
+[1m[92m       Fresh[0m is_terminal_polyfill v1.70.2
+[1m[92m       Fresh[0m colorchoice v1.0.5
+[1m[92m       Fresh[0m anstyle-query v1.1.5
+[1m[92m       Fresh[0m cfg-if v1.0.5
+[1m[92m       Fresh[0m anstyle v1.0.14
+[1m[92m       Fresh[0m anstream v1.0.0
+[1m[92m       Fresh[0m regex-automata v0.4.18
+[1m[92m       Fresh[0m libc v0.2.191
+[1m[92m       Fresh[0m serde_core v1.0.229
+[1m[92m       Fresh[0m block-buffer v0.10.4
+[1m[92m       Fresh[0m crypto-common v0.1.7
+[1m[92m       Fresh[0m tree-sitter-language v0.1.9
+[1m[92m       Fresh[0m strsim v0.11.1
+[1m[92m       Fresh[0m clap_lex v1.1.1
+[1m[92m       Fresh[0m heck v0.5.0
+[1m[92m       Fresh[0m linux-raw-sys v0.12.1
+[1m[92m       Fresh[0m bitflags v2.13.2
+[1m[92m       Fresh[0m rustix v1.1.6
+[1m[92m       Fresh[0m clap_derive v4.6.7
+[1m[92m       Fresh[0m clap_builder v4.6.7
+[1m[92m       Fresh[0m digest v0.10.7
+[1m[92m       Fresh[0m getrandom v0.4.3
+[1m[92m       Fresh[0m regex v1.13.1
+[1m[92m       Fresh[0m serde_derive v1.0.229
+[1m[92m       Fresh[0m once_cell v1.21.4
+[1m[92m       Fresh[0m streaming-iterator v0.1.9
+[1m[92m       Fresh[0m fastrand v2.5.0
+[1m[92m       Fresh[0m cpufeatures v0.2.17
+[1m[92m       Fresh[0m same-file v1.0.6
+[1m[92m       Fresh[0m walkdir v2.5.0
+[1m[92m       Fresh[0m sha2 v0.10.9
+[1m[92m       Fresh[0m tempfile v3.27.0
+[1m[92m       Fresh[0m tree-sitter v0.25.10
+[1m[92m       Fresh[0m serde v1.0.229
+[1m[92m       Fresh[0m tree-sitter-c-sharp v0.23.5
+[1m[92m       Fresh[0m clap v4.6.7
+[1m[92m       Fresh[0m anyhow v1.0.104
+[1m[92m       Fresh[0m serde_json v1.0.154
+[1m[92m       Fresh[0m roxmltree v0.20.0
+[1m[92m       Fresh[0m hex v0.4.3
+[1m[92m       Dirty[0m dotnet-crap v0.1.0 (/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp): couldn't read metadata for file `target/debug/deps/libdotnet_crap-75a587a3d1a18363.rlib`
+[1m[92m   Compiling[0m dotnet-crap v0.1.0 (/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp)
+[1m[92m     Running[0m `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name dotnet_crap --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --forbid=unsafe_code --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=77a32f5a8159c764 -C extra-filename=-75a587a3d1a18363 --out-dir /tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps -L dependency=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps --extern anyhow=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libanyhow-2af0cc7ddb15f3f7.rmeta --extern clap=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libclap-8e74421947c29e52.rmeta --extern hex=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libhex-b0757a7bc7b6b2d3.rmeta --extern roxmltree=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libroxmltree-1fa369c42784ddf0.rmeta --extern same_file=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libsame_file-4f847cd9b41b73de.rmeta --extern serde=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libserde-c0653af92fb8333a.rmeta --extern serde_json=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libserde_json-906cb9383affae14.rmeta --extern sha2=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libsha2-381948c786df0976.rmeta --extern tempfile=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtempfile-add702d1c81690c2.rmeta --extern tree_sitter=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtree_sitter-0290f8f3b92aabfe.rmeta --extern tree_sitter_c_sharp=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtree_sitter_c_sharp-84169dae1b8c00b1.rmeta --extern walkdir=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libwalkdir-e035f265a75fec69.rmeta -L native=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/build/tree-sitter-4619d7aba301294b/out -L native=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/build/tree-sitter-c-sharp-c468f49c45b06dfc/out`
+[1m[33mwarning[0m[1m: unused import: `ParsingOptions`[0m
+  [1m[94m--> [0msrc/cobertura.rs:14:33
+   [1m[94m|[0m
+[1m[94m14[0m [1m[94m|[0m use roxmltree::{Document, Node, ParsingOptions};
+   [1m[94m|[0m                                 [1m[33m^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[91merror[E0277][0m[1m: the trait bound `Document<'_>: Default` is not satisfied[0m
+   [1m[94m--> [0msrc/cobertura.rs:120:8
+    [1m[94m|[0m
+[1m[94m120[0m [1m[94m|[0m     Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^^^^^^^[0m [1m[91mthe trait `Default` is not implemented for `Document<'_>`[0m
+
+[1mFor more information about this error, try `rustc --explain E0277`.[0m
+[1m[33mwarning[0m: `dotnet-crap` (lib) generated 1 warning
+[1m[91merror[0m: could not compile `dotnet-crap` (lib) due to 1 previous error; 1 warning emitted
+
+Caused by:
+  process didn't exit successfully: `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name dotnet_crap --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --forbid=unsafe_code --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=77a32f5a8159c764 -C extra-filename=-75a587a3d1a18363 --out-dir /tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps -L dependency=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps --extern anyhow=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libanyhow-2af0cc7ddb15f3f7.rmeta --extern clap=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libclap-8e74421947c29e52.rmeta --extern hex=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libhex-b0757a7bc7b6b2d3.rmeta --extern roxmltree=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libroxmltree-1fa369c42784ddf0.rmeta --extern same_file=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libsame_file-4f847cd9b41b73de.rmeta --extern serde=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libserde-c0653af92fb8333a.rmeta --extern serde_json=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libserde_json-906cb9383affae14.rmeta --extern sha2=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libsha2-381948c786df0976.rmeta --extern tempfile=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtempfile-add702d1c81690c2.rmeta --extern tree_sitter=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtree_sitter-0290f8f3b92aabfe.rmeta --extern tree_sitter_c_sharp=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libtree_sitter_c_sharp-84169dae1b8c00b1.rmeta --extern walkdir=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/deps/libwalkdir-e035f265a75fec69.rmeta -L native=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/build/tree-sitter-4619d7aba301294b/out -L native=/tmp/cargo-mutants-dotnet-crap-60TuJM.tmp/target/debug/build/tree-sitter-c-sharp-c468f49c45b06dfc/out` (exit status: 1)
+
+*** result: Failure(101)
