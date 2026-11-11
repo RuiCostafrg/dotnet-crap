@@ -18,7 +18,7 @@ binary, and never disables TLS.
 
 The release workflow is hand-maintained and splits privileges (see
 [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)). Planning, building, packing and
-every installation check run with a read-only token, no environment and no
+every installation check run without contents write access, environment or
 secrets. Only two jobs can publish: one creates the attested GitHub release and
 one stages npm packages with trusted publishing (OIDC, no npm token). Both wait
 for owner approval in the `release` environment, check out no code, run no

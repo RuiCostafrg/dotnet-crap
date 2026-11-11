@@ -53,12 +53,17 @@ permissions.
 
 ## Token isolation (release.yml)
 
-1. `plan`, `build`, verification: `contents: read` only; no environment, no
-   secrets. All code from the repository and cargo-dist runs here.
+1. `plan`, `build`, verification: `contents: read`, no environment, no
+   secrets. All code from the repository and cargo-dist runs here. The Action
+   test job additionally holds `security-events: write` so one cell can exercise
+   `upload-sarif`; it cannot write contents, releases or packages.
+   `build-release.yml` outputs a digest of the exact `release-assets` and
+   `npm-packages` listing; `publish` refuses artifacts that differ.
 2. `publish` (environment `release`): `contents: write`, `id-token: write`,
    `attestations: write`. No checkout, no compiled binary, no cargo-dist. It
-   attests `release-assets/*` and `npm-packages/*`, then creates the release from
-   the downloaded artifacts.
+   checks that the tag still names the built commit and that no release (or
+   draft) exists, attests `release-assets/*` and `npm-packages/*`, then creates
+   the release from the downloaded artifacts.
 3. `publish-npm` (environment `release`, second approval): `contents: read`,
    `attestations: read`, `id-token: write` only, for npm trusted publishing.
    It checks every npm executable against the attested release archives first.

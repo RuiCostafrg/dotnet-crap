@@ -22,6 +22,7 @@ jobs:
     if: >-
       github.repository == 'RuiCostafrg/dotnet-crap' &&
       github.actor_id == '35194998' &&
+      github.triggering_actor == 'RuiCostafrg' &&
       (github.event_name == 'push' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-26.04
     timeout-minutes: 10
@@ -100,6 +101,13 @@ jobs:
         with:
           name: npm-packages
           path: npm-packages
+      - name: Check the exact payload that verification tested
+        env:
+          EXPECTED: ${{ needs.build.outputs.digest }}
+        run: |
+          digest=$(cd release-assets && sha256sum -- * | LC_ALL=C sort -k2 | sha256sum | cut -d' ' -f1)
+          npm_digest=$(cd npm-packages && sha256sum -- * | LC_ALL=C sort -k2 | sha256sum | cut -d' ' -f1)
+          [[ "$digest-$npm_digest" == "$EXPECTED" ]] || { echo "::error::artifacts differ from the verified build"; exit 1; }
       # The npm tarballs are attested but not attached to the release; the
       # publish-npm job releases only tarballs that verify against this workflow.
       # The formula is attested so the tap's sync job can verify it.
@@ -112,11 +120,16 @@ jobs:
       - name: Publish verified assets
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.build.outputs.tag }}
+          TAG: ${{ needs.preflight.outputs.tag }}
         run: |
+          # The tag must still name the commit these assets were built from.
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)" == "$GITHUB_SHA" ]] \
+            || { echo "::error::$TAG no longer points at $GITHUB_SHA"; exit 1; }
+          # Never add to or replace an existing release, including a leftover draft.
+          existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"$TAG\") | .id")
+          [[ -z "$existing" ]] || { echo "::error::a release (possibly a draft) already exists for $TAG; inspect it manually"; exit 1; }
           flags=()
           if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
-          # Fails if the release already exists, so published assets are never replaced.
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
             --title "dotnet-crap $TAG" --generate-notes "${flags[@]}" release-assets/*
           gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
@@ -124,7 +137,7 @@ jobs:
     # Only OIDC for npm trusted publishing: it cannot write to the repository,
     # and it starts only after the attested GitHub release exists and the owner
     # approves the release environment a second time.
-    needs: [build, publish]
+    needs: [preflight, build, publish]
     if: github.event_name == 'push' && vars.DOTNET_CRAP_PUBLISH == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 20
@@ -155,7 +168,7 @@ jobs:
       - name: Compare every npm executable with the attested release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.build.outputs.tag }}
+          TAG: ${{ needs.preflight.outputs.tag }}
         run: |
           version=${TAG#v}
           identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/release.yml@refs/tags/$TAG"
@@ -174,11 +187,16 @@ jobs:
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir "$work/release" "${patterns[@]}"
           for asset in "$work"/release/* npm-packages/*.tgz; do
             gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --cert-identity "$identity" \
-              --source-ref "refs/tags/$TAG" --deny-self-hosted-runners >/dev/null
+              --source-ref "refs/tags/$TAG" --source-digest "$GITHUB_SHA" --deny-self-hosted-runners >/dev/null
           done
           for tarball in npm-packages/*.tgz; do
             if tar -tzf "$tarball" | grep -Ev '^package/([^/.][^/]*/)*[^/.][^/]*$'; then
               echo "::error::unexpected entry in $tarball"
+              exit 1
+            fi
+            # Regular files only: no symlinks, hardlinks or devices.
+            if tar -tvzf "$tarball" | grep -v '^-'; then
+              echo "::error::non-regular entry in $tarball"
               exit 1
             fi
           done
@@ -203,7 +221,7 @@ jobs:
           echo "npm packages $version match the attested $TAG release assets"
       - name: Stage platform packages, then the main package, with provenance
         env:
-          TAG: ${{ needs.build.outputs.tag }}
+          TAG: ${{ needs.preflight.outputs.tag }}
         run: |
           version=${TAG#v}
           dist_tag=latest
@@ -242,17 +260,18 @@ jobs:
             printf '%s\n' "$output"
             id=$(sed -n 's/^+ .* (staged with id \(.*\))$/\1/p' <<< "$output")
             [[ -n "$id" ]] || { echo "::error::npm did not report a stage id for $name@$version"; exit 1; }
-            printf '| %s@%s | %s |\n' "$name" "$version" "$id" >> "$summary"
+            printf '| %s@%s | %s | `sha512-%s` |\n' "$name" "$version" "$id" "$integrity" >> "$summary"
           }
           {
             echo "## npm packages staged for approval (dist-tag $dist_tag)"
             echo
             echo 'Nothing is public until approved. Approve the four platform packages first'
             echo '(npmjs.com or `npm stage approve ID` with 2FA), and dotnet-crap only once'
-            echo 'npm view shows every platform version.'
+            echo 'npm view shows every platform version. Approve only stages whose integrity'
+            echo 'matches this table; a rerun may leave extra stages for the same version.'
             echo
-            echo '| Package | Stage id |'
-            echo '| --- | --- |'
+            echo '| Package | Stage id | Integrity |'
+            echo '| --- | --- | --- |'
           } >> "$summary"
           for platform in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do stage "dotnet-crap-$platform"; done
           stage dotnet-crap

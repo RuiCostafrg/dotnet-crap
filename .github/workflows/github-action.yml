@@ -160,7 +160,7 @@ jobs:
           sarif: true
           # The upload runs in one matrix cell only, and never from a fork's
           # pull request, whose token cannot write security events.
-          upload-sarif: ${{ (matrix.upload && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) && 'true' || 'false' }}
+          upload-sarif: ${{ (matrix.upload && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) && 'true' || 'false' }}
           sarif-category: dotnet-crap-action-ci
           args: |
             --root
