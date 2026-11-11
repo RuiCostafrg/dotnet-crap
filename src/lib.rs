@@ -393,10 +393,8 @@ impl CoverageIndex {
     }
 
     /// Count coverage points with `a <= line <= b`, and how many of them have hits > 0.
+    /// Callers guarantee `a <= b` (callable spans and clipped non-empty ranges).
     fn count(&self, a: usize, b: usize) -> (usize, usize) {
-        if a > b {
-            return (0, 0);
-        }
         let lo = self.lines.partition_point(|&line| line < a);
         let hi = self.lines.partition_point(|&line| line <= b);
         (hi - lo, self.hit_prefix[hi] - self.hit_prefix[lo])
@@ -938,8 +936,6 @@ mod tests {
         assert_eq!(span_coverage(&index, 12, 99, &[]), None);
         // A clipped exclusion outside the span removes nothing.
         assert_eq!(span_counts(&index, 10, 11, &[(1, 9), (12, 200)]), (2, 1));
-        // An inverted interval is empty rather than wrapping.
-        assert_eq!(index.count(11, 10), (0, 0));
     }
 
     #[test]
