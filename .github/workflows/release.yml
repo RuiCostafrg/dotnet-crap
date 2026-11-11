@@ -1,100 +1,258 @@
+# Hand-maintained security boundary. cargo-dist packages artifacts but does not
+# generate this workflow; see dist-workspace.toml and docs/DISTRIBUTION.md.
+#
+# Build and verification run with a read-only token and no environment. Only the
+# two publication jobs get write or OIDC permissions; they run on fresh runners,
+# check out nothing, execute no repository code or compiled binary, and wait for
+# owner approval in the `release` environment. They also stay off until the
+# owner sets the repository variable DOTNET_CRAP_PUBLISH to `true` after the
+# PLAN step 9 host protections exist. A manual dispatch is always a dry run.
 name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { os: ubuntu-24.04, target: x86_64-unknown-linux-gnu, rid: linux-x64 }
-          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, rid: linux-arm64 }
-          - { os: macos-15-intel, target: x86_64-apple-darwin, rid: osx-x64 }
-          - { os: macos-15, target: aarch64-apple-darwin, rid: osx-arm64 }
-          - { os: windows-latest, target: x86_64-pc-windows-msvc, rid: win-x64 }
-    runs-on: ${{ matrix.os }}
+  preflight:
+    if: >-
+      github.repository == 'RuiCostafrg/dotnet-crap' &&
+      github.actor_id == '35194998' &&
+      (github.event_name == 'push' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: 1.96.0
-          targets: ${{ matrix.target }}
-      - name: Verify tag and Cargo version
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: test "${GITHUB_REF_NAME#v}" = "$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
-      - run: cargo test --locked --target ${{ matrix.target }}
-      - run: cargo build --locked --release --target ${{ matrix.target }}
-      - name: Native binary smoke
-        shell: bash
-        run: |
-          exe=dotnet-crap
-          if [[ "$RUNNER_OS" == Windows ]]; then exe=dotnet-crap.exe; fi
-          "target/${{ matrix.target }}/release/$exe" --help
-          "target/${{ matrix.target }}/release/$exe" --root examples/Fixture --threshold 100 --fail-on-empty
-      - name: Archive native binary and checksum
-        shell: bash
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Validate tag, Cargo version, ancestry and successful main CI
+        id: source
         env:
-          TARGET: ${{ matrix.target }}
-          RID: ${{ matrix.rid }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          mkdir -p dist
-          if [[ "$RUNNER_OS" == Windows ]]; then exe=dotnet-crap.exe; else exe=dotnet-crap; fi
-          cp "target/$TARGET/release/$exe" dist/
-          tar -czf "dotnet-crap-${GITHUB_REF_NAME}-${RID}.tar.gz" -C dist "$exe"
-          archive="dotnet-crap-${GITHUB_REF_NAME}-${RID}.tar.gz"
-          if command -v sha256sum >/dev/null; then sha256sum "$archive" > "$archive.sha256";
-          else shasum -a 256 "$archive" > "$archive.sha256"; fi
-          mkdir -p smoke
-          tar -xzf "$archive" -C smoke
-          "smoke/$exe" --version
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: native-${{ matrix.rid }}
-          path: dotnet-crap-${{ github.ref_name }}-${{ matrix.rid }}.tar.gz*
-          if-no-files-found: error
-  package:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.sha }}
-      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
-        with:
-          dotnet-version: 10.0.109
-      - name: Launcher tests
-        run: dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          pattern: native-*
-          path: target/native-artifacts
-          merge-multiple: true
-      - name: Stage and smoke package
-        shell: bash
-        run: |
-          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
-          if [[ "${GITHUB_REF_NAME}" == v* ]]; then test "${GITHUB_REF_NAME#v}" = "$version"; fi
-          mkdir -p target/dotnet-tool-stage
-          for rid in linux-x64 linux-arm64 osx-x64 osx-arm64 win-x64; do
-            mkdir -p "target/dotnet-tool-stage/$rid"
-            file=dotnet-crap; [[ "$rid" == win-* ]] && file=dotnet-crap.exe
-            tar -xzf "target/native-artifacts/dotnet-crap-${GITHUB_REF_NAME}-${rid}.tar.gz" -C "target/dotnet-tool-stage/$rid"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          if [[ "$EVENT" != push ]]; then
+            echo 'tag=' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          [[ "$REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml", "rb"))["package"]["version"])')
+          [[ "$REF_NAME" == "v$version" ]] || { echo "::error::tag $REF_NAME does not match Cargo version $version"; exit 1; }
+          for workflow in ci.yml security.yml distribution.yml; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?head_sha=$GITHUB_SHA&event=push" \
+              --jq '[.workflow_runs[] | select(.head_branch == "main")] | sort_by(.run_number, .run_attempt) | last | .conclusion == "success"' \
+              | grep -Fx true || { echo "::error::$workflow has not succeeded on main for $GITHUB_SHA"; exit 1; }
           done
-          bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$version"
-          mkdir -p target/tool
-          printf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config
-          NUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$version" dotnet-crap
-          target/tool/dotnet-crap --help
-          target/tool/dotnet-crap --version
-          target/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty
-          cp target/dotnet-tool-stage/feed/*.nupkg dotnet-crap.nupkg
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+          echo "tag=$REF_NAME" >> "$GITHUB_OUTPUT"
+  build:
+    needs: preflight
+    uses: ./.github/workflows/build-release.yml
+    with:
+      tag: ${{ needs.preflight.outputs.tag }}
+  verify-npm:
+    needs: build
+    uses: ./.github/workflows/npm-install.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  verify-installation:
+    needs: build
+    uses: ./.github/workflows/installation.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  verify-action:
+    needs: build
+    # No SARIF upload happens from a tag ref (the cell is limited to branches),
+    # but the reusable workflow declares the permission it may use.
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/github-action.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  publish:
+    needs: [preflight, build, verify-npm, verify-installation, verify-action]
+    if: github.event_name == 'push' && vars.DOTNET_CRAP_PUBLISH == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      # No checkout, compiled binary, downloaded script, or cargo-dist runs in
+      # this job. Artifacts remain data, on a fresh runner, after owner approval.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: nuget-package
-          path: dotnet-crap.nupkg
+          name: release-assets
+          path: release-assets
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-packages
+          path: npm-packages
+      # The npm tarballs are attested but not attached to the release; the
+      # publish-npm job releases only tarballs that verify against this workflow.
+      # The formula is attested so the tap's sync job can verify it.
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: |
+            release-assets/*
+            npm-packages/*
+          create-storage-record: false
+      - name: Publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          flags=()
+          if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
+          # Fails if the release already exists, so published assets are never replaced.
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
+            --title "dotnet-crap $TAG" --generate-notes "${flags[@]}" release-assets/*
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+  publish-npm:
+    # Only OIDC for npm trusted publishing: it cannot write to the repository,
+    # and it starts only after the attested GitHub release exists and the owner
+    # approves the release environment a second time.
+    needs: [build, publish]
+    if: github.event_name == 'push' && vars.DOTNET_CRAP_PUBLISH == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment: release
+    concurrency:
+      group: npm-publish
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      attestations: read
+      id-token: write
+    steps:
+      # No checkout, compiled binary, downloaded script, or cargo-dist runs in
+      # this job. The only downloaded tool is the npm CLI, pinned by SHA-512.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-packages
+          path: npm-packages
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.2
+      - name: Install the pinned npm CLI (staged trusted publishing needs npm 12)
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL -o "$RUNNER_TEMP/npm-12.2.1.tgz" https://registry.npmjs.org/npm/-/npm-12.2.1.tgz
+          echo "6ca0a6151553fc107e60f1186d9c10d57508dcde6de31292a54d4cc4e8e8ef3de25b3281274657442d7115d10df930bb3794ddcb0681cdfd9d317189abf7b63d  $RUNNER_TEMP/npm-12.2.1.tgz" | sha512sum --check
+          npm install -g --ignore-scripts --no-audit --no-fund "$RUNNER_TEMP/npm-12.2.1.tgz"
+          [[ "$(npm --version)" == 12.2.1 ]]
+      - name: Compare every npm executable with the attested release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          version=${TAG#v}
+          identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/release.yml@refs/tags/$TAG"
+          work=$(mktemp -d)
+          declare -A archives=(
+            [linux-x64]=dotnet-crap-x86_64-unknown-linux-musl.tar.xz [linux-arm64]=dotnet-crap-aarch64-unknown-linux-musl.tar.xz
+            [darwin-x64]=dotnet-crap-x86_64-apple-darwin.tar.xz [darwin-arm64]=dotnet-crap-aarch64-apple-darwin.tar.xz)
+          expected=("dotnet-crap-$version.tgz")
+          patterns=()
+          for platform in "${!archives[@]}"; do
+            expected+=("dotnet-crap-$platform-$version.tgz")
+            patterns+=(--pattern "${archives[$platform]}")
+          done
+          [[ "$(find npm-packages -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" == "$(printf '%s\n' "${expected[@]}" | sort)" ]] \
+            || { echo "::error::npm-packages must hold exactly: ${expected[*]}"; exit 1; }
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir "$work/release" "${patterns[@]}"
+          for asset in "$work"/release/* npm-packages/*.tgz; do
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --cert-identity "$identity" \
+              --source-ref "refs/tags/$TAG" --deny-self-hosted-runners >/dev/null
+          done
+          for tarball in npm-packages/*.tgz; do
+            if tar -tzf "$tarball" | grep -Ev '^package/([^/.][^/]*/)*[^/.][^/]*$'; then
+              echo "::error::unexpected entry in $tarball"
+              exit 1
+            fi
+          done
+          for platform in "${!archives[@]}"; do
+            archive=${archives[$platform]}
+            directory="$work/$platform"
+            mkdir -p "$directory/archive" "$directory/npm"
+            tar -xJf "$work/release/$archive" -C "$directory/archive" "${archive%.tar.xz}/dotnet-crap"
+            tar -xzf "npm-packages/dotnet-crap-$platform-$version.tgz" -C "$directory/npm" package/package.json package/bin/dotnet-crap
+            cmp "$directory/archive/${archive%.tar.xz}/dotnet-crap" "$directory/npm/package/bin/dotnet-crap"
+            jq -e --arg name "dotnet-crap-$platform" --arg version "$version" \
+              '.name == $name and .version == $version and ((has("scripts") or has("dependencies") or has("bin")) | not)' \
+              "$directory/npm/package/package.json" >/dev/null
+          done
+          mkdir "$work/main"
+          tar -xzf "npm-packages/dotnet-crap-$version.tgz" -C "$work/main"
+          jq -e --arg version "$version" '
+            .name == "dotnet-crap" and .version == $version
+            and ((has("scripts") or has("dependencies")) | not)
+            and (.optionalDependencies | keys) == (["darwin-arm64", "darwin-x64", "linux-arm64", "linux-x64"] | map("dotnet-crap-" + .))
+            and (.optionalDependencies | all(. == $version))' "$work/main/package/package.json" >/dev/null
+          echo "npm packages $version match the attested $TAG release assets"
+      - name: Stage platform packages, then the main package, with provenance
+        env:
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          version=${TAG#v}
+          dist_tag=latest
+          if [[ "$version" == *-* ]]; then dist_tag=next; fi
+          view() {  # Print a field; nothing if the package or version doesn't exist (E404).
+            local errors output status=0
+            errors=$(mktemp)
+            output=$(npm view "$@" 2> "$errors") || status=$?
+            if (( status )) && ! grep -qx 'npm error code E404' "$errors"; then cat "$errors" >&2; exit 1; fi
+            rm -f "$errors"
+            printf '%s' "$output"
+          }
+          if [[ "$dist_tag" == latest ]]; then
+            # A stable release older than the current latest must not move latest back.
+            current=$(view dotnet-crap dist-tags.latest)
+            if [[ "$current" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$current" != "$version" ]] \
+              && [[ "$(printf '%s\n' "$current" "$version" | sort -V | tail -1)" == "$current" ]]; then
+              dist_tag=backport
+            fi
+          fi
+          summary=${GITHUB_STEP_SUMMARY:-/dev/null}
+          stage() {
+            local name=$1 file integrity published output id
+            # The ./ prefix is required: npm reads "dir/file.tgz" as a GitHub shorthand.
+            file="./npm-packages/$name-$version.tgz"
+            integrity=$(openssl dgst -sha512 -binary "$file" | base64 -w0)
+            # npm versions are immutable: a rerun skips identical packages and stops on any difference.
+            published=$(view "$name@$version" dist.integrity)
+            if [[ -n "$published" ]]; then
+              [[ "$published" == "sha512-$integrity" ]] || { echo "::error::$name@$version is already published with different contents"; exit 1; }
+              echo "$name@$version is already published with identical contents"
+              return
+            fi
+            # Staged versions stay private until the owner approves them with 2FA.
+            output=$(npm stage publish "$file" --access public --provenance --tag "$dist_tag")
+            printf '%s\n' "$output"
+            id=$(sed -n 's/^+ .* (staged with id \(.*\))$/\1/p' <<< "$output")
+            [[ -n "$id" ]] || { echo "::error::npm did not report a stage id for $name@$version"; exit 1; }
+            printf '| %s@%s | %s |\n' "$name" "$version" "$id" >> "$summary"
+          }
+          {
+            echo "## npm packages staged for approval (dist-tag $dist_tag)"
+            echo
+            echo 'Nothing is public until approved. Approve the four platform packages first'
+            echo '(npmjs.com or `npm stage approve ID` with 2FA), and dotnet-crap only once'
+            echo 'npm view shows every platform version.'
+            echo
+            echo '| Package | Stage id |'
+            echo '| --- | --- |'
+          } >> "$summary"
+          for platform in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do stage "dotnet-crap-$platform"; done
+          stage dotnet-crap

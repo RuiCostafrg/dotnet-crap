@@ -1,0 +1,39 @@
+# Builds the candidate release exactly as release.yml does, then installs it
+# through every channel before anything is published: npm/pnpm/Yarn/Bun, the
+# shell installer, a local Homebrew tap, and the GitHub Action against NUnit
+# and MSTest projects with fresh Coverlet coverage. Nothing is published here.
+name: Distribution
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: distribution-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    # Forks and fork PRs skip the macOS/ARM matrix.
+    if: github.repository == 'RuiCostafrg/dotnet-crap'
+    uses: ./.github/workflows/build-release.yml
+  npm:
+    needs: build
+    uses: ./.github/workflows/npm-install.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  installation:
+    needs: build
+    uses: ./.github/workflows/installation.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  github-action:
+    needs: build
+    # security-events: write lets one same-repository cell exercise upload-sarif.
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/github-action.yml
+    with:
+      version: ${{ needs.build.outputs.version }}

@@ -1,0 +1,231 @@
+# Builds the complete candidate release with cargo-dist, packs the .NET tool and
+# npm packages from those exact archives, and uploads them as the calling run's
+# `release-assets` and `npm-packages` artifacts. Read-only: no environment, no
+# secrets, no write permission. release.yml and distribution.yml both call it.
+name: Build release assets
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag such as v0.1.0; empty plans the Cargo version as a candidate.
+        type: string
+        default: ''
+    outputs:
+      manifest:
+        description: cargo-dist plan (JSON)
+        value: ${{ jobs.plan.outputs.manifest }}
+      tag:
+        description: Announcement tag
+        value: ${{ jobs.plan.outputs.tag }}
+      version:
+        description: Application version
+        value: ${{ jobs.plan.outputs.version }}
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    outputs:
+      manifest: ${{ steps.plan.outputs.manifest }}
+      tag: ${{ steps.plan.outputs.tag }}
+      version: ${{ steps.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned cargo-dist
+        run: python3 scripts/install-dist.py x86_64-unknown-linux-gnu
+      - name: Plan without publishing
+        id: plan
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          flags=()
+          if [[ -n "$TAG" ]]; then
+            [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::invalid tag $TAG"; exit 1; }
+            flags=(--tag "$TAG")
+          fi
+          dist plan "${flags[@]}" --output-format=json > plan.json
+          version=$(jq -r '.releases[0].app_version' plan.json)
+          tag=$(jq -r .announcement_tag plan.json)
+          cargo_version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml", "rb"))["package"]["version"])')
+          [[ "$version" == "$cargo_version" && "$tag" == "v$version" ]] \
+            || { echo "::error::plan $tag/$version does not match Cargo version $cargo_version"; exit 1; }
+          {
+            echo "manifest=$(jq -c . plan.json)"
+            echo "tag=$tag"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+  build:
+    needs: plan
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-26
+            target: aarch64-apple-darwin
+          - runner: macos-26-intel
+            target: x86_64-apple-darwin
+          - runner: ubuntu-26.04-arm
+            target: aarch64-unknown-linux-gnu
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-musl
+            host: x86_64-unknown-linux-gnu
+          - runner: ubuntu-26.04-arm
+            target: aarch64-unknown-linux-musl
+            host: aarch64-unknown-linux-gnu
+          # Only for the .NET tool's win-x64 RID; no installer targets Windows.
+          - runner: windows-2022
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
+        with:
+          toolchain: 1.96.0
+          targets: ${{ matrix.target }}
+      - name: Install checksum-pinned cargo-dist
+        shell: bash
+        env:
+          TARGET: ${{ matrix.host || matrix.target }}
+        run: python3 scripts/install-dist.py "$TARGET"
+      - name: Native musl C compiler
+        if: contains(matrix.target, 'musl')
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y musl-tools
+          {
+            echo 'CC=musl-gcc'
+            echo 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc'
+            echo 'CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc'
+          } >> "$GITHUB_ENV"
+      - name: Build locked release archive
+        id: build
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          cargo fetch --locked
+          CARGO_NET_OFFLINE=true dist build --tag "$TAG" --artifacts=local --target "$TARGET" --output-format=json > dist-manifest.json
+          git diff --exit-code -- Cargo.lock
+          cp dist-manifest.json "target/distrib/$TARGET-dist-manifest.json"
+          {
+            echo 'paths<<EOF'
+            dist print-upload-files-from-manifest --manifest dist-manifest.json
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+      - name: Smoke the archived executable
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          mkdir smoke
+          if [[ "$TARGET" == *windows* ]]; then
+            unzip -q "target/distrib/dotnet-crap-$TARGET.zip" -d smoke
+            exe=$(find smoke -type f -name dotnet-crap.exe)
+          else
+            tar -xJf "target/distrib/dotnet-crap-$TARGET.tar.xz" -C smoke
+            exe=$(find smoke -type f -name dotnet-crap)
+          fi
+          [[ "$("$exe" --version | tr -d '\r')" == "dotnet-crap $VERSION" ]]
+          "$exe" --root examples/Fixture --threshold 100 --fail-on-empty
+          if [[ "$TARGET" == *musl* ]]; then
+            # Static: no ELF interpreter and no shared-library dependencies.
+            if readelf --program-headers "$exe" | grep -q INTERP; then exit 1; fi
+            if readelf --dynamic "$exe" | grep -q NEEDED; then exit 1; fi
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: artifacts-build-local-${{ matrix.target }}
+          path: |
+            ${{ steps.build.outputs.paths }}
+            target/distrib/${{ matrix.target }}-dist-manifest.json
+          if-no-files-found: error
+          retention-days: 7
+  assemble:
+    needs: [plan, build]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned cargo-dist
+        run: python3 scripts/install-dist.py x86_64-unknown-linux-gnu
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.109
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: artifacts-build-local-*
+          path: target/distrib
+          merge-multiple: true
+      - name: Assemble installers and formula
+        env:
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          cargo fetch --locked
+          CARGO_NET_OFFLINE=true dist build --tag "$TAG" --artifacts=global --output-format=json > assembled-manifest.json
+          git diff --exit-code -- Cargo.lock
+          cp assembled-manifest.json target/distrib/dist-manifest.json
+      - name: Launcher tests
+        run: dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
+      - name: Pack the .NET tool from the release archives
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          python3 scripts/stage-dotnet-tool.py --assets target/distrib --stage target/dotnet-tool-stage
+          bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$VERSION"
+          package="dotnet-crap.$VERSION.nupkg"
+          cp "target/dotnet-tool-stage/feed/$package" "target/distrib/$package"
+          (cd target/distrib && sha256sum "$package" > "$package.sha256")
+          printf '%s\n' '<configuration><packageSources><clear /></packageSources></configuration>' > target/local-tool.nuget.config
+          NUGET_PACKAGES="$GITHUB_WORKSPACE/target/tool-restore-cache" dotnet tool install --tool-path target/tool \
+            --configfile target/local-tool.nuget.config --add-source target/dotnet-tool-stage/feed --version "$VERSION" dotnet-crap
+          [[ "$(target/tool/dotnet-crap --version)" == "dotnet-crap $VERSION" ]]
+          target/tool/dotnet-crap --root examples/Fixture --threshold 100 --fail-on-empty
+          status=0
+          target/tool/dotnet-crap --root examples/Fixture --threshold 0 || status=$?
+          [[ "$status" == 1 ]]
+      - name: Validate the exact asset set, then pack and verify npm packages
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          python3 scripts/prepare-release.py target/distrib release-assets --version "$VERSION"
+          # npm packages repackage the verified release archives; every byte is rechecked.
+          python3 scripts/npm-packages.py --assets release-assets --version "$VERSION" --output npm-packages
+          python3 scripts/npm-packages.py --assets release-assets --version "$VERSION" --output target/npm-packages-again
+          diff -r npm-packages target/npm-packages-again
+          python3 scripts/verify-npm-packages.py --assets release-assets --packages npm-packages --version "$VERSION"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.2
+      - name: Dry-run npm publication of every package (nothing is uploaded)
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          for name in dotnet-crap-linux-x64 dotnet-crap-linux-arm64 dotnet-crap-darwin-x64 dotnet-crap-darwin-arm64 dotnet-crap; do
+            npm publish --dry-run --ignore-scripts "./npm-packages/$name-$VERSION.tgz" --access public --tag latest
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-assets
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-packages
+          path: npm-packages/*
+          if-no-files-found: error
+          # publish-npm waits for a second approval and may be rerun alone.
+          retention-days: 30
