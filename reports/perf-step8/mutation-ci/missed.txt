@@ -1,0 +1,24 @@
+src/main.rs:128:25: delete ! in run
+src/cobertura.rs:73:45: replace * with + in import_report
+src/cobertura.rs:73:38: replace * with + in import_report
+src/cobertura.rs:75:31: replace > with == in import_report
+src/cobertura.rs:75:31: replace > with >= in import_report
+src/cobertura.rs:79:32: replace + with - in import_report
+src/cobertura.rs:79:32: replace + with * in import_report
+src/cobertura.rs:80:27: replace > with == in import_report
+src/cobertura.rs:80:27: replace > with >= in import_report
+src/cobertura.rs:300:32: delete ! in resolve_filename
+src/cobertura.rs:301:53: replace || with && in resolve_filename
+src/cobertura.rs:301:32: replace || with && in resolve_filename
+src/cobertura.rs:301:35: delete ! in resolve_filename
+src/cobertura.rs:346:23: replace match guard error.kind() == std::io::ErrorKind::NotFound with true in add_candidate
+src/cobertura.rs:335:34: replace || with && in add_candidate
+src/cobertura.rs:377:13: replace && with || in normalize_path
+src/cobertura.rs:382:13: replace && with || in normalize_path
+src/cobertura.rs:381:13: replace && with || in normalize_path
+src/cobertura.rs:383:24: replace && with || in normalize_path
+src/cobertura.rs:409:25: replace && with || in validate_filename
+src/collector.rs:69:35: replace || with && in collect
+src/collector.rs:109:58: replace && with || in collect
+src/collector.rs:142:21: delete ! in collect
+src/collector.rs:177:19: replace match guard e.kind() == std::io::ErrorKind::NotFound with true in validate_destination
