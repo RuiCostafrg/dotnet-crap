@@ -257,6 +257,7 @@ mod deadline_tests {
             assert!(error.to_string().contains("timed out"));
         }
     }
+    /// Valid baseline options; each test changes one field.
     fn options() -> CollectOptions {
         CollectOptions {
             root: PathBuf::from("."),
@@ -269,6 +270,7 @@ mod deadline_tests {
     }
 
     #[test]
+    /// A zero report count is rejected before any process work.
     fn validate_options_rejects_zero_expected_reports() {
         let mut options = options();
         options.expected_reports = 0;
@@ -277,6 +279,7 @@ mod deadline_tests {
     }
 
     #[test]
+    /// A zero deadline is rejected.
     fn validate_options_rejects_zero_timeout() {
         let mut options = options();
         options.timeout = Duration::ZERO;
@@ -285,12 +288,14 @@ mod deadline_tests {
     }
 
     #[test]
+    /// The minimal valid command is accepted.
     fn validate_options_accepts_one_standalone_results_argument() {
         // Length two also proves the minimum-length check is not too strict.
         assert!(validate_options(&options()).is_ok());
     }
 
     #[test]
+    /// Missing, duplicate and executable-position `{results}` tokens are rejected.
     fn validate_options_rejects_wrong_results_argument_forms() {
         for command in [
             vec!["dotnet"],
@@ -309,6 +314,7 @@ mod deadline_tests {
     }
 
     #[test]
+    /// Only the exact standalone token is substituted; the executable is excluded.
     fn results_args_replaces_only_standalone_exact_tokens() {
         let command: Vec<OsString> = [
             "dotnet",
@@ -335,6 +341,7 @@ mod deadline_tests {
     }
 
     #[test]
+    /// An empty results directory reports the expected and found counts.
     fn find_reports_reports_count_mismatch() {
         let results = tempfile::tempdir().unwrap();
         let error = find_reports(results.path(), 1).unwrap_err();
@@ -343,12 +350,14 @@ mod deadline_tests {
     }
 
     #[test]
+    /// The count check compares exactly rather than requiring a report.
     fn find_reports_accepts_empty_results_when_zero_expected() {
         let results = tempfile::tempdir().unwrap();
         assert!(find_reports(results.path(), 0).unwrap().is_empty());
     }
 
     #[test]
+    /// Nested reports are counted and returned in sorted order.
     fn find_reports_sorts_and_counts_reports() {
         let results = tempfile::tempdir().unwrap();
         let nested = results.path().join("a");
@@ -367,6 +376,7 @@ mod deadline_tests {
 
     #[cfg(unix)]
     #[test]
+    /// Links in the results directory are rejected.
     fn find_reports_rejects_symbolic_links() {
         let results = tempfile::tempdir().unwrap();
         let target = results.path().join("coverage.cobertura.xml");
@@ -380,6 +390,7 @@ mod deadline_tests {
     }
 
     #[test]
+    /// Native evidence keeps hit counts, decimal line keys and the snapshot hash.
     fn build_evidence_stringifies_lines_and_copies_hashes() {
         let mut lines = crate::cobertura::LineEvidence::new();
         let mut points = BTreeMap::new();
