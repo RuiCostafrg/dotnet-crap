@@ -3,8 +3,7 @@
 //! Run from the package root with `cargo run --example scan -- .` (or pass a
 //! directory containing C# source files).
 
-use anyhow::Result;
-use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
+use dotnet_crap::{scan, terminal_safe, ReportFormat, Result, ScanOptions};
 use std::{env, io::Write, path::PathBuf};
 
 /// Scan the requested root directly through the library and print the text report.

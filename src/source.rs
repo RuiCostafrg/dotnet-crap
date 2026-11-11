@@ -1,6 +1,6 @@
 //! Source byte decoding.
 
-use anyhow::{bail, Context, Result};
+use crate::error::{fail, ErrorKind, Result, ResultExt};
 
 /// Decode UTF-8 or BOM-marked UTF-16 source, rejecting malformed bytes instead of replacing them.
 pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
@@ -8,7 +8,7 @@ pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
         let le = bytes[0] == 0xff;
         let data = &bytes[2..];
         if !data.len().is_multiple_of(2) {
-            bail!("invalid UTF-16 source");
+            fail!(Source, "invalid UTF-16 source");
         }
         let units: Vec<u16> = data
             .as_chunks::<2>()
@@ -22,11 +22,11 @@ pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
                 }
             })
             .collect();
-        Ok(String::from_utf16(&units).context("invalid UTF-16 source")?)
+        Ok(String::from_utf16(&units).context(ErrorKind::Source, "invalid UTF-16 source")?)
     } else {
         Ok(
             std::str::from_utf8(bytes.strip_prefix(&[0xef, 0xbb, 0xbf]).unwrap_or(bytes))
-                .context("invalid UTF-8 source")?
+                .context(ErrorKind::Source, "invalid UTF-8 source")?
                 .to_owned(),
         )
     }

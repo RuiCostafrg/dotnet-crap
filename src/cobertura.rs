@@ -10,7 +10,7 @@
 //! `<sources>` are tried literally; basename/suffix guessing, SourceLink URLs
 //! and deterministic `/_/` mappings are rejected rather than reinterpreted.
 
-use anyhow::{anyhow, bail, Context, Result};
+use crate::error::{fail, Error, ErrorKind, OptionExt, Result, ResultExt};
 use roxmltree::{Document, Node, ParsingOptions};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -41,19 +41,23 @@ pub fn parse_reports(
     reports: &[PathBuf],
 ) -> Result<LineEvidence> {
     if reports.is_empty() {
-        bail!("no Cobertura reports to import");
+        fail!(Cobertura, "no Cobertura reports to import");
     }
-    let root = root.canonicalize().context("invalid coverage root")?;
+    let root = root
+        .canonicalize()
+        .context(ErrorKind::InvalidInput, "invalid coverage root")?;
     if !root.is_dir() {
-        bail!("coverage root must be a directory");
+        fail!(InvalidInput, "coverage root must be a directory");
     }
     let mut evidence = LineEvidence::new();
     // Line counts per selected source are file properties, not report
     // properties, so one lazy cache serves every report in this call.
     let mut line_counts = HashMap::new();
     for report in reports {
-        import_report(&root, sources, report, &mut evidence, &mut line_counts)
-            .with_context(|| format!("invalid Cobertura report {}", report.display()))?;
+        // Keep the inner kind: an unreadable report is `Io`, rejected content is `Cobertura`.
+        import_report(&root, sources, report, &mut evidence, &mut line_counts).map_err(
+            |error| error.wrap(format!("invalid Cobertura report {}", report.display())),
+        )?;
     }
     Ok(evidence)
 }
@@ -71,27 +75,31 @@ fn import_report(
     line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
-    let file = fs::File::open(report).with_context(|| format!("reading {}", report.display()))?;
-    if file.metadata()?.len() > MAX_REPORT_BYTES {
-        bail!("Cobertura report exceeds 16 MiB size limit");
+    let file = fs::File::open(report)
+        .with_context(ErrorKind::Io, || format!("reading {}", report.display()))?;
+    if file.metadata().kind(ErrorKind::Io)?.len() > MAX_REPORT_BYTES {
+        fail!(Cobertura, "Cobertura report exceeds 16 MiB size limit");
     }
     let mut bytes = Vec::new();
-    file.take(MAX_REPORT_BYTES + 1).read_to_end(&mut bytes)?;
+    file.take(MAX_REPORT_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .kind(ErrorKind::Io)?;
     if bytes.len() as u64 > MAX_REPORT_BYTES {
-        bail!("Cobertura report exceeds 16 MiB size limit");
+        fail!(Cobertura, "Cobertura report exceeds 16 MiB size limit");
     }
-    let text = std::str::from_utf8(&bytes).context("Cobertura report is not UTF-8")?;
+    let text = std::str::from_utf8(&bytes)
+        .context(ErrorKind::Cobertura, "Cobertura report is not UTF-8")?;
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let document = parse_document(text)?;
     let coverage = document.root_element();
     if coverage.tag_name().name() != "coverage" {
-        bail!("root element must be <coverage>");
+        fail!(Cobertura, "root element must be <coverage>");
     }
     let prefixes = source_prefixes(coverage, root)?;
     let packages = only_child(coverage, "packages")?;
     let packages = child_elements(packages, "package");
     if packages.is_empty() {
-        bail!("<packages> contains no <package> elements");
+        fail!(Cobertura, "<packages> contains no <package> elements");
     }
     let mut found_class = false;
     let mut resolutions: HashMap<&str, Option<String>> = HashMap::new();
@@ -112,7 +120,7 @@ fn import_report(
         }
     }
     if !found_class {
-        bail!("Cobertura report contains no class records");
+        fail!(Cobertura, "Cobertura report contains no class records");
     }
     Ok(())
 }
@@ -121,13 +129,22 @@ fn import_report(
 fn parse_document(text: &str) -> Result<Document<'_>> {
     let lower = text.to_ascii_lowercase();
     if lower.contains("<!doctype") {
-        bail!("Cobertura report contains a forbidden DOCTYPE declaration");
+        fail!(
+            Cobertura,
+            "Cobertura report contains a forbidden DOCTYPE declaration"
+        );
     }
     if lower.contains("<!entity") {
-        bail!("Cobertura report contains a forbidden entity declaration");
+        fail!(
+            Cobertura,
+            "Cobertura report contains a forbidden entity declaration"
+        );
     }
     if lower.contains("<?xml-stylesheet") {
-        bail!("Cobertura report contains a forbidden external XML stylesheet");
+        fail!(
+            Cobertura,
+            "Cobertura report contains a forbidden external XML stylesheet"
+        );
     }
     parse_with_node_limit(text, 500_000)
 }
@@ -141,14 +158,15 @@ fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
         allow_dtd: false,
         entity_resolver: None,
     };
-    Document::parse_with_options(text, options).map_err(|error| anyhow!("malformed XML: {error}"))
+    Document::parse_with_options(text, options)
+        .map_err(|error| Error::new(ErrorKind::Cobertura, format!("malformed XML: {error}")))
 }
 
 /// Read literal `<sources><source>` prefixes, anchoring relative prefixes at root.
 fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> {
     let sources = child_elements(coverage, "sources");
     if sources.len() > 1 {
-        bail!("duplicate <sources> elements");
+        fail!(Cobertura, "duplicate <sources> elements");
     }
     let Some(sources) = sources.into_iter().next() else {
         return Ok(Vec::new());
@@ -156,7 +174,10 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
     let mut prefixes = Vec::new();
     for source in child_elements(sources, "source") {
         if source.children().any(|child| child.is_element()) {
-            bail!("Cobertura source prefix must not contain elements");
+            fail!(
+                Cobertura,
+                "Cobertura source prefix must not contain elements"
+            );
         }
         let text = source
             .children()
@@ -165,9 +186,10 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
             .collect::<String>();
         let raw = text.as_str();
         if raw.trim().is_empty() {
-            bail!("empty Cobertura source prefix");
+            fail!(Cobertura, "empty Cobertura source prefix");
         }
-        let text = normalize_path(raw).context("invalid Cobertura source prefix")?;
+        let text =
+            normalize_path(raw).context(ErrorKind::Cobertura, "invalid Cobertura source prefix")?;
         let path = PathBuf::from(&text);
         prefixes.push(if is_host_absolute(&text) {
             path
@@ -193,9 +215,10 @@ fn import_class<'a>(
     resolutions: &mut HashMap<&'a str, Option<String>>,
     line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
-    let filename = class
-        .attribute("filename")
-        .context("Cobertura <class> is missing filename")?;
+    let filename = class.attribute("filename").context(
+        ErrorKind::Cobertura,
+        "Cobertura <class> is missing filename",
+    )?;
     let lines = only_child(class, "lines")?;
     let lines = child_elements(lines, "line");
 
@@ -213,7 +236,10 @@ fn import_class<'a>(
             None => {
                 let count = sources
                     .get(name)
-                    .context("resolved selected source is missing from the source map")?
+                    .context(
+                        ErrorKind::Cobertura,
+                        "resolved selected source is missing from the source map",
+                    )?
                     .lines()
                     .count();
                 line_counts.insert(name.clone(), count);
@@ -228,7 +254,10 @@ fn import_class<'a>(
         let hits = parse_hits(line)?;
         if let Some(limit) = source_line_count {
             if number as usize > limit {
-                bail!("Cobertura line {number} is outside source {filename:?}");
+                fail!(
+                    Cobertura,
+                    "Cobertura line {number} is outside source {filename:?}"
+                );
             }
         }
         parsed.push((number, hits));
@@ -253,15 +282,15 @@ fn import_class<'a>(
 fn parse_line_number(line: Node<'_, '_>) -> Result<u32> {
     let raw = line
         .attribute("number")
-        .context("Cobertura <line> is missing number")?;
-    let number: u32 = raw
-        .parse()
-        .with_context(|| format!("invalid Cobertura line number {raw:?}"))?;
+        .context(ErrorKind::Cobertura, "Cobertura <line> is missing number")?;
+    let number: u32 = raw.parse().with_context(ErrorKind::Cobertura, || {
+        format!("invalid Cobertura line number {raw:?}")
+    })?;
     if number == 0 {
-        bail!("Cobertura line number must be positive: {raw:?}");
+        fail!(Cobertura, "Cobertura line number must be positive: {raw:?}");
     }
     if number.to_string() != raw {
-        bail!("Cobertura line number is not canonical: {raw:?}");
+        fail!(Cobertura, "Cobertura line number is not canonical: {raw:?}");
     }
     Ok(number)
 }
@@ -270,12 +299,12 @@ fn parse_line_number(line: Node<'_, '_>) -> Result<u32> {
 fn parse_hits(line: Node<'_, '_>) -> Result<u64> {
     let raw = line
         .attribute("hits")
-        .context("Cobertura <line> is missing hits")?;
-    let hits: u64 = raw
-        .parse()
-        .with_context(|| format!("invalid Cobertura hit count {raw:?}"))?;
+        .context(ErrorKind::Cobertura, "Cobertura <line> is missing hits")?;
+    let hits: u64 = raw.parse().with_context(ErrorKind::Cobertura, || {
+        format!("invalid Cobertura hit count {raw:?}")
+    })?;
     if hits.to_string() != raw {
-        bail!("Cobertura hit count is not canonical: {raw:?}");
+        fail!(Cobertura, "Cobertura hit count is not canonical: {raw:?}");
     }
     Ok(hits)
 }
@@ -287,7 +316,8 @@ fn resolve_filename(
     filename: &str,
     sources: &BTreeMap<String, String>,
 ) -> Result<Option<String>> {
-    let path = normalize_path(filename).context("invalid Cobertura filename")?;
+    let path =
+        normalize_path(filename).context(ErrorKind::Cobertura, "invalid Cobertura filename")?;
     let absolute = is_host_absolute(&path);
     validate_filename(&path, absolute)?;
     let mut candidates = BTreeSet::new();
@@ -306,19 +336,33 @@ fn resolve_filename(
         }
     }
     if candidates.len() > 1 {
-        bail!("ambiguous Cobertura filename {filename:?} resolves to multiple files");
+        fail!(
+            Cobertura,
+            "ambiguous Cobertura filename {filename:?} resolves to multiple files"
+        );
     }
     let Some(candidate) = candidates.into_iter().next() else {
-        bail!("Cobertura filename {filename:?} does not resolve to a root-contained file");
+        fail!(
+            Cobertura,
+            "Cobertura filename {filename:?} does not resolve to a root-contained file"
+        );
     };
     let relative = candidate
         .strip_prefix(root)
-        .map_err(|_| anyhow!("Cobertura path is outside the coverage root: {filename:?}"))?
+        .map_err(|_| {
+            Error::new(
+                ErrorKind::Cobertura,
+                format!("Cobertura path is outside the coverage root: {filename:?}"),
+            )
+        })?
         .to_str()
-        .context("non-UTF-8 Cobertura source path")?
+        .context(ErrorKind::Cobertura, "non-UTF-8 Cobertura source path")?
         .replace('\\', "/");
     if relative.is_empty() {
-        bail!("Cobertura filename does not identify a file: {filename:?}");
+        fail!(
+            Cobertura,
+            "Cobertura filename does not identify a file: {filename:?}"
+        );
     }
     Ok(sources.contains_key(&relative).then_some(relative))
 }
@@ -336,13 +380,18 @@ fn add_candidate(
     match candidate.canonicalize() {
         Ok(canonical) => {
             if canonical == root || !canonical.starts_with(root) {
-                bail!(
+                fail!(
+                    Cobertura,
                     "Cobertura path is outside the coverage root: {}",
                     candidate.display()
                 );
             }
             if !canonical.is_file() {
-                bail!("Cobertura path is not a file: {}", candidate.display());
+                fail!(
+                    Cobertura,
+                    "Cobertura path is not a file: {}",
+                    candidate.display()
+                );
             }
             candidates.insert(canonical);
         }
@@ -358,8 +407,9 @@ fn add_candidate(
             }
         }
         Err(error) => {
-            return Err(error)
-                .with_context(|| format!("resolving Cobertura path {}", candidate.display()));
+            return Err(error).with_context(ErrorKind::Io, || {
+                format!("resolving Cobertura path {}", candidate.display())
+            });
         }
     }
     Ok(())
@@ -369,10 +419,10 @@ fn add_candidate(
 fn normalize_path(raw: &str) -> Result<String> {
     let path = raw.replace('\\', "/");
     if path.is_empty() {
-        bail!("empty path");
+        fail!(Cobertura, "empty path");
     }
     if path.contains('\0') {
-        bail!("path contains NUL");
+        fail!(Cobertura, "path contains NUL");
     }
     if let Some(colon) = path.find(':') {
         let scheme = &path[..colon];
@@ -385,19 +435,22 @@ fn normalize_path(raw: &str) -> Result<String> {
             && path.as_bytes().get(colon + 1) == Some(&b'/');
         if scheme_like && drive_absolute {
             #[cfg(not(windows))]
-            bail!("foreign Windows root is not supported: {raw}");
+            fail!(Cobertura, "foreign Windows root is not supported: {raw}");
         } else {
-            bail!("URI or colon path is not supported: {raw}");
+            fail!(Cobertura, "URI or colon path is not supported: {raw}");
         }
     }
     if path.starts_with("//") {
-        bail!("Windows/UNC roots are not supported: {raw}");
+        fail!(Cobertura, "Windows/UNC roots are not supported: {raw}");
     }
     if path.starts_with("/_/") || path == "/_" {
-        bail!("unmapped deterministic/SourceLink path is not supported: {raw}");
+        fail!(
+            Cobertura,
+            "unmapped deterministic/SourceLink path is not supported: {raw}"
+        );
     }
     if path.split('/').any(|part| part == "..") {
-        bail!("parent path component is not supported: {raw}");
+        fail!(Cobertura, "parent path component is not supported: {raw}");
     }
     Ok(path)
 }
@@ -405,17 +458,23 @@ fn normalize_path(raw: &str) -> Result<String> {
 /// Enforce exact file-path components without allowing lexical ambiguity.
 fn validate_filename(path: &str, absolute: bool) -> Result<()> {
     if path.ends_with('/') {
-        bail!("Cobertura filename must name a file: {path:?}");
+        fail!(Cobertura, "Cobertura filename must name a file: {path:?}");
     }
     for (index, part) in path.split('/').enumerate() {
         if part.is_empty() {
             if absolute && index == 0 {
                 continue;
             }
-            bail!("Cobertura filename has an empty component: {path:?}");
+            fail!(
+                Cobertura,
+                "Cobertura filename has an empty component: {path:?}"
+            );
         }
         if part == "." || part == ".." {
-            bail!("Cobertura filename is not an exact path: {path:?}");
+            fail!(
+                Cobertura,
+                "Cobertura filename is not an exact path: {path:?}"
+            );
         }
     }
     Ok(())
@@ -445,9 +504,9 @@ fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node
     let mut children = child_elements(node, name).into_iter();
     let child = children
         .next()
-        .ok_or_else(|| anyhow!("missing <{name}> element"))?;
+        .ok_or_else(|| Error::new(ErrorKind::Cobertura, format!("missing <{name}> element")))?;
     if children.next().is_some() {
-        bail!("duplicate <{name}> elements");
+        fail!(Cobertura, "duplicate <{name}> elements");
     }
     Ok(child)
 }
@@ -525,7 +584,7 @@ mod dense_class_regression_tests {
             self.reports.push(path);
         }
 
-        fn parse(&self) -> anyhow::Result<LineEvidence> {
+        fn parse(&self) -> crate::Result<LineEvidence> {
             parse_reports(self.root(), &self.sources, &self.reports)
         }
     }

@@ -1,0 +1,279 @@
+src/lib.rs:84:9: replace ScanResult::input_paths -> &[PathBuf] with Vec::leak(Vec::new())
+src/lib.rs:84:9: replace ScanResult::input_paths -> &[PathBuf] with Vec::leak(vec![Default::default()])
+src/lib.rs:88:9: replace ScanResult::verify_sources -> Result<()> with Ok(())
+src/lib.rs:89:81: replace != with == in ScanResult::verify_sources
+src/lib.rs:101:9: replace ScanResult::render -> Result<String> with Ok(String::new())
+src/lib.rs:101:9: replace ScanResult::render -> Result<String> with Ok("xyzzy".into())
+src/lib.rs:102:32: replace == with != in ScanResult::render
+src/lib.rs:112:26: replace == with != in ScanResult::render
+src/lib.rs:139:36: replace || with && in scan
+src/lib.rs:139:8: delete ! in scan
+src/lib.rs:139:54: replace < with == in scan
+src/lib.rs:139:54: replace < with > in scan
+src/lib.rs:139:54: replace < with <= in scan
+src/lib.rs:146:8: delete ! in scan
+src/lib.rs:178:31: replace && with || in scan
+src/lib.rs:193:16: delete ! in scan
+src/lib.rs:199:67: replace > with == in scan
+src/lib.rs:199:67: replace > with < in scan
+src/lib.rs:199:67: replace > with >= in scan
+src/lib.rs:223:9: replace || with && in scan
+src/lib.rs:222:9: replace || with && in scan
+src/lib.rs:221:46: replace > with == in scan
+src/lib.rs:221:46: replace > with < in scan
+src/lib.rs:221:46: replace > with >= in scan
+src/lib.rs:222:34: replace && with || in scan
+src/lib.rs:222:37: delete ! in scan
+src/lib.rs:223:31: replace && with || in scan
+src/main.rs:53:5: replace execute -> Result<bool> with Ok(true)
+src/main.rs:53:53: replace == with != in execute
+src/main.rs:53:5: replace execute -> Result<bool> with Ok(false)
+src/main.rs:75:5: replace run -> Result<bool> with Ok(true)
+src/main.rs:75:5: replace run -> Result<bool> with Ok(false)
+src/main.rs:84:9: delete match arm "json" in run
+src/main.rs:85:9: delete match arm "sarif" in run
+src/main.rs:99:5: replace main with ()
+src/analysis.rs:10:5: replace callable -> bool with true
+src/analysis.rs:10:5: replace callable -> bool with false
+src/analysis.rs:24:9: replace || with && in callable
+src/analysis.rs:21:7: replace && with || in callable
+src/analysis.rs:21:51: replace || with && in callable
+src/analysis.rs:21:63: replace == with != in callable
+src/analysis.rs:26:43: replace == with != in callable
+src/analysis.rs:25:13: replace && with || in callable
+src/analysis.rs:30:5: replace normalized_text -> String with "xyzzy".into()
+src/analysis.rs:30:5: replace normalized_text -> String with String::new()
+src/analysis.rs:40:5: replace parameter_types -> String with "xyzzy".into()
+src/analysis.rs:40:5: replace parameter_types -> String with String::new()
+src/analysis.rs:48:34: replace == with != in parameter_types
+src/analysis.rs:51:50: replace == with != in parameter_types
+src/analysis.rs:61:5: replace checked_prefix -> &'static str with ""
+src/analysis.rs:61:5: replace checked_prefix -> &'static str with "xyzzy"
+src/analysis.rs:71:5: replace callable_name -> String with String::new()
+src/analysis.rs:62:52: replace == with != in checked_prefix
+src/analysis.rs:71:5: replace callable_name -> String with "xyzzy".into()
+src/analysis.rs:72:9: delete match arm "operator_declaration" in callable_name
+src/analysis.rs:80:9: delete match arm "conversion_operator_declaration" in callable_name
+src/analysis.rs:96:9: delete match arm "destructor_declaration" in callable_name
+src/analysis.rs:115:5: replace decision -> u32 with 0
+src/analysis.rs:102:9: delete match arm "indexer_declaration" in callable_name
+src/analysis.rs:115:5: replace decision -> u32 with 1
+src/analysis.rs:116:9: delete match arm "if_statement" | "for_statement" | "foreach_statement" | "while_statement" | "do_statement" | "catch_clause" | "conditional_expression" | "when_clause" in decision
+src/analysis.rs:124:9: delete match arm "switch_section" in decision
+src/analysis.rs:132:9: delete match arm "switch_expression_arm" in decision
+src/analysis.rs:141:9: delete match arm "binary_expression" | "assignment_expression" in decision
+src/analysis.rs:128:46: replace == with != in decision
+src/analysis.rs:137:54: replace != with == in decision
+src/analysis.rs:165:5: replace collect -> Result<()> with Ok(())
+src/analysis.rs:168:17: replace += with -= in collect
+src/analysis.rs:168:17: replace += with *= in collect
+src/analysis.rs:169:20: replace > with == in collect
+src/analysis.rs:169:20: replace > with < in collect
+src/analysis.rs:169:20: replace > with >= in collect
+src/analysis.rs:175:12: delete ! in collect
+src/analysis.rs:183:20: replace += with -= in collect
+src/analysis.rs:183:20: replace += with *= in collect
+src/analysis.rs:184:23: replace > with == in collect
+src/analysis.rs:184:23: replace > with < in collect
+src/analysis.rs:184:23: replace > with >= in collect
+src/analysis.rs:187:23: replace && with || in collect
+src/analysis.rs:187:16: delete ! in collect
+src/analysis.rs:188:58: replace + with - in collect
+src/analysis.rs:188:58: replace + with * in collect
+src/analysis.rs:188:87: replace + with - in collect
+src/analysis.rs:188:87: replace + with * in collect
+src/analysis.rs:203:26: replace <= with > in collect
+src/analysis.rs:213:67: replace + with - in collect
+src/analysis.rs:213:67: replace + with * in collect
+src/analysis.rs:213:96: replace + with - in collect
+src/analysis.rs:213:96: replace + with * in collect
+src/analysis.rs:215:75: replace <= with > in collect
+src/analysis.rs:216:34: replace || with && in collect
+src/analysis.rs:216:29: replace == with != in collect
+src/analysis.rs:216:60: replace < with == in collect
+src/analysis.rs:216:60: replace < with > in collect
+src/analysis.rs:216:60: replace < with <= in collect
+src/analysis.rs:216:53: replace - with + in collect
+src/analysis.rs:216:53: replace - with / in collect
+src/analysis.rs:217:27: replace += with -= in collect
+src/analysis.rs:217:27: replace += with *= in collect
+src/analysis.rs:218:25: replace += with -= in collect
+src/analysis.rs:218:25: replace += with *= in collect
+src/analysis.rs:218:45: replace > with == in collect
+src/analysis.rs:218:45: replace > with < in collect
+src/analysis.rs:218:45: replace > with >= in collect
+src/analysis.rs:221:20: replace > with == in collect
+src/analysis.rs:221:20: replace > with < in collect
+src/analysis.rs:221:20: replace > with >= in collect
+src/analysis.rs:221:44: replace / with % in collect
+src/analysis.rs:221:44: replace / with * in collect
+src/analysis.rs:223:26: replace - with + in collect
+src/analysis.rs:223:26: replace - with / in collect
+src/analysis.rs:228:42: replace + with - in collect
+src/analysis.rs:228:42: replace + with * in collect
+src/analysis.rs:229:47: replace + with - in collect
+src/analysis.rs:229:47: replace + with * in collect
+src/analysis.rs:230:44: replace + with - in collect
+src/analysis.rs:230:44: replace + with * in collect
+src/analysis.rs:233:66: replace + with - in collect
+src/analysis.rs:233:66: replace + with * in collect
+src/analysis.rs:233:49: replace * with + in collect
+src/analysis.rs:233:49: replace * with / in collect
+src/evidence.rs:33:5: replace unique_map -> std::result::Result<BTreeMap<String, V>, D::Error> with Ok(BTreeMap::new())
+src/evidence.rs:38:13: replace unique_map::<impl serde::de::Visitor<'de> for Unique<V>>::expecting -> std::fmt::Result with Ok(Default::default())
+src/evidence.rs:45:13: replace unique_map::<impl serde::de::Visitor<'de> for Unique<V>>::visit_map -> std::result::Result<Self::Value, M::Error> with Ok(Default::default())
+src/evidence.rs:63:5: replace validate -> Result<()> with Ok(())
+src/evidence.rs:63:18: replace != with == in validate
+src/evidence.rs:76:13: replace || with && in validate
+src/evidence.rs:75:13: replace || with && in validate
+src/evidence.rs:74:13: replace || with && in validate
+src/evidence.rs:73:13: replace || with && in validate
+src/evidence.rs:72:13: replace || with && in validate
+src/evidence.rs:71:13: replace || with && in validate
+src/evidence.rs:68:13: replace || with && in validate
+src/evidence.rs:70:26: delete ! in validate
+src/evidence.rs:72:55: replace || with && in validate
+src/evidence.rs:72:48: replace == with != in validate
+src/evidence.rs:72:63: replace == with != in validate
+src/evidence.rs:75:31: replace != with == in validate
+src/evidence.rs:76:16: delete ! in validate
+src/evidence.rs:83:36: replace && with || in validate
+src/evidence.rs:83:32: replace > with == in validate
+src/evidence.rs:83:32: replace > with < in validate
+src/evidence.rs:83:32: replace > with >= in validate
+src/evidence.rs:83:53: replace == with != in validate
+src/report.rs:53:5: replace terminal_safe -> String with String::new()
+src/report.rs:53:5: replace terminal_safe -> String with "xyzzy".into()
+src/report.rs:65:5: replace render_text -> String with String::new()
+src/report.rs:65:5: replace render_text -> String with "xyzzy".into()
+src/report.rs:69:25: replace && with || in render_text
+src/report.rs:69:28: delete ! in render_text
+src/selection.rs:12:5: replace is_excluded_dir_name -> bool with true
+src/selection.rs:12:5: replace is_excluded_dir_name -> bool with false
+src/selection.rs:17:5: replace select -> Result<BTreeSet<PathBuf>> with Ok(BTreeSet::new())
+src/selection.rs:17:5: replace select -> Result<BTreeSet<PathBuf>> with Ok(BTreeSet::from_iter([Default::default()]))
+src/selection.rs:31:12: delete ! in select
+src/selection.rs:48:21: replace || with && in select
+src/selection.rs:47:27: replace == with != in select
+src/selection.rs:48:24: delete ! in select
+src/selection.rs:49:25: replace || with && in select
+src/selection.rs:49:51: replace && with || in select
+src/selection.rs:54:17: replace && with || in select
+src/selection.rs:61:21: replace && with || in select
+src/selection.rs:60:21: replace && with || in select
+src/selection.rs:59:20: delete ! in select
+src/selection.rs:60:24: delete ! in select
+src/selection.rs:61:24: delete ! in select
+src/source.rs:7:5: replace decode_source -> Result<String> with Ok(String::new())
+src/source.rs:7:5: replace decode_source -> Result<String> with Ok("xyzzy".into())
+src/source.rs:7:41: replace || with && in decode_source
+src/source.rs:8:27: replace == with != in decode_source
+src/source.rs:10:12: delete ! in decode_source
+src/cobertura.rs:43:5: replace parse_reports -> Result<LineEvidence> with Ok(Default::default())
+src/cobertura.rs:49:8: delete ! in parse_reports
+src/cobertura.rs:69:5: replace import_report -> Result<()> with Ok(())
+src/cobertura.rs:69:45: replace * with / in import_report
+src/cobertura.rs:69:38: replace * with / in import_report
+src/cobertura.rs:73:58: replace > with < in import_report
+src/cobertura.rs:88:35: replace != with == in import_report
+src/cobertura.rs:106:8: delete ! in import_report
+src/cobertura.rs:148:5: replace source_prefixes -> Result<Vec<PathBuf>> with Ok(vec![])
+src/cobertura.rs:148:5: replace source_prefixes -> Result<Vec<PathBuf>> with Ok(vec![Default::default()])
+src/cobertura.rs:149:22: replace > with == in source_prefixes
+src/cobertura.rs:149:22: replace > with < in source_prefixes
+src/cobertura.rs:149:22: replace > with >= in source_prefixes
+src/cobertura.rs:192:5: replace import_class -> Result<()> with Ok(())
+src/cobertura.rs:218:32: replace > with == in import_class
+src/cobertura.rs:218:32: replace > with >= in import_class
+src/cobertura.rs:245:5: replace parse_line_number -> Result<u32> with Ok(0)
+src/cobertura.rs:245:5: replace parse_line_number -> Result<u32> with Ok(1)
+src/cobertura.rs:251:15: replace == with != in parse_line_number
+src/cobertura.rs:254:27: replace != with == in parse_line_number
+src/cobertura.rs:262:5: replace parse_hits -> Result<u64> with Ok(0)
+src/cobertura.rs:262:5: replace parse_hits -> Result<u64> with Ok(1)
+src/cobertura.rs:268:25: replace != with == in parse_hits
+src/cobertura.rs:281:5: replace resolve_filename -> Result<Option<String>> with Ok(None)
+src/cobertura.rs:281:5: replace resolve_filename -> Result<Option<String>> with Ok(Some(String::new()))
+src/cobertura.rs:281:5: replace resolve_filename -> Result<Option<String>> with Ok(Some("xyzzy".into()))
+src/cobertura.rs:300:25: replace > with == in resolve_filename
+src/cobertura.rs:300:25: replace > with < in resolve_filename
+src/cobertura.rs:300:25: replace > with >= in resolve_filename
+src/cobertura.rs:341:5: replace add_candidate -> Result<()> with Ok(())
+src/cobertura.rs:360:23: replace match guard error.kind() == std::io::ErrorKind::NotFound with false in add_candidate
+src/cobertura.rs:344:26: replace == with != in add_candidate
+src/cobertura.rs:344:37: delete ! in add_candidate
+src/cobertura.rs:351:16: delete ! in add_candidate
+src/cobertura.rs:360:36: replace == with != in add_candidate
+src/cobertura.rs:382:5: replace normalize_path -> Result<String> with Ok(String::new())
+src/cobertura.rs:382:5: replace normalize_path -> Result<String> with Ok("xyzzy".into())
+src/cobertura.rs:391:27: delete ! in normalize_path
+src/cobertura.rs:394:52: replace || with && in normalize_path
+src/cobertura.rs:395:43: replace == with != in normalize_path
+src/cobertura.rs:397:47: replace == with != in normalize_path
+src/cobertura.rs:397:42: replace + with - in normalize_path
+src/cobertura.rs:397:42: replace + with * in normalize_path
+src/cobertura.rs:408:32: replace || with && in normalize_path
+src/cobertura.rs:408:40: replace == with != in normalize_path
+src/cobertura.rs:414:40: replace == with != in normalize_path
+src/cobertura.rs:422:5: replace validate_filename -> Result<()> with Ok(())
+src/cobertura.rs:427:34: replace == with != in validate_filename
+src/cobertura.rs:435:24: replace || with && in validate_filename
+src/cobertura.rs:435:17: replace == with != in validate_filename
+src/cobertura.rs:435:32: replace == with != in validate_filename
+src/cobertura.rs:447:5: replace is_host_absolute -> bool with true
+src/cobertura.rs:447:5: replace is_host_absolute -> bool with false
+src/cobertura.rs:459:5: replace child_elements -> Vec<Node<'a, 'input>> with vec![]
+src/cobertura.rs:460:44: replace && with || in child_elements
+src/cobertura.rs:460:71: replace == with != in child_elements
+src/collector.rs:42:5: replace collect -> Result<()> with Ok(())
+src/collector.rs:45:9: delete field root from struct ScanOptions expression in collect
+src/collector.rs:46:9: delete field paths from struct ScanOptions expression in collect
+src/collector.rs:83:8: delete ! in collect
+src/collector.rs:109:5: replace validate_options -> Result<()> with Ok(())
+src/collector.rs:109:33: replace == with != in validate_options
+src/collector.rs:116:9: replace || with && in validate_options
+src/collector.rs:115:30: replace < with == in validate_options
+src/collector.rs:115:30: replace < with > in validate_options
+src/collector.rs:115:30: replace < with <= in validate_options
+src/collector.rs:120:13: replace != with == in validate_options
+src/collector.rs:118:28: replace == with != in validate_options
+src/collector.rs:132:5: replace results_args -> Vec<&'a OsStr> with vec![]
+src/collector.rs:135:20: replace == with != in results_args
+src/collector.rs:146:5: replace find_reports -> Result<Vec<PathBuf>> with Ok(vec![])
+src/collector.rs:146:5: replace find_reports -> Result<Vec<PathBuf>> with Ok(vec![Default::default()])
+src/collector.rs:155:30: replace == with != in find_reports
+src/collector.rs:160:22: replace != with == in find_reports
+src/collector.rs:197:5: replace validate_destination -> Result<()> with Ok(())
+src/collector.rs:201:8: delete ! in validate_destination
+src/collector.rs:209:19: replace match guard e.kind() == std::io::ErrorKind::NotFound with false in validate_destination
+src/collector.rs:209:28: replace == with != in validate_destination
+src/collector.rs:216:5: replace run_command -> Result<ExitStatus> with Ok(Default::default())
+src/collector.rs:231:28: replace >= with < in run_command
+src/collector.rs:248:5: replace observed_completion -> Result<ExitStatus> with Ok(Default::default())
+src/collector.rs:248:16: replace >= with < in observed_completion
+src/error.rs:82:9: replace <impl fmt::Display for Error>::fmt -> fmt::Result with Ok(Default::default())
+src/error.rs:100:9: replace <impl fmt::Debug for Error>::fmt -> fmt::Result with Ok(Default::default())
+src/error.rs:110:9: replace <impl StdError for Error>::source -> Option<&(dyn StdError +'static)> with None
+src/output.rs:12:5: replace write_report -> Result<()> with Ok(())
+src/output.rs:30:17: replace && with || in write_report
+src/output.rs:29:17: replace && with || in write_report
+src/output.rs:50:21: delete ! in destination_parent
+src/output.rs:56:5: replace is_csharp_path -> bool with true
+src/output.rs:56:5: replace is_csharp_path -> bool with false
+src/sarif.rs:16:5: replace render -> Result<String> with Ok(String::new())
+src/sarif.rs:16:5: replace render -> Result<String> with Ok("xyzzy".into())
+src/sarif.rs:28:21: replace += with -= in render
+src/sarif.rs:28:21: replace += with *= in render
+src/sarif.rs:29:22: replace > with == in render
+src/sarif.rs:29:22: replace > with < in render
+src/sarif.rs:29:22: replace > with >= in render
+src/sarif.rs:41:29: replace && with || in render
+src/sarif.rs:51:22: replace && with || in render
+src/sarif.rs:84:5: replace result -> Value with Default::default()
+src/sarif.rs:96:5: replace uri -> String with String::new()
+src/sarif.rs:96:5: replace uri -> String with "xyzzy".into()
+src/sarif.rs:98:38: replace || with && in uri
+src/sarif.rs:112:5: replace root_uri -> String with String::new()
+src/sarif.rs:112:5: replace root_uri -> String with "xyzzy".into()
+src/sarif.rs:112:30: replace && with || in root_uri
+src/sarif.rs:112:33: delete ! in root_uri
