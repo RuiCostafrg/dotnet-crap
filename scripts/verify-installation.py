@@ -117,7 +117,7 @@ def formula_targets(text):
     """Return the archive targets referenced by the formula's download URLs."""
     targets = set()
     for url in re.findall(r'url "([^"]+)"', text):
-        match = re.search(rf'{re.escape(PACKAGE)}-(.+)\.tar\.xz$', url)
+        match = re.search(rf'/{re.escape(PACKAGE)}-([^/]+)\.tar\.xz$', url)
         if match:
             targets.add(match[1])
     return targets

@@ -195,6 +195,12 @@ class FormulaTests(unittest.TestCase):
         self.assertEqual(vi.formula_targets(FAKE_FORMULA),
                          {'aarch64-apple-darwin', 'x86_64-unknown-linux-gnu'})
 
+    def test_formula_targets_after_rewrite_into_a_dotnet_crap_named_directory(self):
+        # The staging directory itself is named dotnet-crap-install-*.
+        rewritten = vi.rewrite_formula(FAKE_FORMULA, '0.1.0', 'file:///tmp/dotnet-crap-install-x1/assets')
+        self.assertEqual(vi.formula_targets(rewritten),
+                         {'aarch64-apple-darwin', 'x86_64-unknown-linux-gnu'})
+
 
 class InstalledTargetTests(unittest.TestCase):
     def setUp(self):
