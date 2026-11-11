@@ -31,11 +31,15 @@ Keep one Rust package. Extract cohesive modules when they acquire a consumer;
 avoid empty modules or a multi-crate workspace without a concrete need.
 
 - `src/main.rs`: clap arguments, process exits and CLI orchestration.
-- `src/lib.rs`: typed scan options, reports and supported public operations.
+- `src/lib.rs`: typed scan options, `ScanResult`, `scan` orchestration and
+  crate-root re-exports of the documented API.
 - `analysis`: syntax traversal, callable ownership and complexity.
-- `coverage`: evidence validation and collector adapters.
-- `report`: text/JSON/SARIF rendering, then XML and HTML.
-- `selection`, `config`, `baseline`: add with their respective feature PRs.
+- `evidence` (native v1), `cobertura` and `collector`: coverage evidence
+  validation, import and trusted-process collection.
+- `selection` and `source`: source discovery and decoding.
+- `report`, `sarif` and `output`: typed reports, text/JSON/SARIF rendering and
+  safe report publication; XML and HTML follow.
+- `config`, `baseline`: add with their respective feature PRs.
 
 Keep trusted-process execution separate from scanning and pure scoring. Keep
 safe output staging and source-alias checks explicit at filesystem boundaries.
