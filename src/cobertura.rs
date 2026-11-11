@@ -134,9 +134,12 @@ fn parse_document(text: &str) -> Result<Document<'_>> {
 
 /// Bound DOM allocation independently of the byte limit.
 fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
+    // Keep every field explicit: `..Default::default()` would drop the node
+    // limit, and no entity resolver preserves the no-external-entity contract.
     let options = ParsingOptions {
         nodes_limit,
         allow_dtd: false,
+        entity_resolver: None,
     };
     Document::parse_with_options(text, options).map_err(|error| anyhow!("malformed XML: {error}"))
 }
