@@ -45,8 +45,8 @@ evidence instead comes from three sources:
    scan optimization was attempted without a sampling profile.
 
 The `Benchmark` workflow records a `perf` profile of a frame-pointer build on
-GitHub's Linux runner (`target/profiles/*.txt` artifact), and a same-job base/head
-comparison on Linux and macOS.
+GitHub's Linux runner and a same-job base/head comparison on Linux and macOS (see
+below).
 
 ## Changes
 
@@ -91,6 +91,70 @@ comparison on Linux and macOS.
 | dense-file-collect | 4000 | 16000 | 5233 (4774–7792) | 1423 (1343–2450) | 0.27 | yes | 102812 / 102756 |
 | dense-file-collect | 8000 | 32000 | 12371 (11890–13847) | 2848 (2563–3526) | 0.23 | yes | 130200 / 129476 |
 
+
+## GitHub-hosted runners (Benchmark workflow)
+
+[Benchmark run 42991034793](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42991034793)
+on this PR measured the same base and head in one job per runner. The head is
+merge commit `d7c0a6f` (PR head on `main`) and the base is its first parent,
+`77003a6`. Both use rustc 1.96.0, 8 alternating runs per row, and byte-identical
+outputs. Compare rows only within one runner's table.
+
+### ubuntu-24.04 (AMD EPYC 7763 64-Core Processor, RSS floor 6368 KiB)
+
+| workload | mode | base median ms (min–max) | head median ms (min–max) | head/base | separated | base / head median peak RSS KiB |
+|---|---|---|---|---|---|---|
+| small-files | scan | 37.1 (36.8–44.6) | 37.5 (37.0–37.9) | 1.01 | no | 7284 / 7386 |
+| small-files | scan-coverage | 37.9 (37.7–38.3) | 38.0 (37.7–38.8) | 1.00 | no | 7578 / 7746 |
+| small-files | collect | 134.8 (133.6–135.9) | 134.6 (134.2–135.8) | 1.00 | no | 12644 / 12568 |
+| dense-file | scan | 279.7 (278.5–283.8) | 279.7 (276.6–296.0) | 1.00 | no | 52208 / 52216 |
+| dense-file | scan-coverage | 291.3 (288.7–294.8) | 292.3 (286.0–294.7) | 1.00 | no | 54112 / 54046 |
+| dense-file | collect | 963.9 (960.5–969.6) | 730.3 (719.6–749.6) | 0.76 | yes | 56826 / 56776 |
+| many-callables | scan | 172.8 (168.3–174.8) | 172.0 (167.5–175.3) | 1.00 | no | 33410 / 33416 |
+| many-callables | scan-coverage | 176.4 (174.8–186.1) | 176.8 (173.0–179.1) | 1.00 | no | 34432 / 34272 |
+| many-callables | collect | 720.2 (712.3–731.0) | 445.4 (436.0–453.3) | 0.62 | yes | 41818 / 41602 |
+| deep-nesting | scan | 70.0 (66.9–72.5) | 70.3 (68.6–70.7) | 1.00 | no | 17056 / 17096 |
+| deep-nesting | scan-coverage | 117.4 (115.0–118.0) | 71.5 (70.3–76.5) | 0.61 | yes | 17876 / 18104 |
+| deep-nesting | collect | 282.4 (274.8–288.9) | 237.1 (231.0–241.1) | 0.84 | yes | 26420 / 26272 |
+| solution | scan | 61.8 (61.1–62.4) | 62.1 (61.6–62.9) | 1.01 | no | 8164 / 8232 |
+| solution | scan-coverage | 63.5 (62.9–64.1) | 63.6 (62.7–64.2) | 1.00 | no | 8686 / 8660 |
+| solution | collect | 215.6 (203.4–216.9) | 215.2 (205.1–216.2) | 1.00 | no | 9454 / 9562 |
+
+### macos-15 (Apple M1 (Virtual), RSS floor 1120 KiB)
+
+| workload | mode | base median ms (min–max) | head median ms (min–max) | head/base | separated | base / head median peak RSS KiB |
+|---|---|---|---|---|---|---|
+| small-files | scan | 41.9 (40.6–96.6) | 44.2 (40.4–57.8) | 1.06 | no | 4544 / 4448 |
+| small-files | scan-coverage | 43.0 (42.2–45.6) | 42.9 (41.6–45.7) | 1.00 | no | 4880 / 4848 |
+| small-files | collect | 220.2 (203.5–269.0) | 215.5 (182.0–268.7) | 0.98 | no | 12280 / 12304 |
+| dense-file | scan | 250.3 (233.4–296.5) | 271.9 (234.9–351.8) | 1.09 | no | 51544 / 51480 |
+| dense-file | scan-coverage | 251.1 (218.6–339.7) | 257.8 (236.5–291.9) | 1.03 | no | 53608 / 53728 |
+| dense-file | collect | 1101.4 (986.5–1237.6) | 835.4 (762.5–922.0) | 0.76 | yes | 92600 / 90176 |
+| many-callables | scan | 162.6 (140.6–192.9) | 181.4 (143.6–213.3) | 1.12 | no | 34472 / 34272 |
+| many-callables | scan-coverage | 163.9 (144.3–221.0) | 147.7 (140.6–180.5) | 0.90 | no | 35440 / 35616 |
+| many-callables | collect | 760.4 (720.8–839.8) | 487.1 (442.3–526.0) | 0.64 | yes | 65264 / 65000 |
+| deep-nesting | scan | 59.5 (50.8–65.5) | 55.6 (50.9–90.0) | 0.93 | no | 18960 / 18848 |
+| deep-nesting | scan-coverage | 88.1 (80.0–99.1) | 61.9 (56.1–70.5) | 0.70 | yes | 19800 / 19704 |
+| deep-nesting | collect | 332.7 (283.7–387.4) | 328.9 (273.0–375.2) | 0.99 | no | 39072 / 34080 |
+| solution | scan | 71.7 (65.2–81.9) | 72.1 (67.8–83.4) | 1.01 | no | 5184 / 5136 |
+| solution | scan-coverage | 79.9 (69.8–86.7) | 76.9 (67.9–86.1) | 0.96 | no | 5824 / 5824 |
+| solution | collect | 332.3 (300.5–421.4) | 325.9 (317.3–449.5) | 0.98 | no | 7144 / 7128 |
+
+On native kernels, path canonicalization is cheap, so the Cobertura speedups are
+smaller than under PRoot. They still fully separate for dense-file and
+many-callables collect on both runners. Deep nesting with coverage separates at
+the default 3000 lambdas on both runners (0.61 on Linux, 0.70 on macOS), and
+deep-nesting collect also separates on Linux. No row is separated in the slower
+direction. The many-small-files collect paths take 135–330 ms here, against
+9–16 s under PRoot, which confirms that the local absolute numbers are syscall-inflated.
+No regression in peak RSS separates from noise; the deep-nesting-collect RSS
+difference on macOS favors the head.
+
+The [Linux `perf` profile](ci-ubuntu-24.04/profiles/) of the head's frame-pointer build
+(`task-clock`, 903 and ~200 samples) attributes the remaining scan time mostly to
+tree-sitter: parse, lexing, parse-stack management and cursor traversal.
+`dotnet_crap::scan` self time is 2–4%. No further first-party hot path is
+indicated at these scales.
 
 ## Interpretation
 
