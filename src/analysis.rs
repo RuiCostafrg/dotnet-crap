@@ -1,7 +1,7 @@
 //! Syntax traversal and CRAP scoring of C# callables.
 
+use crate::error::{fail, ErrorKind, OptionExt, Result};
 use crate::Item;
-use anyhow::{bail, Context, Result};
 use std::collections::BTreeMap;
 use tree_sitter::Node;
 
@@ -167,7 +167,7 @@ pub(crate) fn collect(
     while let Some(n) = nodes.pop() {
         visited += 1;
         if visited > traversal_budget {
-            bail!("syntax tree resource limit exceeded");
+            fail!(ResourceLimit, "syntax tree resource limit exceeded");
         }
         let mut cursor = n.walk();
         let children: Vec<_> = n.named_children(&mut cursor).collect();
@@ -182,7 +182,7 @@ pub(crate) fn collect(
         while let Some((node, outer)) = stack.pop() {
             scored += 1;
             if scored > callable_budget {
-                bail!("callable resource limit exceeded");
+                fail!(ResourceLimit, "callable resource limit exceeded");
             }
             if !outer && callable(node) {
                 excluded.push((node.start_position().row + 1, node.end_position().row + 1));
@@ -190,7 +190,7 @@ pub(crate) fn collect(
             }
             complexity = complexity
                 .checked_add(decision(node, source))
-                .context("complexity overflow")?;
+                .context(ErrorKind::ResourceLimit, "complexity overflow")?;
             let mut cursor = node.walk();
             stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));
         }
@@ -243,7 +243,9 @@ mod tests {
     /// Run the actual collector with deliberately small independent resource limits.
     fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
         let mut parser = TsParser::new();
-        parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
+        parser
+            .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
+            .unwrap();
         let tree = parser.parse(source, None).unwrap();
         assert!(!tree.root_node().has_error());
         let mut items = Vec::new();

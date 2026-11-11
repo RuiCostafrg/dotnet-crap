@@ -1,6 +1,6 @@
 //! Native coverage v1 schema, reading and validation.
 
-use anyhow::{bail, Context, Result};
+use crate::error::{fail, ErrorKind, Result, ResultExt};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
@@ -9,7 +9,7 @@ use std::{
 };
 
 /// Native coverage document; its serialized form is the collector's output contract.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Coverage {
     pub(crate) version: u32,
@@ -17,7 +17,7 @@ pub(crate) struct Coverage {
     pub(crate) files: BTreeMap<String, CoverageFile>,
 }
 /// Line hit counts for one source file, bound to the source SHA-256.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct CoverageFile {
     pub(crate) sha256: String,
@@ -55,13 +55,13 @@ where
 }
 /// Read and parse a native coverage JSON file.
 pub(crate) fn read(path: &Path) -> Result<Coverage> {
-    serde_json::from_slice(&fs::read(path).context("reading coverage")?)
-        .context("invalid coverage JSON")
+    serde_json::from_slice(&fs::read(path).context(ErrorKind::Io, "reading coverage")?)
+        .context(ErrorKind::Coverage, "invalid coverage JSON")
 }
 /// Check the coverage version, entry paths, hashes and line keys.
 pub(crate) fn validate(c: &Coverage) -> Result<()> {
     if c.version != 1 {
-        bail!("unsupported coverage version");
+        fail!(Coverage, "unsupported coverage version");
     }
     for (path, f) in &c.files {
         if path.contains(['\\', ':'])
@@ -75,7 +75,7 @@ pub(crate) fn validate(c: &Coverage) -> Result<()> {
             || f.sha256.len() != 64
             || !f.sha256.bytes().all(|b| b.is_ascii_hexdigit())
         {
-            bail!("invalid coverage entry: {path}");
+            fail!(Coverage, "invalid coverage entry: {path}");
         }
         for l in f.lines.keys() {
             if l.parse::<usize>()
@@ -83,7 +83,7 @@ pub(crate) fn validate(c: &Coverage) -> Result<()> {
                 .filter(|v| *v > 0 && v.to_string() == *l)
                 .is_none()
             {
-                bail!("invalid coverage line: {l}");
+                fail!(Coverage, "invalid coverage line: {l}");
             }
         }
     }

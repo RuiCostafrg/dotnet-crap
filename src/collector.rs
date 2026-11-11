@@ -1,9 +1,9 @@
 //! Execute an explicitly trusted test command and publish fresh native evidence.
+use crate::error::{fail, ErrorKind, OptionExt, Result, ResultExt};
 use crate::{
     output::{destination_parent, is_csharp_path},
     scan, ScanOptions,
 };
-use anyhow::{bail, Context, Result};
 use std::{
     collections::BTreeMap,
     ffi::{OsStr, OsString},
@@ -51,19 +51,20 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     let mut hashes = BTreeMap::new();
     for (path, hash) in &snapshot.source_hashes {
         let relative = path
-            .strip_prefix(snapshot.root())?
+            .strip_prefix(snapshot.root())
+            .kind(ErrorKind::InvalidInput)?
             .to_str()
-            .context("non-UTF-8 source path")?
+            .context(ErrorKind::Source, "non-UTF-8 source path")?
             .replace('\\', "/");
         if relative.contains(':') || relative.contains('\\') {
-            bail!("unsupported source path for native coverage");
+            fail!(Source, "unsupported source path for native coverage");
         }
-        let bytes = fs::read(path)?;
+        let bytes = fs::read(path).kind(ErrorKind::Io)?;
         sources.insert(relative.clone(), crate::decode_source(&bytes)?);
         hashes.insert(relative, hash.clone());
     }
     if sources.is_empty() {
-        bail!("collection requires selected sources");
+        fail!(InvalidInput, "collection requires selected sources");
     }
     snapshot.verify_sources()?;
     let mut results_builder = tempfile::Builder::new();
@@ -73,24 +74,24 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         use std::os::unix::fs::PermissionsExt;
         results_builder.permissions(fs::Permissions::from_mode(0o700));
     }
-    let results = results_builder.tempdir()?;
+    let results = results_builder.tempdir().kind(ErrorKind::Io)?;
     let mut command = Command::new(&options.command[0]);
     command
         .args(results_args(&options.command, results.path()))
         .current_dir(snapshot.root());
     let status = run_command(&mut command, options.timeout)?;
     if !status.success() {
-        bail!("trusted test command failed: {status}");
+        fail!(Collection, "trusted test command failed: {status}");
     }
     snapshot.verify_sources()?;
     let reports = find_reports(results.path(), options.expected_reports)?;
     let lines = crate::cobertura::parse_reports(snapshot.root(), &sources, &reports)?;
     let evidence = build_evidence(lines, &hashes);
     let parent = destination_parent(&options.output);
-    let mut stage = tempfile::NamedTempFile::new_in(parent)?;
-    serde_json::to_writer_pretty(&mut stage, &evidence)?;
-    stage.write_all(b"\n")?;
-    stage.as_file().sync_all()?;
+    let mut stage = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
+    serde_json::to_writer_pretty(&mut stage, &evidence).kind(ErrorKind::Output)?;
+    stage.write_all(b"\n").kind(ErrorKind::Output)?;
+    stage.as_file().sync_all().kind(ErrorKind::Output)?;
     // Exercise the native validator and scoring on exactly the staged evidence.
     let mut verify = selection;
     verify.coverage = Some(stage.path().to_owned());
@@ -99,17 +100,17 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     validate_destination(&options.output)?;
     stage
         .persist_noclobber(&options.output)
-        .context("publishing native coverage")?;
+        .context(ErrorKind::Output, "publishing native coverage")?;
     Ok(())
 }
 
 /// Enforce collection policy before any filesystem or process work.
 fn validate_options(options: &CollectOptions) -> Result<()> {
     if options.expected_reports == 0 {
-        bail!("expected report count must be positive");
+        fail!(InvalidInput, "expected report count must be positive");
     }
     if options.timeout.is_zero() {
-        bail!("test timeout must be positive");
+        fail!(InvalidInput, "test timeout must be positive");
     }
     if options.command.len() < 2
         || options.command[1..]
@@ -118,7 +119,10 @@ fn validate_options(options: &CollectOptions) -> Result<()> {
             .count()
             != 1
     {
-        bail!("test command requires exactly one standalone {{results}} argument");
+        fail!(
+            InvalidInput,
+            "test command requires exactly one standalone {{results}} argument"
+        );
     }
     Ok(())
 }
@@ -141,9 +145,12 @@ fn results_args<'a>(command: &'a [OsString], results: &'a Path) -> Vec<&'a OsStr
 fn find_reports(results: &Path, expected: usize) -> Result<Vec<PathBuf>> {
     let mut reports = Vec::new();
     for entry in WalkDir::new(results).follow_links(false) {
-        let entry = entry?;
+        let entry = entry.kind(ErrorKind::Io)?;
         if entry.file_type().is_symlink() {
-            bail!("collector results cannot contain symbolic links");
+            fail!(
+                Collection,
+                "collector results cannot contain symbolic links"
+            );
         }
         if entry.file_name() == "coverage.cobertura.xml" && entry.file_type().is_file() {
             reports.push(entry.into_path());
@@ -151,7 +158,8 @@ fn find_reports(results: &Path, expected: usize) -> Result<Vec<PathBuf>> {
     }
     reports.sort();
     if reports.len() != expected {
-        bail!(
+        fail!(
+            Collection,
             "expected {} fresh coverage.cobertura.xml reports, found {}",
             expected,
             reports.len()
@@ -187,22 +195,27 @@ fn build_evidence(
 /// Refuse existing destinations (including hardlinks/symlinks) and C# names.
 fn validate_destination(path: &std::path::Path) -> Result<()> {
     if is_csharp_path(path) {
-        bail!("coverage output cannot overwrite C# source");
+        fail!(Output, "coverage output cannot overwrite C# source");
     }
     let parent = destination_parent(path);
     if !parent.is_dir() {
-        bail!("coverage destination parent must be an existing directory");
+        fail!(
+            Output,
+            "coverage destination parent must be an existing directory"
+        );
     }
     match fs::symlink_metadata(path) {
-        Ok(_) => bail!("coverage destination must not already exist"),
+        Ok(_) => fail!(Output, "coverage destination must not already exist"),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(e.into()),
+        Err(e) => Err(e).kind(ErrorKind::Output),
     }
 }
 
 /// Bound the immediate child, reaping it on timeout and on wait failures.
 fn run_command(command: &mut Command, timeout: Duration) -> Result<ExitStatus> {
-    let mut child = command.spawn().context("starting trusted test command")?;
+    let mut child = command
+        .spawn()
+        .context(ErrorKind::Collection, "starting trusted test command")?;
     let start = Instant::now();
     loop {
         match child.try_wait() {
@@ -211,13 +224,16 @@ fn run_command(command: &mut Command, timeout: Duration) -> Result<ExitStatus> {
             Err(error) => {
                 let _ = child.kill();
                 let _ = child.wait();
-                return Err(error).context("waiting for trusted test command");
+                return Err(error)
+                    .context(ErrorKind::Collection, "waiting for trusted test command");
             }
         }
         if start.elapsed() >= timeout {
             let _ = child.kill();
-            child.wait().context("reaping timed-out test command")?;
-            bail!("trusted test command timed out");
+            child
+                .wait()
+                .context(ErrorKind::Collection, "reaping timed-out test command")?;
+            fail!(Collection, "trusted test command timed out");
         }
         std::thread::sleep(Duration::from_millis(10));
     }
@@ -230,7 +246,7 @@ fn observed_completion(
     timeout: Duration,
 ) -> Result<ExitStatus> {
     if elapsed >= timeout {
-        bail!("trusted test command timed out");
+        fail!(Collection, "trusted test command timed out");
     }
     Ok(status)
 }

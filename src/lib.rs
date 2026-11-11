@@ -11,9 +11,9 @@
 //! let json = result.render(ReportFormat::Json)?;
 //! result.verify_sources()?;
 //! println!("{json}");
-//! # Ok::<(), anyhow::Error>(())
+//! # Ok::<(), dotnet_crap::Error>(())
 //! ```
-use anyhow::{bail, Context, Result};
+use crate::error::{fail, OptionExt, ResultExt};
 use sha2::{Digest, Sha256};
 use std::{
     fs,
@@ -86,8 +86,12 @@ impl ScanResult {
     /// Verify that selected source bytes still match the scanned bytes.
     pub fn verify_sources(&self) -> Result<()> {
         for (path, hash) in &self.source_hashes {
-            if hex::encode(Sha256::digest(fs::read(path)?)) != *hash {
-                bail!("source changed during scan: {}", path.display());
+            if hex::encode(Sha256::digest(fs::read(path).kind(ErrorKind::Io)?)) != *hash {
+                fail!(
+                    SourceChanged,
+                    "source changed during scan: {}",
+                    path.display()
+                );
             }
         }
         Ok(())
@@ -106,7 +110,10 @@ impl ScanResult {
                 )?
             )
         } else if format == ReportFormat::Json {
-            format!("{}\n", serde_json::to_string_pretty(report)?)
+            format!(
+                "{}\n",
+                serde_json::to_string_pretty(report).kind(ErrorKind::Render)?
+            )
         } else {
             report::render_text(report, self.require_coverage)
         };
@@ -120,18 +127,24 @@ pub(crate) use source::decode_source;
 pub mod cobertura;
 /// Explicit trusted-process collection, separate from pure scanning.
 pub mod collector;
+/// Typed library errors.
+pub mod error;
 /// Safe publication of rendered scan reports.
 pub mod output;
 mod sarif;
+pub use error::{Error, ErrorKind, Result};
 
 /// Validate inputs and scan selected C# sources.
 pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
     if !args.threshold.is_finite() || args.threshold < 0.0 {
-        bail!("threshold must be finite and nonnegative");
+        fail!(InvalidInput, "threshold must be finite and nonnegative");
     }
-    let root = args.root.canonicalize().context("invalid root")?;
+    let root = args
+        .root
+        .canonicalize()
+        .context(ErrorKind::InvalidInput, "invalid root")?;
     if !root.is_dir() {
-        bail!("root must be a directory");
+        fail!(InvalidInput, "root must be a directory");
     }
     let coverage: Option<Coverage> = args
         .coverage
@@ -143,40 +156,49 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
     }
     let files = selection::select(&root, &args.paths)?;
     let mut parser = TsParser::new();
-    parser.set_language(&tree_sitter_c_sharp::LANGUAGE.into())?;
+    parser
+        .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
+        .kind(ErrorKind::Source)?;
     let mut items = Vec::new();
     let mut source_hashes = Vec::new();
     for path in &files {
-        let bytes = fs::read(path).with_context(|| format!("reading {}", path.display()))?;
+        let bytes =
+            fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
         let hash = hex::encode(Sha256::digest(&bytes));
-        let source =
-            decode_source(&bytes).with_context(|| format!("decoding {}", path.display()))?;
+        let source = decode_source(&bytes)
+            .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
         let relative = path
-            .strip_prefix(&root)?
+            .strip_prefix(&root)
+            .kind(ErrorKind::InvalidInput)?
             .to_str()
-            .context("non-UTF-8 source path")?
+            .context(ErrorKind::Source, "non-UTF-8 source path")?
             .to_owned();
         #[cfg(windows)]
         let relative = relative.replace('\\', "/");
         if coverage.is_some() && relative.contains(['\\', ':']) {
-            bail!("source path contains characters unsupported by native coverage: {relative}");
+            fail!(
+                Source,
+                "source path contains characters unsupported by native coverage: {relative}"
+            );
         }
         source_hashes.push((path.clone(), hash.clone()));
-        let tree = parser.parse(&source, None).context("parser failed")?;
+        let tree = parser
+            .parse(&source, None)
+            .context(ErrorKind::Source, "parser failed")?;
         if tree.root_node().has_error() {
-            bail!("invalid C# syntax in {relative}");
+            fail!(Syntax, "invalid C# syntax in {relative}");
         }
         let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
         if let Some(c) = cov {
             if !hash.eq_ignore_ascii_case(&c.sha256) {
-                bail!("stale coverage for {relative}");
+                fail!(Coverage, "stale coverage for {relative}");
             }
             let line_count = source.lines().count();
             if c.lines
                 .keys()
                 .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
             {
-                bail!("coverage line outside {relative}");
+                fail!(Coverage, "coverage line outside {relative}");
             }
         }
         let points = cov.map(|c| {
