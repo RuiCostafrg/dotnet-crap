@@ -1,0 +1,93 @@
+name: Verify npm installs
+# Installs the packed dotnet-crap npm packages with npm, pnpm, Yarn (Plug'n'Play and
+# node_modules) and Bun in clean projects, then runs the installed binary. Packages
+# come only from this run's `npm-packages` artifact; the platform binaries are
+# compared byte for byte with the `release-assets` archives. No registry is used
+# for dotnet-crap's own packages.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Candidate version (SemVer), the release's app version
+        required: true
+        type: string
+permissions:
+  contents: read
+env:
+  PNPM_VERSION: 12.16.1
+  YARN_VERSION: 4.18.1
+  BUN_VERSION: 1.4.4
+jobs:
+  host:
+    name: npm, pnpm, Yarn and Bun (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-26.04, ubuntu-26.04-arm, macos-26, macos-26-intel]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/release-assets
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-packages
+          path: ${{ runner.temp }}/npm-packages
+      - name: Install pinned package managers
+        shell: bash
+        run: |
+          # Runner images preinstall Yarn 1 (and sometimes pnpm) globally; replace them.
+          npm uninstall -g yarn pnpm
+          npm install -g --no-audit --no-fund "pnpm@$PNPM_VERSION" "@yarnpkg/cli-dist@$YARN_VERSION" "bun@$BUN_VERSION"
+          for tool in pnpm:$PNPM_VERSION yarn:$YARN_VERSION bun:$BUN_VERSION; do
+            actual=$("${tool%%:*}" --version)
+            [[ "$actual" == "${tool#*:}" ]] || { echo "${tool%%:*} is $actual, expected ${tool#*:}" >&2; exit 1; }
+          done
+      - name: Install without scripts, run, and compare bytes with the release archive
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python3 -B scripts/verify-npm-install.py \
+            --manager npm --manager pnpm --manager yarn --manager yarn-node-modules --manager bun \
+            --version "$VERSION" --assets "$RUNNER_TEMP/release-assets" --packages "$RUNNER_TEMP/npm-packages"
+  alpine:
+    name: npm, pnpm, Yarn and Bun (alpine:3.22, ubuntu-26.04)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/release-assets
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-packages
+          path: ${{ runner.temp }}/npm-packages
+      - name: Verify in a clean Alpine (musl) container
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          # The static musl binary must run on musl with the distribution's own Node.js.
+          docker run --rm -e VERSION -e PNPM_VERSION -e YARN_VERSION -e BUN_VERSION \
+            --mount "type=bind,src=$GITHUB_WORKSPACE,dst=/repo,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/release-assets,dst=/assets,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/npm-packages,dst=/packages,readonly" \
+            alpine:3.22 /bin/sh -ec '
+              apk add --no-cache nodejs npm python3 libstdc++ libgcc >/dev/null
+              echo "Alpine $(cat /etc/alpine-release), Node.js $(node --version), npm $(npm --version)"
+              npm install -g --no-audit --no-fund "pnpm@$PNPM_VERSION" "@yarnpkg/cli-dist@$YARN_VERSION" "bun@$BUN_VERSION"
+              python3 -B /repo/scripts/verify-npm-install.py \
+                --manager npm --manager pnpm --manager yarn --manager yarn-node-modules --manager bun \
+                --version "$VERSION" --assets /assets --packages /packages'
