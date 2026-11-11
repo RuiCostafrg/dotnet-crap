@@ -44,7 +44,7 @@ On Unix it never changes the installed file. If the file has an execute bit, the
 ## Tests
 
 - `dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release` starts the real launcher and a fake POSIX native executable. It checks argument and exit-code forwarding, direct execution, private-copy execution and cleanup, read-only installs, the `EACCES` fallback, and the in-process API. Run as a non-root user to enforce read-only permissions: root bypasses permission bits, and the runner prints a NOTE when it detects root.
-- `bash scripts/test-install-action.sh` runs `scripts/install-action.sh` against a fake `curl`. It checks the connect and total timeouts on both requests, HTTPS-only transfer, checksum rejection, and exact-version validation.
+- `bash scripts/test-install-action.sh` runs the GitHub Action installer `action/install.sh` against a fake `gh` that serves local release files. It checks the exact download and attestation arguments, checksum and provenance rejection, version validation, and input validation.
 - `bash scripts/test-release-publish.sh` runs the publish scripts with fake `gh` and `dotnet`, and checks the trusted-main ancestry check against a local git remote.
 - `bash scripts/smoke-packaging.sh` runs all of the above, then builds the host native executable, packs two concurrent invocations, checks that the package has only the host native entry, installs it with `dotnet tool install`, and runs the installed launcher. As root on Linux it also runs the installed tool as `nobody` from an unwritable tree. It publishes, tags, and signs nothing.
 
@@ -52,21 +52,20 @@ Apply the local runtime settings your machine needs before running these. For ex
 
 ## Release workflow
 
-`.github/workflows/release.yml` runs on `v*` tags. Tags must match the Cargo version; that version is passed to `dotnet pack` to keep the NuGet package aligned. Build jobs use the pinned Rust 1.96.0 toolchain and the pinned .NET SDK 10.0.109. Every action is pinned to a full commit SHA.
+`.github/workflows/build-release.yml` builds every target with cargo-dist,
+then `scripts/stage-dotnet-tool.py` extracts the checksum-verified executables
+from those release archives (static musl builds for the Linux RIDs) into the
+stage layout above, and `pack-dotnet-tool.sh` packs `dotnet-crap.<version>.nupkg`.
+The package is installed from a fresh local feed and smoke-tested, then added
+with a `.sha256` to the release assets validated by `scripts/prepare-release.py`.
+`distribution.yml` runs this on every PR; `release.yml` runs it for `v*` tags and
+attaches the attested package to the GitHub release when publication is enabled.
+See [docs/DISTRIBUTION.md](../docs/DISTRIBUTION.md) for the full pipeline and its
+token isolation. NuGet.org publication is not automated yet.
 
-The tag-triggered workflow checks out the event commit and uploads build and
-package artifacts. It has read-only repository contents permission and does not
-create a GitHub release or publish a NuGet package. Automatic publication is
-unavailable until a future publication workflow is reviewed and host protections
-can be enforced. The current repository plan cannot enforce required reviewers.
-This does not prevent a maintainer who can change workflows from adding one.
-
-The standalone publication scripts and their offline tests remain as preparatory
-tooling. The GitHub release helper requires existing assets to match byte for byte
-on retry; the NuGet helper uses `--skip-duplicate`. The tag verification helpers
-check remote tag resolution and reachability from main. A remote tag check and
-publication are not atomic, so a future workflow also needs enforceable tag
-protection. These scripts are not invoked for publication by the release workflow.
+The standalone helpers `publish-github-release.sh`, `publish-nuget.sh`,
+`verify-remote-tag.sh` and `verify-tag-on-main.sh` and their offline tests remain
+as preparatory tooling; the release workflow does not invoke them.
 
 Local packaging validation uses an explicit NuGet configuration with cleared
 inherited sources plus an invocation-specific package cache, so another feed or
@@ -74,9 +73,5 @@ cached package with the same ID/version cannot substitute for the package under
 test. The smoke test compares the native bytes in both concurrent packages and
 the installed executable with the local build input.
 
-Installer downloads allow three retries within a 60-second retry-start window,
-with a 20-second connection timeout and a 240-second limit per attempt. This
-budgets at most 300 seconds per asset request, including its final attempt.
-See [curl's retry-time semantics](https://curl.se/docs/manpage.html#--retry-max-time).
 Packages published to the local feed have mode `0644`, including under a restrictive
 caller umask; existing feed contents are never replaced.

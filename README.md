@@ -7,7 +7,9 @@ A Rust command-line quality gate for **C# CRAP scores**, inspired by
 
 This first version parses real `.cs` files with Tree-sitter and reports callable
 complexity, coverage, and CRAP scores. It is distributed as a native executable
-and a .NET tool NuGet package. No npm package or Node.js runtime is involved.
+for Linux and macOS, installable with Homebrew, npm, a shell installer, a
+GitHub Action, or as a .NET tool. Scanning needs no Rust, Node.js or .NET runtime
+except for the .NET tool launcher.
 
 ```text
 CRAP = complexity² × (1 − coverage)³ + complexity
@@ -65,37 +67,75 @@ baselines, and additional report formats are future work. See the
 [full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature
 mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
-## Installation and releases
+## Installation (pending the first release)
 
-The release workflow builds platform binaries and a .NET 10 tool package as
-workflow artifacts; it does not publish a release. Automatic publication is
-unavailable until a future publication workflow is reviewed and host protections
-can be enforced. If a release is published in the future, download an archive and its checksum
-from [GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases), or
-install the published NuGet package:
+> **No release has been published yet.** The commands below describe the
+> channels that every PR already builds and installs from candidate assets
+> (see [distribution design](docs/DISTRIBUTION.md)); they work once the first
+> `v*` release is published. Pin an exact version in CI.
+
+Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
+fully static musl builds that also run on Alpine). Windows is only bundled in
+the .NET tool for now.
+
+**Homebrew** (macOS and Linux):
+
+```sh
+brew install RuiCostafrg/tap/dotnet-crap
+```
+
+**npm** (also pnpm, Yarn, Bun; downloads only the binary for your platform):
+
+```sh
+npm install --save-dev dotnet-crap
+npx dotnet-crap --root . --threshold 10
+```
+
+**Shell installer** (installs to `~/.local/bin`):
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.1.0/dotnet-crap-installer.sh | sh
+```
+
+Or download `dotnet-crap-<target>.tar.xz` and its `.sha256` from
+[GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases) and verify
+the build provenance with
+`gh attestation verify dotnet-crap-<target>.tar.xz --repo RuiCostafrg/dotnet-crap`.
+
+**GitHub Action** (installs a pinned release after verifying its build
+provenance and SHA-256, then optionally scans and uploads SARIF):
+
+```yaml
+- uses: RuiCostafrg/dotnet-crap@<full commit SHA> # v0.1.0
+  with:
+    version: 0.1.0
+    scan: true
+    sarif: true
+    upload-sarif: true # needs `security-events: write`
+    args: |
+      --root
+      .
+      --coverage
+      coverage.json
+      --require-coverage
+```
+
+Collect `coverage.json` beforehand with `dotnet-crap collect` (see
+[Coverlet collection](docs/COVERLET.md)); the action puts `dotnet-crap` on `PATH`.
+Ubuntu and macOS runners are supported.
+
+**.NET tool** (requires the .NET 10 runtime; the launcher starts the bundled
+native executable):
 
 ```sh
 dotnet tool install --global dotnet-crap --version 0.1.0
-dotnet-crap --help
 ```
 
-These commands describe a future release; no release is created by this workflow.
-See [packaging](packaging/README.md) for local package creation
-and verification. The launcher needs .NET 10 and starts the bundled native
-executable, forwarding its arguments and exit code.
-
-The repository also supplies a setup Action for released native binaries:
-
-```yaml
-- uses: RuiCostafrg/dotnet-crap@<full commit SHA>
-  with:
-    version: '0.1.0'
-- run: dotnet-crap --root . --threshold 10
-```
-
-This action verifies SHA-256 before adding the pinned release to `PATH`. GNU
-Linux binaries target Ubuntu 24.04-compatible glibc; Alpine/musl and Android are
-not supported release targets.
+NuGet.org publication is not automated yet; until it is, install the attested
+`dotnet-crap.<version>.nupkg` from the GitHub release with
+`--add-source <download directory>`. See [packaging](packaging/README.md) for
+local package creation.
 
 ## Development
 

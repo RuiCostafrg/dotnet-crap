@@ -106,6 +106,10 @@ unmarked items remain proposed.
 11. **Release/adoption:** schemas, dependency/workflow audits, provenance and installed
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
+    Distribution channels (Homebrew, npm, shell installer, GitHub Action, .NET tool)
+    are built and installed from candidate assets on every PR by `distribution.yml`;
+    the README marks them as pending until the first release is published and the
+    published path is verified.
 
 ## Evidence required before integration
 

@@ -209,6 +209,19 @@ or speedups from unrelated shared-runner timings.
   exact published-byte identity.
 - [ ] Exercise the setup Action against an actual immutable release; add other
   distribution channels only after the core release path is validated.
+- [ ] Distribution channels mirroring typescript-crap (see
+  [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)): cargo-dist 0.33.1 archives for
+  macOS and GNU/musl Linux, shell installer, Homebrew formula for
+  `RuiCostafrg/homebrew-tap`, npm main + four platform packages, and the
+  provenance-verifying GitHub Action. Every PR builds the candidate release and
+  installs it through npm/pnpm/Yarn/Bun, the shell installer, a local Homebrew
+  tap, the .NET tool, and the Action against NUnit and MSTest projects with
+  fresh Coverlet Cobertura coverage on Ubuntu and macOS. Publication jobs exist
+  but stay disabled (`DOTNET_CRAP_PUBLISH`) until the protections above are
+  enforced, npm trusted publishing is configured, and the tap sync covers
+  `dotnet-crap.rb`. Nothing has been published.
+- [ ] Automate NuGet.org publication of the .NET tool (trusted publishing) once
+  package-ID ownership is verified.
 - [ ] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
   web application and multi-project solution. Record coverage mapping limitations,
   runtime/memory, scores and integration friction.
