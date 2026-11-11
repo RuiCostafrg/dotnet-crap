@@ -206,9 +206,13 @@ or speedups from unrelated shared-runner timings.
 
 ### 9. Protected distribution and independent adoption
 
-- [ ] Establish enforceable host-side release protections and trusted publication
-  identity before adding a reviewed publishing workflow. Keep publication off
-  while the repository plan cannot enforce the necessary protections.
+- [x] Enforce host-side protections matching typescript-crap: rulesets for owner
+  review and strict CI on `main`, owner-only and immutable `v*` tags, SHA-pinned
+  Actions allowlist, secret scanning with push protection, Dependabot alerts,
+  private vulnerability reporting and an owner-approved `release` environment.
+  Windows CI runs but is not required. See `docs/SECURITY_PARITY.md`.
+- [ ] Establish trusted publication identity and add a reviewed publishing job
+  that uses the `release` environment. Publication stays off until then.
 - [ ] Verify NuGet package-ID ownership, immutable assets, checksums/provenance,
   and installed-tool behavior on all five supported release RIDs.
 - [ ] Retain fresh-feed packing: reuse an existing package for retries, use a

@@ -103,7 +103,9 @@ unmarked items remain proposed.
 10. **Modern syntax and resource bounds:** top-level code, patterns, records,
     primary constructors and a documented preprocessor policy; iterative traversal
     with depth/resource stress tests and measured profiling before optimization.
-11. **Release/adoption:** schemas, dependency/workflow audits, provenance and installed
+11. **Release/adoption:** host protections, CODEOWNERS, Dependabot, actionlint and
+    scheduled cargo/NuGet advisories now match typescript-crap
+    ([parity record](SECURITY_PARITY.md)); remaining: schemas, provenance and installed
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
 
