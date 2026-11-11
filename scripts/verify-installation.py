@@ -297,7 +297,7 @@ def verify_homebrew(args, root, served, digest_map):
     brew = shutil.which('brew')
     if not brew:
         raise ValueError('Homebrew must be installed before running formula verification')
-    env = {**os.environ, 'HOMEBREW_NO_AUTO_UPDATE': '1', 'HOMEBREW_NO_INSTALL_FROM_API': '1',
+    env = {**os.environ, 'HOMEBREW_NO_AUTO_UPDATE': '1',
            'HOMEBREW_NO_ANALYTICS': '1', 'HOMEBREW_NO_INSTALL_CLEANUP': '1',
            'HOMEBREW_NO_ENV_HINTS': '1'}
     existing = run([brew, 'list', '--formula', '--versions'], env=env)
