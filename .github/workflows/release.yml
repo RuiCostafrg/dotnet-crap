@@ -85,7 +85,6 @@ jobs:
           mkdir -p target/dotnet-tool-stage
           for rid in linux-x64 linux-arm64 osx-x64 osx-arm64 win-x64; do
             mkdir -p "target/dotnet-tool-stage/$rid"
-            file=dotnet-crap; [[ "$rid" == win-* ]] && file=dotnet-crap.exe
             tar -xzf "target/native-artifacts/dotnet-crap-${GITHUB_REF_NAME}-${rid}.tar.gz" -C "target/dotnet-tool-stage/$rid"
           done
           bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$version"
