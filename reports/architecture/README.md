@@ -76,10 +76,11 @@ All 12 `src/*.rs` files appear. The seven new modules have no surviving mutants.
   qualifications still apply and are not re-declared equivalent here.
 - **1 new**: `collector.rs:155 find_reports`, `&&` → `||` in the report-name and
   regular-file filter. It was reachable but untested. It is fixed in PR A
-  `c55d043` by `find_reports_counts_only_regular_report_files`, which places an
+  `c55d043` (attributes corrected in `883a765`) by
+  `find_reports_counts_only_regular_report_files`, which places an
   unrelated file and a directory named `coverage.cobertura.xml` beside a report.
   A targeted re-run (`cargo mutants --file src/collector.rs --re find_reports`)
-  caught all 7 `find_reports` mutants:
+  run on `883a765` caught all 7 `find_reports` mutants:
   [targeted-find-reports-caught.txt](targeted-find-reports-caught.txt).
   The full-run figures above predate that test.
 
