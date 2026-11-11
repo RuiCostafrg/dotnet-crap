@@ -14,10 +14,14 @@ this repository's GitHub Releases. The installer action verifies the checksum an
 never disables TLS.
 
 The tag-triggered workflow builds artifacts with read-only repository contents
-permission and has no publication job. Automatic publication is unavailable until
-a future publication workflow is reviewed and host protections can be enforced;
-the current repository plan cannot enforce required reviewers. Removing this job
-does not prevent a maintainer who can change workflows from adding another one.
+permission and has no publication job. Host protections are now enforced: owner
+review and mandatory CI on `main`, owner-only and immutable `v*` tags, an allowlist
+of SHA-pinned Actions, secret scanning with push protection, and a `release`
+environment that requires the owner's approval for `v*` tags. See
+[docs/SECURITY_PARITY.md](docs/SECURITY_PARITY.md). Automatic publication remains
+unavailable until a publication job that uses that environment is reviewed. The
+owner's admin role can still bypass review, and a maintainer who can change
+workflows can still add a job.
 See `packaging/README.md` for the retained, tested publication helpers.
 
 Report security issues privately through the repository's GitHub security

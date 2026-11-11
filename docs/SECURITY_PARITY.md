@@ -3,29 +3,29 @@
 This records how RuiCostafrg/dotnet-crap's host-side protections were aligned with
 [RuiCostafrg/typescript-crap](https://github.com/RuiCostafrg/typescript-crap).
 "Before" values were read from the GitHub REST API on 2026-11-10. "After" values
-were read back from the API after applying them (see [Verification](#verification)).
+were applied on 2026-11-11 and read back from the API (see [Verification](#verification)).
 
-Status legend: **applied** = set and read back; **pending** = not yet applied.
+Status legend: **applied** = set, then read back and compared with the reference.
 
 ## Settings comparison
 
 | Area | typescript-crap (reference) | dotnet-crap before | dotnet-crap after |
 | --- | --- | --- | --- |
-| Ruleset: owner-reviewed changes to `main` | 1 approval, dismiss stale, code-owner review, thread resolution, extra approval for unattributed changes; admin bypass in `pull_request` mode | none | same as reference — **pending** |
-| Ruleset: main integrity and mandatory CI | no deletion, no force-push, strict required checks | none | same rules; dotnet-crap check names (below) — **pending** |
-| Ruleset: only owner creates `v*` tags | creation restricted, admin bypass `always` | none | same — **pending** |
-| Ruleset: `v*` tags cannot move or be deleted | update + deletion blocked, no bypass | none | same — **pending** |
-| Secret scanning | enabled | disabled | enabled — **pending** |
-| Secret scanning push protection | enabled | disabled | enabled — **pending** |
-| Dependabot vulnerability alerts | enabled | disabled | enabled — **pending** |
+| Ruleset: owner-reviewed changes to `main` | 1 approval, dismiss stale, code-owner review, thread resolution, extra approval for unattributed changes; admin bypass in `pull_request` mode | none | same as reference — **applied** |
+| Ruleset: main integrity and mandatory CI | no deletion, no force-push, strict required checks | none | same rules; dotnet-crap check names (below) — **applied** |
+| Ruleset: only owner creates `v*` tags | creation restricted, admin bypass `always` | none | same — **applied** |
+| Ruleset: `v*` tags cannot move or be deleted | update + deletion blocked, no bypass | none | same — **applied** |
+| Secret scanning | enabled | disabled | enabled — **applied** |
+| Secret scanning push protection | enabled | disabled | enabled — **applied** |
+| Dependabot vulnerability alerts | enabled | disabled | enabled — **applied** |
 | Dependabot security update PRs | disabled | disabled | disabled (unchanged, matches) |
-| Private vulnerability reporting | enabled | disabled | enabled — **pending** |
-| Allowed actions | selected: GitHub-owned + `dtolnay/rust-toolchain@*`, `taiki-e/install-action@*` | all | same allowlist — **pending** |
-| SHA pinning required | yes | no | yes — **pending** |
+| Private vulnerability reporting | enabled | disabled | enabled — **applied** |
+| Allowed actions | selected: GitHub-owned + `dtolnay/rust-toolchain@*`, `taiki-e/install-action@*` | all | same allowlist — **applied** |
+| SHA pinning required | yes | no | yes — **applied** |
 | Default `GITHUB_TOKEN` permissions | read; cannot approve PRs | read; cannot approve PRs | unchanged (matches) |
-| `release` environment | required reviewer RuiCostafrg; custom policy `v*` tags only; admins cannot bypass | exists, no rules; admins can bypass | same as reference — **pending** |
-| Delete branch on merge | on | off | on — **pending** |
-| Auto-merge allowed | on | off | on — **pending** |
+| `release` environment | required reviewer RuiCostafrg; custom policy `v*` tags only; admins cannot bypass | exists, no rules; admins can bypass | same as reference — **applied** |
+| Delete branch on merge | on | off | on — **applied** |
+| Auto-merge allowed | on | off | on — **applied** |
 | Merge methods | merge, squash, rebase | merge, squash, rebase | unchanged (matches) |
 
 ## Repository files
@@ -37,7 +37,7 @@ Status legend: **applied** = set and read back; **pending** = not yet applied.
 | `.github/actionlint.yaml` | extra runner labels | missing | not needed; actionlint 1.7.12 knows every label used |
 | Actions pinned to full commit SHAs | yes | yes (all five verified against their tags) | yes |
 | Workflow-level `permissions:` | `contents: read` | `contents: read` on every workflow | unchanged |
-| Checkout `persist-credentials: false` | yes | no | yes, on every checkout |
+| Checkout `persist-credentials: false` | yes | no | yes, on every checkout (including `benchmark.yml`) |
 | actionlint CI job (`workflows`) | yes, required | missing | added, required |
 | PR-time `cargo audit` | in CI | `security.yml` `audit` | unchanged, required |
 | Scheduled advisories | `advisories.yml` daily cargo audit | missing | `advisories.yml` daily cargo audit + NuGet vulnerable-package check |
@@ -83,6 +83,17 @@ can still add a new job. Required reviews and checks protect `main` from unrevie
 changes; they do not protect against a compromised owner account.
 
 ## Verification
+
+dotnet-crap ruleset IDs: 27034553 (owner-reviewed changes), 27034556 (main integrity
+and CI), 27034554 (owner-only release tags), 27034555 (immutable release tags).
+After applying, each ruleset was normalised with `jq` and diffed against its
+typescript-crap counterpart (25595099, 25595100, 25595101, 25595103). All four were
+identical apart from the adapted required-check list. Every repository, Actions,
+token, environment, vulnerability-alert and private-reporting value in the tables
+above was read back from both repositories and matched.
+
+Applying the strict CI ruleset means that open PRs created before the `workflows`
+job existed (for example #10) need a rebase onto `main` before they can merge.
 
 Commands used to read state (substitute either repository):
 
