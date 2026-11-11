@@ -118,7 +118,7 @@ the negative MTP-mode SDK test. No release publication is enabled.
 failures leave no new coverage artifact. Document any versioned format migration.
 Add OpenCover/Microsoft coverage adapters in later PRs with their own evidence.
 
-### 2a. Behavior-preserving architecture boundaries — PRs #17 and #18
+### 2a. Behavior-preserving architecture boundaries — merged in PRs #17 and #18
 
 Independent audits (Claude Sonnet 5.5 and OpenCode GLM-5.3 Flash) reviewed
 module boundaries, errors, process isolation, duplicated path logic and
@@ -162,7 +162,8 @@ with only its three error constructors adapted in item 4.
 Delivery: [PR #17](https://github.com/RuiCostafrg/dotnet-crap/pull/17) (items
 1–3, no output change) and stacked
 [PR #18](https://github.com/RuiCostafrg/dotnet-crap/pull/18) (item 4, API change
-documented in [Rust API](docs/RUST_API.md)). Both are open, not merged.
+documented in [Rust API](docs/RUST_API.md)). PR #17 merged at `e12c6d5`, after
+merging `main` with PR #19 and PR #20. PR #18 merged at `8319728`.
 PR #17 passed formatting, warnings-denied clippy and locked tests, and live
 .NET 10 Coverlet collection for xUnit/MSTest/NUnit on Linux. `collect` moved
 byte-for-byte.

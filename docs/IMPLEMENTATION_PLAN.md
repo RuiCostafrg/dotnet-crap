@@ -90,7 +90,7 @@ unmarked items remain proposed.
    rejects unsupported remaps/UNC paths. VSTest originally used pinned Coverlet 6.0.4 (now 10.1.0); MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
    with their own fixtures.
-6a. **Architecture boundaries — open PRs #17/#18:** behavior-preserving module split
+6a. **Architecture boundaries — merged in PRs #17/#18:** behavior-preserving module split
    of `lib.rs`, a library-owned safe report writer, pure collector planning and
    typed `dotnet_crap::Error`. Ranked rationale and exclusions are in
    [PLAN.md step 2a](../PLAN.md). JSON/SARIF/text output, scores, error text and
