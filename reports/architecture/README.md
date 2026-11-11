@@ -10,7 +10,11 @@ runs are left to hosted CI.
 Commit identities: after PR #15 merged, both branches were rebased onto `main`
 (`77003a6`). That only added `docs/local-ci.md` and `scripts/local-ci.sh`, so the
 pre-rebase SHAs below have byte-identical `src/`, `tests/`, `Cargo.*` trees to
-their rebased counterparts.
+their rebased counterparts. After the full runs, only test and documentation commits
+were added (`c55d043`, `883a765`, plan/evidence docs). Production `src/` code at
+the final heads is identical to the measured trees, apart from the
+`#[cfg(test)]` module in `collector.rs`. The final heads were rechecked with
+formatting, clippy, and locked debug/release tests.
 
 ## Gates
 
