@@ -100,14 +100,15 @@ Every fallible operation (`scan`, `ScanResult::verify_sources`,
 `Sync`, `Debug` and `Display`, so `?` converts it into `anyhow::Error` or
 `Box<dyn Error>`.
 
-Match on `error.kind()`, never on message text. `ErrorKind` is
+Match on `error.kind()`, never on message text. `error.get_ref()` exposes the
+wrapped underlying error, such as a `std::io::Error`, for downcasting. `ErrorKind` is
 `#[non_exhaustive]`:
 
 | Kind | Cause |
 | --- | --- |
 | `InvalidInput` | Invalid threshold, root, input path or collection options. |
-| `Io` | Reading a selected source, the coverage file or the results directory failed. |
-| `Source` | A source is not valid UTF-8/UTF-16, or its path cannot be a native coverage key. |
+| `Io` | Reading or walking the source tree, a coverage file, a Cobertura report or the results directory failed. |
+| `Source` | A source is not valid UTF-8/UTF-16, its path cannot be a native coverage key, or the C# parser could not be initialized. |
 | `Syntax` | A selected file is not valid C#. |
 | `SourceChanged` | Selected source bytes changed after the scan read them. |
 | `Coverage` | Native coverage JSON is invalid, unsupported, stale or outside its file. |

@@ -23,7 +23,8 @@ pub enum ErrorKind {
     InvalidInput,
     /// A filesystem or other I/O operation failed.
     Io,
-    /// A selected source could not be read as text or named as a native coverage path.
+    /// A selected source could not be read as text or named as a native coverage
+    /// path, or the C# parser could not be initialized.
     Source,
     /// A selected source is not syntactically valid C#.
     Syntax,
@@ -74,6 +75,29 @@ impl Error {
     pub fn kind(&self) -> ErrorKind {
         self.kind
     }
+
+    /// Return the wrapped underlying error, if any, for inspection or downcasting.
+    ///
+    /// A classified foreign error (for example a `std::io::Error`) is returned
+    /// even though `Display` already shows its text and `source()` therefore
+    /// starts below it. A message with a cause returns that cause.
+    pub fn get_ref(&self) -> Option<&(dyn StdError + Send + Sync + 'static)> {
+        match &self.repr {
+            Repr::Message { source, .. } => source.as_deref(),
+            Repr::Transparent(inner) => Some(inner.as_ref()),
+        }
+    }
+
+    /// Wrap this error under `message`, keeping its kind.
+    pub(crate) fn wrap(self, message: impl Into<String>) -> Self {
+        Self {
+            kind: self.kind,
+            repr: Repr::Message {
+                message: message.into(),
+                source: Some(Box::new(self)),
+            },
+        }
+    }
 }
 
 impl fmt::Display for Error {
@@ -105,7 +129,9 @@ impl fmt::Debug for Error {
 }
 
 impl StdError for Error {
-    /// Return the wrapped cause; a transparent error skips the cause it already displays.
+    /// Return the wrapped cause; a transparent error skips the cause it already
+    /// displays, matching `thiserror`'s `#[error(transparent)]`. Use
+    /// [`Error::get_ref`] to inspect or downcast that cause.
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match &self.repr {
             Repr::Message { source, .. } => source.as_deref().map(|s| s as _),
@@ -265,5 +291,26 @@ mod tests {
         assert_eq!(failed.kind(), ErrorKind::ResourceLimit);
         assert_eq!(failed.to_string(), "limit 1");
         assert!(failed.source().is_none());
+        assert!(failed.get_ref().is_none());
+    }
+
+    #[test]
+    /// Callers can downcast the classified or contextual cause; wrapping keeps the kind.
+    fn get_ref_exposes_the_wrapped_cause() {
+        let io = Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, "gone"));
+        let inner = io
+            .get_ref()
+            .and_then(|e| e.downcast_ref::<std::io::Error>());
+        assert_eq!(
+            inner.map(std::io::Error::kind),
+            Some(std::io::ErrorKind::NotFound)
+        );
+        let wrapped = io.wrap("outer");
+        assert_eq!(wrapped.kind(), ErrorKind::Io);
+        assert_eq!(format!("{wrapped:#}"), "outer: gone");
+        assert!(wrapped
+            .get_ref()
+            .and_then(|e| e.downcast_ref::<Error>())
+            .is_some_and(|e| e.to_string() == "gone"));
     }
 }

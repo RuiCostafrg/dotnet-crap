@@ -17,17 +17,17 @@ pub fn write_report(result: &crate::ScanResult, rendered: &str, path: &Path) -> 
     }
     if path.exists() {
         for input in result.input_paths().iter() {
-            if same_file::is_same_file(path, input).kind(ErrorKind::Output)? {
+            if same_file::is_same_file(path, input).kind(ErrorKind::Io)? {
                 fail!(Output, "report output aliases an input");
             }
         }
         // Also protect ignored/generated/unselected sources. Do not follow
         // directory links while looking for aliases.
         for entry in WalkDir::new(result.root()).follow_links(false) {
-            let entry = entry.kind(ErrorKind::Output)?;
+            let entry = entry.kind(ErrorKind::Io)?;
             if is_csharp_path(entry.path())
                 && entry.path().is_file()
-                && same_file::is_same_file(path, entry.path()).kind(ErrorKind::Output)?
+                && same_file::is_same_file(path, entry.path()).kind(ErrorKind::Io)?
             {
                 fail!(Output, "report output aliases C# source");
             }

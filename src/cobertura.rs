@@ -51,10 +51,10 @@ pub fn parse_reports(
     }
     let mut evidence = LineEvidence::new();
     for report in reports {
-        import_report(&root, sources, report, &mut evidence)
-            .with_context(ErrorKind::Cobertura, || {
-                format!("invalid Cobertura report {}", report.display())
-            })?;
+        // Keep the inner kind: an unreadable report is `Io`, rejected content is `Cobertura`.
+        import_report(&root, sources, report, &mut evidence).map_err(|error| {
+            error.wrap(format!("invalid Cobertura report {}", report.display()))
+        })?;
     }
     Ok(evidence)
 }
@@ -67,16 +67,15 @@ fn import_report(
     evidence: &mut LineEvidence,
 ) -> Result<()> {
     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
-    let file = fs::File::open(report).with_context(ErrorKind::Cobertura, || {
-        format!("reading {}", report.display())
-    })?;
-    if file.metadata().kind(ErrorKind::Cobertura)?.len() > MAX_REPORT_BYTES {
+    let file = fs::File::open(report)
+        .with_context(ErrorKind::Io, || format!("reading {}", report.display()))?;
+    if file.metadata().kind(ErrorKind::Io)?.len() > MAX_REPORT_BYTES {
         fail!(Cobertura, "Cobertura report exceeds 16 MiB size limit");
     }
     let mut bytes = Vec::new();
     file.take(MAX_REPORT_BYTES + 1)
         .read_to_end(&mut bytes)
-        .kind(ErrorKind::Cobertura)?;
+        .kind(ErrorKind::Io)?;
     if bytes.len() as u64 > MAX_REPORT_BYTES {
         fail!(Cobertura, "Cobertura report exceeds 16 MiB size limit");
     }
@@ -369,7 +368,7 @@ fn add_candidate(
             }
         }
         Err(error) => {
-            return Err(error).with_context(ErrorKind::Cobertura, || {
+            return Err(error).with_context(ErrorKind::Io, || {
                 format!("resolving Cobertura path {}", candidate.display())
             });
         }

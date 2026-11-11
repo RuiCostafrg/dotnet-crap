@@ -96,3 +96,24 @@ borrowed returns, and `Default` for `ErrorKind`, `Coverage` and `Error`. Two are
 `cobertura.rs` `>` → `<` replacements after a cast (`x as u64 < y`), which Rust
 parses as a generic argument list. Their `==`/`>=` siblings are viable and are
 listed above. None is counted as caught.
+
+## Review follow-up on PR #18
+
+Review bots raised three kind classifications, all corrected without changing
+any message:
+- Cobertura report open, metadata, read and canonicalize failures are now `Io`,
+  and the `invalid Cobertura report …` wrapper keeps the inner kind.
+- The source-tree walk and same-file checks in `write_report` are now `Io`.
+
+Bots also noted that transparent errors hide their cause from `source()`. That
+behaviour is intentional: it keeps `{:#}` identical to anyhow, matching
+`#[error(transparent)]`. `Error::get_ref()` now exposes the wrapped error for
+downcasting. Tests assert the parser diagnostics, the report path and an
+unreadable report's `Io` kind.
+
+A targeted mutation run (`cargo mutants --file src/error.rs --file
+src/cobertura.rs --re 'error.rs|parse_reports'`) covered all of `error.rs`,
+including `get_ref` and `wrap`, plus `parse_reports`: 15 mutants, 6 caught,
+9 unviable, 0 missed. See
+[targeted-review-fixes-caught.txt](targeted-review-fixes-caught.txt) and
+[targeted-review-fixes-unviable.txt](targeted-review-fixes-unviable.txt).

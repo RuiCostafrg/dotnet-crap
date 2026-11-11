@@ -190,6 +190,10 @@ fn invalid_coverage_json_is_coverage_error() {
     };
     let error = scan_error(&opts);
     assert_kind(&error, ErrorKind::Coverage, "invalid coverage JSON");
+    assert!(
+        format!("{error:#}").contains("EOF while parsing"),
+        "{error:#}"
+    );
 }
 
 #[test]
@@ -316,9 +320,31 @@ fn malformed_cobertura_is_cobertura_error_with_context() {
     let dir = root_with(&[("C.cs", CLASS)]);
     let report = dir.path().join("report.xml");
     fs::write(&report, "<coverage>").unwrap();
-    let error = parse_reports(dir.path(), &BTreeMap::new(), &[report]).unwrap_err();
+    let error =
+        parse_reports(dir.path(), &BTreeMap::new(), std::slice::from_ref(&report)).unwrap_err();
     assert_eq!(error.kind(), ErrorKind::Cobertura);
-    assert!(format!("{error:#}").starts_with("invalid Cobertura report "));
+    let rendered = format!("{error:#}");
+    assert!(
+        rendered.starts_with(&format!("invalid Cobertura report {}: ", report.display())),
+        "{rendered}"
+    );
+    assert!(rendered.contains(": malformed XML: "), "{rendered}");
+}
+
+#[test]
+/// An unreadable report is an I/O failure, not rejected content, under the same context.
+fn missing_cobertura_report_is_io_error() {
+    let dir = root_with(&[("C.cs", CLASS)]);
+    let report = dir.path().join("absent.xml");
+    let error =
+        parse_reports(dir.path(), &BTreeMap::new(), std::slice::from_ref(&report)).unwrap_err();
+    assert_kind(&error, ErrorKind::Io, "invalid Cobertura report ");
+    assert!(error
+        .get_ref()
+        .and_then(|e| e.downcast_ref::<Error>())
+        .and_then(|e| e.get_ref())
+        .and_then(|e| e.downcast_ref::<std::io::Error>())
+        .is_some_and(|e| e.kind() == std::io::ErrorKind::NotFound));
 }
 
 #[test]
