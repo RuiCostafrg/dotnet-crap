@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           ref: ${{ github.sha }}
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
@@ -64,6 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           ref: ${{ github.sha }}
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
@@ -83,7 +85,6 @@ jobs:
           mkdir -p target/dotnet-tool-stage
           for rid in linux-x64 linux-arm64 osx-x64 osx-arm64 win-x64; do
             mkdir -p "target/dotnet-tool-stage/$rid"
-            file=dotnet-crap; [[ "$rid" == win-* ]] && file=dotnet-crap.exe
             tar -xzf "target/native-artifacts/dotnet-crap-${GITHUB_REF_NAME}-${rid}.tar.gz" -C "target/dotnet-tool-stage/$rid"
           done
           bash scripts/pack-dotnet-tool.sh target/dotnet-tool-stage "$version"
