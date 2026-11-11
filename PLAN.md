@@ -178,7 +178,7 @@ cases consistently and generated artifacts validate against their contracts.
 ### 8. Performance and remaining mutation survivors
 
 Start profiling after step 1; repeat on each relevant production change.
-Progress: [step 8 performance evidence](reports/perf-step8/README.md) (PR pending).
+Progress: [step 8 performance evidence](reports/perf-step8/README.md) in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19).
 
 - [x] Add dense single-file coverage, many-callable, deep-nesting and larger
   solution workloads alongside the existing many-small-files benchmark. The

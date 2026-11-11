@@ -107,7 +107,7 @@ unmarked items remain proposed.
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
 
-12. **Performance (PLAN step 8) — in progress, PR pending:** benchmark
+12. **Performance (PLAN step 8) — in progress in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19):** benchmark
     workloads for dense files, many callables, deep nesting, multi-project
     solutions and Coverlet-shaped Cobertura replay. Every sample records wall
     time and CLI peak RSS with full provenance, and `--baseline` runs two binaries
@@ -116,7 +116,10 @@ unmarked items remain proposed.
     fixtures and workloads. Same-runner speedups are claimed only where samples
     separate: dense-file and many-callables collect, and deep nesting with
     coverage at 12000 lambdas. See the [evidence](../reports/perf-step8/README.md).
-    Budgets remain deferred.
+    The full mutation gate on `18a7893` caught 277 of 301 viable mutants (92.03%):
+    24 missed, 0 timeouts, 11 unviable, no exclusions. The survivors are the same set
+    already reviewed for PR #15, and all 36 mutants in the new scoring helpers are
+    caught ([audit](../reports/perf-step8/mutation-ci/audit.json)). Budgets remain deferred.
 
 ## Evidence required before integration
 

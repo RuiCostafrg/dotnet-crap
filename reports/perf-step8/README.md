@@ -181,6 +181,19 @@ indicated at these scales.
   per-file syscalls (canonicalization, repeated source verification), which PRoot
   inflates. Measure it on a native runner before deciding whether it needs work.
 
+## Mutation evidence
+
+The PR's Mutation workflow ([run 42991034520](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/42991034520))
+ran the full production inventory on `18a7893`. Production source there is
+identical to later commits, which change only reports and docs. Results: 312
+mutants, 277 caught, 24 missed, 0 timeouts, 11 unviable, so 277/301 = 92.03%
+with no exclusions. The 24 survivors are the same set, modulo line numbers, as
+the ones reviewed in [fresh-coverlet](../fresh-coverlet/survivor-review.md);
+none is in code changed here. All 36 mutants in the new helpers
+(`CoverageIndex::count`, `merge_ranges`, `span_counts`, `span_coverage`) are
+caught. See [`mutation-ci/audit.json`](mutation-ci/audit.json) and the
+retained outcome lists.
+
 ## Budgets
 
 None are introduced. These measurements come from a shared, noisy, non-native
