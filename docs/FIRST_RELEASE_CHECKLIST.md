@@ -19,6 +19,9 @@ this authorization does not permit repository-protection changes or bypasses.
 - [ ] Reconfirm npm's five stage-only trusted publishers before release. Their
   setup and `0.0.0` placeholders are recorded in [DISTRIBUTION.md](DISTRIBUTION.md),
   but their account settings were not independently rechecked for this plan.
+- [ ] Enable GitHub immutable releases with owner approval. The API returned
+  `enabled=false` during integration; tag protections alone do not lock assets.
+  Publication preflight and the live verifier now require immutable releases.
 - [ ] Owner confirms revocation of the old npm token labelled **Android**.
   Deleting local copies did not revoke it on npmjs.com. Do not copy it into chat.
 
