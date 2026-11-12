@@ -135,3 +135,46 @@ publication. Adoption on 3–5 independent pinned C# projects (library, web app,
 multi-project solution) also remains uncompleted. Preserve historical mutation,
 SDK and benchmark evidence at its named revisions; it cannot certify the final
 main SHA or a live first release.
+
+## Integration follow-up after the snapshot
+
+The snapshot above is historical. Commits `88c8408` and `8a56a76` address the
+candidate-token boundary and npm concurrency/order findings. Candidate Action
+tests have only read access; only a separate main-push upload job receives a
+code-scanning write token and it executes no repository code. Stable npm stages
+use protected tags, including releases awaiting GitHub approval, as the order
+barrier. Newer tags make older stages backports before npm approval. Each
+version retains its own pending job and the GitHub lookup is authenticated.
+
+An independent review reproduced the missing lookup token, an approval-order
+race hidden by a published-release-only barrier, and direct execution of
+non-executable NuGet payloads. The first two are fixed in `8a56a76`; PR #33
+compares the NuGet payload's bytes and exercises execution only through its
+launcher. Regression tests cover these cases. These fixes do not assert that
+any published channel has passed a live test.
+
+Other initial review dispositions:
+
+- The repository-name guard skips workflows hosted in fork repositories, not
+  upstream fork pull requests. Removing candidate write permissions preserves
+  the upstream fork-PR verification path without requesting code-scanning writes.
+- A leftover GitHub draft intentionally stops automatic retry. Inspecting it
+  before reuse is part of the publication boundary; blindly publishing an old
+  draft would not establish exact verified-byte identity.
+- Original release/npm artifacts now have a 90-day retention and approval/
+  verification window. Expiration fails closed; rebuilding equivalent contents
+  is not a substitute for original attested bytes.
+- `action/scan.sh` uses Bash's quoted empty-array-compatible expansion. The
+  spaced-root SARIF regression in `scripts/test-install-action.sh` passes; the
+  review's word-splitting allegation does not reproduce.
+- The npm install verifier passes fixed command argument vectors, never a shell
+  or externally supplied command text. Its existing audit suppression documents
+  the subprocess boundary; shell quoting would corrupt those list arguments.
+- The old proposed tap-update snippets were removed. The merged tap workflow
+  resumes an orphan branch safely. Its current tag-specific pending-PR guard
+  still allows multiple formula PRs, so out-of-order merges remain a tap-side
+  follow-up. The first release has no older formula PR, but future formula
+  updates must not be merged out of version order.
+
+Refresh current host review/check state before merging; this disposition does
+not satisfy GitHub's required approving review by itself.

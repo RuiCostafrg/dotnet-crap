@@ -129,7 +129,9 @@ NuGet.org publication of the .NET tool is not automated yet; the attested
 `.nupkg` is attached to the GitHub release.
 
 Stable npm stages are ordered: before staging a stable version, every older
-stable GitHub release must be public in all five npm packages. Stage-only OIDC
+stable GitHub tag must be public in all five npm packages, even if its GitHub
+publication is still awaiting approval. A newer stable tag makes an older
+version a backport before either npm version is approved. Stage-only OIDC
 cannot list private stages, so this public-registry gate prevents a newer stage
 from overtaking older approvals. Rerun only the failed npm job after completing
 the older approvals. Each version has its own concurrency group, so pending
