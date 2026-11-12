@@ -178,3 +178,10 @@ Other initial review dispositions:
 
 Refresh current host review/check state before merging; this disposition does
 not satisfy GitHub's required approving review by itself.
+
+GitHub immutable releases were separately found disabled during integration.
+The owner explicitly approved enabling them on 2026-11-12; the setting was
+enabled and read back through `/repos/RuiCostafrg/dotnet-crap/immutable-releases`
+as `enabled=true`. Release preflight now requires the setting, and published
+verification rejects a release whose API metadata is not immutable. No release
+or version tag was created while making this configuration change.

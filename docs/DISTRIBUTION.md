@@ -111,10 +111,10 @@ Publication jobs run only for a `v*` tag push **and** when the repository
 variable `DOTNET_CRAP_PUBLISH` is `true`. Unsetting the variable switches
 publication off again. It was set on 2026-11-11 after the original protection
 and account checks. Integration subsequently found that immutable GitHub
-releases were disabled; enabling that additional publication prerequisite is
-pending owner approval:
+releases were disabled. The owner approved enabling them on 2026-11-12, and
+the API was read back as `enabled=true`:
 
-- [ ] GitHub immutable releases are enabled. The tag preflight and published
+- [x] GitHub immutable releases are enabled. The tag preflight and published
   verifier require this; immutable tags alone do not lock uploaded assets.
 
 - [x] Rulesets protect `main` and `v*` tags (only the owner creates tags; release
