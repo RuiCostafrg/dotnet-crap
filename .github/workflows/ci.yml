@@ -6,9 +6,13 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   rust:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -21,14 +25,26 @@ jobs:
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
       - run: cargo test --locked --release
+      - name: Rust documentation
+        run: cargo doc --locked --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
   dotnet-e2e:
+    name: ${{ matrix.check }}
+    timeout-minutes: 30
+    env:
+      DOTNET_CRAP_TEST_TFM: net${{ matrix.major }}.0
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-24.04, rid: linux-x64, executable: dotnet-crap }
-          - { os: macos-15, rid: osx-arm64, executable: dotnet-crap }
-          - { os: windows-latest, rid: win-x64, executable: dotnet-crap.exe }
+          # Keep existing required-check identities while moving their runners.
+          - { os: ubuntu-26.04, rid: linux-x64, executable: dotnet-crap, major: 10, check: 'dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)' }
+          - { os: macos-26, rid: osx-arm64, executable: dotnet-crap, major: 10, check: 'dotnet-e2e (macos-15, osx-arm64, dotnet-crap)' }
+          - { os: windows-latest, rid: win-x64, executable: dotnet-crap.exe, major: 10, check: 'dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)' }
+          - { os: ubuntu-26.04, rid: linux-x64, executable: dotnet-crap, major: 11, check: 'dotnet-e2e (ubuntu-26.04, .NET 11)' }
+          - { os: macos-26, rid: osx-arm64, executable: dotnet-crap, major: 11, check: 'dotnet-e2e (macos-26, .NET 11)' }
+          - { os: windows-latest, rid: win-x64, executable: dotnet-crap.exe, major: 11, check: 'dotnet-e2e (windows-latest, .NET 11)' }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -39,8 +55,20 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: ${{ matrix.major }}.0.x
+          skip-lts-prepass: true
+      - name: Verify isolated SDK and runtime
+        run: |
+          dotnet --info
+          dotnet --version | grep -E '^${{ matrix.major }}\.0\.'
+          dotnet --list-runtimes | grep -E '^Microsoft.NETCore.App ${{ matrix.major }}\.0\.'
+          if dotnet --list-runtimes | grep '^Microsoft.NETCore.App ' | grep -vE '^Microsoft.NETCore.App ${{ matrix.major }}\.0\.'; then
+            echo 'Unexpected runtime in isolated installation' >&2
+            exit 1
+          fi
       - name: Launcher process and permission contracts
         run: dotnet run --project packaging/tests/DotnetCrapLauncher.Tests -c Release
       - name: Installer and immutable-publication contracts
@@ -73,7 +101,7 @@ jobs:
           set -e
           test "$code" = 1
   workflows:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,7 +117,7 @@ jobs:
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - run: actionlint
   packaging-smoke:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,5 +128,5 @@ jobs:
           toolchain: 1.96.0
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: 10.0.109
+          dotnet-version: 10.0.x
       - run: bash scripts/smoke-packaging.sh

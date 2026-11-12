@@ -1,6 +1,6 @@
 # Distribution packaging
 
-`dotnet-crap` is a .NET 10 global tool NuGet package. `scripts/pack-dotnet-tool.sh <native-stage> [version]` expects native executables at `<native-stage>/<rid>/dotnet-crap[.exe]`, then packs them into the tool package. The launcher selects the matching bundled executable and forwards arguments and exit status.
+`dotnet-crap` is a global tool NuGet package targeting .NET 10, with major runtime roll-forward for .NET 11-only hosts. When both runtimes are installed, the launcher prefers .NET 10. `scripts/pack-dotnet-tool.sh <native-stage> [version]` expects native executables at `<native-stage>/<rid>/dotnet-crap[.exe]`, then packs them into the tool package. The launcher selects the matching bundled executable and forwards arguments and exit status.
 
 ## Staging and concurrent packs
 
@@ -75,3 +75,21 @@ the installed executable with the local build input.
 
 Packages published to the local feed have mode `0644`, including under a restrictive
 caller umask; existing feed contents are never replaced.
+
+## SDK/runtime CI matrix
+
+CI executes the native scanner, launcher contracts and locally installed tool on
+.NET 10 and .NET 11 separately, using isolated SDK installations. Fixtures default
+to `net10.0`; `DOTNET_CRAP_TEST_TFM=net11.0` builds and executes them for .NET 11.
+The xUnit, MSTest and NUnit fixture tests compare `Environment.Version.Major`
+with that target, so SDK 11 driving runtime 10 cannot count as runtime 11 evidence.
+The launcher keeps its `net10.0` package layout and `RollForward=Major`; the
+.NET 11 leg exercises the packed tool with no .NET 10 runtime installed.
+
+The CI runners are explicitly Ubuntu 26.04 and macOS 26 (arm64), plus the retained
+Windows jobs. Release artifact jobs retain their existing runner/toolchain pins;
+this change does not alter release publication or the distribution PR.
+
+Useful practices adopted from the read-only TypeScript reference: bounded jobs,
+cancellation of superseded PR runs, and warnings-denied Rust documentation.
+Existing SHA pins, minimal permissions and disabled checkout credentials remain.
