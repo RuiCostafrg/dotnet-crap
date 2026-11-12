@@ -26,9 +26,10 @@ this verification run.
 
 The released `.nupkg` is installed from an isolated feed and cache on
 `linux-x64`, `linux-arm64`, `osx-x64`, `osx-arm64` and `win-x64`. Each job compares
-the installed native executable with the authenticated platform archive, then
-runs the native binary and .NET launcher through version, passing scan and
-failing gate checks. This does not imply publication on NuGet.org.
+the installed native payload with the authenticated platform archive, then
+runs the .NET launcher through version, passing scan and failing gate checks.
+NuGet does not preserve Unix execute bits; the launcher makes its own private
+executable copy. This does not imply publication on NuGet.org.
 
 After npm approvals and the tap formula merge, run all channels:
 

@@ -93,6 +93,7 @@ class PublishedInstall(unittest.TestCase):
         binary = self.archive()
         work = self.root / 'work'
         work.mkdir()
+        original_run = install.run
 
         def fake(command, **kwargs):
             if command[:3] == ['dotnet', 'tool', 'install']:
@@ -104,12 +105,21 @@ class PublishedInstall(unittest.TestCase):
                 native = work / 'tool/.store/dotnet-crap/0.1.0/tools/net10.0/any/native/linux-x64/dotnet-crap'
                 native.parent.mkdir(parents=True)
                 native.write_bytes(binary)
+                native.chmod(0o600)
+                shim = work / 'tool/dotnet-crap'
+                shim.write_text('#!/bin/sh\n'
+                                'if [ "$1" = --version ]; then echo "dotnet-crap 0.1.0"; exit 0; fi\n'
+                                'while [ "$#" -gt 0 ]; do\n'
+                                '  if [ "$1" = --threshold ] && [ "$2" = 0 ]; then exit 1; fi\n'
+                                '  shift\n'
+                                'done\n')
+                shim.chmod(0o755)
                 return ''
-            return 'dotnet-crap 0.1.0' if command[-1] == '--version' else ''
+            return original_run(command, **kwargs)
 
         with patch.object(install, 'run', side_effect=fake) as run:
             install.tool(self.args, work)
-        self.assertEqual(len(run.call_args_list), 7)
+        self.assertEqual(len(run.call_args_list), 4)
 
 
 if __name__ == '__main__':

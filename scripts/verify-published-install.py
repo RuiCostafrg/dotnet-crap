@@ -36,10 +36,15 @@ def archive_binary(assets, target):
     return load('stage-dotnet-tool').executable(assets, target)
 
 
-def check_binary(executable, assets, targets, version, fixture):
+def check_bytes(executable, assets, targets):
     executable = executable.resolve()
     if executable.read_bytes() not in [archive_binary(assets, target) for target in targets]:
         raise ValueError(f'{executable}: installed bytes differ from authenticated archives')
+
+
+def check_binary(executable, assets, targets, version, fixture):
+    executable = executable.resolve()
+    check_bytes(executable, assets, targets)
     # Installed programs do not receive GitHub credentials even on authenticated runners.
     env = {key: value for key, value in os.environ.items() if key not in ('GH_TOKEN', 'GITHUB_TOKEN')}
     if run([str(executable), '--version'], env=env) != f'dotnet-crap {version}':
@@ -111,7 +116,10 @@ def tool(args, work):
     copies = list(destination.rglob(f'native/{args.rid}/{native_name}'))
     if len(copies) != 1:
         raise ValueError(f'expected one installed native executable for {args.rid}, got {copies}')
-    check_binary(copies[0], args.assets, [args.target], args.version, args.fixture)
+    # NuGet does not preserve Unix executable bits. The launcher deliberately
+    # copies the stored payload into a private executable file; compare stored
+    # bytes here and exercise execution through the supported launcher below.
+    check_bytes(copies[0], args.assets, [args.target])
     shim = destination / native_name
     if run([str(shim), '--version'], env=env) != f'dotnet-crap {args.version}':
         raise ValueError('installed .NET launcher reports wrong version')
