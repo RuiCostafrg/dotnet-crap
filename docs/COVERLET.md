@@ -119,7 +119,10 @@ pre-command snapshot, never from bytes first observed after tests.
 
 The executable fixtures and independent score derivations are in
 [tests/fixtures/coverlet](../tests/fixtures/coverlet/README.md). Live collection is
-explicitly enabled with `DOTNET_CRAP_COVERLET_E2E=1`; an ordinary skipped test is
+explicitly enabled with `DOTNET_CRAP_COVERLET_E2E=1`. Set
+`DOTNET_CRAP_TEST_TFM=net10.0` or `net11.0` to select the runtime target (default:
+`net10.0`); all four test projects assert their actual runtime major against this
+variable. CI installs one SDK/runtime major per leg; an ordinary skipped test is
 not collector evidence. Current-head validation and exact host/toolchain details
 belong in the feature evidence report, separate from historical API measurements.
 

@@ -1,0 +1,123 @@
+Local execution receipts for fixture/launcher revision f8967f9.
+The deliberately failed C# test is an expected collection-cleanup case.
+
+== live10.log ==
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 169.92s
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.84s
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 105 ms - Alpha.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 49 ms - Beta.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 106 ms - NUnit.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 112 ms - MSTest.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 52 ms - Beta.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 90 ms - NUnit.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 182 ms - MSTest.Tests.dll (net10.0)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 349.98s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.41s
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.35s
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.93s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.23s
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 48.16s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+
+== live11-retry.log ==
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.63s
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.64s
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura has been running for over 60 seconds
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 32 ms - Alpha.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 16 ms - Beta.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 12 ms - NUnit.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 40 ms - MSTest.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 14 ms - Beta.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 19 ms - NUnit.Tests.dll (net11.0)
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 38 ms - MSTest.Tests.dll (net11.0)
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 245.17s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.83s
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.79s
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.25s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.33s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+== release.log ==
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.66s
+test pinned_coverlet_collector_emits_fresh_multproject_cobertura ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.16s
+test actual_csharp_partial_and_full_coverage_change_the_gate ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.50s
+test execute_accuracy_fixtures_with_sdk ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+== smoke10-linux.log ==
+PASS bash -n: scripts/*.sh
+PASS install-action: bounded HTTPS requests, checksum enforcement, and version validation
+PASS publish scripts: retry reuse, surfaced failures, NuGet skip-duplicate, absent-secret skip, trusted-main check
+PASS pack publication: one feed owner, readable package, reruns rejected before build
+PASS runtime identifier is supported on this host
+PASS Windows executable name is unchanged
+PASS missing native binary reports an error and exits 2
+PASS executable native runs directly with exact argv and exit code
+PASS exit codes are forwarded exactly for direct runs
+PASS non-executable native runs from a private copy and leaves the install untouched
+PASS private copy is removed after a non-zero child exit
+PASS read-only installs need no write access (exec and non-exec files)
+PASS owner without execute permission falls back to a private copy
+PASS private copy preparation failure exits 2 without touching the install
+PASS in-process API forwards arguments and cleans its private copy
+11 passed, 0 failed, 0 skipped
+PASS concurrent packs: both succeeded from separate stages
+PASS repack: existing feed rejected, original package unchanged
+PASS package contents: tools/net10.0/any/native/linux-arm64/dotnet-crap is the only native entry
+PASS installed launcher: --version, passing fixture gate, failing gate exit 1
+PASS read-only install: launcher ran as nobody from an unwritable tool tree
+PASS local packaging smoke for linux-arm64, version 0.1.0
+
+== smoke11-retry.log ==
+PASS bash -n: scripts/*.sh
+PASS install-action: bounded HTTPS requests, checksum enforcement, and version validation
+PASS publish scripts: retry reuse, surfaced failures, NuGet skip-duplicate, absent-secret skip, trusted-main check
+PASS pack publication: one feed owner, readable package, reruns rejected before build
+PASS runtime identifier is supported on this host
+PASS Windows executable name is unchanged
+PASS missing native binary reports an error and exits 2
+PASS executable native runs directly with exact argv and exit code
+PASS exit codes are forwarded exactly for direct runs
+PASS non-executable native runs from a private copy and leaves the install untouched
+PASS private copy is removed after a non-zero child exit
+PASS read-only installs need no write access (exec and non-exec files)
+PASS owner without execute permission falls back to a private copy
+PASS private copy preparation failure exits 2 without touching the install
+PASS in-process API forwards arguments and cleans its private copy
+11 passed, 0 failed, 0 skipped
+PASS concurrent packs: both succeeded from separate stages
+PASS repack: existing feed rejected, original package unchanged
+PASS package contents: tools/net10.0/any/native/linux-arm64/dotnet-crap is the only native entry
+PASS installed launcher: --version, passing fixture gate, failing gate exit 1
+PASS read-only install: launcher ran as nobody from an unwritable tool tree
+PASS local packaging smoke for linux-arm64, version 0.1.0
