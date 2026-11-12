@@ -100,10 +100,29 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
     let solution = fixture.join("CoverletFixtures.sln");
     let results = tempfile::tempdir().expect("create fresh Coverlet results directory");
     assert_eq!(fs::read_dir(results.path()).unwrap().count(), 0);
+    // Restore once, serially: the solution's test projects share library
+    // projects, and the SDK's parallel implicit restore can race on their
+    // obj/project.nuget.cache ("already exists", seen on macOS SDK 10.0.404).
+    let restore = Command::new("dotnet")
+        .current_dir(&fixture)
+        .arg("restore")
+        .arg(&solution)
+        .arg("--disable-parallel")
+        .arg("-m:1")
+        .output()
+        .expect("start dotnet restore");
+    assert!(
+        restore.status.success(),
+        "dotnet SDK {sdk_version} restore failed (status {}):\nstdout:\n{}\nstderr:\n{}",
+        restore.status,
+        String::from_utf8_lossy(&restore.stdout),
+        String::from_utf8_lossy(&restore.stderr)
+    );
     let output = Command::new("dotnet")
         .current_dir(&fixture)
         .arg("test")
         .arg(&solution)
+        .arg("--no-restore")
         .arg("--collect:XPlat Code Coverage")
         .arg("--results-directory")
         .arg(results.path())
