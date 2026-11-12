@@ -1,0 +1,49 @@
+name: Scheduled dependency advisories
+on:
+  schedule:
+    - cron: '41 7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    # Audits the default branch only. No PR code or publishing credentials.
+    if: >-
+      github.repository == 'RuiCostafrg/dotnet-crap' &&
+      (github.event_name == 'schedule' || github.actor_id == '35194998')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Always audit the default branch, even for a dispatch from another ref.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - run: cargo install cargo-audit --version 0.22.2 --locked
+      - run: cargo audit --deny warnings
+  nuget-audit:
+    if: >-
+      github.repository == 'RuiCostafrg/dotnet-crap' &&
+      (github.event_name == 'schedule' || github.actor_id == '35194998')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Always audit the default branch, even for a dispatch from another ref.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Fail on vulnerable NuGet packages (launcher and test fixtures)
+        run: |
+          status=0
+          for project in $(git ls-files '*.csproj'); do
+            dotnet restore "$project"
+            report="$(dotnet list "$project" package --vulnerable --include-transitive)"
+            printf '%s\n' "$report"
+            if grep -q 'has the following vulnerable packages' <<<"$report"; then status=1; fi
+          done
+          exit "$status"

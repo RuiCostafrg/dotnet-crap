@@ -2,9 +2,9 @@
 
 This fixture is a four-test-project VSTest solution covering xUnit, MSTest and NUnit. Each test project references
 a library containing the measured C# sources, and each pins
-`Microsoft.NET.Test.Sdk` 17.12.0 and `coverlet.collector` 6.0.4. The test
-projects target `net10.0`; xUnit is pinned to 2.9.2 with the Visual Studio
-adapter pinned to 2.8.2. This exercises the VSTest collector path; it makes no
+`Microsoft.NET.Test.Sdk` 18.12.0 and `coverlet.collector` 10.1.0. The test
+projects target `net10.0`; xUnit is pinned to 2.9.3 with the Visual Studio
+adapter pinned to 4.0.1. This exercises the VSTest collector path; it makes no
 claim about Microsoft Testing Platform.
 
 Run from the repository root with:
@@ -62,9 +62,9 @@ runtime, OS and test-runner combinations require their own live evidence.
 
 ## Framework matrix
 
-All projects target .NET 10 and pin Test SDK 17.12.0 / Coverlet collector 6.0.4.
-The xUnit projects pin xUnit 2.9.2 / adapter 2.8.2; MSTest pins framework and
-adapter 4.5.2; NUnit pins framework 4.3.2 / NUnit3TestAdapter 5.0.0.
+All projects target .NET 10 and pin Test SDK 18.12.0 / Coverlet collector 10.1.0.
+The xUnit projects pin xUnit 2.9.3 / adapter 4.0.1; MSTest pins framework and
+adapter 4.5.2; NUnit pins framework 5.0.0 / NUnit3TestAdapter 6.3.1.
 MSTest and NUnit add one positive `Full(1)` call to the paired xUnit pattern.
 MSTest Full hits are 3/3/2/1/3; NUnit Full hits are 3/3/1/2/3 because Beta
 tests `value == 0`. The paired xUnit reports have 2/2/1/1/2. Each pair

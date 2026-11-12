@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{ErrorKind, OptionExt, Result, ResultExt};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, path::Path};
@@ -57,8 +57,11 @@ pub fn render(
             json!({}),
         ));
     }
-    let root_uri = root_uri(root.to_str().context("source root must be valid UTF-8")?);
-    Ok(serde_json::to_string_pretty(&json!({
+    let root_uri = root_uri(
+        root.to_str()
+            .context(ErrorKind::Render, "source root must be valid UTF-8")?,
+    );
+    serde_json::to_string_pretty(&json!({
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
         "version": "2.1.0",
         "runs": [{"tool":{"driver":{"name":"dotnet-crap","version":env!("CARGO_PKG_VERSION"),"rules":[
@@ -66,7 +69,8 @@ pub fn render(
             {"id":"DNCRAP002","shortDescription":{"text":"Required coverage is missing"}},
             {"id":"DNCRAP003","shortDescription":{"text":"No callables found"}}
         ]}},"originalUriBaseIds":{"%SRCROOT%":{"uri":root_uri}},"results":results}]
-    }))?)
+    }))
+    .kind(ErrorKind::Render)
 }
 
 /// Build a rule-specific stable fingerprint and an optional line-only source location.

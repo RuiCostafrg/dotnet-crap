@@ -1,11 +1,6 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 use clap::Parser;
-use std::{
-    fs,
-    io::Write,
-    path::{Path, PathBuf},
-};
-use walkdir::WalkDir;
+use std::{io::Write, path::PathBuf};
 
 #[derive(Parser)]
 #[command(
@@ -93,45 +88,7 @@ fn run(args: Args) -> Result<bool> {
     let output = result.render(format)?;
     result.verify_sources()?;
     if let Some(path) = args.output {
-        if path
-            .extension()
-            .is_some_and(|e| e.eq_ignore_ascii_case("cs"))
-        {
-            bail!("report output cannot overwrite C# source");
-        }
-        if fs::symlink_metadata(&path).is_ok_and(|m| m.file_type().is_symlink()) {
-            bail!("report output cannot be a symbolic link");
-        }
-        if path.exists() {
-            for input in result.input_paths().iter() {
-                if same_file::is_same_file(&path, input)? {
-                    bail!("report output aliases an input");
-                }
-            }
-            // Also protect ignored/generated/unselected sources. Do not follow
-            // directory links while looking for aliases.
-            for entry in WalkDir::new(result.root()).follow_links(false) {
-                let entry = entry?;
-                if entry
-                    .path()
-                    .extension()
-                    .is_some_and(|e| e.eq_ignore_ascii_case("cs"))
-                    && entry.path().is_file()
-                    && same_file::is_same_file(&path, entry.path())?
-                {
-                    bail!("report output aliases C# source");
-                }
-            }
-        }
-        let parent = path
-            .parent()
-            .filter(|p| !p.as_os_str().is_empty())
-            .unwrap_or(Path::new("."));
-        let mut staged = tempfile::NamedTempFile::new_in(parent)?;
-        staged.write_all(output.as_bytes())?;
-        staged.as_file().sync_all()?;
-        result.verify_sources()?;
-        staged.persist(path)?;
+        dotnet_crap::output::write_report(&result, &output, &path)?;
     } else {
         std::io::stdout().lock().write_all(output.as_bytes())?;
     }

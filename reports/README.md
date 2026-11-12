@@ -1,5 +1,8 @@
 # Initial performance evidence
 
+Current same-runner benchmark evidence for PLAN step 8 is in
+[`perf-step8/`](perf-step8/README.md). The files below are historical.
+
 `benchmark-scan.json` and `benchmark-coverage.json` record whole-process timings
 for production commit `9065454` using the harness added in this PR. These are
 observations on this session's Android/aarch64 runner, not Linux release numbers

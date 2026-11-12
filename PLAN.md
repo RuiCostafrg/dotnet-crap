@@ -31,11 +31,15 @@ Keep one Rust package. Extract cohesive modules when they acquire a consumer;
 avoid empty modules or a multi-crate workspace without a concrete need.
 
 - `src/main.rs`: clap arguments, process exits and CLI orchestration.
-- `src/lib.rs`: typed scan options, reports and supported public operations.
+- `src/lib.rs`: typed scan options, `ScanResult`, `scan` orchestration and
+  crate-root re-exports of the documented API.
 - `analysis`: syntax traversal, callable ownership and complexity.
-- `coverage`: evidence validation and collector adapters.
-- `report`: text/JSON/SARIF rendering, then XML and HTML.
-- `selection`, `config`, `baseline`: add with their respective feature PRs.
+- `evidence` (native v1), `cobertura` and `collector`: coverage evidence
+  validation, import and trusted-process collection.
+- `selection` and `source`: source discovery and decoding.
+- `report`, `sarif` and `output`: typed reports, text/JSON/SARIF rendering and
+  safe report publication; XML and HTML follow.
+- `config`, `baseline`: add with their respective feature PRs.
 
 Keep trusted-process execution separate from scanning and pure scoring. Keep
 safe output staging and source-alias checks explicit at filesystem boundaries.
@@ -114,6 +118,65 @@ the negative MTP-mode SDK test. No release publication is enabled.
 failures leave no new coverage artifact. Document any versioned format migration.
 Add OpenCover/Microsoft coverage adapters in later PRs with their own evidence.
 
+### 2a. Behavior-preserving architecture boundaries — merged in PRs #17 and #18
+
+Independent audits (Claude Sonnet 5.5 and OpenCode GLM-5.3 Flash) reviewed
+module boundaries, errors, process isolation, duplicated path logic and
+testability. Ranked by value per review risk:
+
+1. **Split `src/lib.rs` (710 lines, six concerns) into cohesive modules.**
+   `analysis` (callable recognition, naming, complexity and the traversal, moved
+   verbatim), `evidence` (native v1 schema and validation), `selection` (source
+   walk), `source` (decoding), `report` (typed report and text rendering).
+   `lib.rs` keeps `scan` orchestration and crate-root re-exports, so the
+   documented API paths are unchanged. Rationale: the collector already reaches
+   into private lib internals; later config/selection/baseline work needs seams.
+2. **Library-owned report writer (`output`).** Move the CLI's alias, symlink,
+   `.cs` and staged-persist protections into a documented
+   `output::write_report`, sharing the destination-parent and C#-path helpers
+   with the collector. `main.rs` becomes a thin clap/exit adapter, and library
+   callers no longer need to "reproduce each check".
+3. **Separate pure collection planning from process execution.** Extract
+   command validation, `{results}` substitution, report discovery and evidence
+   assembly from `collector::collect`; `run_command` stays the only process code.
+4. **Typed library errors.** Replace `anyhow` in the library with
+   `dotnet_crap::Error` (a matchable `ErrorKind` enum plus the existing message
+   and `source()` chain). Messages and `{:#}` chains stay byte-identical, so CLI
+   stderr is unchanged; the CLI maps every library error to exit 2 as today.
+   (`Debug` for `ScanResult`, `Report` and `Item` landed with item 1.)
+
+Deliberately not done: unifying the scanner's and collector's native-coverage
+key derivation (`lib.rs` rejects `\` while the collector first rewrites it to
+`/`, with different messages; a follow-up should define one contract),
+splitting `cobertura.rs` (424 lines but one cohesive
+contract), merging the native-evidence and Cobertura path validators (different
+contracts and messages), restructuring `scan` error order, or a multi-crate
+workspace. Follow-up: `input_paths()` keeps a relative coverage path as
+supplied, so `output::write_report` alias checks depend on an unchanged working
+directory (documented in the Rust API; resolving it at scan time is an API change).
+Step 8's prefix-sum `CoverageIndex` traversal (PR #19) merged first. The merge
+of `main` into PR #17 moved it, with its tests, verbatim into `analysis.rs`.
+The coverage traversal hot path belongs to step 8; it moves verbatim,
+with only its three error constructors adapted in item 4.
+
+Delivery: [PR #17](https://github.com/RuiCostafrg/dotnet-crap/pull/17) (items
+1–3, no output change) and stacked
+[PR #18](https://github.com/RuiCostafrg/dotnet-crap/pull/18) (item 4, API change
+documented in [Rust API](docs/RUST_API.md)). PR #17 merged at `e12c6d5`, after
+merging `main` with PR #19 and PR #20. PR #18 merged at `8319728`.
+PR #17 passed formatting, warnings-denied clippy and locked tests, and live
+.NET 10 Coverlet collection for xUnit/MSTest/NUnit on Linux. `collect` moved
+byte-for-byte.
+PR #18 head `5745f83` passed the complete standard gate: formatting, clippy,
+debug/release/live tests, Python contracts and docs. Its full mutation run, with no
+exclusions, tested 323 mutants: 279 caught, 22 missed, 0 timeouts, 22 unviable,
+**92.69%**. All 12 production files are represented, and the seven new modules have
+no survivors. 21 survivors repeat the reviewed PR #15 cases. The one new survivor
+is killed by a test added afterwards (targeted recheck: 7/7 caught).
+[Evidence, inventory and survivor review](reports/architecture/README.md). Each PR must pass the
+standard gate including live xUnit/MSTest/NUnit Coverlet tests, and the full
+mutation inventory must name every new production module.
+
 ### 3. Versioned configuration and deterministic selection
 
 - [ ] Add strict `dotnet-crap.json` parsing with unknown-field rejection and
@@ -178,20 +241,27 @@ cases consistently and generated artifacts validate against their contracts.
 ### 8. Performance and remaining mutation survivors
 
 Start profiling after step 1; repeat on each relevant production change.
+Progress: [step 8 performance evidence](reports/perf-step8/README.md) in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19).
 
-- [ ] Add dense single-file coverage, many-callable, deep-nesting and larger
-  solution workloads alongside the existing many-small-files benchmark.
-- [ ] Profile aggregate coverage-point visits across deeply nested callables.
-  The current traversal budgets bound syntax nodes, not repeated coverage work;
-  evaluate prefix counts or excluded-range skipping after measuring dense workloads.
-- [ ] Record runtime and peak memory with compiler, binary digest, source commit,
+- [x] Add dense single-file coverage, many-callable, deep-nesting and larger
+  solution workloads alongside the existing many-small-files benchmark. The
+  harness also replays Coverlet-shaped Cobertura through `collect`.
+- [x] Profile aggregate coverage-point visits across deeply nested callables.
+  The old scorer's work is recorded deterministically as `span_point_visits`.
+  Prefix counts over sorted points replaced per-point span walks, and per-class
+  Cobertura resolution and line counting were memoized. Both changes keep outputs
+  byte-identical. Sampling profilers were unavailable on the local runner; the
+  Benchmark workflow records a Linux `perf` profile.
+- [x] Record runtime and peak memory with compiler, binary digest, source commit,
   corpus and individual samples. Keep correctness assertions in the harness.
 - [ ] Continue survivor investigation at named source revisions: the initial 3
   cases and the 24 reviewed collector-tree survivors are qualified in their
   evidence. Strengthen independent assertions where behavior matters; do not
   declare uncovered boundaries or platform-specific cases globally equivalent.
 - [ ] Introduce performance budgets only after controlled, repeated measurements.
-  Optimize measured bottlenecks without changing scoring semantics.
+  Optimize measured bottlenecks without changing scoring semantics. No budgets
+  yet: the local evidence comes from a shared PRoot runner, and CI timings are
+  same-job observations.
 
 **Done when:** comparisons use the same runner/toolchain/corpus, and every
 performance claim has reproducible measurements. Do not infer portable limits
@@ -199,9 +269,13 @@ or speedups from unrelated shared-runner timings.
 
 ### 9. Protected distribution and independent adoption
 
-- [ ] Establish enforceable host-side release protections and trusted publication
-  identity before adding a reviewed publishing workflow. Keep publication off
-  while the repository plan cannot enforce the necessary protections.
+- [x] Enforce host-side protections matching typescript-crap: rulesets for owner
+  review and strict CI on `main`, owner-only and immutable `v*` tags, SHA-pinned
+  Actions allowlist, secret scanning with push protection, Dependabot alerts,
+  private vulnerability reporting and an owner-approved `release` environment.
+  Windows CI runs but is not required. See `docs/SECURITY_PARITY.md`.
+- [ ] Establish trusted publication identity and add a reviewed publishing job
+  that uses the `release` environment. Publication stays off until then.
 - [ ] Verify NuGet package-ID ownership, immutable assets, checksums/provenance,
   and installed-tool behavior on all five supported release RIDs.
 - [ ] Retain fresh-feed packing: reuse an existing package for retries, use a

@@ -87,9 +87,14 @@ unmarked items remain proposed.
    excluded from the denominator) without exclusions. See the
    [source-qualified evidence and survivor review](../reports/fresh-coverlet/README.md).
    The [mapping contract](COVERLET.md) retains native v1 line evidence and
-   rejects unsupported remaps/UNC paths. VSTest uses pinned Coverlet 6.0.4; MTP
+   rejects unsupported remaps/UNC paths. VSTest originally used pinned Coverlet 6.0.4 (now 10.1.0); MTP
    parity is not inferred. OpenCover/Microsoft formats follow as separate PRs
    with their own fixtures.
+6a. **Architecture boundaries — merged in PRs #17/#18:** behavior-preserving module split
+   of `lib.rs`, a library-owned safe report writer, pure collector planning and
+   typed `dotnet_crap::Error`. Ranked rationale and exclusions are in
+   [PLAN.md step 2a](../PLAN.md). JSON/SARIF/text output, scores, error text and
+   exit codes are unchanged; the traversal hot path ([PLAN.md step 8](../PLAN.md)) is moved verbatim.
 7. **Selection policy:** strict versioned config and include/exclude/ignore behavior,
    followed by Git merge-base selection and then GitHub PR resolution. Explicit CLI
    booleans override config. Test dirty trees, shallow history, renames, deletions,
@@ -103,13 +108,29 @@ unmarked items remain proposed.
 10. **Modern syntax and resource bounds:** top-level code, patterns, records,
     primary constructors and a documented preprocessor policy; iterative traversal
     with depth/resource stress tests and measured profiling before optimization.
-11. **Release/adoption:** schemas, dependency/workflow audits, provenance and installed
+11. **Release/adoption:** host protections, CODEOWNERS, Dependabot, actionlint and
+    scheduled cargo/NuGet advisories now match typescript-crap
+    ([parity record](SECURITY_PARITY.md)); remaining: schemas, provenance and installed
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
     Distribution channels (Homebrew, npm, shell installer, GitHub Action, .NET tool)
     are built and installed from candidate assets on every PR by `distribution.yml`;
     the README marks them as pending until the first release is published and the
     published path is verified.
+
+12. **Performance (PLAN step 8) — in progress in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19):** benchmark
+    workloads for dense files, many callables, deep nesting, multi-project
+    solutions and Coverlet-shaped Cobertura replay. Every sample records wall
+    time and CLI peak RSS with full provenance, and `--baseline` runs two binaries
+    in alternating order with byte-identity checks. Prefix-count coverage
+    scoring and memoized Cobertura resolution are proven byte-identical on all
+    fixtures and workloads. Same-runner speedups are claimed only where samples
+    separate: dense-file and many-callables collect, and deep nesting with
+    coverage at 12000 lambdas. See the [evidence](../reports/perf-step8/README.md).
+    The full mutation gate on `18a7893` caught 277 of 301 viable mutants (92.03%):
+    24 missed, 0 timeouts, 11 unviable, no exclusions. The survivors are the same set
+    already reviewed for PR #15, and all 36 mutants in the new scoring helpers are
+    caught ([audit](../reports/perf-step8/mutation-ci/audit.json)). Budgets remain deferred.
 
 ## Evidence required before integration
 
@@ -121,7 +142,9 @@ metrics. A test returning early without `DOTNET_CRAP_E2E` or the Coverlet-specif
 `DOTNET_CRAP_COVERLET_E2E=1` is not live .NET/collector evidence.
 
 Record performance with `python3 scripts/benchmark.py --output target/bench.json`
-and repeat with `--coverage`. Compare the same compiler/profile/corpus/runner;
+and repeat with `--coverage`. Select other workloads and modes with `--workload`
+and `--mode`, and compare two binaries with `--baseline` (see
+[BENCHMARKS.md](BENCHMARKS.md)). Compare the same compiler/profile/corpus/runner;
 shared-runner results are observational and do not establish a portable latency SLA.
 The harness checks that the complete expected corpus was scanned and exits nonzero
 for subprocess failures, invalid output, or an explicitly exceeded median budget.

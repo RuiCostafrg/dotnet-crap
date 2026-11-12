@@ -3,10 +3,10 @@
 This fixture exercises `OtherGauge.Full(0)` and `OtherGauge.Full(1)` through
 VSTest and Coverlet's Cobertura collector. The pinned packages are:
 
-- NUnit 4.3.2
-- NUnit3TestAdapter 5.0.0
-- Microsoft.NET.Test.Sdk 17.12.0
-- coverlet.collector 6.0.4
+- NUnit 5.0.0
+- NUnit3TestAdapter 6.3.1
+- Microsoft.NET.Test.Sdk 18.12.0
+- coverlet.collector 10.1.0
 
 The project targets `net10.0` and references `../Beta.Library/Beta.Library.csproj`.
 

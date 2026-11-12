@@ -1,0 +1,87 @@
+{
+  "version": 2,
+  "provenance": {
+    "utc": "2026-11-11T08:58:56+00:00",
+    "platform": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "cpu": "Apple M1 (Virtual)",
+    "cpu_count": 3,
+    "python": "3.15.2",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-apple-darwin\nrelease: 1.96.0\nLLVM version: 22.1.2",
+    "source_commit": "d7c0a6f9ad3fa29202b3b2fccb34106c1e1685e9",
+    "source_dirty": false,
+    "binary_sha256": "b43f1714128d843a238d3e36be8eef2470f47d924a45951a0d5eaf54ffe7f554",
+    "load_average": [
+      14.03857421875,
+      22.3671875,
+      12.00146484375
+    ]
+  },
+  "workload": "many-callables",
+  "scale": 8000,
+  "mode": "scan-coverage",
+  "corpus_sha256": "ba857eb1c85f152eb7f92e678ec24c56c89ac0d74a984e6dd2da4d60c179b63b",
+  "files": 1,
+  "callables": 8000,
+  "coverage_points": 8000,
+  "span_point_visits": 10000,
+  "cobertura_reports": 1,
+  "source_bytes": 372890,
+  "warmup": 1,
+  "runs": 8,
+  "rss_floor_kib": 1120,
+  "samples_ms": [
+    180.548667,
+    147.918208,
+    140.56525,
+    146.031042,
+    176.26575,
+    159.558583,
+    147.581708,
+    143.058833
+  ],
+  "peak_rss_kib": [
+    35520,
+    34768,
+    35424,
+    35728,
+    35440,
+    35712,
+    35744,
+    36080
+  ],
+  "median_ms": 147.749958,
+  "min_ms": 140.56525,
+  "max_ms": 180.548667,
+  "median_peak_rss_kib": 35616.0,
+  "max_peak_rss_kib": 36080,
+  "baseline": {
+    "binary_sha256": "11a12d6808b53e850533dd76c65a395f66c52aa4da8d098c049e0c45903a0d7b",
+    "outputs_byte_identical": true,
+    "samples_ms": [
+      174.45925,
+      220.990458,
+      144.25425,
+      182.268959,
+      156.359125,
+      152.220417,
+      145.715125,
+      171.476708
+    ],
+    "peak_rss_kib": [
+      35440,
+      35136,
+      35120,
+      35552,
+      35728,
+      35760,
+      35376,
+      35440
+    ],
+    "median_ms": 163.9179165,
+    "min_ms": 144.25425,
+    "max_ms": 220.990458,
+    "median_peak_rss_kib": 35440.0,
+    "max_peak_rss_kib": 35760
+  }
+}

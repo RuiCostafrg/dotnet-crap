@@ -31,5 +31,10 @@ Homebrew tap pulls and verifies the attested formula itself; this repository
 holds no tap token. Removing these controls requires a maintainer who can change
 workflows, so workflow changes need review like code.
 
+Host protections are enforced (see [docs/SECURITY_PARITY.md](docs/SECURITY_PARITY.md)):
+owner review and mandatory CI on `main`, owner-only and immutable `v*` tags, an
+allowlist of SHA-pinned Actions, secret scanning with push protection, and the
+`release` environment. The owner's admin role can still bypass review.
+
 Report security issues privately through the repository's GitHub security
 advisories, rather than posting sensitive details in a public issue.

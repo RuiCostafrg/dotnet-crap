@@ -1,0 +1,731 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 196  of event 'task-clock:ppp'
+# Event count (approx.): 65355024
+#
+# Overhead  Command      Shared Object         Symbol                                                                                           
+# ........  ...........  ....................  .................................................................................................
+#
+     5.10%  dotnet-crap  dotnet-crap           [.] stack_node_new
+            |          
+             --3.57%--stack_node_new
+                       |          
+                       |--2.04%--ts_stack_push
+                       |          ts_subtree_has_external_tokens (inlined)
+                       |          ts_parser__shift (inlined)
+                       |          ts_parser__advance (inlined)
+                       |          ts_parser_parse
+                       |          ts_parser_parse_with_options
+                       |          context<tree_sitter::Tree, &str> (inlined)
+                       |          scan (inlined)
+                       |          branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                       |          run (inlined)
+                       |          execute (inlined)
+                       |          main (inlined)
+                       |          __rust_begin_short_backtrace<fn(), ()> (inlined)
+                       |          std::rt::lang_start::{{closure}}
+                       |          {closure#0} (inlined)
+                       |          do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       |          catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                       |          catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       |          lang_start_internal (inlined)
+                       |          main
+                       |          0x7f9639c2a1ca
+                       |          __libc_start_main
+                       |          _start
+                       |          
+                        --1.53%--ts_parser__reduce (inlined)
+                                  ts_parser__advance (inlined)
+                                  ts_parser_parse
+                                  ts_parser_parse_with_options
+                                  context<tree_sitter::Tree, &str> (inlined)
+                                  scan (inlined)
+                                  branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                                  run (inlined)
+                                  execute (inlined)
+                                  main (inlined)
+                                  __rust_begin_short_backtrace<fn(), ()> (inlined)
+                                  std::rt::lang_start::{{closure}}
+                                  {closure#0} (inlined)
+                                  do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                                  catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  lang_start_internal (inlined)
+                                  main
+                                  0x7f9639c2a1ca
+                                  __libc_start_main
+                                  _start
+
+     4.59%  dotnet-crap  dotnet-crap           [.] ts_parser_parse
+            |          
+            |--1.53%--ts_stack_state (inlined)
+            |          |          
+            |           --1.02%--ts_parser__reduce (inlined)
+            |                     ts_parser__advance (inlined)
+            |                     ts_parser_parse
+            |                     ts_parser_parse_with_options
+            |                     context<tree_sitter::Tree, &str> (inlined)
+            |                     scan (inlined)
+            |                     branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+            |                     run (inlined)
+            |                     execute (inlined)
+            |                     main (inlined)
+            |                     __rust_begin_short_backtrace<fn(), ()> (inlined)
+            |                     std::rt::lang_start::{{closure}}
+            |                     {closure#0} (inlined)
+            |                     do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |                     catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+            |                     catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |                     lang_start_internal (inlined)
+            |                     main
+            |                     0x7f9639c2a1ca
+            |                     __libc_start_main
+            |                     _start
+            |          
+            |--1.02%--ts_parser__reduce (inlined)
+            |          ts_parser__advance (inlined)
+            |          ts_parser_parse
+            |          ts_parser_parse_with_options
+            |          context<tree_sitter::Tree, &str> (inlined)
+            |          scan (inlined)
+            |          branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+            |          run (inlined)
+            |          execute (inlined)
+            |          main (inlined)
+            |          __rust_begin_short_backtrace<fn(), ()> (inlined)
+            |          std::rt::lang_start::{{closure}}
+            |          {closure#0} (inlined)
+            |          do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+            |          catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          lang_start_internal (inlined)
+            |          main
+            |          0x7f9639c2a1ca
+            |          __libc_start_main
+            |          _start
+            |          
+             --1.02%--ts_parser__advance (inlined)
+                       ts_parser_parse
+                       ts_parser_parse_with_options
+                       context<tree_sitter::Tree, &str> (inlined)
+                       scan (inlined)
+                       branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                       run (inlined)
+                       execute (inlined)
+                       main (inlined)
+                       __rust_begin_short_backtrace<fn(), ()> (inlined)
+                       std::rt::lang_start::{{closure}}
+                       {closure#0} (inlined)
+                       do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                       catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       lang_start_internal (inlined)
+                       main
+                       0x7f9639c2a1ca
+                       __libc_start_main
+                       _start
+
+     4.59%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_goto_first_child_internal
+            |          
+            |--1.53%--ts_subtree_visible (inlined)
+            |          ts_tree_cursor_child_iterator_next (inlined)
+            |          ts_tree_cursor_goto_first_child_internal
+            |          ts_tree_cursor_goto_first_child
+            |          |          
+            |           --1.02%--ts_tree_cursor_goto_next_sibling
+            |                     {closure#0} (inlined)
+            |                     {closure#0}<usize, tree_sitter::Node, (), tree_sitter::{impl#19}::named_children::{closure_env#0}, core::iter::adapters::map::map_fold::{closure_env#0}<tree_sitter::Node, (tree_sitter::Node, bool), (), dotnet_crap::collect::{closure_env#0}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<(tree_sitter::Node, bool), alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>>>>> (inlined)
+            |                     fold<core::ops::range::Range<usize>, (), core::iter::adapters::map::map_fold::{closure_env#0}<usize, tree_sitter::Node, (), tree_sitter::{impl#19}::named_children::{closure_env#0}, core::iter::adapters::map::map_fold::{closure_env#0}<tree_sitter::Node, (tree_sitter::Node, bool), (), dotnet_crap::collect::{closure_env#0}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<(tree_sitter::Node, bool), alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>>>>>> (inlined)
+            |                     fold<tree_sitter::Node, core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}, (), core::iter::adapters::map::map_fold::{closure_env#0}<tree_sitter::Node, (tree_sitter::Node, bool), (), dotnet_crap::collect::{closure_env#0}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<(tree_sitter::Node, bool), alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>>>>> (inlined)
+            |                     fold<(tree_sitter::Node, bool), core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<(tree_sitter::Node, bool), alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>>>> (inlined)
+            |                     for_each<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>, alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>>> (inlined)
+            |                     extend_trusted<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>> (inlined)
+            |                     spec_extend<(tree_sitter::Node, bool), core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>, alloc::alloc::Global> (inlined)
+            |                     extend<(tree_sitter::Node, bool), alloc::alloc::Global, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, dotnet_crap::collect::{closure_env#0}>> (inlined)
+            |                     collect (inlined)
+            |                     scan (inlined)
+            |                     branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+            |                     run (inlined)
+            |                     execute (inlined)
+            |                     main (inlined)
+            |                     __rust_begin_short_backtrace<fn(), ()> (inlined)
+            |                     std::rt::lang_start::{{closure}}
+            |                     {closure#0} (inlined)
+            |                     do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |                     catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+            |                     catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |                     lang_start_internal (inlined)
+            |                     main
+            |                     0x7f9639c2a1ca
+            |                     __libc_start_main
+            |                     _start
+            |          
+            |--1.02%--ts_tree_cursor_iterate_children (inlined)
+            |          ts_tree_cursor_goto_first_child_internal
+            |          ts_tree_cursor_goto_first_child
+            |          named_child_count (inlined)
+            |          named_children (inlined)
+            |          
+             --1.02%--ts_tree_cursor_child_iterator_next (inlined)
+                       ts_tree_cursor_goto_first_child_internal
+                       ts_tree_cursor_goto_first_child
+                       named_child_count (inlined)
+                       named_children (inlined)
+
+     4.08%  dotnet-crap  dotnet-crap           [.] dotnet_crap::scan
+            |          
+             --1.02%--collect (inlined)
+                       scan (inlined)
+                       branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                       run (inlined)
+                       execute (inlined)
+                       main (inlined)
+                       __rust_begin_short_backtrace<fn(), ()> (inlined)
+                       std::rt::lang_start::{{closure}}
+                       {closure#0} (inlined)
+                       do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                       catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       lang_start_internal (inlined)
+                       main
+                       0x7f9639c2a1ca
+                       __libc_start_main
+                       _start
+
+     4.08%  dotnet-crap  dotnet-crap           [.] stack__iter.constprop.0
+            |          
+            |--2.55%--stack__iter (inlined)
+            |          ts_stack_halted_version_count (inlined)
+            |          ts_parser__reduce (inlined)
+            |          ts_parser__advance (inlined)
+            |          ts_parser_parse
+            |          ts_parser_parse_with_options
+            |          context<tree_sitter::Tree, &str> (inlined)
+            |          scan (inlined)
+            |          branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+            |          run (inlined)
+            |          execute (inlined)
+            |          main (inlined)
+            |          __rust_begin_short_backtrace<fn(), ()> (inlined)
+            |          std::rt::lang_start::{{closure}}
+            |          {closure#0} (inlined)
+            |          do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+            |          catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          lang_start_internal (inlined)
+            |          main
+            |          0x7f9639c2a1ca
+            |          __libc_start_main
+            |          _start
+            |          
+             --1.02%--ts_subtree_retain (inlined)
+                       stack__iter (inlined)
+                       ts_stack_halted_version_count (inlined)
+                       ts_parser__reduce (inlined)
+                       ts_parser__advance (inlined)
+                       ts_parser_parse
+                       ts_parser_parse_with_options
+                       context<tree_sitter::Tree, &str> (inlined)
+                       scan (inlined)
+                       branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                       run (inlined)
+                       execute (inlined)
+                       main (inlined)
+                       __rust_begin_short_backtrace<fn(), ()> (inlined)
+                       std::rt::lang_start::{{closure}}
+                       {closure#0} (inlined)
+                       do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                       catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       lang_start_internal (inlined)
+                       main
+                       0x7f9639c2a1ca
+                       __libc_start_main
+                       _start
+
+     4.08%  dotnet-crap  dotnet-crap           [.] ts_language_table_entry
+            |          
+            |--2.55%--ts_language_lookup (inlined)
+            |          ts_language_table_entry
+            |          ts_parser_parse_with_options
+            |          context<tree_sitter::Tree, &str> (inlined)
+            |          scan (inlined)
+            |          branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+            |          run (inlined)
+            |          execute (inlined)
+            |          main (inlined)
+            |          __rust_begin_short_backtrace<fn(), ()> (inlined)
+            |          std::rt::lang_start::{{closure}}
+            |          {closure#0} (inlined)
+            |          do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+            |          catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+            |          lang_start_internal (inlined)
+            |          main
+            |          0x7f9639c2a1ca
+            |          __libc_start_main
+            |          _start
+            |          
+             --1.53%--ts_language_table_entry
+                       ts_parser_parse_with_options
+                       context<tree_sitter::Tree, &str> (inlined)
+                       scan (inlined)
+                       branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                       run (inlined)
+                       execute (inlined)
+                       main (inlined)
+                       __rust_begin_short_backtrace<fn(), ()> (inlined)
+                       std::rt::lang_start::{{closure}}
+                       {closure#0} (inlined)
+                       do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                       catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                       lang_start_internal (inlined)
+                       main
+                       0x7f9639c2a1ca
+                       __libc_start_main
+                       _start
+
+     4.08%  dotnet-crap  dotnet-crap           [.] ts_lex
+            |
+            ---ts_lex
+               ts_parser__lex
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     3.57%  dotnet-crap  dotnet-crap           [.] set_contains
+            |
+            ---set_contains
+               ts_parser__lex
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     3.57%  dotnet-crap  dotnet-crap           [.] ts_parser__lex
+            |          
+             --2.04%--ts_parser__lex
+                       |          
+                        --1.53%--ts_parser__advance (inlined)
+                                  ts_parser_parse
+                                  ts_parser_parse_with_options
+                                  context<tree_sitter::Tree, &str> (inlined)
+                                  scan (inlined)
+                                  branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                                  run (inlined)
+                                  execute (inlined)
+                                  main (inlined)
+                                  __rust_begin_short_backtrace<fn(), ()> (inlined)
+                                  std::rt::lang_start::{{closure}}
+                                  {closure#0} (inlined)
+                                  do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                                  catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  lang_start_internal (inlined)
+                                  main
+                                  0x7f9639c2a1ca
+                                  __libc_start_main
+                                  _start
+
+     3.06%  dotnet-crap  dotnet-crap           [.] ts_stack__add_slice
+            |
+            ---ts_stack__add_version (inlined)
+               ts_stack__add_slice
+               stack__iter (inlined)
+               ts_stack_halted_version_count (inlined)
+               ts_parser__reduce (inlined)
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     2.55%  dotnet-crap  dotnet-crap           [.] stack_node_release
+            |
+            ---stack_node_release
+               ts_stack_renumber_version
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     2.55%  dotnet-crap  dotnet-crap           [.] ts_lexer__mark_end
+            |
+            ---ts_lexer__mark_end
+               ts_parser__lex
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     2.55%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_goto_sibling_internal.constprop.0
+            |          
+             --2.04%--ts_tree_cursor_child_iterator_next (inlined)
+                       ts_tree_cursor_goto_sibling_internal (inlined)
+                       ts_tree_cursor_goto_next_sibling
+                       |          
+                        --1.53%--{closure#0}<usize, tree_sitter::Node, (), tree_sitter::{impl#19}::named_children::{closure_env#0}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<tree_sitter::Node, alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<tree_sitter::Node, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>>>> (inlined)
+                                  fold<core::ops::range::Range<usize>, (), core::iter::adapters::map::map_fold::{closure_env#0}<usize, tree_sitter::Node, (), tree_sitter::{impl#19}::named_children::{closure_env#0}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<tree_sitter::Node, alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<tree_sitter::Node, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>>>>> (inlined)
+                                  fold<tree_sitter::Node, core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<tree_sitter::Node, alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<tree_sitter::Node, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>>>> (inlined)
+                                  for_each<core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, alloc::vec::{impl#21}::extend_trusted::{closure_env#0}<tree_sitter::Node, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>>> (inlined)
+                                  extend_trusted<tree_sitter::Node, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>> (inlined)
+                                  spec_extend<tree_sitter::Node, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>, alloc::alloc::Global> (inlined)
+                                  from_iter<tree_sitter::Node, core::iter::adapters::map::Map<core::ops::range::Range<usize>, tree_sitter::{impl#19}::named_children::{closure_env#0}>> (inlined)
+                                  collect (inlined)
+                                  scan (inlined)
+                                  branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                                  run (inlined)
+                                  execute (inlined)
+                                  main (inlined)
+                                  __rust_begin_short_backtrace<fn(), ()> (inlined)
+                                  std::rt::lang_start::{{closure}}
+                                  {closure#0} (inlined)
+                                  do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                                  catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  lang_start_internal (inlined)
+                                  main
+                                  0x7f9639c2a1ca
+                                  __libc_start_main
+                                  _start
+
+     2.04%  dotnet-crap  dotnet-crap           [.] alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+     2.04%  dotnet-crap  dotnet-crap           [.] ts_lexer__advance
+            |          
+             --1.53%--ts_lexer__do_advance (inlined)
+                       ts_lexer__advance
+                       |          
+                        --1.02%--ts_lex
+                                  ts_parser__lex
+                                  ts_parser__advance (inlined)
+                                  ts_parser_parse
+                                  ts_parser_parse_with_options
+                                  context<tree_sitter::Tree, &str> (inlined)
+                                  scan (inlined)
+                                  branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                                  run (inlined)
+                                  execute (inlined)
+                                  main (inlined)
+                                  __rust_begin_short_backtrace<fn(), ()> (inlined)
+                                  std::rt::lang_start::{{closure}}
+                                  {closure#0} (inlined)
+                                  do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                                  catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  lang_start_internal (inlined)
+                                  main
+                                  0x7f9639c2a1ca
+                                  __libc_start_main
+                                  _start
+
+     2.04%  dotnet-crap  dotnet-crap           [.] ts_node_type
+            |          
+             --1.53%--ts_node_type
+                       |          
+                        --1.02%--eq<u8, u8> (inlined)
+                                  eq<[u8], [u8]> (inlined)
+                                  eq (inlined)
+                                  callable (inlined)
+                                  collect (inlined)
+                                  scan (inlined)
+                                  branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                                  run (inlined)
+                                  execute (inlined)
+                                  main (inlined)
+                                  __rust_begin_short_backtrace<fn(), ()> (inlined)
+                                  std::rt::lang_start::{{closure}}
+                                  {closure#0} (inlined)
+                                  do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                                  catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                                  lang_start_internal (inlined)
+                                  main
+                                  0x7f9639c2a1ca
+                                  __libc_start_main
+                                  _start
+
+     2.04%  dotnet-crap  dotnet-crap           [.] ts_subtree_summarize_children
+            |
+            ---ts_subtree_summarize_children
+               |          
+                --1.53%--ts_subtree_new_node
+                          ts_parser__reduce (inlined)
+                          ts_parser__advance (inlined)
+                          ts_parser_parse
+                          ts_parser_parse_with_options
+                          context<tree_sitter::Tree, &str> (inlined)
+                          scan (inlined)
+                          branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+                          run (inlined)
+                          execute (inlined)
+                          main (inlined)
+                          __rust_begin_short_backtrace<fn(), ()> (inlined)
+                          std::rt::lang_start::{{closure}}
+                          {closure#0} (inlined)
+                          do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                          catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+                          catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+                          lang_start_internal (inlined)
+                          main
+                          0x7f9639c2a1ca
+                          __libc_start_main
+                          _start
+
+     1.53%  dotnet-crap  dotnet-crap           [.] ts_lexer__get_lookahead
+            |
+            ---ts_lexer__get_lookahead
+               ts_lex
+               ts_parser__lex
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     1.53%  dotnet-crap  dotnet-crap           [.] ts_stack_renumber_version
+            |          
+             --1.02%--ts_stack_renumber_version
+
+     1.02%  dotnet-crap  dotnet-crap           [.] tree_sitter::Node::is_named
+            |
+            ---tree_sitter::Node::is_named
+               {closure#0} (inlined)
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_language_next_state
+            |
+            ---ts_language_lookup (inlined)
+               ts_language_next_state
+               ts_parser__reduce (inlined)
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_language_symbol_name
+            |
+            ---ts_language_symbol_name
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_lexer_start
+            |
+            ---ts_lexer_start
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_node_child_by_field_id
+            |
+            ---ts_node_child_by_field_id
+               ts_node_child_by_field_name
+               runtime (inlined)
+               is_null<core::ffi::c_void> (inlined)
+               new (inlined)
+               child_by_field_name<&str> (inlined)
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_subtree_release
+            |
+            ---ts_subtree_release
+               ts_tree_delete
+               drop<u8, alloc::alloc::Global> (inlined)
+               drop_in_place<alloc::raw_vec::RawVec<u8, alloc::alloc::Global>> (inlined)
+               drop_in_place<alloc::vec::Vec<u8, alloc::alloc::Global>> (inlined)
+               drop_in_place<alloc::string::String> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_current_node
+            |
+            ---ts_subtree_extra (inlined)
+               ts_tree_cursor_current_node
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_goto_first_child
+            |
+            ---ts_tree_cursor_goto_first_child
+               ts_tree_cursor_goto_next_sibling
+               {closure#0} (inlined)
+
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_is_entry_visible
+     1.02%  dotnet-crap  dotnet-crap           [.] ts_tree_cursor_new
+     1.02%  dotnet-crap  libc.so.6             [.] 0x00000000000ac5fa
+            |
+            ---0x7f9639cac5fa
+               malloc
+               ts_malloc_default
+               _array__grow (inlined)
+               stack__iter (inlined)
+               ts_stack_halted_version_count (inlined)
+               ts_parser__reduce (inlined)
+               ts_parser__advance (inlined)
+               ts_parser_parse
+               ts_parser_parse_with_options
+               context<tree_sitter::Tree, &str> (inlined)
+               scan (inlined)
+               branch<dotnet_crap::ScanResult, anyhow::Error> (inlined)
+               run (inlined)
+               execute (inlined)
+               main (inlined)
+               __rust_begin_short_backtrace<fn(), ()> (inlined)
+               std::rt::lang_start::{{closure}}
+               {closure#0} (inlined)
+               do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (inlined)
+               catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (inlined)
+               lang_start_internal (inlined)
+               main
+               0x7f9639c2a1ca
+               __libc_start_main
+               _start
+
+     1.02%  dotnet-crap  [unknown]             [k] 0xffffffff99961050
+            |
+            ---0xffffffff99961050
+               0xffffffff9acbbe61
+               0xffffffff99600bb7
+
+     1.02%  dotnet-crap  [unknown]             [k] 0xffffffff99d828fe
+            |
+            ---0xffffffff99d828fe
+               0xffffffff99d830bd
+               0xffffffff99d861f6
+               0xffffffff99d87900
+               0xffffffff99dc9ace
+               0xffffffff99dccdcd
+               0xffffffff99d49ec4
+               0xffffffff99d4a30c
+               0xffffffff99d4b734
+               0xffffffff99d4bcda
+               0xffffffff99d4c01d
+               0xffffffff99961152
+               0xffffffff9acbbe61
+               0xffffffff99600bb7
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

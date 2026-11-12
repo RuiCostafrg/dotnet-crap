@@ -1,0 +1,2 @@
+src/cobertura.rs:80:27: replace > with < in import_report
+src/cobertura.rs:227:32: replace > with < in import_class

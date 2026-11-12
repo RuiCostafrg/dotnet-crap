@@ -1,0 +1,87 @@
+{
+  "version": 2,
+  "provenance": {
+    "utc": "2026-11-11T08:21:01+00:00",
+    "platform": "Android-12-aarch64-64bit",
+    "machine": "aarch64",
+    "cpu": "Qualcomm Technologies, Inc KONA",
+    "cpu_count": 8,
+    "python": "3.13.13",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25) (built from a source tarball)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-linux-android\nrelease: 1.96.0\nLLVM version: 21.1.8",
+    "source_commit": "01d756c5a5450b50e68c8fe8bec90605844dfa23",
+    "source_dirty": false,
+    "binary_sha256": "14d26c4a789cc4784cd79146da6f22c8cce80f3c68f9d857a0953da72d000f20",
+    "load_average": [
+      4.94580078125,
+      4.5185546875,
+      4.74560546875
+    ]
+  },
+  "workload": "deep-nesting",
+  "scale": 12000,
+  "mode": "scan-coverage",
+  "corpus_sha256": "6fabfbe80946764bb3b11c291f8fb8d428689060e62573d2d3831d8abc77fb32",
+  "files": 1,
+  "callables": 12001,
+  "coverage_points": 26002,
+  "span_point_visits": 168038002,
+  "cobertura_reports": 1,
+  "source_bytes": 529864,
+  "warmup": 1,
+  "runs": 8,
+  "rss_floor_kib": 8332,
+  "samples_ms": [
+    865.555729,
+    605.2575,
+    696.962031,
+    618.142604,
+    712.989583,
+    575.764531,
+    614.60401,
+    677.829426
+  ],
+  "peak_rss_kib": [
+    78740,
+    78812,
+    78640,
+    78732,
+    78852,
+    78816,
+    78824,
+    78668
+  ],
+  "median_ms": 647.986015,
+  "min_ms": 575.764531,
+  "max_ms": 865.555729,
+  "median_peak_rss_kib": 78776.0,
+  "max_peak_rss_kib": 78852,
+  "baseline": {
+    "binary_sha256": "e938e2cc8251a814f0a6676d0cec1f84865a915ba511218d23490e50a1a6b62f",
+    "outputs_byte_identical": true,
+    "samples_ms": [
+      1192.143438,
+      1253.034947,
+      1120.876614,
+      1186.28776,
+      1551.584271,
+      1243.277968,
+      1221.047865,
+      1185.624114
+    ],
+    "peak_rss_kib": [
+      71216,
+      71284,
+      71760,
+      71852,
+      71236,
+      71368,
+      71212,
+      71244
+    ],
+    "median_ms": 1206.5956515,
+    "min_ms": 1120.876614,
+    "max_ms": 1551.584271,
+    "median_peak_rss_kib": 71264.0,
+    "max_peak_rss_kib": 71852
+  }
+}

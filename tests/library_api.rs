@@ -53,7 +53,7 @@ fn assert_equivalent(root: &Path, opts: &ScanOptions, cli_args: &[&str]) {
 
 /// Require identical diagnostics, empty stdout and exit 2 for invalid inputs in every format.
 fn assert_invalid(opts: &ScanOptions, cli_args: &[&str], message: &str) {
-    let error = scan(opts).err().expect("invalid input must fail");
+    let error = scan(opts).expect_err("invalid input must fail");
     assert!(format!("{error:#}").contains(message));
     for name in ["text", "json", "sarif"] {
         let output = cli(&opts.root, &[cli_args, &["--format", name]].concat());
