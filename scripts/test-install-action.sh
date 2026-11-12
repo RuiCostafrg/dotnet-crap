@@ -288,7 +288,11 @@ for argument in "$@"; do printf '%s\n' "$argument" >> "$SCAN_CALLS"; done
 echo --- >> "$SCAN_CALLS"
 while [ $# -gt 0 ]; do
   if [ "$1" = --output ]; then
-    printf '%s' '{"version":"2.1.0","runs":[{"results":[]}]}' > "$2"
+    if [ -n "${FAKE_REPORT_FILE:-}" ]; then
+      cat "$FAKE_REPORT_FILE" > "$2"
+    else
+      printf '%s' '{"version":"2.1.0","runs":[{"results":[]}]}' > "$2"
+    fi
     exit "${FAKE_STATUS:-0}"
   fi
   shift
@@ -331,6 +335,18 @@ report=$(sed -n 's/^sarif-file=//p' "$work/github_output")
 [[ "$(sed -n '1p;2p;3p;4p' "$work/scan_calls" | tr '\n' ' ')" == "--format sarif --output $report " ]] \
   || fail "SARIF options must precede user arguments"
 grep -qF "0 SARIF result(s)" "$work/scan.out" || fail "SARIF summary missing"
+
+mkdir -p "$work/workspace/src with space"
+printf '%s' '{"version":"2.1.0","runs":[{"results":[{"locations":[{"physicalLocation":{"artifactLocation":{"uri":"Gauge.cs"}}}]}]}]}' > "$work/report.json"
+run_scan DOTNET_CRAP_ACTION_SARIF=true DOTNET_CRAP_ACTION_ARGS=$'--root\nsrc with space' \
+  FAKE_REPORT_FILE="$work/report.json" || fail "SARIF scan root with spaces failed"
+report=$(sed -n 's/^sarif-file=//p' "$work/github_output")
+python3 - "$report" <<'PY'
+import json, sys
+report = json.load(open(sys.argv[1], encoding='utf-8'))
+uri = report['runs'][0]['results'][0]['locations'][0]['physicalLocation']['artifactLocation']['uri']
+assert uri == 'src%20with%20space/Gauge.cs', uri
+PY
 
 run_scan DOTNET_CRAP_ACTION_SARIF=true DOTNET_CRAP_ACTION_ARGS=$'--format\njson' \
   && fail "--format with sarif was accepted" || true

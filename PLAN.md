@@ -19,7 +19,10 @@ This is evidence for that tree, not a guarantee for future changes.
 Coverage currently counts supplied points; `--require-coverage` requires evidence
 per callable, not complete statement coverage. Same-line nested ownership remains
 ambiguous. The real fixtures use controlled instrumentation, not Coverlet.
-Automatic release publication remains disabled; tag workflows build artifacts.
+At that historical snapshot, automatic release publication was disabled and tag
+workflows only built artifacts. Current first-release status is recorded in
+[release integration](docs/RELEASE_INTEGRATION.md): publication is enabled by
+configuration, but no release or live published-path verification exists yet.
 
 All implementation stays in this repository. The TypeScript project remains a
 read-only comparison source. See the [feature map](docs/FEATURE_PARITY.md) for
@@ -112,7 +115,8 @@ The full source-qualified mutation run tested 297 mutants: 262 caught, 24 missed
 0 timeouts, 11 unviable; **91.61%**, with all five production modules represented
 and no blanket exclusions. [Complete evidence, inventory and survivor review](reports/fresh-coverlet/README.md).
 SDK 8 and actual MTP collection remain unverified; no parity is inferred from
-the negative MTP-mode SDK test. No release publication is enabled.
+the negative MTP-mode SDK test. Release publication was disabled for that
+validated snapshot; see step 9 for current status.
 
 **Done when:** actual .NET collector runs produce independently checked scores;
 failures leave no new coverage artifact. Document any versioned format migration.
@@ -274,8 +278,10 @@ or speedups from unrelated shared-runner timings.
   Actions allowlist, secret scanning with push protection, Dependabot alerts,
   private vulnerability reporting and an owner-approved `release` environment.
   Windows CI runs but is not required. See `docs/SECURITY_PARITY.md`.
-- [ ] Establish trusted publication identity and add a reviewed publishing job
-  that uses the `release` environment. Publication stays off until then.
+- [ ] Integrate the reviewed publishing jobs from PR #16. Trusted publication
+  prerequisites and the owner-approved `release` environment are configured, and
+  `DOTNET_CRAP_PUBLISH=true`; this enables publication after the tag and approvals,
+  but does not prove that publication has happened.
 - [ ] Verify NuGet package-ID ownership, immutable assets, checksums/provenance,
   and installed-tool behavior on all five supported release RIDs.
 - [ ] Retain fresh-feed packing: reuse an existing package for retries, use a
@@ -287,14 +293,17 @@ or speedups from unrelated shared-runner timings.
   [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)): cargo-dist 0.33.1 archives for
   macOS and GNU/musl Linux, shell installer, Homebrew formula for
   `RuiCostafrg/homebrew-tap`, npm main + four platform packages, and the
-  provenance-verifying GitHub Action. Every PR builds the candidate release and
+  provenance-verifying GitHub Action. The upstream candidate workflow builds and
   installs it through npm/pnpm/Yarn/Bun, the shell installer, a local Homebrew
-  tap, the .NET tool, and the Action against NUnit and MSTest projects with
-  fresh Coverlet Cobertura coverage on Ubuntu and macOS. The publication
-  prerequisites are in place (rulesets, `release` environment, npm placeholders
+  tap and the Action against NUnit and MSTest projects with fresh Coverlet
+  Cobertura coverage on Ubuntu and macOS. Separate .NET installed-tool CI
+  exercises only `linux-x64`, `osx-arm64` and `win-x64`, although the package
+  supports five RIDs; `linux-arm64` and `osx-x64` still need live verification.
+  The publication prerequisites are in place (rulesets, `release` environment, npm placeholders
   with stage-only trusted publishing, tap sync in homebrew-tap#18) and
   `DOTNET_CRAP_PUBLISH` is set. Nothing has been published; the first tagged
-  release and its published-path verification remain.
+  release and its published-path verification remain. Candidate CI is green
+  at `018d2c006cc1527658715e7c450a5d56d37a3d39`; that is not live proof.
 - [ ] Automate NuGet.org publication of the .NET tool (trusted publishing) once
   package-ID ownership is verified.
 - [ ] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
@@ -303,6 +312,25 @@ or speedups from unrelated shared-runner timings.
 
 **Done when:** supported parity rows have automated evidence or explicit exclusions,
 and installation/publication claims reflect actual validated releases.
+
+First-release execution order (separate from the feature backlog numbering):
+
+1. Add reviewed, read-only published-verification workflows requiring an explicit
+   version and full source SHA, for real GitHub assets/provenance, npm, shell,
+   the public tap, the Action and all five .NET tool RIDs. Prepare these before
+   integration; successful live runs require the actual publication later.
+2. Resolve PR review findings and integrate reviewed distribution, verification
+   and documentation changes into `main`. Require successful **push** runs of
+   `ci.yml`, `security.yml` and `distribution.yml` at the exact final main SHA,
+   as well as protected-branch checks. Candidate PR checks cannot replace these.
+3. Only then create `v0.1.0` at that qualified main SHA. Approve `release` for
+   GitHub publication, approve it again for npm staging, then approve the four
+   platform stages with owner 2FA before the main npm package. Complete tap sync
+   and the real published-path checks before changing pending install claims.
+
+The integration owner performs merges and tagging after all workers finish.
+[Release integration](docs/RELEASE_INTEGRATION.md) records the audited blockers,
+required checks, approval boundaries and evidence still needed.
 
 ## Parallel work and integration
 

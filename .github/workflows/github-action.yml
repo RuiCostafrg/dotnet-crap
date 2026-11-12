@@ -23,13 +23,10 @@ jobs:
     name: Action (${{ matrix.runner }}, ${{ matrix.framework }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
-    # security-events: write is required by the single code-scanning upload below
-    # (github/codeql-action/upload-sarif). A reusable workflow cannot exceed the
-    # caller's permissions, so the calling job must grant `security-events: write`
-    # as well. The upload step itself is skipped for pull requests from forks.
+    # Candidate action code and downloaded executables only receive read access.
+    # distribution.yml uploads the SARIF artifact from a separate main-only job.
     permissions:
       contents: read
-      security-events: write
     strategy:
       fail-fast: false
       matrix:
@@ -158,10 +155,7 @@ jobs:
           version: v${{ inputs.version }}
           scan: true
           sarif: true
-          # The upload runs in one matrix cell only, and never from a fork's
-          # pull request, whose token cannot write security events.
-          upload-sarif: ${{ (matrix.upload && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) && 'true' || 'false' }}
-          sarif-category: dotnet-crap-action-ci
+          upload-sarif: false
           args: |
             --root
             ${{ steps.collect.outputs.fixture }}
@@ -246,6 +240,14 @@ jobs:
           # Three action installs: the plain install, the passing scan and the failing gate.
           test "$downloads" = 3
           test "$verifies" = 3
+      - name: Retain the failing-gate SARIF for the isolated upload job
+        if: matrix.upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: action-ci-sarif
+          path: ${{ steps.gate.outputs.sarif-file }}
+          if-no-files-found: error
+          retention-days: 7
   script-tests:
     name: Offline action tests (${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
