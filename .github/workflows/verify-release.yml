@@ -1,0 +1,80 @@
+name: Verify published release assets
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published version without v
+        type: string
+        required: true
+      source-sha:
+        description: Expected full lowercase release source SHA
+        type: string
+        required: true
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      source-sha:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+  attestations: read
+jobs:
+  authenticate:
+    if: github.repository == 'RuiCostafrg/dotnet-crap' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate the actual published release and every asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+        run: python3 scripts/verify-published.py fetch --version "$VERSION" --source-sha "$SOURCE_SHA" --output authenticated-assets
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-release-assets
+          path: authenticated-assets/
+          if-no-files-found: error
+          retention-days: 90
+  tool:
+    needs: authenticate
+    name: Published .NET tool (${{ matrix.rid }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-26.04, rid: linux-x64, target: x86_64-unknown-linux-musl}
+          - {runner: ubuntu-26.04-arm, rid: linux-arm64, target: aarch64-unknown-linux-musl}
+          - {runner: macos-26-intel, rid: osx-x64, target: x86_64-apple-darwin}
+          - {runner: macos-26, rid: osx-arm64, target: aarch64-apple-darwin}
+          - {runner: windows-2022, rid: win-x64, target: x86_64-pc-windows-msvc}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: published-release-assets
+          path: authenticated-assets
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.109
+      - name: Install the exact released package from an isolated feed and scan
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+          TARGET: ${{ matrix.target }}
+          RID: ${{ matrix.rid }}
+        run: |
+          python3 scripts/verify-published-install.py tool --assets authenticated-assets \
+            --version "$VERSION" --source-sha "$SOURCE_SHA" --target "$TARGET" --rid "$RID"
