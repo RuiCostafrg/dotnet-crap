@@ -36,7 +36,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
           SOURCE_SHA: ${{ inputs.source-sha }}
-        run: python3 scripts/verify-published.py fetch --version "$VERSION" --source-sha "$SOURCE_SHA" --output authenticated-assets
+        run: |
+          python3 scripts/verify-published.py fetch --version "$VERSION" --source-sha "$SOURCE_SHA" \
+            --output authenticated-assets > release-evidence.json
+          cat release-evidence.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-release-evidence
+          path: release-evidence.json
+          if-no-files-found: error
+          retention-days: 90
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: published-release-assets

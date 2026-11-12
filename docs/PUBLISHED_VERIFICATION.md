@@ -16,7 +16,7 @@ gh workflow run verify-release.yml --repo RuiCostafrg/dotnet-crap --ref main \
   -f version=0.1.0 -f source-sha=<full-tagged-main-SHA>
 ```
 
-It resolves the release tag to the expected commit, downloads actual release
+It requires an immutable published release, resolves its tag to the expected commit, downloads actual release
 assets and verifies their SHA-256 checksums and GitHub build attestations. The
 expected signing identity is exactly
 `https://github.com/RuiCostafrg/dotnet-crap/.github/workflows/release.yml@refs/tags/v<version>`,
@@ -69,6 +69,9 @@ evidence that it works; completion requires a run with both inputs true.
 Record the run URL, exact version and full source SHA, platform results,
 checksum/provenance results, registry integrity and original release-run ID.
 Keep the README's pending notices until the respective live channels pass.
+The workflows retain `published-release-evidence` and per-runner
+`published-npm-evidence-*` JSON artifacts with the hashes, registry integrity and
+original release-run/artifact IDs, alongside the per-framework SARIF reports.
 
 The original release and npm run artifacts are retained for 90 days. Complete
 verification within that window. An expired or missing npm artifact fails

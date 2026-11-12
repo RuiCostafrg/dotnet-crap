@@ -57,7 +57,14 @@ jobs:
           SOURCE_SHA: ${{ inputs.source-sha }}
         run: |
           python3 scripts/verify-published.py npm --version "$VERSION" --source-sha "$SOURCE_SHA" \
-            --assets authenticated-assets --output authenticated-npm
+            --assets authenticated-assets --output authenticated-npm > npm-evidence.json
+          cat npm-evidence.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-npm-evidence-${{ matrix.runner }}
+          path: npm-evidence.json
+          if-no-files-found: error
+          retention-days: 90
       - name: Install the pinned package managers
         run: |
           npm uninstall -g yarn pnpm

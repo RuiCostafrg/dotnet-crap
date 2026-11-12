@@ -76,6 +76,10 @@ def canonical_version(value):
     """Reject anything that is not the exact SemVer text used in a release tag and asset names."""
     if not isinstance(value, str) or not VERSION.fullmatch(value):
         raise ValueError(f'invalid version: {value!r}')
+    prerelease = value.partition('-')[2]
+    if any(part.isdigit() and len(part) > 1 and part.startswith('0')
+           for part in prerelease.split('.')):
+        raise ValueError(f'invalid version: {value!r}')
     return value
 
 
@@ -207,6 +211,8 @@ def verify_attestation(path, tag, source_sha, runner):
 def run_gh(arguments, *, cwd=None):
     """The real gh runner. Tests inject a recording/failing callable instead."""
     try:
+        # Fixed gh argument vectors; no shell or externally supplied command text.
+        # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit
         result = subprocess.run(['gh', *arguments], cwd=cwd, check=True, text=True,
                                 encoding='utf-8', capture_output=True)
     except FileNotFoundError as error:
@@ -258,6 +264,8 @@ def published_release(tag, runner):
         raise ValueError(f'release {tag}: the GitHub release is still a draft')
     if not release.get('published_at'):
         raise ValueError(f'release {tag}: the GitHub release has no published_at timestamp')
+    if release.get('immutable') is not True:
+        raise ValueError(f'release {tag}: published release assets are not immutable')
     return release
 
 

@@ -105,11 +105,12 @@ def package_map(tarballs):
 class FetchGh:
     """A recording fake for gh api, gh release download and gh attestation verify."""
 
-    def __init__(self, source, *, commit=SHA, tag=TAG, draft=False, reject=None, tamper=None):
+    def __init__(self, source, *, commit=SHA, tag=TAG, draft=False, immutable=True, reject=None, tamper=None):
         self.source = source
         self.commit = commit
         self.tag = tag
         self.draft = draft
+        self.immutable = immutable
         self.reject = reject
         self.tamper = tamper
         self.calls = []
@@ -126,6 +127,7 @@ class FetchGh:
                     'id': 77,
                     'tag_name': self.tag,
                     'draft': self.draft,
+                    'immutable': self.immutable,
                     'published_at': '2026-11-12T00:00:00Z',
                 })
             raise AssertionError(f'unexpected api endpoint: {endpoint}')
@@ -341,6 +343,13 @@ class FetchTests(PublishedTest):
         self.assertFalse(self.out.exists())
         self.assertFalse(any(call[0:2] == ['release', 'download'] for call in gh.calls))
 
+    def test_mutable_release_is_rejected_before_download(self):
+        gh = FetchGh(self.assets, immutable=False)
+        with self.assertRaisesRegex(ValueError, 'not immutable'):
+            script.fetch(VERSION, SHA, self.out, runner=gh)
+        self.assertFalse(self.out.exists())
+        self.assertFalse(any(call[0:2] == ['release', 'download'] for call in gh.calls))
+
     def test_tampered_checksum_payload_is_rejected(self):
         name = 'dotnet-crap-x86_64-apple-darwin.tar.xz'
 
@@ -390,7 +399,8 @@ class FetchTests(PublishedTest):
             script.verify_assets(self.assets, VERSION)
 
     def test_malformed_inputs_do_not_touch_gh_or_create_output(self):
-        cases = [('1.2', SHA), ('01.2.3', SHA), (VERSION, SHA.upper()),
+        cases = [('1.2', SHA), ('01.2.3', SHA), ('1.2.3-01', SHA), ('1.2.3-rc.01', SHA),
+                 (VERSION, SHA.upper()),
                  (VERSION, 'a' * 39), (VERSION, SHA + '\n'), (VERSION, '')]
         for version, sha in cases:
             with self.subTest(version=version, sha=sha):
