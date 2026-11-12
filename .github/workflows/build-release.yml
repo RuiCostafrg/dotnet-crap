@@ -237,11 +237,12 @@ jobs:
           name: release-assets
           path: release-assets/*
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 90
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: npm-packages
           path: npm-packages/*
           if-no-files-found: error
-          # publish-npm waits for a second approval and may be rerun alone.
-          retention-days: 30
+          # Exact bytes support approval, retries and published verification for
+          # 90 days. Never rebuild over an expired, attested payload.
+          retention-days: 90
