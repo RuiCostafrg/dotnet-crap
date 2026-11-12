@@ -260,18 +260,18 @@ jobs:
             printf '%s\n' "$output"
             id=$(sed -n 's/^+ .* (staged with id \(.*\))$/\1/p' <<< "$output")
             [[ -n "$id" ]] || { echo "::error::npm did not report a stage id for $name@$version"; exit 1; }
-            printf '| %s@%s | %s | `sha512-%s` |\n' "$name" "$version" "$id" "$integrity" >> "$summary"
+            printf '| %s@%s | %s | sha512-%s |\n' "$name" "$version" "$id" "$integrity" >> "$summary"
           }
-          {
-            echo "## npm packages staged for approval (dist-tag $dist_tag)"
-            echo
-            echo 'Nothing is public until approved. Approve the four platform packages first'
-            echo '(npmjs.com or `npm stage approve ID` with 2FA), and dotnet-crap only once'
-            echo 'npm view shows every platform version. Approve only stages whose integrity'
-            echo 'matches this table; a rerun may leave extra stages for the same version.'
-            echo
-            echo '| Package | Stage id | Integrity |'
-            echo '| --- | --- | --- |'
-          } >> "$summary"
+          echo "## npm packages staged for approval (dist-tag $dist_tag)" >> "$summary"
+          cat >> "$summary" <<'SUMMARY'
+
+          Nothing is public until approved. Approve the four platform packages first
+          (npmjs.com or `npm stage approve ID` with 2FA), and dotnet-crap only once
+          npm view shows every platform version. Approve only stages whose integrity
+          matches this table; a rerun may leave extra stages for the same version.
+
+          | Package | Stage id | Integrity |
+          | --- | --- | --- |
+          SUMMARY
           for platform in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do stage "dotnet-crap-$platform"; done
           stage dotnet-crap
