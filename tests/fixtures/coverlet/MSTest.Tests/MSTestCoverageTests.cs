@@ -9,6 +9,10 @@ public sealed class MSTestCoverageTests
     [TestMethod]
     public void Exercises_one_branch_of_partial_method_and_both_full_method_branches()
     {
+        // Prove the test host runtime, independently of the SDK used to build it.
+        var expected = System.Environment.GetEnvironmentVariable("DOTNET_CRAP_TEST_TFM");
+        if (expected is not null && expected != $"net{System.Environment.Version.Major}.0")
+            throw new System.InvalidOperationException($"Expected {expected}, running {System.Environment.Version}");
         var gauge = new Gauge();
         Assert.AreEqual(1, gauge.Choose(1));
         Assert.AreEqual(1, gauge.Full(1));

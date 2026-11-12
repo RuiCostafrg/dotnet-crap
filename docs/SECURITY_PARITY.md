@@ -109,3 +109,13 @@ gh api repos/RuiCostafrg/<repo>/environments/release/deployment-branch-policies
 gh api -i repos/RuiCostafrg/<repo>/vulnerability-alerts   # 204 = enabled
 gh api repos/RuiCostafrg/<repo>/private-vulnerability-reporting
 ```
+
+### .NET 11 CI matrix
+
+The .NET 10 Linux/macOS/Windows check names above are deliberately retained even
+though CI now runs Ubuntu 26.04 and macOS 26. These are compatibility names for
+the existing ruleset, not runner-version claims. New `.NET 11` checks run on all
+three platforms. Before treating .NET 11 as a protected merge gate, the owner
+should add `dotnet-e2e (ubuntu-26.04, .NET 11)` and
+`dotnet-e2e (macos-26, .NET 11)` to required checks. This PR does not change
+repository protections; Windows remains optional.
