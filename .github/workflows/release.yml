@@ -49,8 +49,6 @@ jobs:
           [[ "$REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
           version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml", "rb"))["package"]["version"])')
           [[ "$REF_NAME" == "v$version" ]] || { echo "::error::tag $REF_NAME does not match Cargo version $version"; exit 1; }
-          gh api "repos/$GITHUB_REPOSITORY/immutable-releases" --jq .enabled | grep -Fx true \
-            || { echo '::error::GitHub immutable releases must be enabled before publication'; exit 1; }
           for workflow in ci.yml security.yml distribution.yml; do
             gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?head_sha=$GITHUB_SHA&event=push" \
               --jq '[.workflow_runs[] | select(.head_branch == "main")] | sort_by(.run_number, .run_attempt) | last | .conclusion == "success"' \
@@ -132,6 +130,11 @@ jobs:
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
             --title "dotnet-crap $TAG" --generate-notes "${flags[@]}" release-assets/*
           gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+          # Settings reads require Administration, which GITHUB_TOKEN cannot
+          # hold. The owner verifies the setting before tagging; confirm the
+          # public release itself is locked before permitting npm staging.
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .immutable)" == true ]] \
+            || { echo '::error::published release is not immutable; inspect it before any npm staging'; exit 1; }
   publish-npm:
     # Only OIDC for npm trusted publishing: it cannot write to the repository,
     # and it starts only after the attested GitHub release exists and the owner

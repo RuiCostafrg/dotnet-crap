@@ -182,6 +182,8 @@ not satisfy GitHub's required approving review by itself.
 GitHub immutable releases were separately found disabled during integration.
 The owner explicitly approved enabling them on 2026-11-12; the setting was
 enabled and read back through `/repos/RuiCostafrg/dotnet-crap/immutable-releases`
-as `enabled=true`. Release preflight now requires the setting, and published
-verification rejects a release whose API metadata is not immutable. No release
+as `enabled=true`. Publication checks public release metadata before npm staging,
+and verification rejects a release whose API metadata is not immutable. The
+administrative settings endpoint is deliberately absent from Actions preflight.
+No release
 or version tag was created while making this configuration change.

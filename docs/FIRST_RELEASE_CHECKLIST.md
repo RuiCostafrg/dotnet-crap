@@ -21,7 +21,7 @@ this authorization does not permit repository-protection changes or bypasses.
   but their account settings were not independently rechecked for this plan.
 - [x] Enable GitHub immutable releases with owner approval. Enabled on
   2026-11-12 after explicit approval and read back as `enabled=true`.
-  Publication preflight and the live verifier require immutable releases.
+  Publication and the live verifier check the release's immutable metadata.
 - [ ] Owner confirms revocation of the old npm token labelled **Android**.
   Deleting local copies did not revoke it on npmjs.com. Do not copy it into chat.
 

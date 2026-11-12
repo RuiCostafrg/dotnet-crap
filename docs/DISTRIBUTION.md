@@ -114,8 +114,10 @@ and account checks. Integration subsequently found that immutable GitHub
 releases were disabled. The owner approved enabling them on 2026-11-12, and
 the API was read back as `enabled=true`:
 
-- [x] GitHub immutable releases are enabled. The tag preflight and published
-  verifier require this; immutable tags alone do not lock uploaded assets.
+- [x] GitHub immutable releases are enabled. Publication checks the actual
+  release's public `immutable` metadata before npm staging, and the published
+  verifier requires it too. The settings endpoint needs administrative access,
+  so the read-only Actions token never queries it.
 
 - [x] Rulesets protect `main` and `v*` tags (only the owner creates tags; release
   tags cannot move or be deleted).
