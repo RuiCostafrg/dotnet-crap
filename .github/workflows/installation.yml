@@ -1,0 +1,84 @@
+name: Installation compatibility
+# Verifies that the candidate release assets install through the generated
+# shell installer and Homebrew formula. Nothing is downloaded from GitHub
+# releases: the `release-assets` artifact of the calling run is staged locally
+# and every download URL is redirected to it.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Candidate release version, e.g. 0.1.0
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  shell-installer:
+    name: Shell installer (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-26.04-arm
+            target: aarch64-unknown-linux-gnu
+          - runner: macos-26
+            target: aarch64-apple-darwin
+          - runner: macos-26-intel
+            target: x86_64-apple-darwin
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: artifacts
+      - name: Install from candidate assets and exercise the CLI
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          python3 scripts/verify-installation.py \
+            --assets artifacts --version "$VERSION" \
+            --target "$TARGET" --installer shell \
+            --fixture "$GITHUB_WORKSPACE/examples/Fixture"
+  homebrew:
+    name: Homebrew (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-26
+            target: aarch64-apple-darwin
+          - runner: macos-26-intel
+            target: x86_64-apple-darwin
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-gnu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: artifacts
+      - name: Install the candidate formula from a temporary tap
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          fi
+          python3 scripts/verify-installation.py \
+            --assets artifacts --version "$VERSION" \
+            --target "$TARGET" --installer homebrew \
+            --fixture "$GITHUB_WORKSPACE/examples/Fixture"

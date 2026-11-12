@@ -5,6 +5,7 @@ edition = "2021"
 description = "C# callable complexity and source-bound CRAP quality gates"
 license = "MIT"
 repository = "https://github.com/RuiCostafrg/dotnet-crap"
+homepage = "https://github.com/RuiCostafrg/dotnet-crap"
 
 [dependencies]
 anyhow = "1"
@@ -22,3 +23,8 @@ roxmltree = "0.21"
 
 [lints.rust]
 unsafe_code = "forbid"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

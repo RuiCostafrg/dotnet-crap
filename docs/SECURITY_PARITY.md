@@ -72,8 +72,10 @@ branches to be up to date with `main` before merging.
   signatures must refresh that evidence in the same PR.
 - **No `reviewers:` key in `dependabot.yml`.** GitHub deprecated that option in favour
   of CODEOWNERS, which now assigns RuiCostafrg.
-- **The `release` environment exists, but no job uses it yet.** `release.yml` only
-  builds artifacts. The environment is in place for a future, reviewed publication job.
+- **The `release` environment gates publication.** In `release.yml`, only the
+  `publish` (GitHub release with attestations) and `publish-npm` (staged npm trusted
+  publishing) jobs use it. Both also require the `DOTNET_CRAP_PUBLISH` variable;
+  see [DISTRIBUTION.md](DISTRIBUTION.md).
 
 ## What these protections do not cover
 

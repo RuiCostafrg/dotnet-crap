@@ -1,0 +1,58 @@
+# Builds the candidate release exactly as release.yml does, then installs it
+# through every channel before anything is published: npm/pnpm/Yarn/Bun, the
+# shell installer, a local Homebrew tap, and the GitHub Action against NUnit
+# and MSTest projects with fresh Coverlet coverage. Nothing is published here.
+name: Distribution
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: distribution-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    # Fork-hosted workflow runs are skipped; upstream fork PRs remain read-only.
+    if: github.repository == 'RuiCostafrg/dotnet-crap'
+    uses: ./.github/workflows/build-release.yml
+  npm:
+    needs: build
+    uses: ./.github/workflows/npm-install.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  installation:
+    needs: build
+    uses: ./.github/workflows/installation.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  github-action:
+    needs: build
+    permissions:
+      contents: read
+    uses: ./.github/workflows/github-action.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+  upload-sarif:
+    needs: github-action
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      # No checkout, candidate script, composite action or compiled binary runs
+      # with the write token. The report crosses this boundary only as data.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: action-ci-sarif
+          path: sarif
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: sarif
+          category: dotnet-crap-action-ci
+          ref: refs/heads/main
+          sha: ${{ github.sha }}

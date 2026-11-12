@@ -1,0 +1,265 @@
+name: GitHub Action
+# Runs the action from this commit (`uses: ./`) against the candidate release
+# assets of the calling run, on Linux and macOS, with NUnit and MSTest fixtures
+# and fresh Coverlet Cobertura coverage. Nothing is downloaded from a published
+# release: a fake `gh` first on PATH serves `gh release download` from the
+# `release-assets` artifact and accepts `gh attestation verify` only for the
+# exact arguments the action must use. Real attestation verification needs a
+# published release and is therefore not covered here.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Candidate release version, e.g. 0.1.0
+        required: true
+        type: string
+permissions:
+  contents: read
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_CRAP_TEST_TFM: net10.0
+jobs:
+  action:
+    name: Action (${{ matrix.runner }}, ${{ matrix.framework }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    # Candidate action code and downloaded executables only receive read access.
+    # distribution.yml uploads the SARIF artifact from a separate main-only job.
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-musl
+            framework: NUnit
+            library: Beta.Library
+            upload: true
+          - runner: ubuntu-26.04
+            target: x86_64-unknown-linux-musl
+            framework: MSTest
+            library: Alpha.Library
+          - runner: macos-26
+            target: aarch64-apple-darwin
+            framework: NUnit
+            library: Beta.Library
+          - runner: macos-26
+            target: aarch64-apple-darwin
+            framework: MSTest
+            library: Alpha.Library
+    env:
+      VERSION: ${{ inputs.version }}
+      TARGET: ${{ matrix.target }}
+      FRAMEWORK: ${{ matrix.framework }}
+      LIBRARY: ${{ matrix.library }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/release-assets
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.109
+      - name: Put a fake gh first on PATH
+        # Serves `gh release download` from the downloaded candidate assets and
+        # answers `gh attestation verify` successfully only for the exact
+        # arguments the action is required to use. Every call is recorded.
+        shell: bash
+        run: |
+          fake_bin="$RUNNER_TEMP/fake-gh"
+          mkdir -p "$fake_bin"
+          cat > "$fake_bin/gh" <<'FAKE_GH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          repo=RuiCostafrg/dotnet-crap
+          tag="v$FAKE_GH_VERSION"
+          archive="dotnet-crap-$FAKE_GH_TARGET.tar.xz"
+          identity="https://github.com/$repo/.github/workflows/release.yml@refs/tags/$tag"
+          printf '%s\n' "$*" >> "$FAKE_GH_LOG"
+          reject() { echo "fake gh: unexpected call: $*" >&2; exit 64; }
+          if [[ "${1:-}" == release && "${2:-}" == download ]]; then
+            [[ $# == 11 && "$3" == "$tag" && "$4" == --repo && "$5" == "$repo" \
+              && "$6" == --pattern && "$7" == "$archive" \
+              && "$8" == --pattern && "$9" == "$archive.sha256" \
+              && "${10}" == --dir && -d "${11}" ]] || reject "$@"
+            cp "$FAKE_GH_ASSETS/$archive" "$FAKE_GH_ASSETS/$archive.sha256" "${11}/"
+          elif [[ "${1:-}" == attestation && "${2:-}" == verify ]]; then
+            [[ $# == 10 && "$(basename "$3")" == "$archive" && -f "$3" \
+              && "$4" == --repo && "$5" == "$repo" \
+              && "$6" == --cert-identity && "$7" == "$identity" \
+              && "$8" == --source-ref && "$9" == "refs/tags/$tag" \
+              && "${10}" == --deny-self-hosted-runners ]] || reject "$@"
+            cmp -s "$3" "$FAKE_GH_ASSETS/$archive" || reject "$@ (not the candidate archive)"
+          else
+            reject "$@"
+          fi
+          FAKE_GH
+          chmod +x "$fake_bin/gh"
+          : > "$RUNNER_TEMP/fake-gh.log"
+          echo "$fake_bin" >> "$GITHUB_PATH"
+          {
+            echo "FAKE_GH_VERSION=$VERSION"
+            echo "FAKE_GH_TARGET=$TARGET"
+            echo "FAKE_GH_ASSETS=$RUNNER_TEMP/release-assets"
+            echo "FAKE_GH_LOG=$RUNNER_TEMP/fake-gh.log"
+          } >> "$GITHUB_ENV"
+      - name: Install through the action (no scan)
+        id: install
+        uses: ./
+        with:
+          version: ${{ inputs.version }}
+      - name: Check the install outputs and the binary
+        shell: bash
+        env:
+          OUT_VERSION: ${{ steps.install.outputs.version }}
+          OUT_TARGET: ${{ steps.install.outputs.target }}
+          OUT_BIN_DIR: ${{ steps.install.outputs.bin-dir }}
+          OUT_EXECUTABLE: ${{ steps.install.outputs.executable }}
+        run: |
+          test "$OUT_VERSION" = "$VERSION"
+          test "$OUT_TARGET" = "$TARGET"
+          test "$OUT_EXECUTABLE" = "$OUT_BIN_DIR/dotnet-crap"
+          test -x "$OUT_EXECUTABLE"
+          test "$(command -v dotnet-crap)" = "$OUT_EXECUTABLE"
+          test "$(dotnet-crap --version)" = "dotnet-crap $VERSION"
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            # Static: no ELF interpreter and no shared-library dependencies.
+            if readelf --program-headers "$OUT_EXECUTABLE" | grep -q INTERP; then exit 1; fi
+            if readelf --dynamic "$OUT_EXECUTABLE" | grep -q NEEDED; then exit 1; fi
+          fi
+      - name: Collect fresh Coverlet Cobertura coverage with the installed binary
+        id: collect
+        shell: bash
+        run: |
+          fixture="$GITHUB_WORKSPACE/tests/fixtures/coverlet"
+          coverage="$RUNNER_TEMP/coverage-$FRAMEWORK.json"
+          # One test project, one target framework: exactly one Cobertura report.
+          dotnet-crap collect --root "$fixture" --path "$LIBRARY" \
+            --output "$coverage" --expected-reports 1 \
+            -- dotnet test "$FRAMEWORK.Tests/$FRAMEWORK.Tests.csproj" \
+            --collect 'XPlat Code Coverage' --results-directory '{results}' \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+          test -s "$coverage"
+          {
+            echo "fixture=$fixture"
+            echo "coverage=$coverage"
+          } >> "$GITHUB_OUTPUT"
+      - name: Scan with the action and write SARIF
+        id: scan
+        uses: ./
+        with:
+          version: v${{ inputs.version }}
+          scan: true
+          sarif: true
+          upload-sarif: false
+          args: |
+            --root
+            ${{ steps.collect.outputs.fixture }}
+            --coverage
+            ${{ steps.collect.outputs.coverage }}
+            --require-coverage
+            --fail-on-empty
+            --threshold
+            5
+            ${{ matrix.library }}
+      - name: Check the passing scan and its SARIF report
+        shell: bash
+        env:
+          EXIT_CODE: ${{ steps.scan.outputs.exit-code }}
+          SARIF: ${{ steps.scan.outputs.sarif-file }}
+        run: |
+          test "$EXIT_CODE" = 0
+          test -f "$SARIF"
+          python3 -I - "$SARIF" <<'PY'
+          import json, sys
+          report = json.load(open(sys.argv[1], encoding='utf-8'))
+          assert report['version'] == '2.1.0', report['version']
+          driver = report['runs'][0]['tool']['driver']
+          assert driver['name'] == 'dotnet-crap', driver
+          assert report['runs'][0]['results'] == [], report['runs'][0]['results']
+          PY
+      - name: A failing gate fails the step, exits 1 and still writes SARIF
+        id: gate
+        continue-on-error: true
+        uses: ./
+        with:
+          version: ${{ inputs.version }}
+          scan: true
+          sarif: true
+          args: |
+            --root
+            ${{ steps.collect.outputs.fixture }}
+            --coverage
+            ${{ steps.collect.outputs.coverage }}
+            --require-coverage
+            --threshold
+            1
+            ${{ matrix.library }}
+      - name: Check the failing gate
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.gate.outcome }}
+          EXIT_CODE: ${{ steps.gate.outputs.exit-code }}
+          SARIF: ${{ steps.gate.outputs.sarif-file }}
+        run: |
+          test "$OUTCOME" = failure
+          test "$EXIT_CODE" = 1
+          python3 -I - "$SARIF" "$GITHUB_WORKSPACE" <<'PY'
+          import json, os, sys
+          from urllib.parse import unquote
+          report = json.load(open(sys.argv[1], encoding='utf-8'))
+          assert report['version'] == '2.1.0'
+          assert report['runs'][0]['tool']['driver']['name'] == 'dotnet-crap'
+          results = report['runs'][0]['results']
+          assert results and {r['ruleId'] for r in results} == {'DNCRAP001'}, results
+          for result in results:
+              # Paths were made relative to the checkout, so they resolve there.
+              uri = result['locations'][0]['physicalLocation']['artifactLocation']['uri']
+              assert uri.startswith('tests/fixtures/coverlet/'), uri
+              assert os.path.isfile(os.path.join(sys.argv[2], unquote(uri))), uri
+          PY
+      - name: Check that only the candidate archive was fetched and attested
+        shell: bash
+        run: |
+          archive="dotnet-crap-$TARGET.tar.xz"
+          identity="https://github.com/RuiCostafrg/dotnet-crap/.github/workflows/release.yml@refs/tags/v$VERSION"
+          downloads=0 verifies=0
+          while IFS= read -r line; do
+            case "$line" in
+              "release download v$VERSION --repo RuiCostafrg/dotnet-crap --pattern $archive --pattern $archive.sha256 --dir "*)
+                downloads=$((downloads + 1)) ;;
+              "attestation verify "*"/$archive --repo RuiCostafrg/dotnet-crap --cert-identity $identity --source-ref refs/tags/v$VERSION --deny-self-hosted-runners")
+                verifies=$((verifies + 1)) ;;
+              *) echo "unexpected gh call: $line" >&2; exit 1 ;;
+            esac
+          done < "$FAKE_GH_LOG"
+          # Three action installs: the plain install, the passing scan and the failing gate.
+          test "$downloads" = 3
+          test "$verifies" = 3
+      - name: Retain the failing-gate SARIF for the isolated upload job
+        if: matrix.upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: action-ci-sarif
+          path: ${{ steps.gate.outputs.sarif-file }}
+          if-no-files-found: error
+          retention-days: 7
+  script-tests:
+    name: Offline action tests (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-26.04, macos-26]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: bash scripts/test-install-action.sh
+      - run: python3 -m unittest discover -s tests -p 'test_action_sarif.py'

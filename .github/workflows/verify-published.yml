@@ -1,0 +1,252 @@
+name: Verify published installation channels
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published version without v
+        type: string
+        required: true
+      source-sha:
+        description: Expected full lowercase release source SHA
+        type: string
+        required: true
+      verify-npm:
+        description: Verify public npm packages (enable after all five stages are approved)
+        type: boolean
+        default: true
+      verify-homebrew:
+        description: Verify the live tap (enable after its formula PR is merged)
+        type: boolean
+        default: true
+permissions:
+  contents: read
+  actions: read
+  attestations: read
+jobs:
+  release:
+    if: github.repository == 'RuiCostafrg/dotnet-crap' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/verify-release.yml
+    with:
+      version: ${{ inputs.version }}
+      source-sha: ${{ inputs.source-sha }}
+  npm:
+    needs: release
+    if: inputs.verify-npm
+    name: Published npm/pnpm/Yarn/Bun (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-26.04, ubuntu-26.04-arm, macos-26, macos-26-intel]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: published-release-assets
+          path: authenticated-assets
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.2
+      - name: Compare registry tarballs with the exact attested release-run artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+        run: |
+          python3 scripts/verify-published.py npm --version "$VERSION" --source-sha "$SOURCE_SHA" \
+            --assets authenticated-assets --output authenticated-npm > npm-evidence.json
+          cat npm-evidence.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-npm-evidence-${{ matrix.runner }}
+          path: npm-evidence.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Install the pinned package managers
+        run: |
+          npm uninstall -g yarn pnpm
+          npm install -g --no-audit --no-fund pnpm@12.16.1 @yarnpkg/cli-dist@4.18.1 bun@1.4.4
+          test "$(pnpm --version)" = 12.16.1
+          test "$(yarn --version)" = 4.18.1
+          test "$(bun --version)" = 1.4.4
+      - name: Install exact registry versions without scripts and compare executable bytes
+        env:
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+        run: |
+          python3 scripts/verify-published-install.py registry --assets authenticated-assets \
+            --version "$VERSION" --source-sha "$SOURCE_SHA"
+  shell:
+    needs: release
+    name: Published shell installer (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-26.04, target: x86_64-unknown-linux-gnu}
+          - {runner: ubuntu-26.04-arm, target: aarch64-unknown-linux-gnu}
+          - {runner: macos-26, target: aarch64-apple-darwin}
+          - {runner: macos-26-intel, target: x86_64-apple-darwin}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: published-release-assets
+          path: authenticated-assets
+      - name: Execute the published installer against actual release URLs
+        env:
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          python3 scripts/verify-published-install.py shell --assets authenticated-assets \
+            --version "$VERSION" --source-sha "$SOURCE_SHA" --target "$TARGET"
+  homebrew:
+    needs: release
+    if: inputs.verify-homebrew
+    name: Published Homebrew (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-26.04, target: x86_64-unknown-linux-gnu}
+          - {runner: macos-26, target: aarch64-apple-darwin}
+          - {runner: macos-26-intel, target: x86_64-apple-darwin}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: published-release-assets
+          path: authenticated-assets
+      - name: Authenticate the live formula and install from the actual tap
+        env:
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"; fi
+          python3 scripts/verify-published-install.py homebrew --assets authenticated-assets \
+            --version "$VERSION" --source-sha "$SOURCE_SHA" --target "$TARGET"
+  action:
+    needs: release
+    name: Published Action (${{ matrix.runner }}, ${{ matrix.framework }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      DOTNET_CRAP_TEST_TFM: net10.0
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-26.04, framework: NUnit, project: NUnit.Tests, library: Beta.Library}
+          - {runner: ubuntu-26.04, framework: MSTest, project: MSTest.Tests, library: Alpha.Library}
+          - {runner: ubuntu-26.04, framework: xUnit, project: Alpha.Tests, library: Alpha.Library}
+          - {runner: macos-26, framework: NUnit, project: NUnit.Tests, library: Beta.Library}
+          - {runner: macos-26, framework: MSTest, project: MSTest.Tests, library: Alpha.Library}
+          - {runner: macos-26, framework: xUnit, project: Alpha.Tests, library: Alpha.Library}
+    steps:
+      # authenticate has already validated the full SHA and its tag binding.
+      # Local uses is necessary because GitHub forbids expressions in uses refs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.source-sha }}
+          path: release-source
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.109
+      - name: Install the Action from the exact release source using real gh
+        uses: ./release-source
+        with:
+          version: ${{ inputs.version }}
+      - name: Collect fresh Coverlet Cobertura with the installed executable
+        id: collect
+        env:
+          PROJECT: ${{ matrix.project }}
+          LIBRARY: ${{ matrix.library }}
+        run: |
+          fixture="$GITHUB_WORKSPACE/release-source/tests/fixtures/coverlet"
+          coverage="$RUNNER_TEMP/coverage.json"
+          dotnet-crap collect --root "$fixture" --path "$LIBRARY" --output "$coverage" --expected-reports 1 \
+            -- dotnet test "$PROJECT/$PROJECT.csproj" --collect 'XPlat Code Coverage' --results-directory '{results}' \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+          echo "fixture=$fixture" >> "$GITHUB_OUTPUT"
+          echo "coverage=$coverage" >> "$GITHUB_OUTPUT"
+      - name: Passing scan through the released Action
+        id: passing
+        uses: ./release-source
+        with:
+          version: ${{ inputs.version }}
+          scan: true
+          sarif: true
+          args: |
+            --root
+            ${{ steps.collect.outputs.fixture }}
+            --coverage
+            ${{ steps.collect.outputs.coverage }}
+            --require-coverage
+            --fail-on-empty
+            --threshold
+            5
+            ${{ matrix.library }}
+      - name: Failing gate still emits SARIF
+        id: failing
+        continue-on-error: true
+        uses: ./release-source
+        with:
+          version: ${{ inputs.version }}
+          scan: true
+          sarif: true
+          args: |
+            --root
+            ${{ steps.collect.outputs.fixture }}
+            --coverage
+            ${{ steps.collect.outputs.coverage }}
+            --require-coverage
+            --threshold
+            1
+            ${{ matrix.library }}
+      - name: Check actual gate results and SARIF
+        env:
+          PASS_STATUS: ${{ steps.passing.outputs.exit-code }}
+          PASS_REPORT: ${{ steps.passing.outputs.sarif-file }}
+          FAIL_STATUS: ${{ steps.failing.outputs.exit-code }}
+          FAIL_REPORT: ${{ steps.failing.outputs.sarif-file }}
+          FAIL_OUTCOME: ${{ steps.failing.outcome }}
+        run: |
+          test "$PASS_STATUS" = 0
+          test "$FAIL_STATUS" = 1
+          test "$FAIL_OUTCOME" = failure
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          from urllib.parse import unquote
+          for key in ('PASS_REPORT', 'FAIL_REPORT'):
+              report = json.loads(Path(os.environ[key]).read_text())
+              assert report['version'] == '2.1.0'
+              assert report['runs'][0]['tool']['driver']['name'] == 'dotnet-crap'
+              results = report['runs'][0]['results']
+              assert bool(results) == (key == 'FAIL_REPORT')
+              for result in results:
+                  assert result['ruleId'] == 'DNCRAP001'
+                  uri = result['locations'][0]['physicalLocation']['artifactLocation']['uri']
+                  assert uri.startswith('release-source/tests/fixtures/coverlet/'), uri
+                  assert (Path(os.environ['GITHUB_WORKSPACE']) / unquote(uri)).is_file(), uri
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-action-sarif-${{ matrix.runner }}-${{ matrix.framework }}
+          path: ${{ steps.failing.outputs.sarif-file }}
+          if-no-files-found: error
+          retention-days: 90
