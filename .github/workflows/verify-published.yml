@@ -143,6 +143,8 @@ jobs:
     name: Published Action (${{ matrix.runner }}, ${{ matrix.framework }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
+    env:
+      DOTNET_CRAP_TEST_TFM: net10.0
     strategy:
       fail-fast: false
       matrix:

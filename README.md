@@ -127,7 +127,7 @@ Collect `coverage.json` beforehand with `dotnet-crap collect` (see
 [Coverlet collection](docs/COVERLET.md)); the action puts `dotnet-crap` on `PATH`.
 Ubuntu and macOS runners are supported.
 
-**.NET tool** (requires the .NET 10 runtime; the launcher starts the bundled
+**.NET tool** (requires a .NET 10 or .NET 11 runtime; the launcher starts the bundled
 native executable):
 
 ```sh
