@@ -50,6 +50,9 @@ does in CI.
 
 Ubuntu x64, macOS arm64 and Windows hosted matrix evidence belongs to this PR's
 checks. Local arm64 evidence does not establish macOS/Windows results.
+The first hosted .NET 11 job correctly rejected the extra .NET 10 runtime
+installed by setup-dotnet's default LTS prepass. The matrix disables that
+prepass with `skip-lts-prepass: true` so the isolation assertion remains strict.
 Existing required .NET 10 check identities are preserved despite newer runners.
 The owner can separately require the new Linux/macOS .NET 11 checks, as documented
 in `docs/SECURITY_PARITY.md`; no protections were modified here.
