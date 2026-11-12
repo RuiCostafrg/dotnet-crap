@@ -55,7 +55,10 @@ The initial batch was implemented as separate PRs. The original branch stack was
 PRs #2–#9 are now merged into `main` at `c1c78cd`. The final reviewed tree's full
 mutation run caught 171 of 174 viable mutants (98.28%), with 3 missed, no timeouts
 and 2 unviable. Historical measurements remain qualified to their recorded SHAs.
-Tag workflows build artifacts; automatic publication remains disabled. The reusable
+At that historical snapshot, tag workflows built artifacts and automatic
+publication was disabled. Current configuration enables publication behind tag
+and approval gates; no release has been published as of the 2026-11-12 audit.
+See [release integration](RELEASE_INTEGRATION.md) for current blockers. The reusable
 API batch below is now merged in PR #11;
 remaining batches stay planned.
 
@@ -114,9 +117,23 @@ unmarked items remain proposed.
     tool checks on every supported RID; independent C# project adoption at pinned
     revisions. Do not advertise a distribution channel before validating publication.
     Distribution channels (Homebrew, npm, shell installer, GitHub Action, .NET tool)
-    are built and installed from candidate assets on every PR by `distribution.yml`;
+    are built and installed from candidate assets by the upstream `distribution.yml`;
     the README marks them as pending until the first release is published and the
-    published path is verified.
+    published path is verified. Candidate verification is not live release evidence.
+    The .NET tool package supports five RIDs, but current installed-tool CI runs
+    only `linux-x64`, `osx-arm64` and `win-x64`; published verification must also
+    cover `linux-arm64` and `osx-x64`.
+
+    First release: (1) prepare reviewed read-only live-verification workflows with
+    explicit version/full SHA inputs; (2) integrate reviewed changes into `main`
+    and require successful `ci.yml`, `security.yml` and `distribution.yml` push
+    runs at the exact resulting SHA; (3) create `v0.1.0` there, approve GitHub
+    publication and then npm staging through the `release` environment, and
+    approve platform stages with owner 2FA before the main npm package. Run the
+    published verification after the channels are available. The integration
+    owner performs merges and tagging after all workers finish. NuGet.org
+    publisher setup and 3–5 independent C# adoption studies remain separate
+    followups. See [release integration](RELEASE_INTEGRATION.md).
 
 12. **Performance (PLAN step 8) — in progress in [PR #19](https://github.com/RuiCostafrg/dotnet-crap/pull/19):** benchmark
     workloads for dense files, many callables, deep nesting, multi-project
