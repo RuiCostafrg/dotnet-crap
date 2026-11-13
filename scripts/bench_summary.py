@@ -70,7 +70,7 @@ def synthetic_rows(measurements):
                 row.append(cell(entry["label"]))
             row += [f"{base['median_ms']:.1f}", f"{entry['median_ms']:.1f}", ratio(entry, "wall_ms"),
                     f"{base['median_cpu_ms']:.1f}", f"{entry['median_cpu_ms']:.1f}", ratio(entry, "cpu_ms"),
-                    f"{base['median_peak_rss_kib']:g}", f"{entry['median_peak_rss_kib']:g}"]
+                    f"{base['median_peak_rss_kib']:.0f}", f"{entry['median_peak_rss_kib']:.0f}"]
             rows.append(row)
     header = ["workload", "mode"] + (["head args"] if with_args else []) + [
         "base wall ms", "head wall ms", "wall ratio", "base CPU ms", "head CPU ms", "CPU ratio",
@@ -99,7 +99,7 @@ def repo_rows(measurements):
                 cell(r["repo"]["name"]), str(r["files"]), f"{r['source_bytes']:,}",
                 f"{base['median_ms']:.1f}", f"{entry['median_ms']:.1f}", ratio(entry, "wall_ms"),
                 f"{base['median_cpu_ms']:.1f}", f"{entry['median_cpu_ms']:.1f}", ratio(entry, "cpu_ms"),
-                f"{base['median_peak_rss_kib']:g}", f"{entry['median_peak_rss_kib']:g}", cell(scan_status(r))])
+                f"{base['median_peak_rss_kib']:.0f}", f"{entry['median_peak_rss_kib']:.0f}", cell(scan_status(r))])
     header = ["repository", "files", "source bytes", "base wall ms", "head wall ms", "wall ratio",
               "base CPU ms", "head CPU ms", "CPU ratio", "base RSS KiB", "head RSS KiB", "scan"]
     return header, rows

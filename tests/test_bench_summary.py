@@ -71,6 +71,11 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(cells[5:7], ["21.0", "10.0"])
         self.assertEqual(cells[8:], ["210", "160"])
 
+    def test_large_rss_is_not_printed_in_scientific_notation(self):
+        big = record((10, 11, 12), (20, 21, 22), (2_500_000, 2_500_001, 2_500_002))
+        text = summary.render([measurement(base=big, heads=(((), big),))], [], "dist")
+        self.assertIn("| 2500001 | 2500001 |", text)
+
     def test_sweep_adds_one_row_per_argument_set_and_an_args_column(self):
         sweep = measurement(heads=((("--jobs", "1"), SAME), (("--jobs", "4"), FASTER)))
         text = summary.render([sweep], [], "dist")
