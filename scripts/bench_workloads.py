@@ -36,6 +36,9 @@ METHODS_PER_CLASS = 8
 # Methods per file in many-medium (about 35 KB of source), and in skew's one large
 # file and each of its small files. Module globals so tests can shrink them.
 MEDIUM_METHODS = 256
+# many-medium files per Cobertura report. One report for all 64 files would be about
+# 17 MB and exceed the importer's 16 MiB limit; Coverlet writes one report per test project.
+MEDIUM_FILES_PER_REPORT = 16
 SKEW_LARGE_METHODS = 4000
 SKEW_SMALL_METHODS = 32
 REPORT_TIMESTAMP = 1700000000
@@ -324,7 +327,12 @@ def _build_many_medium(scale: int):
         src = _Source(f"M{f:03}.cs")
         _dense_methods(src, "D", f * _classes_for(MEDIUM_METHODS), f * MEDIUM_METHODS, MEDIUM_METHODS)
         sources.append(src)
-    return sources, {}, [(SINGLE_REPORT, "Bench.many-medium", sources)]
+    reports = []
+    for start in range(0, scale, MEDIUM_FILES_PER_REPORT):
+        number = start // MEDIUM_FILES_PER_REPORT + 1
+        reports.append((f"00000000-0000-4000-8000-{number:012x}/coverage.cobertura.xml",
+                        f"Bench.many-medium.{number}", sources[start:start + MEDIUM_FILES_PER_REPORT]))
+    return sources, {}, reports
 
 
 def _build_skew(scale: int):

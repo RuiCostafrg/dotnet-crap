@@ -194,6 +194,26 @@ class SpreadWorkloadTests(unittest.TestCase):
             self.assertEqual([e["name"] for e in second_file][:2], ["M00008", "M00009"])
             self.assertEqual(len(wl.cobertura_reports), 1)
 
+    def test_many_medium_splits_reports_under_the_importer_limit(self):
+        """Each report covers a fixed group of files, with its own directory and package name."""
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(bench, "MEDIUM_FILES_PER_REPORT", 2):
+            wl = bench.generate("many-medium", Path(tmp) / "root", 5)
+            self.assertEqual([rel for rel, _ in wl.cobertura_reports], [
+                f"00000000-0000-4000-8000-00000000000{n}/coverage.cobertura.xml" for n in (1, 2, 3)])
+            groups = []
+            for number, (_, xml_text) in enumerate(wl.cobertura_reports, 1):
+                coverage = ET.fromstring(xml_text)
+                self.assertEqual(coverage.find("packages/package").get("name"), f"Bench.many-medium.{number}")
+                groups.append(sorted({cls.get("filename") for cls in coverage.iter("class")}))
+            self.assertEqual(groups, [["M000.cs", "M001.cs"], ["M002.cs", "M003.cs"], ["M004.cs"]])
+
+    def test_many_medium_default_reports_stay_under_16_mib(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.multiple(bench, **{k: v for k, v in REAL_KNOBS.items()}):
+            wl = bench.generate("many-medium", Path(tmp) / "root", bench.DEFAULT_SCALE["many-medium"])
+            self.assertEqual(len(wl.cobertura_reports), 4)
+            self.assertTrue(all(len(text.encode()) < 8 * 1024 * 1024 for _, text in wl.cobertura_reports))
+
     def test_many_medium_default_files_are_about_35_kib(self):
         with tempfile.TemporaryDirectory() as tmp, \
                 mock.patch.multiple(bench, **{k: v for k, v in REAL_KNOBS.items()}):
