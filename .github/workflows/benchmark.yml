@@ -1,8 +1,10 @@
 name: Benchmark
 # Observational, same-runner comparisons only. Each job builds the base and the
-# head on one runner with one toolchain and measures them in alternating order on
-# identical generated corpora; the harness rejects non-identical outputs. Never
-# compare numbers across jobs, runners or toolchains. No timing gates.
+# head on one runner with one toolchain and one cargo profile (the `dist` profile
+# release archives ship, or `release` when the base has none) and measures them in
+# alternating order on identical corpora; the harness rejects non-identical
+# outputs. Never compare numbers across jobs, runners or toolchains. No timing
+# gates. A ratio is a claim only when the summary marks it `separated`.
 on:
   pull_request:
     paths:
@@ -11,6 +13,7 @@ on:
       - 'Cargo.lock'
       - 'scripts/benchmark.py'
       - 'scripts/bench_workloads.py'
+      - 'scripts/bench_summary.py'
       - '.github/workflows/benchmark.yml'
   workflow_dispatch:
 permissions:
@@ -31,49 +34,112 @@ jobs:
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: 1.96.0
-      - name: Build head and base with the same toolchain
+      - name: Build head and base with the same toolchain and profile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           # On pull_request HEAD is the merge commit; its first parent is the
           # base branch tip it was merged onto, so only this PR's changes differ.
-          if [ "${{ github.event_name }}" = pull_request ]; then base=HEAD^1; else base=origin/main; fi
-          cargo build --locked --release
+          if [ "$EVENT_NAME" = pull_request ]; then base=HEAD^1; else base=origin/main; fi
           git worktree add ../base "$base"
-          cargo build --locked --release --manifest-path ../base/Cargo.toml --target-dir ../base-target
+          # Release archives are built with [profile.dist] (thin LTO), so that is
+          # what users run. Use it when both sides define it. Otherwise (the base
+          # predates the profile) both sides use release, so they are always
+          # built alike. The profile name is also its directory under target/.
+          pattern='^\[profile\.dist\][[:space:]]*(#.*)?$'
+          if grep -Eq "$pattern" Cargo.toml && grep -Eq "$pattern" ../base/Cargo.toml; then
+            profile=dist
+          else
+            profile=release
+          fi
+          echo "Building with the $profile profile"
+          cargo build --locked --profile "$profile"
+          cargo build --locked --profile "$profile" --manifest-path ../base/Cargo.toml --target-dir ../base-target
+          mkdir -p target/benchmarks target/real-repos-out
+          echo "$profile" > target/profile.txt
           git rev-parse HEAD > target/head-commit.txt
           git -C ../base rev-parse HEAD > target/base-commit.txt
-      - name: Measure every workload and mode
+      - name: Measure every generated workload and mode
         run: |
-          mkdir -p target/benchmarks
-          for workload in small-files dense-file many-callables deep-nesting solution; do
+          profile="$(cat target/profile.txt)"
+          for workload in small-files dense-file many-callables deep-nesting solution many-medium skew; do
             for mode in scan scan-coverage collect; do
               python3 scripts/benchmark.py --workload "$workload" --mode "$mode" --runs 8 \
-                --baseline ../base-target/release/dotnet-crap \
+                --binary "target/$profile/dotnet-crap" \
+                --baseline "../base-target/$profile/dotnet-crap" \
                 --output "target/benchmarks/$workload-$mode.json" > /dev/null
             done
           done
-          python3 - <<'EOF'
-          import json, pathlib
-          rows = ["| workload | mode | base median ms | head median ms | base RSS KiB | head RSS KiB |", "|---|---|---|---|---|---|"]
-          for path in sorted(pathlib.Path("target/benchmarks").glob("*.json")):
-              r = json.loads(path.read_text())
-              b = r["baseline"]
-              rows.append(f"| {r['workload']} | {r['mode']} | {b['median_ms']:.1f} | {r['median_ms']:.1f} | {b['median_peak_rss_kib']} | {r['median_peak_rss_kib']} |")
-          text = "\n".join(rows) + "\n"
-          pathlib.Path("target/benchmarks/summary.md").write_text(text)
-          print(text)
-          EOF
-          cat target/benchmarks/summary.md >> "$GITHUB_STEP_SUMMARY"
+      # The next three steps fetch third-party C# source as data. Only *.cs files
+      # are materialized (sparse checkout), nothing is built, restored or run from
+      # them, and no credentials are persisted. Each commit is pinned by its full SHA.
+      - name: Check out FluentValidation (library)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: FluentValidation/FluentValidation
+          ref: a8ca6ac3e7f35da9448a28e0ab84ae914cca4fb1
+          path: target/real-repos/FluentValidation
+          persist-credentials: false
+          sparse-checkout: '*.cs'
+          sparse-checkout-cone-mode: false
+      - name: Check out eShopOnWeb (web application)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: dotnet-architecture/eShopOnWeb
+          ref: 4da8212117e87d808d4bbc7da6286fd2147ce606
+          path: target/real-repos/eShopOnWeb
+          persist-credentials: false
+          sparse-checkout: '*.cs'
+          sparse-checkout-cone-mode: false
+      - name: Check out CleanArchitecture (multi-project solution)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ardalis/CleanArchitecture
+          ref: 60d9ee3a8702abce102b854ac103200928e67da9
+          path: target/real-repos/CleanArchitecture
+          persist-credentials: false
+          sparse-checkout: '*.cs'
+          sparse-checkout-cone-mode: false
+      - name: Measure the real repositories (scan only)
+        run: |
+          profile="$(cat target/profile.txt)"
+          # A scan the scanner rejects (exit 2) is a finding recorded in the
+          # summary when base and head fail identically. Any disagreement between
+          # them, a crash or a timeout fails this step.
+          for dir in target/real-repos/*/; do
+            name="$(basename "$dir")"
+            sha="$(git -C "$dir" rev-parse --short=12 HEAD)"
+            python3 scripts/benchmark.py --repo "$dir" --repo-name "$name@$sha" --runs 8 \
+              --binary "target/$profile/dotnet-crap" \
+              --baseline "../base-target/$profile/dotnet-crap" \
+              --output "target/real-repos-out/$name.json" > /dev/null
+          done
+      - name: Summarize
+        if: ${{ !cancelled() }}
+        run: |
+          profile="$(cat target/profile.txt)"
+          python3 scripts/bench_summary.py --profile "$profile" \
+            --benchmarks target/benchmarks --repos target/real-repos-out > target/summary.md
+          cat target/summary.md
+          cat target/summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Profile the head binary with perf (Linux)
         if: runner.os == 'Linux'
         continue-on-error: true
         run: |
+          profile="$(cat target/profile.txt)"
           sudo apt-get update -q
           sudo apt-get install -y -q linux-tools-common "linux-tools-$(uname -r)"
           sudo sysctl -w kernel.perf_event_paranoid=1
           mkdir -p target/profiles
-          # Separate profiling build: frame pointers and symbols for call graphs.
-          RUSTFLAGS="-C force-frame-pointers=yes" CARGO_PROFILE_RELEASE_DEBUG=line-tables-only \
-            cargo build --locked --release --target-dir target/profile-build
+          # Separate profiling build of the measured profile: frame pointers and
+          # symbols for call graphs.
+          if [ "$profile" = dist ]; then
+            export CARGO_PROFILE_DIST_DEBUG=line-tables-only
+          else
+            export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+          fi
+          RUSTFLAGS="-C force-frame-pointers=yes" \
+            cargo build --locked --profile "$profile" --target-dir target/profile-build
           for workload in dense-file deep-nesting; do
             dir="$(mktemp -d)"
             python3 - "$workload" "$dir" <<'EOF'
@@ -85,7 +151,7 @@ jobs:
           (pathlib.Path(sys.argv[2]) / "coverage.json").write_text(json.dumps(workload.native_coverage))
           EOF
             perf record -F 2999 -g -o "target/profiles/$workload.data" -- \
-              target/profile-build/release/dotnet-crap --root "$dir/corpus" --coverage "$dir/coverage.json" \
+              "target/profile-build/$profile/dotnet-crap" --root "$dir/corpus" --coverage "$dir/coverage.json" \
               --format json --threshold 1000000000000 > /dev/null
             perf report -i "target/profiles/$workload.data" --stdio --no-children --percent-limit 1 \
               > "target/profiles/$workload.txt"
@@ -97,7 +163,10 @@ jobs:
           name: benchmark-${{ matrix.os }}
           path: |
             target/benchmarks
+            target/real-repos-out
+            target/summary.md
             target/profiles
+            target/profile.txt
             target/head-commit.txt
             target/base-commit.txt
           if-no-files-found: warn
