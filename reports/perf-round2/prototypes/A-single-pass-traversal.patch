@@ -1,0 +1,814 @@
+diff --git a/src/analysis.rs b/src/analysis.rs
+index eb4af1d..73b1ebc 100644
+--- a/src/analysis.rs
++++ b/src/analysis.rs
+@@ -2,7 +2,7 @@
+ 
+ use crate::error::{fail, ErrorKind, OptionExt, Result};
+ use crate::Item;
+-use tree_sitter::Node;
++use tree_sitter::{Node, TreeCursor};
+ 
+ /// Recognize implemented callable bodies, leaving explicit property/indexer accessors separate.
+ fn callable(n: Node<'_>) -> bool {
+@@ -239,8 +239,143 @@ fn span_coverage(
+     (total > 0).then(|| hit as f64 / total as f64)
+ }
+ 
++/// Syntactic role of a node kind, resolved once per language from kind names.
++#[derive(Clone, Copy, PartialEq, Eq, Debug)]
++enum Class {
++    Other,
++    /// Callable kinds that count only with a `body` field.
++    CallableBody,
++    /// `anonymous_method_expression`: always a callable.
++    CallableAlways,
++    /// Property/indexer: callable when `value` is an arrow clause.
++    CallableArrow,
++    Arrow,
++    /// Kinds contributing exactly one decision.
++    Decision,
++    SwitchSection,
++    SwitchArm,
++    /// `binary_expression` / `assignment_expression`.
++    Logical,
++    Case,
++    Discard,
++    /// `&&`, `||`, `??`, `??=`.
++    LogicalOp,
++}
++
++/// Kind-id lookup table. Filled by *name* for every symbol id, so `class[n.kind_id()]` is
++/// exactly the string comparison on `n.kind()` (aliases and named/anonymous duplicates included).
++pub(crate) struct Kinds {
++    class: Vec<Class>,
++    body: Option<u16>,
++    value: Option<u16>,
++    operator: Option<u16>,
++}
++
++impl Kinds {
++    pub(crate) fn new(language: &tree_sitter::Language) -> Self {
++        let class = (0..language.node_kind_count())
++            .map(|id| match language.node_kind_for_id(id as u16).unwrap_or("") {
++                "method_declaration"
++                | "constructor_declaration"
++                | "operator_declaration"
++                | "conversion_operator_declaration"
++                | "destructor_declaration"
++                | "local_function_statement"
++                | "accessor_declaration"
++                | "lambda_expression" => Class::CallableBody,
++                "anonymous_method_expression" => Class::CallableAlways,
++                "property_declaration" | "indexer_declaration" => Class::CallableArrow,
++                "arrow_expression_clause" => Class::Arrow,
++                "if_statement" | "for_statement" | "foreach_statement" | "while_statement"
++                | "do_statement" | "catch_clause" | "conditional_expression" | "when_clause" => {
++                    Class::Decision
++                }
++                "switch_section" => Class::SwitchSection,
++                "switch_expression_arm" => Class::SwitchArm,
++                "binary_expression" | "assignment_expression" => Class::Logical,
++                "case" => Class::Case,
++                "discard" => Class::Discard,
++                "&&" | "||" | "??" | "??=" => Class::LogicalOp,
++                _ => Class::Other,
++            })
++            .collect();
++        let field = |name: &str| language.field_id_for_name(name).map(|f| f.get());
++        Self {
++            class,
++            body: field("body"),
++            value: field("value"),
++            operator: field("operator"),
++        }
++    }
++
++    #[inline]
++    fn of(&self, n: Node<'_>) -> Class {
++        self.class
++            .get(usize::from(n.kind_id()))
++            .copied()
++            .unwrap_or(Class::Other)
++    }
++
++    #[inline]
++    fn field<'t>(n: Node<'t>, id: Option<u16>) -> Option<Node<'t>> {
++        id.and_then(|id| n.child_by_field_id(id))
++    }
++
++    /// Integer-dispatch equivalent of [`callable`].
++    #[inline]
++    fn callable(&self, n: Node<'_>) -> bool {
++        match self.of(n) {
++            Class::CallableBody => Self::field(n, self.body).is_some(),
++            Class::CallableAlways => true,
++            Class::CallableArrow => {
++                Self::field(n, self.value).is_some_and(|v| self.of(v) == Class::Arrow)
++            }
++            _ => false,
++        }
++    }
++
++    /// Integer-dispatch equivalent of [`decision`]; `scratch` is a reusable cursor.
++    #[inline]
++    fn decision<'t>(&self, n: Node<'t>, scratch: &mut TreeCursor<'t>) -> u32 {
++        match self.of(n) {
++            Class::Decision => 1,
++            Class::SwitchSection => n
++                .children(scratch)
++                .filter(|child| self.of(*child) == Class::Case)
++                .count() as u32,
++            Class::SwitchArm => {
++                u32::from(n.named_child(0).is_none_or(|c| self.of(c) != Class::Discard))
++            }
++            // Operators are anonymous tokens whose text equals their kind name, and the
++            // grammar always stores them in `operator`.
++            Class::Logical => u32::from(
++                Self::field(n, self.operator).is_some_and(|op| self.of(op) == Class::LogicalOp),
++            ),
++            _ => 0,
++        }
++    }
++}
++
++/// A callable whose subtree is still being walked by the single-pass collector.
++struct Open {
++    item: usize,
++    depth: u32,
++    complexity: u32,
++    scored: usize,
++    excluded: Vec<(usize, usize)>,
++}
++
++/// Marker: the fast path hit a budget or overflow and the reference must decide the error.
++struct Exceeded;
++
+ /// Collect callable scores iteratively with bounded traversal and merged nested-coverage exclusions.
+ /// The caller supplies independent whole-tree and per-callable named-node budgets.
++///
++/// One depth-first pass with a single reused cursor visits every named node once, in the same
++/// pre-order as the reference. Any limit hit discards partial items and re-runs the reference so
++/// the error (and which of the two limits fires first) is exactly the reference's.
++/// Production builds the kind table once per scan and calls [`collect_with_kinds`].
++#[cfg(test)]
+ pub(crate) fn collect(
+     n: Node<'_>,
+     source: &str,
+@@ -249,6 +384,153 @@ pub(crate) fn collect(
+     out: &mut Vec<Item>,
+     traversal_budget: usize,
+     callable_budget: usize,
++) -> Result<()> {
++    let kinds = Kinds::new(&n.language());
++    collect_with_kinds(&kinds, n, source, file, cov, out, traversal_budget, callable_budget)
++}
++
++#[allow(clippy::too_many_arguments)]
++pub(crate) fn collect_with_kinds(
++    kinds: &Kinds,
++    n: Node<'_>,
++    source: &str,
++    file: &str,
++    cov: Option<&CoverageIndex>,
++    out: &mut Vec<Item>,
++    traversal_budget: usize,
++    callable_budget: usize,
++) -> Result<()> {
++    let len = out.len();
++    match single_pass(kinds, n, source, file, cov, out, traversal_budget, callable_budget) {
++        Ok(()) => Ok(()),
++        Err(Exceeded) => {
++            out.truncate(len);
++            collect_reference(n, source, file, cov, out, traversal_budget, callable_budget)
++        }
++    }
++}
++
++/// Fill the reserved item of a finished callable.
++fn finish(open: Open, cov: Option<&CoverageIndex>, out: &mut [Item]) {
++    let item = &mut out[open.item];
++    let ranges = merge_ranges(open.excluded);
++    let coverage = cov.and_then(|c| span_coverage(c, item.line, item.end_line, &ranges));
++    let missed = 1.0 - coverage.unwrap_or(0.0);
++    item.complexity = open.complexity;
++    item.coverage = coverage;
++    item.crap = f64::from(open.complexity).powi(2) * missed.powi(3) + f64::from(open.complexity);
++}
++
++#[allow(clippy::too_many_arguments)]
++fn single_pass(
++    kinds: &Kinds,
++    root: Node<'_>,
++    source: &str,
++    file: &str,
++    cov: Option<&CoverageIndex>,
++    out: &mut Vec<Item>,
++    traversal_budget: usize,
++    callable_budget: usize,
++) -> std::result::Result<(), Exceeded> {
++    let mut cursor = root.walk();
++    let mut scratch = root.walk();
++    let mut open: Vec<Open> = Vec::new();
++    let mut visited = 0usize;
++    let mut depth = 0u32;
++    'visit: loop {
++        let node = cursor.node();
++        visited += 1;
++        if visited > traversal_budget {
++            return Err(Exceeded);
++        }
++        let is_callable = kinds.callable(node);
++        if let Some(top) = open.last_mut() {
++            top.scored += 1;
++            if top.scored > callable_budget {
++                return Err(Exceeded);
++            }
++            if is_callable {
++                top.excluded
++                    .push((node.start_position().row + 1, node.end_position().row + 1));
++            } else {
++                top.complexity = top
++                    .complexity
++                    .checked_add(kinds.decision(node, &mut scratch))
++                    .ok_or(Exceeded)?;
++            }
++        }
++        if is_callable {
++            if callable_budget == 0 {
++                return Err(Exceeded);
++            }
++            let start = node.start_position();
++            out.push(Item {
++                file: file.to_owned(),
++                name: callable_name(node, source),
++                kind: node.kind().to_owned(),
++                line: start.row + 1,
++                column: start.column + 1,
++                end_line: node.end_position().row + 1,
++                complexity: 0,
++                coverage: None,
++                crap: 0.0,
++            });
++            open.push(Open {
++                item: out.len() - 1,
++                depth,
++                complexity: 1u32
++                    .checked_add(kinds.decision(node, &mut scratch))
++                    .ok_or(Exceeded)?,
++                scored: 1,
++                excluded: Vec::new(),
++            });
++        }
++        // Descend to the first named child (named_children skips anonymous tokens and never
++        // descends into them).
++        if cursor.goto_first_child() {
++            depth += 1;
++            loop {
++                if cursor.node().is_named() {
++                    continue 'visit;
++                }
++                if !cursor.goto_next_sibling() {
++                    break;
++                }
++            }
++            cursor.goto_parent();
++            depth -= 1;
++        }
++        // The current node's subtree is done: close it, then move to the next named sibling
++        // of the nearest ancestor that has one.
++        loop {
++            if open.last().is_some_and(|o| o.depth == depth) {
++                let done = open.pop().expect("open callable");
++                finish(done, cov, out);
++            }
++            if depth == 0 {
++                return Ok(());
++            }
++            while cursor.goto_next_sibling() {
++                if cursor.node().is_named() {
++                    continue 'visit;
++                }
++            }
++            cursor.goto_parent();
++            depth -= 1;
++        }
++    }
++}
++
++/// Reference collector (the pre-prototype implementation). It defines the exact budget/error
++/// semantics and is used as the slow path whenever the single-pass collector hits a limit.
++pub(crate) fn collect_reference(
++    n: Node<'_>,
++    source: &str,
++    file: &str,
++    cov: Option<&CoverageIndex>,
++    out: &mut Vec<Item>,
++    traversal_budget: usize,
++    callable_budget: usize,
+ ) -> Result<()> {
+     let mut nodes = vec![n];
+     let mut visited = 0usize;
+@@ -303,6 +585,190 @@ pub(crate) fn collect(
+     }
+     Ok(())
+ }
++/// Benchmark-only variant: the reference structure (per-node cursor + Vec, two walks) with
++/// integer kind dispatch, to isolate the contribution of kind ids.
++#[cfg(test)]
++#[allow(clippy::too_many_arguments)]
++pub(crate) fn collect_ids_only(
++    kinds: &Kinds,
++    n: Node<'_>,
++    source: &str,
++    file: &str,
++    cov: Option<&CoverageIndex>,
++    out: &mut Vec<Item>,
++    traversal_budget: usize,
++    callable_budget: usize,
++) -> Result<()> {
++    let mut scratch = n.walk();
++    let mut nodes = vec![n];
++    let mut visited = 0usize;
++    while let Some(n) = nodes.pop() {
++        visited += 1;
++        if visited > traversal_budget {
++            fail!(ResourceLimit, "syntax tree resource limit exceeded");
++        }
++        let mut cursor = n.walk();
++        let children: Vec<_> = n.named_children(&mut cursor).collect();
++        nodes.extend(children.into_iter().rev());
++        if !kinds.callable(n) {
++            continue;
++        }
++        let mut complexity = 1u32;
++        let mut excluded = Vec::new();
++        let mut stack = vec![(n, true)];
++        let mut scored = 0usize;
++        while let Some((node, outer)) = stack.pop() {
++            scored += 1;
++            if scored > callable_budget {
++                fail!(ResourceLimit, "callable resource limit exceeded");
++            }
++            if !outer && kinds.callable(node) {
++                excluded.push((node.start_position().row + 1, node.end_position().row + 1));
++                continue;
++            }
++            complexity = complexity
++                .checked_add(kinds.decision(node, &mut scratch))
++                .context(ErrorKind::ResourceLimit, "complexity overflow")?;
++            let mut cursor = node.walk();
++            stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));
++        }
++        let ranges = merge_ranges(excluded);
++        let start = n.start_position().row + 1;
++        let end = n.end_position().row + 1;
++        let coverage = cov.and_then(|c| span_coverage(c, start, end, &ranges));
++        let missed = 1.0 - coverage.unwrap_or(0.0);
++        out.push(Item {
++            file: file.to_owned(),
++            name: callable_name(n, source),
++            kind: n.kind().to_owned(),
++            line: n.start_position().row + 1,
++            column: n.start_position().column + 1,
++            end_line: n.end_position().row + 1,
++            complexity,
++            coverage,
++            crap: f64::from(complexity).powi(2) * missed.powi(3) + f64::from(complexity),
++        });
++    }
++    Ok(())
++}
++
++/// Benchmark-only variant: kind ids plus reused cursors, but still two walks (outer pre-order
++/// walk and a per-callable inner walk). Exact budget semantics without a fallback.
++#[cfg(test)]
++#[allow(clippy::too_many_arguments)]
++pub(crate) fn collect_cursor_two_pass(
++    kinds: &Kinds,
++    root: Node<'_>,
++    source: &str,
++    file: &str,
++    cov: Option<&CoverageIndex>,
++    out: &mut Vec<Item>,
++    traversal_budget: usize,
++    callable_budget: usize,
++) -> Result<()> {
++    let mut cursor = root.walk();
++    let mut inner = root.walk();
++    let mut scratch = root.walk();
++    let mut visited = 0usize;
++    // Track depth by hand: TreeCursor::depth() is O(depth) in tree-sitter 0.27.
++    let mut outer_depth = 0u32;
++    'visit: loop {
++        let n = cursor.node();
++        visited += 1;
++        if visited > traversal_budget {
++            fail!(ResourceLimit, "syntax tree resource limit exceeded");
++        }
++        if kinds.callable(n) {
++            let mut complexity = 1u32;
++            let mut excluded = Vec::new();
++            let mut scored = 0usize;
++            inner.reset(n);
++            let mut depth = 0u32;
++            'inner: loop {
++                let node = inner.node();
++                scored += 1;
++                if scored > callable_budget {
++                    fail!(ResourceLimit, "callable resource limit exceeded");
++                }
++                let skip = depth > 0 && kinds.callable(node);
++                if skip {
++                    excluded.push((node.start_position().row + 1, node.end_position().row + 1));
++                } else {
++                    complexity = complexity
++                        .checked_add(kinds.decision(node, &mut scratch))
++                        .context(ErrorKind::ResourceLimit, "complexity overflow")?;
++                    if inner.goto_first_child() {
++                        depth += 1;
++                        loop {
++                            if inner.node().is_named() {
++                                continue 'inner;
++                            }
++                            if !inner.goto_next_sibling() {
++                                break;
++                            }
++                        }
++                        inner.goto_parent();
++                        depth -= 1;
++                    }
++                }
++                loop {
++                    if depth == 0 {
++                        break 'inner;
++                    }
++                    while inner.goto_next_sibling() {
++                        if inner.node().is_named() {
++                            continue 'inner;
++                        }
++                    }
++                    inner.goto_parent();
++                    depth -= 1;
++                }
++            }
++            let ranges = merge_ranges(excluded);
++            let start = n.start_position().row + 1;
++            let end = n.end_position().row + 1;
++            let coverage = cov.and_then(|c| span_coverage(c, start, end, &ranges));
++            let missed = 1.0 - coverage.unwrap_or(0.0);
++            out.push(Item {
++                file: file.to_owned(),
++                name: callable_name(n, source),
++                kind: n.kind().to_owned(),
++                line: start,
++                column: n.start_position().column + 1,
++                end_line: end,
++                complexity,
++                coverage,
++                crap: f64::from(complexity).powi(2) * missed.powi(3) + f64::from(complexity),
++            });
++        }
++        if cursor.goto_first_child() {
++            outer_depth += 1;
++            loop {
++                if cursor.node().is_named() {
++                    continue 'visit;
++                }
++                if !cursor.goto_next_sibling() {
++                    break;
++                }
++            }
++            cursor.goto_parent();
++            outer_depth -= 1;
++        }
++        loop {
++            if outer_depth == 0 {
++                return Ok(());
++            }
++            while cursor.goto_next_sibling() {
++                if cursor.node().is_named() {
++                    continue 'visit;
++                }
++            }
++            cursor.goto_parent();
++            outer_depth -= 1;
++        }
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+@@ -585,4 +1051,283 @@ mod tests {
+         assert_eq!((inner_lambda.end_line, inner_lambda.complexity), (14, 1));
+         assert_eq!(inner_lambda.coverage, Some(3.0 / 4.0));
+     }
++
++    // ---------------------------------------------------------------------------------
++    // Prototype A: differential checks and in-process benchmark.
++
++    fn csharp() -> tree_sitter::Language {
++        tree_sitter_c_sharp::LANGUAGE.into()
++    }
++
++    fn parse(source: &str) -> tree_sitter::Tree {
++        let mut parser = TsParser::new();
++        parser.set_language(&csharp()).unwrap();
++        parser.parse(source, None).unwrap()
++    }
++
++    fn cs_files(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
++        let Ok(entries) = std::fs::read_dir(dir) else {
++            return;
++        };
++        let mut entries: Vec<_> = entries.flatten().map(|e| e.path()).collect();
++        entries.sort();
++        for p in entries {
++            if p.is_dir() {
++                cs_files(&p, out);
++            } else if p.extension().is_some_and(|e| e == "cs") {
++                out.push(p);
++            }
++        }
++    }
++
++    type Variant = fn(
++        &Kinds,
++        Node<'_>,
++        &str,
++        &str,
++        Option<&CoverageIndex>,
++        &mut Vec<Item>,
++        usize,
++        usize,
++    ) -> Result<()>;
++
++    fn run_variant(
++        v: Variant,
++        kinds: &Kinds,
++        tree: &tree_sitter::Tree,
++        src: &str,
++        cov: Option<&CoverageIndex>,
++        tb: usize,
++        cb: usize,
++    ) -> String {
++        let mut items = Vec::new();
++        match v(kinds, tree.root_node(), src, "F.cs", cov, &mut items, tb, cb) {
++            Ok(()) => format!("{items:?}"),
++            Err(e) => format!("ERR {e}"),
++        }
++    }
++
++    fn reference(
++        _: &Kinds,
++        n: Node<'_>,
++        s: &str,
++        f: &str,
++        c: Option<&CoverageIndex>,
++        o: &mut Vec<Item>,
++        tb: usize,
++        cb: usize,
++    ) -> Result<()> {
++        collect_reference(n, s, f, c, o, tb, cb)
++    }
++
++    const VARIANTS: [(&str, Variant); 3] = [
++        ("ids_only", collect_ids_only),
++        ("cursor_two_pass", collect_cursor_two_pass),
++        ("single_pass", collect_with_kinds),
++    ];
++
++    fn sources_for_diff() -> Vec<(String, String)> {
++        let mut files = Vec::new();
++        cs_files(std::path::Path::new("tests"), &mut files);
++        cs_files(std::path::Path::new("examples"), &mut files);
++        if let Ok(extra) = std::env::var("A_DIFF_DIRS") {
++            for d in extra.split(':') {
++                cs_files(std::path::Path::new(d), &mut files);
++            }
++        }
++        let mut out: Vec<(String, String)> = files
++            .iter()
++            .filter_map(|p| Some((p.display().to_string(), std::fs::read_to_string(p).ok()?)))
++            .collect();
++        // Hand-written edge cases: comments as extras, nested callables of every kind,
++        // operators, switch forms, expression-bodied members, checked operators.
++        let edge = r#"
++class C<T> {
++    /* c0 */ int P => a && b ? 1 : 2; // c1
++    int this[int i, params string[] r] => i ?? 0;
++    int Q { get { return x ?? y; } set => z ??= value; }
++    public static C<T> operator checked +(C<T> a, C<T> b) => a;
++    public static explicit operator checked int(C<T> c) { return 0; }
++    ~C() { }
++    C() : base() { Action a = delegate { if (x) { } }; Func<int,int> f = x => x switch { 1 => 2, _ => 3, var y when y > 2 => 4 }; }
++    void M() {
++        switch (x) { case 1: case 2 when q: break; default: break; }
++        int L() { Action b = () => { while (p || q) { } }; return 1; }
++        try { } catch (E e) when (e != null) { } catch { }
++        foreach (var i in xs) for (;;) do { } while (a /* && */ || b);
++        var s = "&&" + '|';
++    }
++}"#;
++        out.push(("<edge>".into(), edge.into()));
++        out
++    }
++
++    #[test]
++    /// Every variant matches the reference on every repository C# file, with and without coverage.
++    fn prototype_variants_match_reference_on_repository_sources() {
++        let kinds = Kinds::new(&csharp());
++        let sources = sources_for_diff();
++        assert!(sources.len() > 10);
++        for (name, src) in &sources {
++            let tree = parse(src);
++            let lines = src.lines().count().max(1);
++            let cov = CoverageIndex::new((1..=lines).map(|l| (l, (l % 3) as u64)));
++            for cov in [None, Some(&cov)] {
++                let want = run_variant(reference, &kinds, &tree, src, cov, 1_000_000, 1_000_000);
++                assert!(!want.starts_with("ERR"), "{name}");
++                for (vname, v) in VARIANTS {
++                    let got = run_variant(v, &kinds, &tree, src, cov, 1_000_000, 1_000_000);
++                    assert_eq!(got, want, "{vname} differs on {name}");
++                }
++            }
++        }
++    }
++
++    #[test]
++    /// Every variant reproduces the reference Ok/Err outcome and message on small budgets.
++    fn prototype_variants_match_reference_on_budget_boundaries() {
++        let kinds = Kinds::new(&csharp());
++        let mut sources: Vec<String> = vec![
++            String::new(),
++            "class C { void F() {} }".into(),
++            "class C { void F() { Action a = () => { int x = 1; }; } int G() => 1; }".into(),
++            "class C { void F() { if (a && b) { void L() { var f = () => () => 1; } } } }".into(),
++            "class C { int P { get => 1; set { } } void G() { switch (x) { case 1: break; } } }"
++                .into(),
++        ];
++        sources.extend(sources_for_diff().into_iter().map(|(_, s)| s).take(4));
++        for src in &sources {
++            let tree = parse(src);
++            for tb in 0..=40 {
++                for cb in 0..=40 {
++                    let want = run_variant(reference, &kinds, &tree, src, None, tb, cb);
++                    for (vname, v) in VARIANTS {
++                        let got = run_variant(v, &kinds, &tree, src, None, tb, cb);
++                        assert_eq!(got, want, "{vname} tb={tb} cb={cb} src={src:.60}");
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    /// The kind table resolves every symbol name exactly like the string comparisons do.
++    fn kind_table_matches_string_classification_for_every_symbol() {
++        let lang = csharp();
++        let kinds = Kinds::new(&lang);
++        assert_eq!(kinds.class.len(), lang.node_kind_count());
++        let mut seen = std::collections::BTreeMap::<&str, Vec<(u16, bool)>>::new();
++        for id in 0..lang.node_kind_count() as u16 {
++            let name = lang.node_kind_for_id(id).unwrap();
++            seen.entry(name).or_default().push((id, lang.node_kind_is_named(id)));
++        }
++        for name in ["case", "&&", "??=", "lambda_expression", "discard", "arrow_expression_clause"] {
++            eprintln!("{name}: {:?}", seen.get(name));
++        }
++    }
++
++    fn env_usize(name: &str, default: usize) -> usize {
++        std::env::var(name)
++            .ok()
++            .and_then(|v| v.parse().ok())
++            .unwrap_or(default)
++    }
++
++    fn count_named(n: Node<'_>) -> usize {
++        let mut c = n.walk();
++        let mut total = 0;
++        let mut stack = vec![n];
++        while let Some(n) = stack.pop() {
++            total += 1;
++            stack.extend(n.named_children(&mut c));
++        }
++        total
++    }
++
++    fn stats(mut v: Vec<f64>) -> (f64, f64) {
++        v.sort_by(|a, b| a.partial_cmp(b).unwrap());
++        (v[0], v[v.len() / 2])
++    }
++
++    #[test]
++    #[ignore]
++    /// In-process micro-benchmark: parse vs each collect variant, interleaved, min/median of N.
++    /// A_BENCH_DIRS=dir1:dir2 (each a workload corpus), A_BENCH_ITERS (default 30).
++    fn prototype_bench() {
++        use std::time::Instant;
++        let iters = env_usize("A_BENCH_ITERS", 30);
++        let dirs = std::env::var("A_BENCH_DIRS").expect("A_BENCH_DIRS");
++        let kinds_lang = csharp();
++        for dir in dirs.split(':') {
++            let mut files = Vec::new();
++            cs_files(std::path::Path::new(dir), &mut files);
++            let sources: Vec<String> = files
++                .iter()
++                .map(|p| std::fs::read_to_string(p).unwrap())
++                .collect();
++            let trees: Vec<_> = sources.iter().map(|s| parse(s)).collect();
++            let nodes: usize = trees.iter().map(|t| count_named(t.root_node())).sum();
++            let mut parser = TsParser::new();
++            parser.set_language(&kinds_lang).unwrap();
++            let mut times: Vec<Vec<f64>> = vec![Vec::new(); 6];
++            let names = [
++                "parse",
++                "reference",
++                "ids_only",
++                "cursor_two_pass",
++                "single_pass",
++                "single_pass+table",
++            ];
++            let kinds = Kinds::new(&kinds_lang);
++            let mut items_n = 0;
++            for it in 0..iters {
++                // Rotate the order each iteration to spread drift across variants.
++                for k in 0..6 {
++                    let which = (k + it) % 6;
++                    let t = Instant::now();
++                    let mut out = Vec::new();
++                    for (src, tree) in sources.iter().zip(&trees) {
++                        let root = tree.root_node();
++                        match which {
++                            0 => {
++                                let t = parser.parse(src, None).unwrap();
++                                std::hint::black_box(&t);
++                            }
++                            1 => collect_reference(root, src, "F.cs", None, &mut out, 1_000_000, 1_000_000).unwrap(),
++                            2 => collect_ids_only(&kinds, root, src, "F.cs", None, &mut out, 1_000_000, 1_000_000).unwrap(),
++                            3 => collect_cursor_two_pass(&kinds, root, src, "F.cs", None, &mut out, 1_000_000, 1_000_000).unwrap(),
++                            4 => collect_with_kinds(&kinds, root, src, "F.cs", None, &mut out, 1_000_000, 1_000_000).unwrap(),
++                            _ => collect(root, src, "F.cs", None, &mut out, 1_000_000, 1_000_000).unwrap(),
++                        }
++                    }
++                    times[which].push(t.elapsed().as_secs_f64() * 1e3);
++                    if which == 1 {
++                        items_n = out.len();
++                    }
++                    std::hint::black_box(&out);
++                }
++            }
++            let (pmin, pmed) = stats(times[0].clone());
++            let (rmin, rmed) = stats(times[1].clone());
++            println!(
++                "## {dir}: files={} named_nodes={nodes} items={items_n} iters={iters}",
++                files.len()
++            );
++            for (i, name) in names.iter().enumerate() {
++                let (mn, md) = stats(times[i].clone());
++                let ns_node = mn * 1e6 / nodes as f64;
++                let saved = if i >= 2 {
++                    format!(
++                        " saved_vs_ref(min)={:.1}% of parse+collect, collect speedup x{:.2}",
++                        (rmin - mn) / (pmin + rmin) * 100.0,
++                        rmin / mn
++                    )
++                } else {
++                    String::new()
++                };
++                println!("{name:>18}: min {mn:8.2} ms  med {md:8.2} ms  {ns_node:6.1} ns/node{saved}");
++            }
++            println!("   parse+ref(med) {:.2} ms", pmed + rmed);
++        }
++    }
+ }
+diff --git a/src/lib.rs b/src/lib.rs
+index 0b50e12..efc3529 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -155,10 +155,10 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+         evidence::validate(c)?;
+     }
+     let files = selection::select(&root, &args.paths)?;
++    let language: tree_sitter::Language = tree_sitter_c_sharp::LANGUAGE.into();
+     let mut parser = TsParser::new();
+-    parser
+-        .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
+-        .kind(ErrorKind::Source)?;
++    parser.set_language(&language).kind(ErrorKind::Source)?;
++    let kinds = analysis::Kinds::new(&language);
+     let mut items = Vec::new();
+     let mut source_hashes = Vec::new();
+     for path in &files {
+@@ -208,7 +208,8 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+                     .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits)),
+             )
+         });
+-        analysis::collect(
++        analysis::collect_with_kinds(
++            &kinds,
+             tree.root_node(),
+             &source,
+             &relative,

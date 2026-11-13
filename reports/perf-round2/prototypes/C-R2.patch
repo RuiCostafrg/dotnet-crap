@@ -1,0 +1,90 @@
+diff --git a/src/cobertura.rs b/src/cobertura.rs
+index 4b5f2d6..7a4aeed 100644
+--- a/src/cobertura.rs
++++ b/src/cobertura.rs
+@@ -136,21 +136,21 @@ fn import_report(
+ /// Parse XML with DTD processing explicitly disabled and reject unsafe declarations.
+ fn parse_document(text: &str) -> Result<Document<'_>> {
+     let lower_phase = crate::prof::phase("cob_lowercase");
+-    crate::prof::add(crate::prof::Counter::LowercaseBytes, text.len() as u64);
+-    let lower = text.to_ascii_lowercase();
+-    if lower.contains("<!doctype") {
++    let [doctype, entity, stylesheet] =
++        contains_ascii_ci(text, ["<!doctype", "<!entity", "<?xml-stylesheet"]);
++    if doctype {
+         fail!(
+             Cobertura,
+             "Cobertura report contains a forbidden DOCTYPE declaration"
+         );
+     }
+-    if lower.contains("<!entity") {
++    if entity {
+         fail!(
+             Cobertura,
+             "Cobertura report contains a forbidden entity declaration"
+         );
+     }
+-    if lower.contains("<?xml-stylesheet") {
++    if stylesheet {
+         fail!(
+             Cobertura,
+             "Cobertura report contains a forbidden external XML stylesheet"
+@@ -161,6 +161,22 @@ fn parse_document(text: &str) -> Result<Document<'_>> {
+     parse_with_node_limit(text, 500_000)
+ }
+ 
++/// Report which lowercase ASCII `needles` occur in `text`, ignoring ASCII case,
++/// in one pass and without copying the report. Every needle starts with `<`.
++fn contains_ascii_ci<const N: usize>(text: &str, needles: [&str; N]) -> [bool; N] {
++    let bytes = text.as_bytes();
++    let mut found = [false; N];
++    for (start, _) in bytes.iter().enumerate().filter(|(_, b)| **b == b'<') {
++        let rest = &bytes[start..];
++        for (flag, needle) in found.iter_mut().zip(needles) {
++            *flag |= rest
++                .get(..needle.len())
++                .is_some_and(|window| window.eq_ignore_ascii_case(needle.as_bytes()));
++        }
++    }
++    found
++}
++
+ /// Bound DOM allocation independently of the byte limit.
+ fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
+     // Keep every field explicit: `..Default::default()` would drop the node
+@@ -501,7 +517,9 @@ fn child_elements<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Vec<Nod
+ 
+ /// Require exactly one direct element child with the requested local name.
+ fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node<'a, 'input>> {
+-    let mut children = child_elements(node, name).into_iter();
++    let mut children = node
++        .children()
++        .filter(|child| child.is_element() && child.tag_name().name() == name);
+     let child = children
+         .next()
+         .ok_or_else(|| Error::new(ErrorKind::Cobertura, format!("missing <{name}> element")))?;
+@@ -513,6 +531,24 @@ fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node
+ 
+ #[cfg(test)]
+ mod resource_tests {
++    #[test]
++    /// The copy-free scan matches `to_ascii_lowercase().contains` for each needle.
++    fn declaration_scan_is_ascii_case_insensitive_and_bounded() {
++        let needles = ["<!doctype", "<!entity", "<?xml-stylesheet"];
++        for (text, expected) in [
++            ("<coverage/>", [false, false, false]),
++            ("<!DocType x>", [true, false, false]),
++            ("a<!ENTITY", [false, true, false]),
++            ("<?XML-Stylesheet?><!doctype", [true, false, true]),
++            ("<!doctyp", [false, false, false]),
++            ("!doctype <doctype", [false, false, false]),
++            ("<<!entity", [false, true, false]),
++        ] {
++            assert_eq!(super::contains_ascii_ci(text, needles), expected, "{text}");
++            let lower = text.to_ascii_lowercase();
++            assert_eq!(expected, needles.map(|n| lower.contains(n)), "{text}");
++        }
++    }
+     #[test]
+     fn node_limit_rejects_excess_nodes_without_requiring_a_large_allocation() {
+         let text = "<coverage><a/></coverage>";

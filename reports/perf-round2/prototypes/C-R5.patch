@@ -1,0 +1,29 @@
+diff --git a/src/cobertura.rs b/src/cobertura.rs
+index 7a4aeed..1b9a1d0 100644
+--- a/src/cobertura.rs
++++ b/src/cobertura.rs
+@@ -339,14 +339,21 @@ fn resolve_filename(
+     if absolute {
+         add_candidate(root, Path::new(""), &path, sources, &mut candidates)?;
+     } else {
+-        for prefix in prefixes {
+-            add_candidate(root, prefix, &path, sources, &mut candidates)?;
++        // An already-tried base joins to the same candidate path, so resolving
++        // it again can neither add a candidate nor raise a new error. Coverlet
++        // usually lists the project root itself as the only prefix.
++        for (index, prefix) in prefixes.iter().enumerate() {
++            if !prefixes[..index].contains(prefix) {
++                add_candidate(root, prefix, &path, sources, &mut candidates)?;
++            }
+         }
+         // Use the root as a fallback when there are no prefixes, when no prefix
+         // produced an exact candidate, or when the filename is itself an exact
+         // selected root-relative identity. A basename is never guessed.
+         let prefix_candidate = !candidates.is_empty();
+-        if prefixes.is_empty() || !prefix_candidate || sources.contains_key(&path) {
++        let root_tried = prefixes.iter().any(|prefix| prefix == root);
++        if !root_tried && (prefixes.is_empty() || !prefix_candidate || sources.contains_key(&path))
++        {
+             add_candidate(root, root, &path, sources, &mut candidates)?;
+         }
+     }

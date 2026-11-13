@@ -1,0 +1,50 @@
+   Compiling dotnet-crap v0.1.0 (/root/.t3/worktrees/dotnet-crap/t3-b6f87c44)
+    Finished `release` profile [optimized] target(s) in 18.11s
+     Running unittests src/lib.rs (target/release/deps/dotnet_crap-9d41f2e73387d754)
+
+running 1 test
+## /tmp/inv/corpora/dense-file/corpus: files=1 named_nodes=177501 items=4000 iters=30
+             parse: min   307.83 ms  med   341.46 ms  1734.3 ns/node
+         reference: min   162.72 ms  med   183.84 ms   916.7 ns/node
+          ids_only: min   131.86 ms  med   148.48 ms   742.9 ns/node saved_vs_ref(min)=6.6% of parse+collect, collect speedup x1.23
+   cursor_two_pass: min    88.38 ms  med   100.23 ms   497.9 ns/node saved_vs_ref(min)=15.8% of parse+collect, collect speedup x1.84
+       single_pass: min    51.54 ms  med    57.92 ms   290.4 ns/node saved_vs_ref(min)=23.6% of parse+collect, collect speedup x3.16
+ single_pass+table: min    51.83 ms  med    58.10 ms   292.0 ns/node saved_vs_ref(min)=23.6% of parse+collect, collect speedup x3.14
+   parse+ref(med) 525.31 ms
+## /tmp/inv/corpora/many-callables/corpus: files=1 named_nodes=104001 items=8000 iters=30
+             parse: min   173.14 ms  med   188.56 ms  1664.8 ns/node
+         reference: min    92.50 ms  med    93.86 ms   889.4 ns/node
+          ids_only: min    78.60 ms  med    80.07 ms   755.8 ns/node saved_vs_ref(min)=5.2% of parse+collect, collect speedup x1.18
+   cursor_two_pass: min    54.64 ms  med    54.99 ms   525.3 ns/node saved_vs_ref(min)=14.3% of parse+collect, collect speedup x1.69
+       single_pass: min    35.67 ms  med    36.13 ms   343.0 ns/node saved_vs_ref(min)=21.4% of parse+collect, collect speedup x2.59
+ single_pass+table: min    35.55 ms  med    36.00 ms   341.8 ns/node saved_vs_ref(min)=21.4% of parse+collect, collect speedup x2.60
+   parse+ref(med) 282.42 ms
+## /tmp/inv/corpora/deep-nesting/corpus: files=1 named_nodes=38018 items=3001 iters=30
+             parse: min    63.34 ms  med    65.51 ms  1666.1 ns/node
+         reference: min    33.23 ms  med    36.37 ms   873.9 ns/node
+          ids_only: min    28.32 ms  med    31.19 ms   745.0 ns/node saved_vs_ref(min)=5.1% of parse+collect, collect speedup x1.17
+   cursor_two_pass: min    20.26 ms  med    22.28 ms   532.9 ns/node saved_vs_ref(min)=13.4% of parse+collect, collect speedup x1.64
+       single_pass: min    12.45 ms  med    13.03 ms   327.6 ns/node saved_vs_ref(min)=21.5% of parse+collect, collect speedup x2.67
+ single_pass+table: min    12.36 ms  med    12.74 ms   325.0 ns/node saved_vs_ref(min)=21.6% of parse+collect, collect speedup x2.69
+   parse+ref(med) 101.88 ms
+## /tmp/inv/corpora/small-files/corpus: files=500 named_nodes=19500 items=1000 iters=30
+             parse: min    31.03 ms  med    41.03 ms  1591.3 ns/node
+         reference: min    18.65 ms  med    26.93 ms   956.2 ns/node
+          ids_only: min    15.51 ms  med    18.68 ms   795.5 ns/node saved_vs_ref(min)=6.3% of parse+collect, collect speedup x1.20
+   cursor_two_pass: min    10.77 ms  med    12.13 ms   552.3 ns/node saved_vs_ref(min)=15.9% of parse+collect, collect speedup x1.73
+       single_pass: min     6.79 ms  med     7.67 ms   348.4 ns/node saved_vs_ref(min)=23.9% of parse+collect, collect speedup x2.74
+ single_pass+table: min    13.16 ms  med    21.25 ms   674.9 ns/node saved_vs_ref(min)=11.0% of parse+collect, collect speedup x1.42
+   parse+ref(med) 67.96 ms
+test analysis::tests::prototype_bench has been running for over 60 seconds
+## /tmp/inv/corpora/solution/corpus: files=1101 named_nodes=41804 items=1400 iters=30
+             parse: min    62.59 ms  med    65.55 ms  1497.3 ns/node
+         reference: min    33.43 ms  med    35.31 ms   799.7 ns/node
+          ids_only: min    28.64 ms  med    29.91 ms   685.1 ns/node saved_vs_ref(min)=5.0% of parse+collect, collect speedup x1.17
+   cursor_two_pass: min    19.85 ms  med    20.70 ms   474.9 ns/node saved_vs_ref(min)=14.1% of parse+collect, collect speedup x1.68
+       single_pass: min    12.88 ms  med    13.56 ms   308.1 ns/node saved_vs_ref(min)=21.4% of parse+collect, collect speedup x2.60
+ single_pass+table: min    25.37 ms  med    26.75 ms   607.0 ns/node saved_vs_ref(min)=8.4% of parse+collect, collect speedup x1.32
+   parse+ref(med) 100.86 ms
+test analysis::tests::prototype_bench ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 32 filtered out; finished in 67.25s
+
