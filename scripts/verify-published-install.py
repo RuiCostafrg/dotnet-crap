@@ -53,26 +53,6 @@ def check_binary(executable, assets, targets, version, fixture):
     run([str(executable), '--root', str(fixture), '--threshold', '0'], env=env, expected=1)
 
 
-def registry(args, work):
-    check = load('verify-npm-install')
-    # Reuse its real package-manager execution and byte checks, replacing only
-    # local-tarball manifests and blocked registries with exact public versions.
-    check.ENVIRONMENT.update(npm_config_registry='https://registry.npmjs.org/',
-                             YARN_NPM_REGISTRY_SERVER='https://registry.npmjs.org/',
-                             BUN_CONFIG_REGISTRY='https://registry.npmjs.org/',
-                             npm_config_offline='false')
-    check.NPM_OFFLINE = {}
-    check.manifest = lambda *_: {'name': 'published-dotnet-crap-check', 'version': '0.0.0',
-                                'private': True, 'dependencies': {'dotnet-crap': args.version}}
-    check.workspace_files = lambda manager, *_: (
-        {'yarn.lock': '', '.yarnrc.yml': 'nodeLinker: node-modules\n'} if manager == 'yarn-node-modules'
-        else {'yarn.lock': ''} if manager == 'yarn' else {})
-    for manager in ('npm', 'pnpm', 'yarn', 'yarn-node-modules', 'bun'):
-        check.verify(manager, args.version, args.assets, work, args.fixture, work,
-                     check.host_target())
-        print(f'{manager}: installed exact registry version and matched authenticated executable')
-
-
 def shell(args, work):
     home = work / 'home'
     home.mkdir()
@@ -129,7 +109,7 @@ def tool(args, work):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('channel', choices=('registry', 'shell', 'homebrew', 'tool'))
+    parser.add_argument('channel', choices=('shell', 'homebrew', 'tool'))
     parser.add_argument('--assets', required=True, type=Path)
     parser.add_argument('--version', required=True)
     parser.add_argument('--source-sha', required=True)
@@ -139,7 +119,7 @@ def main():
     load('verify-published-inputs').validate(args.version, args.source_sha)
     args.assets = args.assets.resolve()
     args.fixture = ROOT / 'examples/Fixture'
-    if args.channel != 'registry' and not args.target:
+    if not args.target:
         parser.error('--target is required for this channel')
     if args.channel == 'tool' and not args.rid:
         parser.error('--rid is required for tool installation')
@@ -147,9 +127,7 @@ def main():
         os.environ.pop(name, None)
     with tempfile.TemporaryDirectory(prefix='published-install-') as temporary:
         work = Path(temporary).resolve()
-        if args.channel == 'registry':
-            registry(args, work)
-        elif args.channel == 'shell':
+        if args.channel == 'shell':
             shell(args, work)
         elif args.channel == 'homebrew':
             homebrew(args)

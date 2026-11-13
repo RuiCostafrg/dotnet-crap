@@ -9,7 +9,7 @@ that a report came from tests or from a trusted producer. Generate coverage in
 your own pipeline and review changes to gate policy.
 
 Release archives include SHA-256 checksums. A checksum detects corruption; it is
-not proof of publisher identity. Published release assets and npm tarballs carry
+not proof of publisher identity. Published release assets carry
 GitHub build-provenance attestations from `.github/workflows/release.yml` at the
 version tag; verify them with `gh attestation verify <file> --repo
 RuiCostafrg/dotnet-crap`. The GitHub Action verifies the attestation (exact
@@ -19,14 +19,12 @@ binary, and never disables TLS.
 The release workflow is hand-maintained and splits privileges (see
 [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)). Planning, building, packing and
 every installation check run without contents write access, environment or
-secrets. Only two jobs can publish: one creates the attested GitHub release and
-one stages npm packages with trusted publishing (OIDC, no npm token). Both wait
-for owner approval in the `release` environment, check out no code, run no
-compiled binary, and are disabled unless the repository variable
-`DOTNET_CRAP_PUBLISH` is `true`. It was set only after tag and branch rulesets
-and the environment's required reviewer were enforced; unsetting it switches
-publication off. npm trusted publishing allows only staged publication, so every
-npm version also needs the owner's 2FA approval before it becomes public. The
+secrets. Only the `publish` job in `release.yml` creates the attested GitHub
+release. It waits for owner approval in the `release` environment, checks out
+no code, runs no compiled binary, and is disabled unless the repository variable
+`DOTNET_CRAP_PUBLISH` is `true`. Tag and branch rulesets and the environment's
+required reviewer remain required; unsetting the variable switches publication
+off. npm staging and publication have been removed from this repository. The
 Homebrew tap pulls and verifies the attested formula itself; this repository
 holds no tap token. Removing these controls requires a maintainer who can change
 workflows, so workflow changes need review like code.
