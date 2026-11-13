@@ -1,5 +1,8 @@
 # Logical C# pattern scoring
 
+This accuracy extension is introduced in PR #41. Published `v0.1.0` predates
+it; the new scores apply to the updated scanner source and its future releases.
+
 The scanner adds one decision for each explicit C# `and` or `or` pattern
 combinator. This extends its existing convention for `&&` and `||`; it is not
 a claim of equivalence with Roslyn, IDE metrics or a compiler's lowered code.
@@ -68,3 +71,17 @@ certified by these examples. Top-level entry-point ownership, primary
 constructors, synthesized record members, fallback-pattern normalization and
 conditional-compilation policy remain separate work. Analysis remains based
 on parsed source, not a configured Roslyn compilation.
+
+### Local implementation evidence
+
+Production code and fixtures at `cf9083711533bb8b4fd2df8c23556aaddc9204ea`
+passed formatting, warnings-denied all-target clippy, locked debug/release tests,
+and the complete live SDK/Coverlet suite on Linux ARM64 with SDK 10.0.109.
+The live run executed the new partial/full probes and existing xUnit, NUnit and
+MSTest collection, including deliberate failure-path tests. The 187 Python
+contracts passed with two existing local skips; actionlint passed. An initial
+benchmark test exceeded its existing five-second outer timeout on the shared
+host; the unchanged focused retry and full Python retry both passed.
+
+Subsequent local commits change documentation only. Hosted .NET 10/11 platform
+results and full mutation evidence remain required before integration.
