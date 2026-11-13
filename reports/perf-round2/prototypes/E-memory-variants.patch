@@ -1,0 +1,705 @@
+diff --git a/src/analysis.rs b/src/analysis.rs
+index eb4af1d..68f8dfe 100644
+--- a/src/analysis.rs
++++ b/src/analysis.rs
+@@ -150,6 +150,32 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
+         _ => 0,
+     }
+ }
++/// Validated evidence for one source file in the compact form the scan needs.
++pub(crate) struct FileEvidence {
++    /// Source SHA-256 the evidence is bound to.
++    pub(crate) sha256: String,
++    /// Largest covered line, or zero when the file has no points.
++    pub(crate) max_line: usize,
++    /// Range-count index over the covered lines.
++    pub(crate) index: CoverageIndex,
++}
++
++impl FileEvidence {
++    /// Compact a validated line map; keys were already checked to be canonical positive integers.
++    pub(crate) fn new(sha256: String, lines: std::collections::BTreeMap<String, u64>) -> Self {
++        let index = CoverageIndex::new(
++            lines
++                .into_iter()
++                .map(|(line, hits)| (line.parse::<usize>().expect("validated line"), hits)),
++        );
++        Self {
++            sha256,
++            max_line: index.lines.last().copied().unwrap_or(0),
++            index,
++        }
++    }
++}
++
+ /// Per-file coverage evidence indexed for logarithmic range counts.
+ ///
+ /// `lines` holds every covered line number once in ascending order and
+@@ -308,6 +334,29 @@ mod tests {
+     use super::*;
+     use tree_sitter::Parser as TsParser;
+ 
++    #[test]
++    /// The compact evidence keeps the hash, the largest line and exact range counts.
++    fn file_evidence_compacts_validated_lines() {
++        let lines = [("10", 0u64), ("2", 5), ("7", 1)]
++            .into_iter()
++            .map(|(line, hits)| (line.to_owned(), hits))
++            .collect();
++        let evidence = FileEvidence::new("abc".into(), lines);
++        assert_eq!(evidence.sha256, "abc");
++        assert_eq!(evidence.max_line, 10);
++        assert_eq!(evidence.index.count(1, 10), (3, 2));
++        assert_eq!(evidence.index.count(3, 9), (1, 1));
++        assert_eq!(evidence.index.count(8, 9), (0, 0));
++    }
++
++    #[test]
++    /// A file without coverage points has maximum line zero and counts nothing.
++    fn file_evidence_without_points_has_no_lines() {
++        let evidence = FileEvidence::new(String::new(), Default::default());
++        assert_eq!(evidence.max_line, 0);
++        assert_eq!(evidence.index.count(1, 100), (0, 0));
++    }
++
+     /// Run the actual collector with deliberately small independent resource limits.
+     fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
+         let mut parser = TsParser::new();
+diff --git a/src/cobertura.rs b/src/cobertura.rs
+index 62a28d9..dc5f63c 100644
+--- a/src/cobertura.rs
++++ b/src/cobertura.rs
+@@ -127,24 +127,28 @@ fn import_report(
+ 
+ /// Parse XML with DTD processing explicitly disabled and reject unsafe declarations.
+ fn parse_document(text: &str) -> Result<Document<'_>> {
+-    let lower = text.to_ascii_lowercase();
+-    if lower.contains("<!doctype") {
+-        fail!(
+-            Cobertura,
+-            "Cobertura report contains a forbidden DOCTYPE declaration"
+-        );
+-    }
+-    if lower.contains("<!entity") {
+-        fail!(
+-            Cobertura,
+-            "Cobertura report contains a forbidden entity declaration"
+-        );
+-    }
+-    if lower.contains("<?xml-stylesheet") {
+-        fail!(
+-            Cobertura,
+-            "Cobertura report contains a forbidden external XML stylesheet"
+-        );
++    // Scope the lower-cased copy so it is freed before the DOM is built; keeping
++    // it alive adds one full report (up to 16 MiB) to the import's peak memory.
++    {
++        let lower = text.to_ascii_lowercase();
++        if lower.contains("<!doctype") {
++            fail!(
++                Cobertura,
++                "Cobertura report contains a forbidden DOCTYPE declaration"
++            );
++        }
++        if lower.contains("<!entity") {
++            fail!(
++                Cobertura,
++                "Cobertura report contains a forbidden entity declaration"
++            );
++        }
++        if lower.contains("<?xml-stylesheet") {
++            fail!(
++                Cobertura,
++                "Cobertura report contains a forbidden external XML stylesheet"
++            );
++        }
+     }
+     parse_with_node_limit(text, 500_000)
+ }
+diff --git a/src/collector.rs b/src/collector.rs
+index d1ea219..acb970e 100644
+--- a/src/collector.rs
++++ b/src/collector.rs
+@@ -60,7 +60,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
+             fail!(Source, "unsupported source path for native coverage");
+         }
+         let bytes = fs::read(path).kind(ErrorKind::Io)?;
+-        sources.insert(relative.clone(), crate::decode_source(&bytes)?);
++        sources.insert(relative.clone(), crate::decode_source(bytes)?);
+         hashes.insert(relative, hash.clone());
+     }
+     if sources.is_empty() {
+diff --git a/src/lib.rs b/src/lib.rs
+index 0b50e12..9a590c3 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -16,6 +16,7 @@
+ use crate::error::{fail, OptionExt, ResultExt};
+ use sha2::{Digest, Sha256};
+ use std::{
++    collections::BTreeMap,
+     fs,
+     path::{Path, PathBuf},
+ };
+@@ -98,26 +99,67 @@ impl ScanResult {
+     }
+     /// Render the report using the policies captured by the scan.
+     pub fn render(&self, format: ReportFormat) -> Result<String> {
++        let mut output = Vec::new();
++        self.write_to(format, &mut output)?;
++        String::from_utf8(output).kind(ErrorKind::Render)
++    }
++    /// Render the report straight into `out` without building the whole document in memory.
++    ///
++    /// The bytes are identical to [`ScanResult::render`]. I/O failures of `out` are
++    /// returned as [`ErrorKind::Io`]; wrap `out` in a `BufWriter` for unbuffered sinks.
++    pub fn write_to<W: std::io::Write + ?Sized>(
++        &self,
++        format: ReportFormat,
++        out: &mut W,
++    ) -> Result<()> {
++        use std::io::Write as _;
+         let report = &self.report;
+-        let output = if format == ReportFormat::Sarif {
+-            format!(
+-                "{}\n",
+-                sarif::render(
+-                    report,
+-                    &self.root,
+-                    self.require_coverage,
+-                    self.fail_on_empty
+-                )?
+-            )
+-        } else if format == ReportFormat::Json {
+-            format!(
+-                "{}\n",
+-                serde_json::to_string_pretty(report).kind(ErrorKind::Render)?
+-            )
+-        } else {
+-            report::render_text(report, self.require_coverage)
++        // serde_json reports sink failures as its own error type; keep the
++        // original `io::Error` so callers see the unchanged I/O message.
++        let mut sink = Tracked {
++            inner: out,
++            error: None,
++        };
++        let written = match format {
++            ReportFormat::Sarif => sarif::render_to(
++                report,
++                &self.root,
++                self.require_coverage,
++                self.fail_on_empty,
++                &mut sink,
++            ),
++            ReportFormat::Json => {
++                serde_json::to_writer_pretty(&mut sink, report).kind(ErrorKind::Render)
++            }
++            ReportFormat::Text => sink
++                .write_all(report::render_text(report, self.require_coverage).as_bytes())
++                .map_err(Error::from),
+         };
+-        Ok(output)
++        if let Some(error) = sink.error.take() {
++            return Err(error.into());
++        }
++        written?;
++        if format != ReportFormat::Text {
++            sink.write_all(b"\n")?;
++        }
++        Ok(())
++    }
++}
++/// Writer adapter that remembers the first I/O error of the wrapped sink.
++struct Tracked<'a, W: std::io::Write + ?Sized> {
++    inner: &'a mut W,
++    error: Option<std::io::Error>,
++}
++impl<W: std::io::Write + ?Sized> std::io::Write for Tracked<'_, W> {
++    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
++        self.inner.write(buf).map_err(|e| {
++            let copy = std::io::Error::new(e.kind(), e.to_string());
++            self.error.get_or_insert(e);
++            copy
++        })
++    }
++    fn flush(&mut self) -> std::io::Result<()> {
++        self.inner.flush()
+     }
+ }
+ pub(crate) use evidence::{Coverage, CoverageFile};
+@@ -154,6 +196,16 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+     if let Some(c) = &coverage {
+         evidence::validate(c)?;
+     }
++    // Keep only the compact per-file index for the scan: the validated JSON
++    // model (`BTreeMap<String, u64>` of decimal line strings) costs several
++    // times more memory per coverage point and would otherwise stay alive
++    // for the whole scan, next to the largest syntax tree.
++    let coverage: Option<BTreeMap<String, analysis::FileEvidence>> = coverage.map(|c| {
++        c.files
++            .into_iter()
++            .map(|(name, file)| (name, analysis::FileEvidence::new(file.sha256, file.lines)))
++            .collect()
++    });
+     let files = selection::select(&root, &args.paths)?;
+     let mut parser = TsParser::new();
+     parser
+@@ -165,7 +217,7 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+         let bytes =
+             fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
+         let hash = hex::encode(Sha256::digest(&bytes));
+-        let source = decode_source(&bytes)
++        let source = decode_source(bytes)
+             .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
+         let relative = path
+             .strip_prefix(&root)
+@@ -188,31 +240,20 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+         if tree.root_node().has_error() {
+             fail!(Syntax, "invalid C# syntax in {relative}");
+         }
+-        let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
++        let cov = coverage.as_ref().and_then(|c| c.get(&relative));
+         if let Some(c) = cov {
+             if !hash.eq_ignore_ascii_case(&c.sha256) {
+                 fail!(Coverage, "stale coverage for {relative}");
+             }
+-            let line_count = source.lines().count();
+-            if c.lines
+-                .keys()
+-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
+-            {
++            if c.max_line > source.lines().count() {
+                 fail!(Coverage, "coverage line outside {relative}");
+             }
+         }
+-        let points = cov.map(|c| {
+-            analysis::CoverageIndex::new(
+-                c.lines
+-                    .iter()
+-                    .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits)),
+-            )
+-        });
+         analysis::collect(
+             tree.root_node(),
+             &source,
+             &relative,
+-            points.as_ref(),
++            cov.map(|c| &c.index),
+             &mut items,
+             1_000_000,
+             1_000_000,
+diff --git a/src/main.rs b/src/main.rs
+index cf8a6fc..3f4fc25 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -85,12 +85,16 @@ fn run(args: Args) -> Result<bool> {
+         "sarif" => ReportFormat::Sarif,
+         _ => ReportFormat::Text,
+     };
+-    let output = result.render(format)?;
++    // Verify before streaming: nothing may reach stdout if a source changed.
+     result.verify_sources()?;
+     if let Some(path) = args.output {
+-        dotnet_crap::output::write_report(&result, &output, &path)?;
++        dotnet_crap::output::write_report_with(&result, &path, |out| {
++            result.write_to(format, out).map_err(std::io::Error::other)
++        })?;
+     } else {
+-        std::io::stdout().lock().write_all(output.as_bytes())?;
++        let mut stdout = std::io::BufWriter::with_capacity(1 << 16, std::io::stdout().lock());
++        result.write_to(format, &mut stdout)?;
++        stdout.flush()?;
+     }
+     Ok(result.report().failed)
+ }
+diff --git a/src/output.rs b/src/output.rs
+index f72e3b0..ba84df8 100644
+--- a/src/output.rs
++++ b/src/output.rs
+@@ -9,6 +9,18 @@ use walkdir::WalkDir;
+ /// rendered output. This function verifies the sources again after staging and
+ /// before the staged file replaces `path`.
+ pub fn write_report(result: &crate::ScanResult, rendered: &str, path: &Path) -> Result<()> {
++    write_report_with(result, path, |out| out.write_all(rendered.as_bytes()))
++}
++
++/// Like [`write_report`], but `write` streams the report into the staged file.
++///
++/// The closure receives a buffered writer, so a renderer such as
++/// [`crate::ScanResult::write_to`] never holds the full document in memory.
++pub fn write_report_with(
++    result: &crate::ScanResult,
++    path: &Path,
++    write: impl FnOnce(&mut dyn Write) -> std::io::Result<()>,
++) -> Result<()> {
+     if is_csharp_path(path) {
+         fail!(Output, "report output cannot overwrite C# source");
+     }
+@@ -35,9 +47,10 @@ pub fn write_report(result: &crate::ScanResult, rendered: &str, path: &Path) ->
+     }
+     let parent = destination_parent(path);
+     let mut staged = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
+-    staged
+-        .write_all(rendered.as_bytes())
+-        .kind(ErrorKind::Output)?;
++    let mut buffered = std::io::BufWriter::with_capacity(1 << 16, &mut staged);
++    write(&mut buffered).kind(ErrorKind::Output)?;
++    buffered.flush().kind(ErrorKind::Output)?;
++    drop(buffered);
+     staged.as_file().sync_all().kind(ErrorKind::Output)?;
+     result.verify_sources()?;
+     staged.persist(path).kind(ErrorKind::Output)?;
+diff --git a/src/sarif.rs b/src/sarif.rs
+index 27c5bff..6f38842 100644
+--- a/src/sarif.rs
++++ b/src/sarif.rs
+@@ -1,18 +1,115 @@
+ use crate::error::{ErrorKind, OptionExt, Result, ResultExt};
+-use serde_json::{json, Value};
++use serde::Serialize;
+ use sha2::{Digest, Sha256};
+ use std::{collections::BTreeMap, path::Path};
+ 
+ use crate::{Item, Report};
+ 
+-/// Render deterministic SARIF score, required-coverage and empty-selection diagnostics.
++// The structs below mirror the previous `serde_json::Value` document. Value
++// objects are ordered maps, so every struct declares its fields in ascending
++// key order to keep the output byte-identical while storing a few hundred
++// bytes per finding instead of a tree of ordered maps.
++#[derive(Serialize)]
++struct Document {
++    #[serde(rename = "$schema")]
++    schema: &'static str,
++    runs: [Run; 1],
++    version: &'static str,
++}
++#[derive(Serialize)]
++struct Run {
++    #[serde(rename = "originalUriBaseIds")]
++    original_uri_base_ids: BaseIds,
++    results: Vec<SarifResult>,
++    tool: Tool,
++}
++#[derive(Serialize)]
++struct BaseIds {
++    #[serde(rename = "%SRCROOT%")]
++    srcroot: Uri,
++}
++#[derive(Serialize)]
++struct Uri {
++    uri: String,
++}
++#[derive(Serialize)]
++struct Tool {
++    driver: Driver,
++}
++#[derive(Serialize)]
++struct Driver {
++    name: &'static str,
++    rules: [Rule; 3],
++    version: &'static str,
++}
++#[derive(Serialize)]
++struct Rule {
++    id: &'static str,
++    #[serde(rename = "shortDescription")]
++    short_description: Text,
++}
++#[derive(Serialize)]
++struct Text {
++    text: String,
++}
++#[derive(Serialize)]
++struct SarifResult {
++    level: &'static str,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    locations: Option<[Location; 1]>,
++    message: Text,
++    #[serde(rename = "partialFingerprints")]
++    partial_fingerprints: Fingerprints,
++    properties: Properties,
++    #[serde(rename = "ruleId")]
++    rule_id: &'static str,
++}
++#[derive(Serialize)]
++struct Fingerprints {
++    #[serde(rename = "dotnetCrap/v1")]
++    v1: String,
++}
++#[derive(Serialize)]
++struct Properties {
++    #[serde(skip_serializing_if = "Option::is_none")]
++    score: Option<f64>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    threshold: Option<f64>,
++}
++#[derive(Serialize)]
++struct Location {
++    #[serde(rename = "physicalLocation")]
++    physical_location: Physical,
++}
++#[derive(Serialize)]
++struct Physical {
++    #[serde(rename = "artifactLocation")]
++    artifact_location: Artifact,
++    region: Region,
++}
++#[derive(Serialize)]
++struct Artifact {
++    uri: String,
++    #[serde(rename = "uriBaseId")]
++    uri_base_id: &'static str,
++}
++#[derive(Serialize)]
++struct Region {
++    #[serde(rename = "endLine")]
++    end_line: usize,
++    #[serde(rename = "startLine")]
++    start_line: usize,
++}
++
++/// Stream deterministic SARIF score, required-coverage and empty-selection diagnostics.
+ /// Reject a non-UTF-8 source root rather than fabricate a finding location.
+-pub fn render(
++pub fn render_to(
+     report: &Report,
+     root: &Path,
+     require_coverage: bool,
+     fail_on_empty: bool,
+-) -> Result<String> {
++    out: &mut impl std::io::Write,
++) -> Result<()> {
+     let mut results = Vec::new();
+     let mut occurrences = BTreeMap::new();
+     for item in &report.functions {
+@@ -35,7 +132,10 @@ pub fn render(
+                 ),
+                 Some(item),
+                 &identity,
+-                json!({"score": item.crap, "threshold": report.threshold}),
++                Properties {
++                    score: Some(item.crap),
++                    threshold: Some(report.threshold),
++                },
+             ));
+         }
+         if require_coverage && item.coverage.is_none() {
+@@ -44,7 +144,10 @@ pub fn render(
+                 format!("{} has no required coverage data", item.name),
+                 Some(item),
+                 &identity,
+-                json!({}),
++                Properties {
++                    score: None,
++                    threshold: None,
++                },
+             ));
+         }
+     }
+@@ -54,41 +157,79 @@ pub fn render(
+             "No implemented C# callables found".into(),
+             None,
+             "empty-selection",
+-            json!({}),
++            Properties {
++                score: None,
++                threshold: None,
++            },
+         ));
+     }
+     let root_uri = root_uri(
+         root.to_str()
+             .context(ErrorKind::Render, "source root must be valid UTF-8")?,
+     );
+-    serde_json::to_string_pretty(&json!({
+-        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+-        "version": "2.1.0",
+-        "runs": [{"tool":{"driver":{"name":"dotnet-crap","version":env!("CARGO_PKG_VERSION"),"rules":[
+-            {"id":"DNCRAP001","shortDescription":{"text":"CRAP score exceeds threshold"}},
+-            {"id":"DNCRAP002","shortDescription":{"text":"Required coverage is missing"}},
+-            {"id":"DNCRAP003","shortDescription":{"text":"No callables found"}}
+-        ]}},"originalUriBaseIds":{"%SRCROOT%":{"uri":root_uri}},"results":results}]
+-    }))
++    let rule = |id, text: &str| Rule {
++        id,
++        short_description: Text { text: text.into() },
++    };
++    serde_json::to_writer_pretty(
++        out,
++        &Document {
++            schema: "https://json.schemastore.org/sarif-2.1.0.json",
++            version: "2.1.0",
++            runs: [Run {
++                tool: Tool {
++                    driver: Driver {
++                        name: "dotnet-crap",
++                        version: env!("CARGO_PKG_VERSION"),
++                        rules: [
++                            rule("DNCRAP001", "CRAP score exceeds threshold"),
++                            rule("DNCRAP002", "Required coverage is missing"),
++                            rule("DNCRAP003", "No callables found"),
++                        ],
++                    },
++                },
++                original_uri_base_ids: BaseIds {
++                    srcroot: Uri { uri: root_uri },
++                },
++                results,
++            }],
++        },
++    )
+     .kind(ErrorKind::Render)
+ }
+ 
+ /// Build a rule-specific stable fingerprint and an optional line-only source location.
+ fn result(
+-    rule: &str,
++    rule: &'static str,
+     message: String,
+     item: Option<&Item>,
+     identity: &str,
+-    properties: Value,
+-) -> Value {
++    properties: Properties,
++) -> SarifResult {
+     let fingerprint = hex::encode(Sha256::digest(format!("{rule}\0{identity}").as_bytes()));
+-    let mut result = json!({"ruleId":rule,"level":"error","message":{"text":message},"partialFingerprints":{"dotnetCrap/v1":fingerprint},"properties":properties});
+-    if let Some(item) = item {
++    SarifResult {
++        level: "error",
+         // Existing scanner columns count UTF-8 bytes. SARIF columns use Unicode
+         // code points or UTF-16 units, so emit accurate line-only regions.
+-        result["locations"] = json!([{"physicalLocation":{"artifactLocation":{"uri":uri(&item.file),"uriBaseId":"%SRCROOT%"},"region":{"startLine":item.line,"endLine":item.end_line}}}]);
++        locations: item.map(|item| {
++            [Location {
++                physical_location: Physical {
++                    artifact_location: Artifact {
++                        uri: uri(&item.file),
++                        uri_base_id: "%SRCROOT%",
++                    },
++                    region: Region {
++                        end_line: item.end_line,
++                        start_line: item.line,
++                    },
++                },
++            }]
++        }),
++        message: Text { text: message },
++        partial_fingerprints: Fingerprints { v1: fingerprint },
++        properties,
++        rule_id: rule,
+     }
+-    result
+ }
+ 
+ /// Percent-encode UTF-8 path bytes while preserving directory separators and unreserved bytes.
+diff --git a/src/source.rs b/src/source.rs
+index 331a0ae..52ce94a 100644
+--- a/src/source.rs
++++ b/src/source.rs
+@@ -3,7 +3,9 @@
+ use crate::error::{fail, ErrorKind, Result, ResultExt};
+ 
+ /// Decode UTF-8 or BOM-marked UTF-16 source, rejecting malformed bytes instead of replacing them.
+-pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
++///
++/// Takes ownership so plain UTF-8 input becomes the returned `String` without a second copy.
++pub(crate) fn decode_source(mut bytes: Vec<u8>) -> Result<String> {
+     if bytes.starts_with(&[0xff, 0xfe]) || bytes.starts_with(&[0xfe, 0xff]) {
+         let le = bytes[0] == 0xff;
+         let data = &bytes[2..];
+@@ -24,10 +26,88 @@ pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
+             .collect();
+         Ok(String::from_utf16(&units).context(ErrorKind::Source, "invalid UTF-16 source")?)
+     } else {
+-        Ok(
+-            std::str::from_utf8(bytes.strip_prefix(&[0xef, 0xbb, 0xbf]).unwrap_or(bytes))
+-                .context(ErrorKind::Source, "invalid UTF-8 source")?
+-                .to_owned(),
+-        )
++        if bytes.starts_with(&[0xef, 0xbb, 0xbf]) {
++            bytes.drain(..3);
++        }
++        // `FromUtf8Error` wraps the same `Utf8Error`; report that so messages are unchanged.
++        String::from_utf8(bytes)
++            .map_err(|e| e.utf8_error())
++            .context(ErrorKind::Source, "invalid UTF-8 source")
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::decode_source;
++
++    /// Encode text as BOM-marked UTF-16 in the requested byte order.
++    fn utf16(text: &str, little_endian: bool) -> Vec<u8> {
++        let mut bytes = if little_endian {
++            vec![0xff, 0xfe]
++        } else {
++            vec![0xfe, 0xff]
++        };
++        for unit in text.encode_utf16() {
++            bytes.extend(if little_endian {
++                unit.to_le_bytes()
++            } else {
++                unit.to_be_bytes()
++            });
++        }
++        bytes
++    }
++
++    #[test]
++    /// Plain UTF-8 passes through unchanged and an empty file is an empty string.
++    fn utf8_without_bom_is_returned_as_is() {
++        assert_eq!(
++            decode_source(b"class C {}\n".to_vec()).unwrap(),
++            "class C {}\n"
++        );
++        assert_eq!(decode_source(Vec::new()).unwrap(), "");
++    }
++
++    #[test]
++    /// Only a leading UTF-8 BOM is removed; a BOM-only file decodes to nothing.
++    fn utf8_bom_is_stripped_once() {
++        assert_eq!(
++            decode_source(b"\xef\xbb\xbfclass C {}".to_vec()).unwrap(),
++            "class C {}"
++        );
++        assert_eq!(decode_source(b"\xef\xbb\xbf".to_vec()).unwrap(), "");
++        assert_eq!(
++            decode_source(b"\xef\xbb\xbf\xef\xbb\xbfx".to_vec()).unwrap(),
++            "\u{feff}x"
++        );
++    }
++
++    #[test]
++    /// Invalid UTF-8 is rejected with offsets counted after the BOM, as before.
++    fn invalid_utf8_reports_offset_after_bom() {
++        let error = decode_source(b"ab\xff".to_vec()).unwrap_err();
++        assert!(format!("{error:#}").contains("invalid UTF-8 source"));
++        assert!(format!("{error:#}").contains("index 2"), "{error:#}");
++        let error = decode_source(b"\xef\xbb\xbfab\xff".to_vec()).unwrap_err();
++        assert!(format!("{error:#}").contains("index 2"), "{error:#}");
++    }
++
++    #[test]
++    /// BOM-marked UTF-16 decodes in both byte orders, including non-BMP characters.
++    fn utf16_decodes_both_byte_orders() {
++        for little_endian in [true, false] {
++            assert_eq!(
++                decode_source(utf16("class C { /* \u{1f600} */ }", little_endian)).unwrap(),
++                "class C { /* \u{1f600} */ }"
++            );
++        }
++    }
++
++    #[test]
++    /// Odd-length or unpaired-surrogate UTF-16 is rejected.
++    fn malformed_utf16_is_rejected() {
++        let mut odd = utf16("ab", true);
++        odd.push(0);
++        assert!(decode_source(odd).is_err());
++        assert!(decode_source(vec![0xff, 0xfe, 0x00, 0xd8]).is_err());
+     }
+ }

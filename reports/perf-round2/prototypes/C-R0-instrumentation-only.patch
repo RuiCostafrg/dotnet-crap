@@ -1,0 +1,341 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index f5c6642..0188396 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -22,3 +22,7 @@ roxmltree = "0.21"
+ 
+ [lints.rust]
+ unsafe_code = "forbid"
++
++[features]
++# Investigation-only: count file work and time collect phases (stderr report).
++collect-profile = []
+diff --git a/src/cobertura.rs b/src/cobertura.rs
+index 62a28d9..b31df15 100644
+--- a/src/cobertura.rs
++++ b/src/cobertura.rs
+@@ -43,6 +43,7 @@ pub fn parse_reports(
+     if reports.is_empty() {
+         fail!(Cobertura, "no Cobertura reports to import");
+     }
++    crate::prof::add(crate::prof::Counter::Canonicalize, 1);
+     let root = root
+         .canonicalize()
+         .context(ErrorKind::InvalidInput, "invalid coverage root")?;
+@@ -75,6 +76,7 @@ fn import_report(
+     line_counts: &mut HashMap<String, usize>,
+ ) -> Result<()> {
+     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
++    let read_phase = crate::prof::phase("cob_read");
+     let file = fs::File::open(report)
+         .with_context(ErrorKind::Io, || format!("reading {}", report.display()))?;
+     if file.metadata().kind(ErrorKind::Io)?.len() > MAX_REPORT_BYTES {
+@@ -90,7 +92,9 @@ fn import_report(
+     let text = std::str::from_utf8(&bytes)
+         .context(ErrorKind::Cobertura, "Cobertura report is not UTF-8")?;
+     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
++    drop(read_phase);
+     let document = parse_document(text)?;
++    let _classes_phase = crate::prof::phase("cob_classes");
+     let coverage = document.root_element();
+     if coverage.tag_name().name() != "coverage" {
+         fail!(Cobertura, "root element must be <coverage>");
+@@ -127,6 +131,8 @@ fn import_report(
+ 
+ /// Parse XML with DTD processing explicitly disabled and reject unsafe declarations.
+ fn parse_document(text: &str) -> Result<Document<'_>> {
++    let lower_phase = crate::prof::phase("cob_lowercase");
++    crate::prof::add(crate::prof::Counter::LowercaseBytes, text.len() as u64);
+     let lower = text.to_ascii_lowercase();
+     if lower.contains("<!doctype") {
+         fail!(
+@@ -146,6 +152,8 @@ fn parse_document(text: &str) -> Result<Document<'_>> {
+             "Cobertura report contains a forbidden external XML stylesheet"
+         );
+     }
++    drop(lower_phase);
++    let _dom = crate::prof::phase("cob_dom");
+     parse_with_node_limit(text, 500_000)
+ }
+ 
+@@ -377,6 +385,7 @@ fn add_candidate(
+     candidates: &mut BTreeSet<PathBuf>,
+ ) -> Result<()> {
+     let candidate = base.join(filename);
++    crate::prof::add(crate::prof::Counter::Canonicalize, 1);
+     match candidate.canonicalize() {
+         Ok(canonical) => {
+             if canonical == root || !canonical.starts_with(root) {
+diff --git a/src/collector.rs b/src/collector.rs
+index d1ea219..75321f3 100644
+--- a/src/collector.rs
++++ b/src/collector.rs
+@@ -2,6 +2,7 @@
+ use crate::error::{fail, ErrorKind, OptionExt, Result, ResultExt};
+ use crate::{
+     output::{destination_parent, is_csharp_path},
++    prof::{self, Counter},
+     scan, ScanOptions,
+ };
+ use std::{
+@@ -39,6 +40,13 @@ pub struct CollectOptions {
+ /// validate all fresh Cobertura reports before atomically creating `output`.
+ /// Errors leave no new coverage artifact. This operation never runs during scan.
+ pub fn collect(options: &CollectOptions) -> Result<()> {
++    let result = collect_inner(options);
++    prof::report();
++    result
++}
++
++fn collect_inner(options: &CollectOptions) -> Result<()> {
++    let total = prof::phase("total");
+     validate_options(options)?;
+     validate_destination(&options.output)?;
+     let selection = ScanOptions {
+@@ -46,7 +54,10 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
+         paths: options.paths.clone(),
+         ..Default::default()
+     };
++    let p = prof::phase("snapshot_scan");
+     let snapshot = scan(&selection)?;
++    drop(p);
++    let p = prof::phase("source_reread");
+     let mut sources = BTreeMap::new();
+     let mut hashes = BTreeMap::new();
+     for (path, hash) in &snapshot.source_hashes {
+@@ -60,13 +71,20 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
+             fail!(Source, "unsupported source path for native coverage");
+         }
+         let bytes = fs::read(path).kind(ErrorKind::Io)?;
++        prof::add(Counter::SourceRead, 1);
++        prof::add(Counter::Decode, 1);
++        prof::add(Counter::RetainedSourceBytes, bytes.len() as u64);
+         sources.insert(relative.clone(), crate::decode_source(&bytes)?);
+         hashes.insert(relative, hash.clone());
+     }
+     if sources.is_empty() {
+         fail!(InvalidInput, "collection requires selected sources");
+     }
++    drop(p);
++    let p = prof::phase("verify_after_snapshot");
+     snapshot.verify_sources()?;
++    drop(p);
++    let p = prof::phase("tempdir");
+     let mut results_builder = tempfile::Builder::new();
+     results_builder.prefix("dotnet-crap-coverlet-");
+     #[cfg(unix)]
+@@ -79,28 +97,48 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
+     command
+         .args(results_args(&options.command, results.path()))
+         .current_dir(snapshot.root());
++    drop(p);
++    let p = prof::phase("child_process");
+     let status = run_command(&mut command, options.timeout)?;
++    drop(p);
+     if !status.success() {
+         fail!(Collection, "trusted test command failed: {status}");
+     }
++    let p = prof::phase("verify_after_command");
+     snapshot.verify_sources()?;
++    drop(p);
++    let p = prof::phase("find_reports");
+     let reports = find_reports(results.path(), options.expected_reports)?;
++    drop(p);
++    let p = prof::phase("cobertura_import");
+     let lines = crate::cobertura::parse_reports(snapshot.root(), &sources, &reports)?;
++    drop(p);
++    let p = prof::phase("evidence_write");
+     let evidence = build_evidence(lines, &hashes);
+     let parent = destination_parent(&options.output);
+     let mut stage = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
+     serde_json::to_writer_pretty(&mut stage, &evidence).kind(ErrorKind::Output)?;
+     stage.write_all(b"\n").kind(ErrorKind::Output)?;
++    drop(p);
++    let p = prof::phase("evidence_fsync");
+     stage.as_file().sync_all().kind(ErrorKind::Output)?;
++    drop(p);
+     // Exercise the native validator and scoring on exactly the staged evidence.
+     let mut verify = selection;
+     verify.coverage = Some(stage.path().to_owned());
++    let p = prof::phase("verify_scan");
+     scan(&verify)?;
++    drop(p);
++    let p = prof::phase("verify_before_publish");
+     snapshot.verify_sources()?;
++    drop(p);
++    let p = prof::phase("publish");
+     validate_destination(&options.output)?;
+     stage
+         .persist_noclobber(&options.output)
+         .context(ErrorKind::Output, "publishing native coverage")?;
++    drop(p);
++    drop(total);
+     Ok(())
+ }
+ 
+diff --git a/src/lib.rs b/src/lib.rs
+index 0b50e12..d1c6574 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -25,12 +25,15 @@ use tree_sitter::Parser as TsParser;
+ mod analysis;
+ /// Native coverage schema, reading and validation.
+ mod evidence;
++/// Investigation-only work counters.
++pub(crate) mod prof;
+ /// Report model and text rendering.
+ mod report;
+ /// Input path resolution and source file discovery.
+ mod selection;
+ /// Source byte decoding.
+ mod source;
++use prof::Counter;
+ 
+ /// Inputs and policy for a scan. Relative source paths are resolved against `root`.
+ #[derive(Debug, Clone)]
+@@ -85,7 +88,10 @@ impl ScanResult {
+     }
+     /// Verify that selected source bytes still match the scanned bytes.
+     pub fn verify_sources(&self) -> Result<()> {
++        let _p = prof::phase("verify_sources(all)");
+         for (path, hash) in &self.source_hashes {
++            prof::add(Counter::SourceRead, 1);
++            prof::add(Counter::Hash, 1);
+             if hex::encode(Sha256::digest(fs::read(path).kind(ErrorKind::Io)?)) != *hash {
+                 fail!(
+                     SourceChanged,
+@@ -139,6 +145,7 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+     if !args.threshold.is_finite() || args.threshold < 0.0 {
+         fail!(InvalidInput, "threshold must be finite and nonnegative");
+     }
++    prof::add(Counter::Canonicalize, 1);
+     let root = args
+         .root
+         .canonicalize()
+@@ -164,6 +171,9 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+     for path in &files {
+         let bytes =
+             fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
++        prof::add(Counter::SourceRead, 1);
++        prof::add(Counter::Hash, 1);
++        prof::add(Counter::Decode, 1);
+         let hash = hex::encode(Sha256::digest(&bytes));
+         let source = decode_source(&bytes)
+             .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
+@@ -182,6 +192,7 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+             );
+         }
+         source_hashes.push((path.clone(), hash.clone()));
++        prof::add(Counter::Parse, 1);
+         let tree = parser
+             .parse(&source, None)
+             .context(ErrorKind::Source, "parser failed")?;
+diff --git a/src/prof.rs b/src/prof.rs
+new file mode 100644
+index 0000000..704ef55
+--- /dev/null
++++ b/src/prof.rs
+@@ -0,0 +1,91 @@
++//! Investigation-only work counters and phase timers for `collect`.
++//! Compiled to no-ops unless the `collect-profile` feature is enabled.
++
++/// Counted work units.
++#[derive(Clone, Copy)]
++#[allow(dead_code)]
++pub(crate) enum Counter {
++    /// Source file reads (any purpose).
++    SourceRead,
++    /// SHA-256 computations over source bytes.
++    Hash,
++    /// Source decodes.
++    Decode,
++    /// Tree-sitter parses.
++    Parse,
++    /// `canonicalize` calls.
++    Canonicalize,
++    /// Bytes copied by the Cobertura lowercase scan.
++    LowercaseBytes,
++    /// Bytes of decoded source text retained in the collect sources map.
++    RetainedSourceBytes,
++}
++
++#[cfg(feature = "collect-profile")]
++mod imp {
++    use super::Counter;
++    use std::sync::Mutex;
++    use std::time::{Duration, Instant};
++    static COUNTS: Mutex<[u64; 7]> = Mutex::new([0; 7]);
++    static PHASES: Mutex<Vec<(&'static str, Duration)>> = Mutex::new(Vec::new());
++    const NAMES: [&str; 7] = [
++        "source_read",
++        "hash",
++        "decode",
++        "parse",
++        "canonicalize",
++        "lowercase_bytes",
++        "retained_source_bytes",
++    ];
++    pub(crate) fn add(c: Counter, n: u64) {
++        COUNTS.lock().unwrap()[c as usize] += n;
++    }
++    pub(crate) struct Phase(&'static str, Instant);
++    pub(crate) fn phase(name: &'static str) -> Phase {
++        Phase(name, Instant::now())
++    }
++    impl Drop for Phase {
++        fn drop(&mut self) {
++            let mut p = PHASES.lock().unwrap();
++            let e = self.1.elapsed();
++            match p.iter_mut().find(|(n, _)| *n == self.0) {
++                Some(slot) => slot.1 += e,
++                None => p.push((self.0, e)),
++            }
++        }
++    }
++    pub(crate) fn report() {
++        let c = COUNTS.lock().unwrap();
++        let mut s = String::from("{\"counts\":{");
++        for (i, n) in NAMES.iter().enumerate() {
++            s += &format!("{}\"{}\":{}", if i > 0 { "," } else { "" }, n, c[i]);
++        }
++        s += "},\"phases_us\":{";
++        for (i, (n, d)) in PHASES.lock().unwrap().iter().enumerate() {
++            s += &format!(
++                "{}\"{}\":{}",
++                if i > 0 { "," } else { "" },
++                n,
++                d.as_micros()
++            );
++        }
++        s += "}}";
++        eprintln!("COLLECT-PROFILE {s}");
++    }
++}
++
++#[cfg(not(feature = "collect-profile"))]
++mod imp {
++    use super::Counter;
++    #[inline(always)]
++    pub(crate) fn add(_: Counter, _: u64) {}
++    pub(crate) struct Phase;
++    #[inline(always)]
++    pub(crate) fn phase(_: &'static str) -> Phase {
++        Phase
++    }
++    #[inline(always)]
++    pub(crate) fn report() {}
++}
++
++pub(crate) use imp::{add, phase, report};
+diff --git a/src/selection.rs b/src/selection.rs
+index 70389ae..f2898ff 100644
+--- a/src/selection.rs
++++ b/src/selection.rs
+@@ -25,6 +25,7 @@ pub(crate) fn select(root: &Path, paths: &[PathBuf]) -> Result<BTreeSet<PathBuf>
+         } else {
+             root.join(path)
+         };
++        crate::prof::add(crate::prof::Counter::Canonicalize, 1);
+         let candidate = candidate
+             .canonicalize()
+             .context(ErrorKind::InvalidInput, "invalid input path")?;

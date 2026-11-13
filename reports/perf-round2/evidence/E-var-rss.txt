@@ -1,0 +1,40 @@
+## dense-file-4x json scan-coverage base vs E-P1
+identical
+base-1fc580e median 234576 min 234560 max 234604
+E-P1 median 234592 min 234524 max 234624
+delta median KiB 16
+## dense-file-4x json scan-coverage base vs E-P15
+identical
+base-1fc580e median 234512 min 234500 max 234560
+E-P15 median 234464 min 234416 max 234496
+delta median KiB -48
+## dense-file-4x sarif scan-coverage base vs E-P1
+identical
+base-1fc580e median 234544 min 234516 max 234564
+E-P1 median 234552 min 234516 max 234632
+delta median KiB 8
+## dense-file-4x sarif scan-coverage base vs E-P15
+identical
+base-1fc580e median 234588 min 234536 max 234612
+E-P15 median 234460 min 234412 max 234512
+delta median KiB -128
+## many-callables-4x json scan-coverage base vs E-P1
+identical
+base-1fc580e median 139060 min 139040 max 139172
+E-P1 median 139224 min 139216 max 139256
+delta median KiB 164
+## many-callables-4x json scan-coverage base vs E-P15
+identical
+base-1fc580e median 139100 min 139036 max 139136
+E-P15 median 139140 min 139096 max 139192
+delta median KiB 40
+## many-callables-4x sarif scan-coverage base vs E-P1
+identical
+base-1fc580e median 139100 min 139016 max 139156
+E-P1 median 139188 min 139144 max 139256
+delta median KiB 88
+## many-callables-4x sarif scan-coverage base vs E-P15
+identical
+base-1fc580e median 139076 min 139048 max 139276
+E-P15 median 139108 min 139088 max 139216
+delta median KiB 32
