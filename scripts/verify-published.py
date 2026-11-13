@@ -242,6 +242,18 @@ def _json_output(text, description):
     return value
 
 
+def _paged_items(endpoint, key, description, runner):
+    # gh rejects --slurp combined with --jq/--template. Collect its raw pages
+    # and flatten the endpoint's collection here, retaining every page.
+    pages = _json_output(runner(['api', '--paginate', '--slurp', endpoint]), description)
+    items = []
+    for page in pages:
+        if not isinstance(page, dict) or not isinstance(page.get(key), list):
+            raise ValueError(f'{description}: expected each page to contain a {key} array')
+        items.extend(page[key])
+    return items
+
+
 def resolve_tag(tag, runner):
     output = runner(['api', f'repos/{REPOSITORY}/commits/{tag}', '--jq', '.sha'])
     commit = output.strip()
@@ -315,9 +327,7 @@ def find_release_run(source_sha, tag, runner):
     """Find exactly one successful push run of release.yml at this commit and tag."""
     endpoint = (f'repos/{REPOSITORY}/actions/workflows/{WORKFLOW}/runs'
                 f'?head_sha={source_sha}&event=push&per_page=100')
-    output = runner(['api', '--paginate', '--slurp', endpoint,
-                     '--jq', '[.[].workflow_runs[]]'])
-    runs = _json_output(output, f'{WORKFLOW} runs')
+    runs = _paged_items(endpoint, 'workflow_runs', f'{WORKFLOW} runs', runner)
     eligible = {}
     for run in runs:
         if not isinstance(run, dict):
@@ -345,9 +355,7 @@ def find_npm_artifact(run, source_sha, tag, runner):
     """Require exactly one unexpired npm-packages artifact on the selected run."""
     run_id = _positive_int(run.get('id'), f'{WORKFLOW} run id')
     endpoint = (f'repos/{REPOSITORY}/actions/runs/{run_id}/artifacts?per_page=100')
-    output = runner(['api', '--paginate', '--slurp', endpoint,
-                     '--jq', '[.[].artifacts[]]'])
-    artifacts = _json_output(output, f'run {run_id} artifacts')
+    artifacts = _paged_items(endpoint, 'artifacts', f'run {run_id} artifacts', runner)
     named = []
     for artifact in artifacts:
         if not isinstance(artifact, dict):

@@ -164,9 +164,13 @@ class NpmGh:
         if arguments[0] == 'api':
             endpoint = next(a for a in arguments if a.startswith('repos/'))
             if '/actions/workflows/release.yml/runs' in endpoint:
-                return json.dumps(self.runs)
+                if '--slurp' in arguments and ('--jq' in arguments or '--template' in arguments):
+                    raise AssertionError('gh rejects --slurp with --jq or --template')
+                return json.dumps([{'workflow_runs': self.runs}])
             if '/actions/runs/' in endpoint and '/artifacts' in endpoint:
-                return json.dumps(self.artifacts)
+                if '--slurp' in arguments and ('--jq' in arguments or '--template' in arguments):
+                    raise AssertionError('gh rejects --slurp with --jq or --template')
+                return json.dumps([{'artifacts': self.artifacts}])
             raise AssertionError(f'unexpected api endpoint: {endpoint}')
         if arguments[0:2] == ['run', 'download']:
             directory = Path(arguments[arguments.index('--dir') + 1])
@@ -419,6 +423,39 @@ class FetchTests(PublishedTest):
 
 
 class NpmTests(PublishedTest):
+    def test_finds_exact_run_and_artifact_on_later_pages(self):
+        gh = self.npm_gh()
+
+        def paginated(arguments):
+            if arguments[0] != 'api':
+                return gh(arguments)
+            self.assertIn('--paginate', arguments)
+            self.assertIn('--slurp', arguments)
+            self.assertNotIn('--jq', arguments)
+            self.assertNotIn('--template', arguments)
+            endpoint = next(a for a in arguments if a.startswith('repos/'))
+            if '/actions/workflows/release.yml/runs' in endpoint:
+                return json.dumps([{'workflow_runs': [run_payload(head_sha=OTHER_SHA)]},
+                                   {'workflow_runs': [run_payload()]}])
+            return json.dumps([{'artifacts': [artifact_payload(name='unrelated')]},
+                               {'artifacts': [artifact_payload()]}])
+
+        evidence = self.npm(paginated, FakeRegistry(self.packages))
+        self.assertEqual(evidence['run_id'], 123)
+        self.assertEqual(evidence['artifact_id'], 456)
+        self.assertEqual(gh.downloads, 1)
+
+    def test_rejects_malformed_paginated_collections(self):
+        for collection in ('workflow_runs', 'artifacts'):
+            for bad in ([{}], [{collection: None}], [{collection: {}}], ['not a page']):
+                with self.subTest(collection=collection, response=bad):
+                    runner = lambda _arguments: json.dumps(bad)
+                    with self.assertRaisesRegex(ValueError, 'expected each page'):
+                        if collection == 'workflow_runs':
+                            script.find_release_run(SHA, TAG, runner)
+                        else:
+                            script.find_npm_artifact(run_payload(), SHA, TAG, runner)
+
     def test_full_flow_matches_registry_without_rebuilding(self):
         gh = self.npm_gh()
         registry = FakeRegistry(self.packages)
