@@ -106,12 +106,14 @@ class BenchmarkTests(unittest.TestCase):
     @unittest.skipIf(__import__('os').name == 'nt', 'Unix executable fixture')
     def test_measured_run_reports_child_rss_and_rejects_failures(self):
         """Measure only the reaped child, keep its stdout, and surface nonzero exits."""
-        elapsed, rss, stdout = benchmark.run_measured(["/bin/sh", "-c", "printf ok"], 10)
-        self.assertGreater(elapsed, 0)
-        self.assertGreater(rss, 0)
-        self.assertEqual(stdout, b"ok")
+        measured = benchmark.run_measured(["/bin/sh", "-c", "printf ok"], 10)
+        self.assertGreater(measured.wall_ms, 0)
+        self.assertGreater(measured.rss_kib, 0)
+        self.assertEqual((measured.stdout, measured.code), (b"ok", 0))
         with self.assertRaises(subprocess.CalledProcessError):
             benchmark.run_measured(["/bin/sh", "-c", "exit 3"], 10)
+        failed = benchmark.run_measured(["/bin/sh", "-c", "echo bad >&2; exit 3"], 10, check=False)
+        self.assertEqual((failed.code, failed.stderr), (3, b"bad\n"))
         with self.assertRaises(subprocess.TimeoutExpired):
             benchmark.run_measured(["/bin/sh", "-c", "exec sleep 30"], 0.05)
 
@@ -162,11 +164,28 @@ class BenchmarkTests(unittest.TestCase):
                                            "--scale", "2", "--mode", mode, "--runs", "4", "--output", str(output)])
                 self.assertEqual(code, 0)
                 result = json.loads(output.read_text())
-                self.assertEqual(len(result["samples_ms"]), 4)
+                candidate = result["candidates"][0]
+                self.assertEqual(len(candidate["samples_ms"]), 4)
+                self.assertEqual(len(candidate["cpu_samples_ms"]), 4)
+                self.assertGreater(candidate["median_cpu_ms"], 0)
                 self.assertEqual(len(result["baseline"]["peak_rss_kib"]), 4)
                 self.assertGreater(result["rss_floor_kib"], 0)
-                self.assertTrue(result["baseline"]["outputs_byte_identical"])
+                self.assertTrue(candidate["outputs_byte_identical"])
                 self.assertEqual(result["provenance"]["binary_sha256"], result["baseline"]["binary_sha256"])
+
+    @unittest.skipUnless(__import__('os').environ.get("DOTNET_CRAP_BENCH_BINARY"), "set DOTNET_CRAP_BENCH_BINARY")
+    def test_sweep_with_a_real_candidate_option(self):
+        """--fail-on-empty exists today and leaves the output unchanged, so a sweep over it must pass."""
+        binary = __import__('os').environ["DOTNET_CRAP_BENCH_BINARY"]
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "m.json"
+            with __import__('contextlib').redirect_stdout(__import__('io').StringIO()):
+                code = benchmark.main(["--binary", binary, "--baseline", binary, "--workload", "many-medium",
+                                       "--scale", "2", "--runs", "6", "--candidate-args=",
+                                       "--candidate-args=--fail-on-empty", "--output", str(output)])
+            self.assertEqual(code, 0)
+            result = json.loads(output.read_text())
+            self.assertEqual([c["args"] for c in result["candidates"]], [[], ["--fail-on-empty"]])
 
     @unittest.skipIf(__import__('os').name == 'nt', 'Unix process fixture')
     def test_rss_is_not_floored_by_the_harness_footprint(self):
@@ -174,7 +193,7 @@ class BenchmarkTests(unittest.TestCase):
         ballast = bytearray(256 * 1024 * 1024)
         for offset in range(0, len(ballast), 4096):
             ballast[offset] = 1
-        _, rss, _ = benchmark.run_measured([str(Path(__import__('shutil').which("true")).resolve())], 10)
+        rss = benchmark.run_measured([str(Path(__import__('shutil').which("true")).resolve())], 10).rss_kib
         self.assertLess(rss, 128 * 1024)
         self.assertLessEqual(benchmark.rss_floor_kib(), 128 * 1024)
         del ballast
@@ -202,6 +221,327 @@ class BenchmarkTests(unittest.TestCase):
             benchmark.parse_args(["--baseline", "x", "--runs", "7"])
         _, args = benchmark.parse_args(["--baseline", "x", "--runs", "8"])
         self.assertEqual(args.runs, 8)
+
+
+def fake_binary(directory, report=None, body=""):
+    """A tooling-only stand-in executable: logs its path and arguments, then prints ``report``."""
+    log = Path(directory) / "calls.log"
+    script = Path(directory) / "fake"
+    if report is not None:
+        (Path(directory) / "report.json").write_text(json.dumps(report))
+    script.write_text(f"""#!/bin/sh
+echo "$0 $*" >> '{log}'
+{body}
+""")
+    script.chmod(0o700)
+    return script, log
+
+
+def small_files_report():
+    """The exact scanner report for the generated small-files corpus of one file (no coverage)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        workload = bench_workloads.generate("small-files", Path(tmp) / "r", 1)
+    functions = []
+    for want in workload.expected:
+        got = dict(want)
+        got["coverage"] = None
+        got["crap"] = float(want["complexity"] ** 2 + want["complexity"])
+        functions.append(got)
+    return {"threshold": 1e12, "files_scanned": 1, "coverage_complete": False,
+            "functions": functions, "failed": False}
+
+
+bench_workloads = module("bench_workloads_for_benchmark_tests", "scripts/bench_workloads.py")
+
+
+class SeparationTests(unittest.TestCase):
+    def test_separated_only_without_any_overlap(self):
+        """Every candidate sample must beat every baseline sample, strictly."""
+        self.assertEqual(benchmark.separation([10, 11, 12], [7, 8, 9]), "lower")
+        self.assertEqual(benchmark.separation([10, 11, 12], [13, 14, 15]), "higher")
+        self.assertIsNone(benchmark.separation([10, 11, 12], [9, 13, 8]))
+        # Touching ranges are not separated, on either side.
+        self.assertIsNone(benchmark.separation([10, 11, 12], [8, 9, 10]))
+        self.assertIsNone(benchmark.separation([10, 11, 12], [12, 13, 14]))
+
+    def test_compare_reports_ratio_and_separation_for_wall_and_cpu(self):
+        baseline = {"wall_ms": [10.0, 12.0, 14.0], "cpu_ms": [20.0, 22.0, 24.0]}
+        candidate = {"wall_ms": [5.0, 6.0, 7.0], "cpu_ms": [21.0, 23.0, 25.0]}
+        result = benchmark.compare(baseline, candidate)
+        self.assertEqual(result["wall_ms"], {"median_ratio": 0.5, "separated": "lower"})
+        self.assertEqual(result["cpu_ms"]["median_ratio"], 23.0 / 22.0)
+        self.assertIsNone(result["cpu_ms"]["separated"])
+
+    def test_summary_carries_cpu_next_to_wall_and_rss(self):
+        summary = benchmark.summarize({"wall_ms": [3.0, 1.0, 2.0], "cpu_ms": [9.0, 7.0, 8.0], "rss_kib": [5, 6, 7]})
+        self.assertEqual((summary["median_ms"], summary["min_ms"], summary["max_ms"]), (2.0, 1.0, 3.0))
+        self.assertEqual((summary["median_cpu_ms"], summary["min_cpu_ms"], summary["max_cpu_ms"]), (8.0, 7.0, 9.0))
+        self.assertEqual((summary["median_peak_rss_kib"], summary["max_peak_rss_kib"]), (6, 7))
+        self.assertEqual(summary["cpu_samples_ms"], [9.0, 7.0, 8.0])
+
+
+@unittest.skipIf(__import__('os').name == 'nt', 'Unix process fixture')
+class CpuTimeTests(unittest.TestCase):
+    def test_cpu_time_is_user_plus_system_of_the_child(self):
+        """A busy child costs CPU about equal to its wall time; a sleeping one costs almost none."""
+        busy = benchmark.run_measured([__import__('sys').executable, "-I", "-S", "-c",
+                                       "import time\nend = time.perf_counter() + 0.3\nwhile time.perf_counter() < end: pass"], 30)
+        self.assertGreater(busy.cpu_ms, 150)
+        self.assertLess(busy.cpu_ms, busy.wall_ms * 1.5 + 50)
+        idle = benchmark.run_measured(["/bin/sleep", "0.3"], 30)
+        self.assertLess(idle.cpu_ms, 100)
+        self.assertGreater(idle.wall_ms, 250)
+
+    def test_cpu_time_includes_waited_for_descendants(self):
+        """The collector's replay shell is a child of the CLI; its CPU is part of the sample."""
+        script = "import time\nend = time.perf_counter() + 0.3\nwhile time.perf_counter() < end: pass"
+        command = ["/bin/sh", "-c", f'{__import__("shlex").quote(__import__("sys").executable)} -I -S -c "{script}"; true']
+        self.assertGreater(benchmark.run_measured(command, 30).cpu_ms, 150)
+
+
+class CandidateArgsTests(unittest.TestCase):
+    def parse(self, *argv):
+        with __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
+            return benchmark.parse_args(list(argv))[1]
+
+    def test_default_is_one_set_without_extra_arguments(self):
+        self.assertEqual(self.parse().candidate_args, [[]])
+
+    def test_sets_are_split_like_shell_words_and_kept_in_order(self):
+        args = self.parse("--baseline", "x", "--runs", "8", "--candidate-args=--jobs 1",
+                          "--candidate-args=--jobs=2 --fail-on-empty", "--candidate-args=")
+        self.assertEqual(args.candidate_args, [["--jobs", "1"], ["--jobs=2", "--fail-on-empty"], []])
+        self.assertEqual(self.parse("--candidate-args=--name 'a b'").candidate_args, [["--name", "a b"]])
+
+    def test_invalid_sets_are_usage_errors(self):
+        for argv in (
+            ["--baseline", "x", "--runs", "6", "--candidate-args=--jobs 1", "--candidate-args=--jobs 1"],
+            ["--baseline", "x", "--runs", "6", "--candidate-args=", "--candidate-args= "],
+            ["--candidate-args=--jobs 1", "--candidate-args=--jobs 2"],  # a sweep needs a baseline
+            ["--candidate-args=--root /x"], ["--candidate-args=--format=sarif"],
+            ["--candidate-args=--threshold 1"], ["--candidate-args=--output o"],
+            ["--candidate-args=--coverage c"], ["--candidate-args=--require-coverage"],
+            ["--candidate-args=--expected-reports 2"], ["--candidate-args=-- sh"],
+            ["--candidate-args=--name 'unterminated"],
+        ):
+            with self.subTest(argv=argv), self.assertRaises(SystemExit):
+                self.parse(*argv)
+
+    def test_a_flag_that_only_resembles_a_reserved_one_is_allowed(self):
+        self.assertEqual(self.parse("--candidate-args=--rootless").candidate_args, [["--rootless"]])
+
+    def test_runs_must_be_a_multiple_of_the_executables_measured(self):
+        """Baseline plus N sets rotate through N + 1 positions."""
+        base = ["--baseline", "x", "--candidate-args=--jobs 1", "--candidate-args=--jobs 2"]
+        for runs in ("4", "7", "8"):
+            with self.subTest(runs=runs), self.assertRaises(SystemExit):
+                self.parse(*base, "--runs", runs)
+        self.assertEqual(self.parse(*base, "--runs", "9").runs, 9)
+
+    def test_set_labels(self):
+        self.assertEqual(benchmark.set_label([]), "(no extra arguments)")
+        self.assertEqual(benchmark.set_label(["--jobs", "4"]), "--jobs 4")
+
+
+class RepoOptionTests(unittest.TestCase):
+    def parse(self, *argv):
+        with __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
+            return benchmark.parse_args(list(argv))[1]
+
+    def test_repo_requires_a_baseline_a_directory_and_scan_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.parse("--repo", tmp, "--baseline", "x", "--runs", "4")
+            self.assertEqual((args.mode, args.repo_name), ("scan", None))
+            for argv in (["--repo", tmp], ["--repo", str(Path(tmp) / "missing"), "--baseline", "x"],
+                         ["--repo", tmp, "--baseline", "x", "--mode", "collect"],
+                         ["--repo", tmp, "--baseline", "x", "--coverage"],
+                         ["--repo", tmp, "--baseline", "x", "--workload", "skew"],
+                         ["--repo", tmp, "--baseline", "x", "--scale", "3"],
+                         ["--repo-name", "name"]):
+                with self.subTest(argv=argv), self.assertRaises(SystemExit):
+                    self.parse(*argv)
+
+    def test_selection_mirrors_the_scanner_rules(self):
+        """Count what src/selection.rs would select: skip bin, obj, .git, links and generated files."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            keep = {"A.cs": b"12345", "sub/B.cs": b"123", "Upper.CS": b"12", "dir.cs/inner.cs": b"1"}
+            skip = ["bin/C.cs", "obj/D.cs", ".git/E.cs", "sub/bin/F.cs", "G.g.cs", "H.generated.cs",
+                    "I.Designer.cs", "j.DESIGNER.cs", "notes.txt", "K.csx", "cs"]
+            for rel, data in {**keep, **{name: b"x" * 99 for name in skip}}.items():
+                path = root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            (root / "linked.cs").symlink_to(root / "A.cs")
+            (root / "linkdir").symlink_to(root / "sub", target_is_directory=True)
+            self.assertEqual(benchmark.select_sources(root), (4, sum(len(v) for v in keep.values())))
+
+    def test_failure_description(self):
+        failed = benchmark.Measured(1.0, 1.0, 1, 2, b"", b"error: invalid C# syntax in A.cs\nmore\n")
+        self.assertEqual(benchmark.describe_failure(failed), {
+            "exit_code": 2, "message": "error: invalid C# syntax in A.cs", "syntax_failure": True})
+        other = benchmark.Measured(1.0, 1.0, 1, 2, b"", b"error: source is not UTF-8")
+        self.assertFalse(benchmark.describe_failure(other)["syntax_failure"])
+        silent = benchmark.Measured(1.0, 1.0, 1, 2, b"", b"")
+        self.assertEqual(benchmark.describe_failure(silent)["message"], "")
+
+
+@unittest.skipIf(__import__('os').name == 'nt', 'Unix executable fixture')
+class FakeBinaryTests(unittest.TestCase):
+    """Drive main() with tooling-only fake executables, so no real scanner is needed."""
+
+    def run_main(self, *argv):
+        with tempfile.TemporaryDirectory() as out, __import__('contextlib').redirect_stdout(__import__('io').StringIO()):
+            target = Path(out) / "m.json"
+            code = benchmark.main([*argv, "--output", str(target)])
+            return code, json.loads(target.read_text())
+
+    def test_extra_arguments_reach_only_the_candidate_and_identity_is_enforced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, log = fake_binary(tmp, small_files_report(), f"cat '{tmp}/report.json'")
+            code, result = self.run_main("--binary", str(fake), "--baseline", str(fake), "--files", "1",
+                                         "--warmup", "0", "--runs", "6", "--candidate-args=--jobs 1",
+                                         "--candidate-args=--jobs 2")
+            self.assertEqual(code, 0)
+            calls = log.read_text().splitlines()
+            self.assertEqual(len(calls), 18)
+            baseline = [c for c in calls if "/baseline/" in c]
+            candidate = [c for c in calls if "/candidate/" in c]
+            self.assertEqual(len(baseline), 6)
+            self.assertFalse([c for c in baseline if "--jobs" in c])
+            self.assertEqual(sorted(c.split()[-2:] [0] + c.split()[-1] for c in candidate), ["--jobs1"] * 6 + ["--jobs2"] * 6)
+            self.assertEqual([c["args"] for c in result["candidates"]], [["--jobs", "1"], ["--jobs", "2"]])
+            self.assertEqual(result["baseline"]["binary_sha256"], result["provenance"]["binary_sha256"])
+            for entry in result["candidates"]:
+                self.assertTrue(entry["outputs_byte_identical"])
+                self.assertEqual(len(entry["cpu_samples_ms"]), 6)
+                self.assertIn("separated", entry["comparison"]["cpu_ms"])
+            self.assertGreaterEqual(result["provenance"]["usable_cpus"], 1)
+            self.assertGreaterEqual(result["provenance"]["cpu_count"], result["provenance"]["usable_cpus"])
+
+    def test_every_position_is_used_equally_often(self):
+        """The rotation gives each executable each place in the run order the same number of times."""
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, log = fake_binary(tmp, small_files_report(), f"cat '{tmp}/report.json'")
+            self.run_main("--binary", str(fake), "--baseline", str(fake), "--files", "1", "--warmup", "0",
+                          "--runs", "6", "--candidate-args=--jobs 1", "--candidate-args=--jobs 2")
+            names = [("base" if "/baseline/" in c else c.split()[-1]) for c in log.read_text().splitlines()]
+            rounds = [names[i:i + 3] for i in range(0, 18, 3)]
+            for place in range(3):
+                counts = {name: sum(1 for r in rounds if r[place] == name) for name in ("base", "1", "2")}
+                self.assertEqual(counts, {"base": 2, "1": 2, "2": 2}, place)
+
+    def test_a_set_that_changes_the_output_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = f"cat '{tmp}/report.json'\ncase \"$*\" in *--changes-output*) echo ' ' ;; esac"
+            fake, _ = fake_binary(tmp, small_files_report(), body)
+            with self.assertRaisesRegex(ValueError, "not byte-identical"), tempfile.TemporaryDirectory() as out:
+                benchmark.main(["--binary", str(fake), "--baseline", str(fake), "--files", "1", "--warmup", "0",
+                                "--runs", "6", "--candidate-args=--jobs 1", "--candidate-args=--changes-output",
+                                "--output", str(Path(out) / "m.json")])
+
+    def test_single_set_keeps_alternating_order_and_needs_no_baseline(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, log = fake_binary(tmp, small_files_report(), f"cat '{tmp}/report.json'")
+            code, result = self.run_main("--binary", str(fake), "--files", "1", "--warmup", "0", "--runs", "3",
+                                         "--candidate-args=--jobs 4")
+            self.assertEqual(code, 0)
+            self.assertNotIn("baseline", result)
+            self.assertNotIn("comparison", result["candidates"][0])
+            self.assertEqual(len(log.read_text().splitlines()), 3)
+            code, _ = self.run_main("--binary", str(fake), "--baseline", str(fake), "--files", "1",
+                                    "--warmup", "1", "--runs", "4")
+            lines = log.read_text().splitlines()[3:]
+            # One warmup round (baseline first), then four measured rounds starting with the candidate.
+            self.assertEqual(["/candidate/" in c for c in lines],
+                             [False, True, True, False, False, True, True, False, False, True])
+
+    def test_collect_mode_puts_candidate_arguments_before_the_command_separator(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            # Not a valid collect run: the fake only records argv and fails, which is enough to read the order.
+            fake, log = fake_binary(tmp, None, "exit 9")
+            with self.assertRaises(subprocess.CalledProcessError), tempfile.TemporaryDirectory() as out:
+                benchmark.main(["--binary", str(fake), "--files", "1", "--mode", "collect", "--warmup", "0",
+                                "--runs", "3", "--candidate-args=--jobs 4", "--output", str(Path(out) / "m.json")])
+            argv = log.read_text().splitlines()[0].split()
+            self.assertEqual(argv[argv.index("--jobs") + 1], "4")
+            self.assertLess(argv.index("--jobs"), argv.index("--"))
+
+    def test_max_median_applies_to_every_set(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, _ = fake_binary(tmp, small_files_report(), f"cat '{tmp}/report.json'")
+            common = ["--binary", str(fake), "--files", "1", "--warmup", "0", "--runs", "3"]
+            self.assertEqual(self.run_main(*common, "--max-median-ms", "100000")[0], 0)
+            self.assertEqual(self.run_main(*common, "--max-median-ms", "0.001")[0], 1)
+
+
+@unittest.skipIf(__import__('os').name == 'nt', 'Unix executable fixture')
+class RepoMeasurementTests(unittest.TestCase):
+    def make_repo(self, directory):
+        repo = Path(directory) / "repo"
+        (repo / "bin").mkdir(parents=True, exist_ok=True)
+        (repo / "A.cs").write_text("class A {}\n")
+        (repo / "Z.g.cs").write_text("class Z {}\n")
+        (repo / "bin" / "B.cs").write_text("class B {}\n")
+        return repo
+
+    def run_repo(self, tmp, fake, *extra):
+        repo = self.make_repo(tmp)
+        target = Path(tmp) / "m.json"
+        with __import__('contextlib').redirect_stdout(__import__('io').StringIO()):
+            code = benchmark.main(["--binary", str(fake), "--baseline", str(fake), "--repo", str(repo),
+                                   "--repo-name", "demo", "--warmup", "0", "--runs", "4", "--output", str(target), *extra])
+        return code, json.loads(target.read_text())
+
+    def test_successful_scan_records_counts_bytes_and_samples(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            report = {"files_scanned": 1, "functions": [], "failed": False}
+            fake, _ = fake_binary(tmp, report, f"cat '{tmp}/report.json'")
+            code, result = self.run_repo(tmp, fake)
+            self.assertEqual(code, 0)
+            self.assertEqual((result["workload"], result["mode"], result["files"], result["source_bytes"]),
+                             ("repo", "scan", 1, len("class A {}\n")))
+            self.assertEqual(result["repo"], {"name": "demo", "files_scanned": 1, "scan_failure": None})
+            self.assertEqual(result["callables"], 0)
+            self.assertEqual(len(result["candidates"][0]["cpu_samples_ms"]), 4)
+            self.assertTrue(result["candidates"][0]["outputs_byte_identical"])
+
+    def test_an_agreed_syntax_failure_is_a_finding_not_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, _ = fake_binary(tmp, None, "echo 'error: invalid C# syntax in A.cs' >&2\nexit 2")
+            code, result = self.run_repo(tmp, fake)
+            self.assertEqual(code, 0)
+            self.assertEqual(result["repo"]["scan_failure"], {
+                "exit_code": 2, "message": "error: invalid C# syntax in A.cs", "syntax_failure": True})
+            self.assertIsNone(result["repo"]["files_scanned"])
+            self.assertIsNone(result["callables"])
+            self.assertEqual(len(result["baseline"]["samples_ms"]), 4)
+
+    def test_disagreement_between_base_and_head_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = "case \"$0\" in */candidate/*) echo 'error: other' >&2 ;; *) echo 'error: invalid C# syntax in A.cs' >&2 ;; esac\nexit 2"
+            fake, _ = fake_binary(tmp, None, body)
+            with self.assertRaisesRegex(ValueError, "not byte-identical"):
+                self.run_repo(tmp, fake)
+            body = "case \"$0\" in */candidate/*) exit 0 ;; *) exit 2 ;; esac"
+            fake, _ = fake_binary(tmp, None, body)
+            with self.assertRaises(ValueError):
+                self.run_repo(tmp, fake)
+
+    def test_a_crash_or_malformed_report_is_an_error_even_when_executables_agree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, _ = fake_binary(tmp, None, "echo 'thread panicked' >&2\nexit 101")
+            with self.assertRaises(subprocess.CalledProcessError):
+                self.run_repo(tmp, fake)
+            fake, _ = fake_binary(tmp, {"files_scanned": "1", "functions": []}, f"cat '{tmp}/report.json'")
+            with self.assertRaisesRegex(ValueError, "unexpected report"):
+                self.run_repo(tmp, fake)
+
+    def test_candidate_arguments_apply_to_repo_scans(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake, log = fake_binary(tmp, {"files_scanned": 1, "functions": []}, f"cat '{tmp}/report.json'")
+            self.run_repo(tmp, fake, "--candidate-args=--jobs 2")
+            self.assertTrue(all("--jobs 2" in c for c in log.read_text().splitlines() if "/candidate/" in c))
 
 
 if __name__ == "__main__":
