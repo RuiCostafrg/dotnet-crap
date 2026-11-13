@@ -119,7 +119,9 @@ fn decision(n: Node<'_>, source: &str) -> u32 {
         | "do_statement"
         | "catch_clause"
         | "conditional_expression"
-        | "when_clause" => 1,
+        | "when_clause"
+        | "and_pattern"
+        | "or_pattern" => 1,
         "switch_section" => {
             let mut c = n.walk();
             let result = n
