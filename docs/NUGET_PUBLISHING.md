@@ -3,8 +3,8 @@
 This is a reviewable proposal, not evidence of NuGet publication or package ID
 ownership. No account, repository setting, secret, environment approval, tag or
 release is created by this change. The immutable GitHub release `v0.1.0` is
-explicitly excluded. Current Cargo `0.1.0` is unchanged; a future version bump
-and release require separate authorization. Old schedules remain disabled.
+explicitly excluded. This publisher does not change Cargo versions; version bumps
+and releases require separate authorization. Old schedules remain disabled.
 
 ## Supported authentication and first package
 
