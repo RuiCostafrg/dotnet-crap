@@ -111,6 +111,10 @@ unmarked items remain proposed.
 10. **Modern syntax and resource bounds:** top-level code, patterns, records,
     primary constructors and a documented preprocessor policy; iterative traversal
     with depth/resource stress tests and measured profiling before optimization.
+    First slice: [PR #41](https://github.com/RuiCostafrg/dotnet-crap/pull/41) counts
+    logical-pattern `and`/`or` decisions with hand-scored, SDK-executed fixtures
+    ([contract](CSHARP_PATTERNS.md)). Focused .NET 10 execution passed; final
+    platform CI, mutation evidence and integration remain pending.
 11. **Release/adoption:** host protections, CODEOWNERS, Dependabot, actionlint and
     scheduled cargo/NuGet advisories now match typescript-crap
     ([parity record](SECURITY_PARITY.md)); remaining: schemas, provenance and installed
