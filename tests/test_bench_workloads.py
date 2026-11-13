@@ -25,7 +25,35 @@ def module(name, path):
 bench = module("bench_workloads", "scripts/bench_workloads.py")
 
 SMALL_SCALES = {"small-files": 3, "dense-file": 9, "many-callables": 10,
-                "deep-nesting": 4, "solution": 2}
+                "deep-nesting": 4, "solution": 2, "many-medium": 3, "skew": 3}
+# The generators' real per-file sizes, captured before setUpModule shrinks them for fast tests.
+REAL_KNOBS = {"MEDIUM_METHODS": bench.MEDIUM_METHODS, "SKEW_LARGE_METHODS": bench.SKEW_LARGE_METHODS,
+              "SKEW_SMALL_METHODS": bench.SKEW_SMALL_METHODS}
+SHRUNK_KNOBS = {"MEDIUM_METHODS": 16, "SKEW_LARGE_METHODS": 40, "SKEW_SMALL_METHODS": 8}
+_patches = []
+
+
+def setUpModule():
+    for name, value in SHRUNK_KNOBS.items():
+        patch = mock.patch.object(bench, name, value)
+        patch.start()
+        _patches.append(patch)
+
+
+def tearDownModule():
+    while _patches:
+        _patches.pop().stop()
+
+
+# Corpus digests recorded before many-medium and skew were added. The dense-file generator
+# was refactored to share its method builder, and these must not move.
+HISTORICAL_DIGESTS = {
+    ("small-files", 7): "aa2e1539a6b28a91647b8cb08e463a2045c99e2910f443d923e847ee6acdf6ff",
+    ("dense-file", 20): "bc7aa4d600540d88496a85948a1923ba25f55ea9d8aa25438f020821349c5691",
+    ("many-callables", 30): "f8bf54f17ffc0857e4051b693db8e120e6feb997bb01df6617d3b468720fdd01",
+    ("deep-nesting", 5): "842857e2edadf680f5b246aa80769851b8368c6ce90fece9a6c54f753705c1c1",
+    ("solution", 3): "a3c17d61374719a7e40d4b861271a195dcab599d4ddbc3bf09a3ff0fb2ca9cdf",
+}
 DECOY_MARKERS = ("/bin/", "/obj/", ".g.cs", ".generated.cs", ".Designer.cs")
 SMALL_FILE_TEXT = (
     "class C0 {\n"
@@ -145,6 +173,88 @@ class ExpectedValueTests(unittest.TestCase):
             runs = by_name[("tests/Proj001.Tests/CalculatorTests001.cs", "Runs")]
             self.assertEqual((runs["complexity"], runs["coverage"]), (2, 0.75))
             self.assertAlmostEqual(runs["crap"], 2 + 4 / 64, places=12)
+
+
+class SpreadWorkloadTests(unittest.TestCase):
+    """many-medium and skew: expectations worked out by hand, plus the sizes the plan asks for."""
+
+    def test_many_medium_files_continue_the_method_numbering(self):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(bench, "MEDIUM_METHODS", 8):
+            wl = bench.generate("many-medium", Path(tmp) / "root", 2)
+            # Eight methods fill one class, so each file is one class and its first method spans lines 2-8.
+            self.assertEqual(wl.files, 2)
+            self.assertEqual(sorted(wl.native_coverage["files"]), ["M000.cs", "M001.cs"])
+            self.assertEqual([(e["file"], e["name"]) for e in wl.expected[:1] + wl.expected[-1:]],
+                             [("M000.cs", "M00000"), ("M001.cs", "M00015")])
+            self.assertEqual(len(wl.expected), 16)
+            first = wl.expected[0]
+            self.assertEqual((first["line"], first["end_line"], first["complexity"]), (2, 8, 4))
+            self.assertEqual((first["coverage"], first["crap"]), (0.75, 4.25))
+            second_file = [e for e in wl.expected if e["file"] == "M001.cs"]
+            self.assertEqual([e["name"] for e in second_file][:2], ["M00008", "M00009"])
+            self.assertEqual(len(wl.cobertura_reports), 1)
+
+    def test_many_medium_default_files_are_about_35_kib(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.multiple(bench, **{k: v for k, v in REAL_KNOBS.items()}):
+            root = Path(tmp) / "root"
+            wl = bench.generate("many-medium", root, 2)
+            sizes = [path.stat().st_size for path in sorted(root.glob("*.cs"))]
+            self.assertEqual(len(sizes), 2)
+            for size in sizes:
+                self.assertTrue(33_000 <= size <= 37_000, size)
+            self.assertEqual(bench.DEFAULT_SCALE["many-medium"], 64)
+            self.assertEqual(wl.source_bytes, sum(sizes))
+
+    def test_skew_has_one_large_file_that_sorts_last(self):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(bench, "SKEW_LARGE_METHODS", 8), \
+                mock.patch.object(bench, "SKEW_SMALL_METHODS", 8):
+            wl = bench.generate("skew", Path(tmp) / "root", 2)
+            self.assertEqual(wl.files, 3)
+            # Large-file methods are numbered first, then each small file continues the count.
+            names = {}
+            for e in wl.expected:
+                names.setdefault(e["file"], []).append(e["name"])
+            self.assertEqual(list(names), ["Small/S000.cs", "Small/S001.cs", "ZLarge.cs"])
+            self.assertEqual(names["Small/S000.cs"], [f"M{i:05}" for i in range(8, 16)])
+            self.assertEqual(names["Small/S001.cs"], [f"M{i:05}" for i in range(16, 24)])
+            self.assertEqual(names["ZLarge.cs"], [f"M{i:05}" for i in range(8)])
+            # Same lines and hits as the dense layout: first method on lines 2-8, three of four points hit.
+            for first in (wl.expected[0], wl.expected[8], wl.expected[16]):
+                self.assertEqual((first["line"], first["end_line"], first["complexity"], first["coverage"],
+                                  first["crap"]), (2, 8, 4, 0.75, 4.25))
+            classes = {cls.get("name") for _, xml_text in wl.cobertura_reports
+                       for cls in ET.fromstring(xml_text).iter("class")}
+            self.assertEqual(classes, {"S0000", "S0001", "L0000"})
+
+    def test_skew_default_sizes(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.multiple(bench, **{k: v for k, v in REAL_KNOBS.items()}):
+            root = Path(tmp) / "root"
+            wl = bench.generate("skew", root, 4)
+            large = (root / "ZLarge.cs").stat().st_size
+            small = [path.stat().st_size for path in sorted((root / "Small").glob("*.cs"))]
+            self.assertEqual(len(small), 4)
+            self.assertGreater(large, 500_000)
+            self.assertTrue(all(2_000 <= size <= 8_000 for size in small), small)
+            self.assertGreater(large, 50 * max(small))
+            self.assertEqual(wl.files, 5)
+            self.assertEqual(bench.DEFAULT_SCALE["skew"], 63)
+
+    def test_callable_names_and_classes_are_unique_across_files(self):
+        for name, scale in (("many-medium", 3), ("skew", 3)):
+            with self.subTest(workload=name), tempfile.TemporaryDirectory() as tmp:
+                wl = bench.generate(name, Path(tmp) / "root", scale)
+                names = [e["name"] for e in wl.expected]
+                self.assertEqual(len(names), len(set(names)))
+                classes = [cls.get("name") for _, xml_text in wl.cobertura_reports
+                           for cls in ET.fromstring(xml_text).iter("class")]
+                self.assertEqual(len(classes), len(set(classes)))
+
+    def test_historical_corpora_are_unchanged(self):
+        for (name, scale), digest in HISTORICAL_DIGESTS.items():
+            with self.subTest(workload=name), tempfile.TemporaryDirectory() as tmp:
+                self.assertEqual(bench.generate(name, Path(tmp) / "root", scale).corpus_sha256, digest)
 
 
 class ValidateTests(unittest.TestCase):

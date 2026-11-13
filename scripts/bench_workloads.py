@@ -16,7 +16,8 @@ import math
 import pathlib
 import xml.etree.ElementTree as ET
 
-WORKLOADS = ("small-files", "dense-file", "many-callables", "deep-nesting", "solution")
+WORKLOADS = ("small-files", "dense-file", "many-callables", "deep-nesting", "solution",
+             "many-medium", "skew")
 
 # Release-scale defaults, sized so one release scan takes roughly 0.2-2 seconds.
 DEFAULT_SCALE = {
@@ -25,11 +26,18 @@ DEFAULT_SCALE = {
     "many-callables": 8000,  # callable slots in one file; ~0.5 s scan
     "deep-nesting": 3000,  # nested lambdas; ~0.7 s scan
     "solution": 100,  # projects (5 selected files each); ~1 s scan
+    "many-medium": 64,  # files of about 35 KB each, parse-bound
+    "skew": 63,  # small files next to one large file
 }
 # Filler statements in the innermost deep-nesting lambda (module global so tests can shrink it).
 DEEP_FILLER = 2000
 # Methods (dense-file) or callable slots (many-callables) per emitted C# class.
 METHODS_PER_CLASS = 8
+# Methods per file in many-medium (about 35 KB of source), and in skew's one large
+# file and each of its small files. Module globals so tests can shrink them.
+MEDIUM_METHODS = 256
+SKEW_LARGE_METHODS = 4000
+SKEW_SMALL_METHODS = 32
 REPORT_TIMESTAMP = 1700000000
 SINGLE_REPORT = "00000000-0000-4000-8000-000000000001/coverage.cobertura.xml"
 _CSPROJ = (
@@ -275,16 +283,15 @@ def _build_small_files(scale: int):
     return sources, {}, [(SINGLE_REPORT, "Bench.small-files", sources)]
 
 
-def _build_dense(scale: int):
-    """One file of many methods, grouped METHODS_PER_CLASS per class."""
-    src = _Source("Dense.cs")
+def _dense_methods(src: _Source, class_prefix: str, first_class: int, first_method: int, count: int) -> None:
+    """Append ``count`` dense methods, METHODS_PER_CLASS per class, numbered from the given starts."""
     index = 0
-    for c in range(-(-scale // METHODS_PER_CLASS)):
-        cls = f"D{c:04}"
+    for c in range(-(-count // METHODS_PER_CLASS)):
+        cls = f"{class_prefix}{first_class + c:04}"
         src.declare(cls)
         src.add(f"class {cls} {{", cls)
-        for _ in range(min(METHODS_PER_CLASS, scale - index)):
-            i = index
+        for _ in range(min(METHODS_PER_CLASS, count - index)):
+            i = first_method + index
             index += 1
             name = f"M{i:05}"
             sig = src.add(f"  public int {name}(int x)", cls)
@@ -297,7 +304,45 @@ def _build_dense(scale: int):
             # base 1 + if + && + for
             src.record(cls, name, "method_declaration", sig, end, 4, [init, branch, loop, ret])
         src.add("}", cls)
+
+
+def _classes_for(methods: int) -> int:
+    return -(-methods // METHODS_PER_CLASS)
+
+
+def _build_dense(scale: int):
+    """One file of many methods, grouped METHODS_PER_CLASS per class."""
+    src = _Source("Dense.cs")
+    _dense_methods(src, "D", 0, 0, scale)
     return [src], {}, [(SINGLE_REPORT, "Bench.dense-file", [src])]
+
+
+def _build_many_medium(scale: int):
+    """``scale`` files of MEDIUM_METHODS dense methods each: parse-bound work spread over files."""
+    sources = []
+    for f in range(scale):
+        src = _Source(f"M{f:03}.cs")
+        _dense_methods(src, "D", f * _classes_for(MEDIUM_METHODS), f * MEDIUM_METHODS, MEDIUM_METHODS)
+        sources.append(src)
+    return sources, {}, [(SINGLE_REPORT, "Bench.many-medium", sources)]
+
+
+def _build_skew(scale: int):
+    """One large file next to ``scale`` small ones.
+
+    The large file sorts last (``ZLarge.cs`` after ``Small/``) so a pool that takes
+    files in output order meets it as the tail, the worst case for scheduling.
+    """
+    small = []
+    for f in range(scale):
+        src = _Source(f"Small/S{f:03}.cs")
+        _dense_methods(src, "S", f * _classes_for(SKEW_SMALL_METHODS),
+                       SKEW_LARGE_METHODS + f * SKEW_SMALL_METHODS, SKEW_SMALL_METHODS)
+        small.append(src)
+    large = _Source("ZLarge.cs")
+    _dense_methods(large, "L", 0, 0, SKEW_LARGE_METHODS)
+    sources = small + [large]
+    return sources, {}, [(SINGLE_REPORT, "Bench.skew", sources)]
 
 
 def _build_many(scale: int):
@@ -532,6 +577,8 @@ _BUILDERS = {
     "many-callables": _build_many,
     "deep-nesting": _build_deep,
     "solution": _build_solution,
+    "many-medium": _build_many_medium,
+    "skew": _build_skew,
 }
 
 
