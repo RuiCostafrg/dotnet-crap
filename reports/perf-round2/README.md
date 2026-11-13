@@ -147,7 +147,15 @@ LTO were measured. **No variant separated from the default profile** on this
 runner (median ratios 0.85–1.18, all overlapping). Sizes: default 7.50 MB, fat LTO
 with one codegen unit 6.82 MB (−9%), plus `strip=symbols` 6.50 MB (−13%). Release
 build time went from 40 s to 135 s. `panic=abort`, `opt-level` 2/s and mimalloc
-were built but not timed. The question stays open until it runs on a hosted runner.
+were built but not timed.
+
+**Hosted result (PR #40, closed unmerged).** The shipped `dist` profile (thin LTO)
+was compared with `lto = "fat"` plus `codegen-units = 1` in the same job on
+ubuntu-26.04 (run 43386807327, 21 generated rows and 3 real repositories). One row
+separated: `many-medium` scan, wall and CPU ratio 0.980. Every other row was
+between 0.987 and 1.007 and not separated, including all three real repositories
+(0.995–1.005). On macos-26 no row separated. A 2% gain on one workload does not
+meet the plan's rule, so the profile stays at thin LTO.
 
 ## E. Peak memory
 
@@ -179,9 +187,25 @@ counting Rust allocator and a counting tree-sitter allocator.
   is up to about 125 MB per report. On dense-file, `collect` peaks at 103 MB where
   plain scan peaks at 66 MB.
 
+## Hosted results for the merged-path PRs
+
+From the Benchmark workflow on ubuntu-26.04, base and head built and measured in
+the same job, 8 alternating runs. `separated` means every head sample beat every
+base sample. Outputs were byte-identical in every row.
+
+| PR | rows separated | median wall ratio |
+|---|---|---|
+| #36 single-pass traversal | all 15 | scan 0.879–0.917, scan-coverage 0.890–0.918, collect 0.906–0.948 |
+| #38 `collect` quick wins | the 5 `collect` rows | collect 0.693–0.846; scan rows 0.992–1.002, not separated |
+
+On macos-26 the same runs were noisier: #36 separated only on dense-file scan
+(0.820), #38 on deep-nesting collect (0.520) and many-callables collect (0.716).
+The local prototype predicted 0.78 for dense-file scan from the traversal; the
+hosted figure is 0.879.
+
 ## Not measured
 
-- Thread scaling and release-profile effects on glibc, macOS and Windows.
+- Thread scaling on glibc, macOS and Windows.
 - Timings on real C# repositories. All timed corpora are generated; the dense
   single-file workloads are worst cases for memory and best cases for traversal
   gains. Real repositories were scanned for correctness only, see the next section.

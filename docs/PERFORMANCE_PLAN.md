@@ -15,7 +15,7 @@ patches are in `reports/perf-round2/prototypes/`. They were cut against
 | Largest remaining win for multi-file repositories? | parallel per-file scan; output identical, real-platform scaling still to be measured |
 | What bounds scan memory? | the syntax tree of the largest file, about 100× its size; our own data is under 10% |
 | What bounds `collect` memory? | the Cobertura DOM, 7.6× the report size |
-| Do build-profile changes help? | not measurably on the local runner; undecided |
+| Do build-profile changes help? | no: fat LTO with one codegen unit separated on 1 of 24 hosted rows, by 2% (PR #40, closed) |
 
 ## Decisions
 
@@ -184,7 +184,7 @@ then real on release platforms too and the design needs a different answer.
 Expected: unknown until measured on glibc. The local hardware ceiling is ×1.7 at 2
 workers and ×2.7 at 4.
 
-### PR 5: release-profile experiment
+### PR 5: release-profile experiment (done, not merged)
 
 *Haiku 5.5, after PR 0. Files: `Cargo.toml` only.*
 
