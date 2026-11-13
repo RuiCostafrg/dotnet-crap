@@ -225,6 +225,15 @@ and node limits), so:
 - Each implementation PR gets an independent review from the other model before
   merge, with the review brief restricted to the diff and this plan.
 
+## Found along the way
+
+Most well-known real C# repositories fail to scan on `main` because one file the
+grammar cannot parse fails the run. The causes and a recommended fix are in
+[the evidence](../reports/perf-round2/README.md#found-along-the-way-most-real-repositories-do-not-scan).
+It is a correctness item, not a performance one, and it matters more than any PR
+here: it gets its own design after PR 4, because it also changes the per-file
+parse step in `src/lib.rs`.
+
 ## What this round will not fix
 
 Scan memory for one very large file stays at about 100× its size. That is the

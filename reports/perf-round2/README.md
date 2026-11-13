@@ -182,10 +182,67 @@ counting Rust allocator and a counting tree-sitter allocator.
 ## Not measured
 
 - Thread scaling and release-profile effects on glibc, macOS and Windows.
-- Any real C# repository. All corpora are generated; the dense single-file
-  workloads are worst cases for memory and best cases for traversal gains.
+- Timings on real C# repositories. All timed corpora are generated; the dense
+  single-file workloads are worst cases for memory and best cases for traversal
+  gains. Real repositories were scanned for correctness only, see the next section.
 - A streaming Cobertura reader, a custom tree-sitter allocator (`unsafe_code` is
   forbidden in this crate) and an on-disk per-file result cache were not prototyped.
+
+## Found along the way: most real repositories do not scan
+
+Preparing the real-repository benchmark showed that `main` rejects most well-known
+C# repositories. One file with a syntax error fails the whole scan (exit 2), and
+the tree-sitter grammar reports errors on valid C#. Repositories that failed:
+Newtonsoft.Json, dotnet/eShop, Serilog, Humanizer, Dapper, Polly,
+StackExchange.Redis, CsvHelper, RestSharp, Bogus, LiteDB. Four scanned cleanly:
+FluentValidation, eShopOnWeb, ardalis/CleanArchitecture, MediatR.
+
+Six of them were scanned file by file with the `main` binary
+([`scripts/preprocess-probe.py`](scripts/preprocess-probe.py)). The probe also
+re-scans each failing file after blanking `#if`/`#elif`/`#else`/`#endif` lines and
+the branches that are inactive when no symbol is defined, keeping every line break.
+
+| repository at commit | `.cs` files | failing | parse after blanking |
+|---|---|---|---|
+| Serilog `43105b3` | 217 | 18 | 17 |
+| Newtonsoft.Json `52fa3ae` | 951 | 66 | 43 |
+| Polly `88f2039` | 803 | 4 | 3 |
+| Humanizer `4574b93` | 735 | 12 | 5 |
+| LiteDB `b3c4406` | 1528 | 26 | 11 |
+| Dapper `eb47546` | 157 | 1 | 0 |
+
+Causes identified, each confirmed on a minimal input:
+
+1. **`#if` that splits a declaration or statement.** The grammar accepts
+   conditional compilation only around whole members or statements. Example:
+   Serilog's `Task OnEmptyBatchAsync()` followed by `#if X { ... } #else ; #endif`.
+   This is the majority (79 of 127 failing files parse after blanking).
+2. **A directive on the last line with no trailing newline**, such as a final
+   `#pragma warning restore 618`. The same file with a newline appended parses.
+3. **File-based app directives** (`#:sdk`, `#:package`, `#:property`).
+4. **Contextual keywords used as identifiers**: `var with = ...`,
+   `required.Should()`. Valid C#, rejected by `tree-sitter-c-sharp` 0.23.
+5. **Source that is not UTF-8** (two LiteDB files) fails with a decoding error.
+
+Not every remaining failure was diagnosed. Blanking with no symbols defined is a
+probe, not the fix: one Serilog file wraps its whole body in `#if FEATURE_X` and
+is left with nothing valid.
+
+Related scoring quirk, present on `main`: `#if A && B` inside a callable body
+adds a decision point, because the grammar aliases preprocessor conditions to
+`binary_expression`.
+
+Recommended follow-up, as its own design and PR after this round:
+
+- Parse as today first, so files that parse now keep byte-identical results. Only
+  when that fails, resolve conditional compilation with a `--define` symbol list
+  (blanking keeps offsets and line numbers, and the hash stays over the original
+  bytes), supply a virtual trailing newline, and blank `#:` lines.
+- Decide what a file that still cannot be parsed means for a gate. Today it fails
+  the run. Cause 4 cannot be fixed on our side, so repositories that use those
+  identifiers can never be scanned. An explicit opt-in that lists unparsed files in
+  every output format and excludes them from scoring would make the tool usable
+  there without hiding the gap.
 
 ## Reproduce
 
