@@ -419,7 +419,6 @@ pub(crate) fn collect(
 }
 
 /// The single pass hit a budget or overflowed; the reference decides the error.
-#[derive(Debug)]
 struct Exceeded;
 
 /// Count one node against a budget.
