@@ -2,7 +2,8 @@
 
 use crate::error::{fail, ErrorKind, OptionExt, Result};
 use crate::Item;
-use tree_sitter::Node;
+use std::num::NonZeroU16;
+use tree_sitter::{Language, Node, TreeCursor};
 
 /// Recognize implemented callable bodies, leaving explicit property/indexer accessors separate.
 fn callable(n: Node<'_>) -> bool {
@@ -239,9 +240,338 @@ fn span_coverage(
     (total > 0).then(|| hit as f64 / total as f64)
 }
 
-/// Collect callable scores iteratively with bounded traversal and merged nested-coverage exclusions.
+/// Syntactic role of a node kind, as the string comparisons in [`callable`] and
+/// [`decision`] classify it.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Class {
+    Other,
+    /// A callable only when it has a `body` field.
+    CallableWithBody,
+    /// `anonymous_method_expression`: always a callable.
+    AnonymousMethod,
+    /// Property or indexer: a callable when its `value` is an arrow clause.
+    CallableWithArrowValue,
+    Arrow,
+    /// Contributes exactly one decision.
+    Decision,
+    /// Contributes one decision per `case` token among its children.
+    SwitchSection,
+    /// Contributes one decision unless its pattern is a discard.
+    SwitchArm,
+    /// `binary_expression` or `assignment_expression`: one decision for a logical operator.
+    Operation,
+    Case,
+    Discard,
+    LogicalOperator,
+}
+
+/// Kind names and their roles. Must stay in step with [`callable`] and [`decision`];
+/// the differential tests compare both classifications on every node of their corpus.
+const CLASSES: &[(&str, Class)] = &[
+    ("method_declaration", Class::CallableWithBody),
+    ("constructor_declaration", Class::CallableWithBody),
+    ("operator_declaration", Class::CallableWithBody),
+    ("conversion_operator_declaration", Class::CallableWithBody),
+    ("destructor_declaration", Class::CallableWithBody),
+    ("local_function_statement", Class::CallableWithBody),
+    ("accessor_declaration", Class::CallableWithBody),
+    ("lambda_expression", Class::CallableWithBody),
+    ("anonymous_method_expression", Class::AnonymousMethod),
+    ("property_declaration", Class::CallableWithArrowValue),
+    ("indexer_declaration", Class::CallableWithArrowValue),
+    ("arrow_expression_clause", Class::Arrow),
+    ("if_statement", Class::Decision),
+    ("for_statement", Class::Decision),
+    ("foreach_statement", Class::Decision),
+    ("while_statement", Class::Decision),
+    ("do_statement", Class::Decision),
+    ("catch_clause", Class::Decision),
+    ("conditional_expression", Class::Decision),
+    ("when_clause", Class::Decision),
+    ("switch_section", Class::SwitchSection),
+    ("switch_expression_arm", Class::SwitchArm),
+    ("binary_expression", Class::Operation),
+    ("assignment_expression", Class::Operation),
+    ("case", Class::Case),
+    ("discard", Class::Discard),
+    ("&&", Class::LogicalOperator),
+    ("||", Class::LogicalOperator),
+    ("??", Class::LogicalOperator),
+    ("??=", Class::LogicalOperator),
+];
+
+/// Node-kind classification indexed by kind id, so the traversal dispatches on
+/// integers instead of comparing kind names and reading operator text.
+///
+/// Build it once per scan: it costs one pass over the grammar's symbols. It is
+/// immutable, so one table can be shared by reference across threads.
+pub(crate) struct KindTable {
+    /// Role of every kind id, filled by name, so aliases and named/anonymous
+    /// kinds that share a name classify exactly as the string comparisons do.
+    classes: Box<[Class]>,
+    body: Option<NonZeroU16>,
+    value: Option<NonZeroU16>,
+    operator: Option<NonZeroU16>,
+}
+
+impl KindTable {
+    /// Classify every node kind of `language`.
+    pub(crate) fn new(language: &Language) -> Self {
+        let classes = (0..language.node_kind_count())
+            .map(|id| {
+                let name = u16::try_from(id)
+                    .ok()
+                    .and_then(|id| language.node_kind_for_id(id));
+                CLASSES
+                    .iter()
+                    .find(|&&(known, _)| Some(known) == name)
+                    .map_or(Class::Other, |&(_, class)| class)
+            })
+            .collect();
+        Self {
+            classes,
+            body: language.field_id_for_name("body"),
+            value: language.field_id_for_name("value"),
+            operator: language.field_id_for_name("operator"),
+        }
+    }
+
+    /// Role of a node. Ids outside the table, such as the `ERROR` symbol, have none.
+    fn class(&self, n: Node<'_>) -> Class {
+        self.classes
+            .get(usize::from(n.kind_id()))
+            .copied()
+            .unwrap_or(Class::Other)
+    }
+
+    /// Same result as [`callable`].
+    fn callable(&self, n: Node<'_>) -> bool {
+        let field = |id: Option<NonZeroU16>| id.and_then(|id| n.child_by_field_id(id.get()));
+        match self.class(n) {
+            Class::CallableWithBody => field(self.body).is_some(),
+            Class::AnonymousMethod => true,
+            Class::CallableWithArrowValue => {
+                field(self.value).is_some_and(|v| self.class(v) == Class::Arrow)
+            }
+            _ => false,
+        }
+    }
+
+    /// Same result as [`decision`]; `scratch` is a reusable cursor for this tree.
+    fn decision<'t>(&self, n: Node<'t>, scratch: &mut TreeCursor<'t>) -> u32 {
+        match self.class(n) {
+            Class::Decision => 1,
+            Class::SwitchSection => n
+                .children(scratch)
+                .filter(|child| self.class(*child) == Class::Case)
+                .count() as u32,
+            Class::SwitchArm => u32::from(
+                n.named_child(0)
+                    .is_none_or(|child| self.class(child) != Class::Discard),
+            ),
+            // The grammar stores the operator token in `operator`, and a token's text
+            // is its kind name, so no source text is read. Other children of a valid
+            // expression cannot spell exactly an operator. This relies on the caller
+            // rejecting trees with errors before `collect`: an `ERROR` child may
+            // spell an operator outside the field. `#if A && B` conditions are
+            // aliased to `binary_expression` and keep the operator in the same field.
+            Class::Operation => u32::from(
+                self.operator
+                    .and_then(|id| n.child_by_field_id(id.get()))
+                    .is_some_and(|op| self.class(op) == Class::LogicalOperator),
+            ),
+            _ => 0,
+        }
+    }
+}
+
+/// Which traversal produced a [`collect`] result.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum Traversal {
+    /// The single pass finished within every limit.
+    SinglePass,
+    /// The single pass hit a limit and the reference traversal decided the result.
+    Reference,
+}
+
+/// Collect callable scores with bounded traversal and merged nested-coverage exclusions.
 /// The caller supplies independent whole-tree and per-callable named-node budgets.
+///
+/// One depth-first pass visits every named node once, in the reference's pre-order.
+/// If it hits any limit, its items are discarded and the reference traversal runs
+/// instead, so the error, and which limit is reported first, stay the reference's.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn collect(
+    kinds: &KindTable,
+    n: Node<'_>,
+    source: &str,
+    file: &str,
+    cov: Option<&CoverageIndex>,
+    out: &mut Vec<Item>,
+    traversal_budget: usize,
+    callable_budget: usize,
+) -> Result<Traversal> {
+    let len = out.len();
+    let budgets = (traversal_budget, callable_budget);
+    if single_pass(kinds, n, source, file, cov, out, budgets).is_ok() {
+        return Ok(Traversal::SinglePass);
+    }
+    out.truncate(len);
+    collect_reference(n, source, file, cov, out, traversal_budget, callable_budget)?;
+    Ok(Traversal::Reference)
+}
+
+/// The single pass hit a budget or overflowed; the reference decides the error.
+struct Exceeded;
+
+/// Count one node against a budget.
+fn count(counter: &mut usize, budget: usize) -> std::result::Result<(), Exceeded> {
+    *counter += 1;
+    if *counter > budget {
+        return Err(Exceeded);
+    }
+    Ok(())
+}
+
+/// A callable whose subtree the single pass is still walking.
+struct Open {
+    /// Index of its reserved item in `out`.
+    item: usize,
+    /// Cursor depth of the callable node below the walk's root.
+    depth: usize,
+    complexity: u32,
+    /// Named nodes scored for this callable, as the reference counts them.
+    scored: usize,
+    /// Line spans of directly nested callables.
+    excluded: Vec<(usize, usize)>,
+}
+
+impl Open {
+    /// Fill in the callable's reserved item once its subtree is done.
+    fn finish(self, cov: Option<&CoverageIndex>, out: &mut [Item]) {
+        let item = &mut out[self.item];
+        let ranges = merge_ranges(self.excluded);
+        let coverage = cov.and_then(|c| span_coverage(c, item.line, item.end_line, &ranges));
+        let missed = 1.0 - coverage.unwrap_or(0.0);
+        item.complexity = self.complexity;
+        item.coverage = coverage;
+        item.crap =
+            f64::from(self.complexity).powi(2) * missed.powi(3) + f64::from(self.complexity);
+    }
+}
+
+/// Score every callable under `root` in one walk with one reused cursor.
+///
+/// Each named node counts once against the traversal budget and once against the
+/// innermost open callable, exactly as the reference counts it. A nested callable
+/// also counts against its parent, which excludes its lines. Items are reserved in
+/// pre-order when a callable opens and filled in when its subtree closes, which is
+/// the reference's output order.
+fn single_pass(
+    kinds: &KindTable,
+    root: Node<'_>,
+    source: &str,
+    file: &str,
+    cov: Option<&CoverageIndex>,
+    out: &mut Vec<Item>,
+    (traversal_budget, callable_budget): (usize, usize),
+) -> std::result::Result<(), Exceeded> {
+    // The cursor is rooted at `root`: it never moves to root's siblings or parent,
+    // which ends the walk. Depth is tracked by hand because `TreeCursor::depth()`
+    // is O(depth) and would make the walk quadratic on deep nesting.
+    let mut cursor = root.walk();
+    let mut scratch = root.walk();
+    let mut open: Vec<Open> = Vec::new();
+    let mut visited = 0usize;
+    let mut depth = 0usize;
+    'visit: loop {
+        let node = cursor.node();
+        count(&mut visited, traversal_budget)?;
+        let is_callable = kinds.callable(node);
+        if let Some(parent) = open.last_mut() {
+            count(&mut parent.scored, callable_budget)?;
+            if is_callable {
+                parent
+                    .excluded
+                    .push((node.start_position().row + 1, node.end_position().row + 1));
+            } else {
+                parent.complexity = parent
+                    .complexity
+                    .checked_add(kinds.decision(node, &mut scratch))
+                    .ok_or(Exceeded)?;
+            }
+        }
+        if is_callable {
+            let mut scored = 0;
+            count(&mut scored, callable_budget)?;
+            let complexity = 1u32
+                .checked_add(kinds.decision(node, &mut scratch))
+                .ok_or(Exceeded)?;
+            let start = node.start_position();
+            out.push(Item {
+                file: file.to_owned(),
+                name: callable_name(node, source),
+                kind: node.kind().to_owned(),
+                line: start.row + 1,
+                column: start.column + 1,
+                end_line: node.end_position().row + 1,
+                complexity: 0,
+                coverage: None,
+                crap: 0.0,
+            });
+            open.push(Open {
+                item: out.len() - 1,
+                depth,
+                complexity,
+                scored,
+                excluded: Vec::new(),
+            });
+        }
+        // Descend to the first named child; anonymous tokens are skipped, never entered.
+        if cursor.goto_first_child() {
+            depth += 1;
+            if seek_named(&mut cursor) {
+                continue 'visit;
+            }
+            cursor.goto_parent();
+            depth -= 1;
+        }
+        // The current node's subtree is done. Close it if it is a callable, then move
+        // to the next named sibling of the nearest ancestor that has one.
+        loop {
+            if let Some(callable) = open.pop_if(|callable| callable.depth == depth) {
+                callable.finish(cov, out);
+            }
+            if cursor.goto_next_sibling() && seek_named(&mut cursor) {
+                continue 'visit;
+            }
+            if !cursor.goto_parent() {
+                debug_assert!(open.is_empty());
+                return Ok(());
+            }
+            depth -= 1;
+        }
+    }
+}
+
+/// Move to the first named node among the current node and its following siblings.
+fn seek_named(cursor: &mut TreeCursor<'_>) -> bool {
+    loop {
+        if cursor.node().is_named() {
+            return true;
+        }
+        if !cursor.goto_next_sibling() {
+            return false;
+        }
+    }
+}
+
+/// Reference traversal: an outer pre-order walk plus one inner walk per callable.
+///
+/// It defines the budget semantics, including which limit is reported first, so
+/// [`collect`] falls back to it whenever the single pass hits a limit. Tests use it
+/// as the oracle for the single pass.
+fn collect_reference(
     n: Node<'_>,
     source: &str,
     file: &str,
@@ -306,7 +636,22 @@ pub(crate) fn collect(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tree_sitter::Parser as TsParser;
+    use tree_sitter::{Parser as TsParser, Tree};
+
+    fn csharp() -> Language {
+        tree_sitter_c_sharp::LANGUAGE.into()
+    }
+
+    fn parse(source: &str) -> Tree {
+        let mut parser = TsParser::new();
+        parser.set_language(&csharp()).unwrap();
+        let tree = parser.parse(source, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "invalid test source: {source}"
+        );
+        tree
+    }
 
     /// Run the actual collector with deliberately small independent resource limits.
     fn collect_with_limits(source: &str, traversal: usize, scoring: usize) -> Result<Vec<Item>> {
@@ -318,6 +663,7 @@ mod tests {
         assert!(!tree.root_node().has_error());
         let mut items = Vec::new();
         collect(
+            &KindTable::new(&csharp()),
             tree.root_node(),
             source,
             "C.cs",
@@ -364,7 +710,8 @@ mod tests {
         assert!(!tree.root_node().has_error());
         let coverage = CoverageIndex::new(points.iter().copied());
         let mut items = Vec::new();
-        collect(
+        let traversal = collect(
+            &KindTable::new(&csharp()),
             tree.root_node(),
             source,
             "C.cs",
@@ -374,6 +721,7 @@ mod tests {
             1_000_000,
         )
         .unwrap();
+        assert_eq!(traversal, Traversal::SinglePass);
         items
     }
 
@@ -584,5 +932,447 @@ mod tests {
         assert_eq!(inner_lambda.name, "lambda_expression");
         assert_eq!((inner_lambda.end_line, inner_lambda.complexity), (14, 1));
         assert_eq!(inner_lambda.coverage, Some(3.0 / 4.0));
+    }
+
+    /// Hand-written source that uses every kind named in [`CLASSES`]: every callable
+    /// form, nested callables, every decision form, logical and other operators,
+    /// comments as extras, and operator spellings inside literals and comments.
+    const EDGE: &str = r#"
+class C<T> {
+    /* c0 */ int P => a && b ? 1 : 2; // c1
+    int this[int i, params string[] r] => i ?? 0;
+    int Q { get { return x ?? y; } set => z ??= value; }
+    int R { get; set; }
+    abstract void A();
+    public static C<T> operator checked +(C<T> a, C<T> b) => a;
+    public static explicit operator checked int(C<T> c) { return 0; }
+    ~C() { }
+    C() : base() { Action a = delegate { if (x) { } }; Func<int,int> f = x => x switch { 1 => 2, _ => 3, var y when y > 2 => 4 }; }
+    void M() {
+        switch (x) { case 1: case 2 when q: break; default: break; }
+        int L() { Action b = () => { while (p || q) { } }; return 1; }
+        try { } catch (E e) when (e != null) { } catch { }
+        foreach (var i in xs) for (;;) do { } while (a /* && */ || b);
+        var s = "&&" + '|' + (a & b) + (c | d);
+        z += 1;
+    }
+    void N() {
+#if A && B
+        int x = 1;
+#elif C || !D
+        void L() { if (y) { } }
+#else
+        int z = a ?? b;
+#endif
+    }
+}"#;
+
+    /// Small sources for the budget grid, where limits fall inside nested callables.
+    const SMALL: [&str; 5] = [
+        "",
+        "class C { void F() {} }",
+        "class C { void F() { Action a = () => { int x = 1; }; } int G() => 1; }",
+        "class C { void F() { if (a && b) { void L() { var f = () => () => 1; } } } }",
+        "class C { int P { get => 1; set { } } void G() { switch (x) { case 1: break; } } }",
+    ];
+
+    /// Deterministic generator of valid C# with nested callables and decisions.
+    struct Generator(u64);
+
+    impl Generator {
+        fn below(&mut self, bound: u64) -> u64 {
+            lcg_below(&mut self.0, bound)
+        }
+
+        fn gap(&mut self) -> &'static str {
+            if self.below(3) == 0 {
+                "\n"
+            } else {
+                " "
+            }
+        }
+
+        fn block(&mut self, depth: u32) -> String {
+            let count = self.below(4);
+            let mut text = String::new();
+            for _ in 0..count {
+                text.push_str(&self.statement(depth));
+                text.push_str(self.gap());
+            }
+            text
+        }
+
+        fn statement(&mut self, depth: u32) -> String {
+            if depth == 0 {
+                return ["x++;", "z ??= q;", "var u = a != b;", "var t = c ? a : b;"]
+                    [self.below(4) as usize]
+                    .to_owned();
+            }
+            let d = depth - 1;
+            let g = self.gap();
+            match self.below(18) {
+                0 => format!(
+                    "if (a && b) {{{g}{}}} else {{ {} }}",
+                    self.block(d),
+                    self.block(d)
+                ),
+                1 => format!("if (c) x++; else {{ {} }}", self.block(d)),
+                2 => format!("for (int i = 0; i < n; i++) {{{g}{}}}", self.block(d)),
+                3 => format!("foreach (var e in xs) {{ {} }}", self.block(d)),
+                4 => format!("while (a || b) {{{g}{}}}", self.block(d)),
+                5 => format!("do {{ {} }} while (p ?? q);", self.block(d)),
+                6 => format!(
+                    "try {{ {} }} catch (E e) when (e != null) {{{g}{}}} catch {{ }}",
+                    self.block(d),
+                    self.block(d)
+                ),
+                7 => format!(
+                    "switch (x) {{ case 1:{g}case 2: {{ {} }} break; default: break; }}",
+                    self.block(d)
+                ),
+                8 => "var s = x switch { 1 => a, var y when y > 2 => b, _ => c };".to_owned(),
+                9 => format!("Action a = () => {{{g}{}}};", self.block(d)),
+                10 => "Func<int, int> f = y => y ?? 0;".to_owned(),
+                11 => format!("Action h = delegate {{ {} }};", self.block(d)),
+                12 => format!("int L(int p) {{{g}{} return p; }}", self.block(d)),
+                13 => "int K(int p) => p > 0 ? p : -p;".to_owned(),
+                14 => format!(
+                    "Func<Func<int>> w = () =>{g}() => {{ {} return 1; }};",
+                    self.block(d)
+                ),
+                15 => "// a && b || c\n".to_owned(),
+                16 => format!(
+                    "\n#if A && B\n{}\n#elif C || D\n{}\n#else\nx++;\n#endif\n",
+                    self.block(d),
+                    self.block(d)
+                ),
+                _ => self.statement(0),
+            }
+        }
+
+        fn member(&mut self, index: usize) -> String {
+            let b = self.block(3);
+            let g = self.gap();
+            match self.below(10) {
+                0 => format!("int P{index} => a && b ? 1 : 2;"),
+                1 => "int this[int i] => i ?? 0;".to_owned(),
+                2 => format!("int Q{index} {{ get {{{g}{b} return 1; }} set => z ??= value; }}"),
+                3 => format!("C() {{{g}{b}}}"),
+                4 => format!("~C() {{ {b} }}"),
+                5 => format!("public static C operator +(C a, C b) {{{g}{b} return a; }}"),
+                6 => "public static explicit operator int(C c) => 0;".to_owned(),
+                7 => format!("int R{index} {{ get; set; }}"),
+                _ => format!("void M{index}() {{{g}{b}}}"),
+            }
+        }
+
+        fn program(&mut self) -> String {
+            let mut text = String::from("class C {\n");
+            for index in 0..1 + self.below(6) as usize {
+                text.push_str(&self.member(index));
+                text.push('\n');
+            }
+            text.push('}');
+            text
+        }
+    }
+
+    /// Repository C# files, the hand-written sources and generated programs.
+    fn corpus() -> Vec<(String, String)> {
+        fn walk(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
+            let mut entries: Vec<_> = std::fs::read_dir(dir)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .collect();
+            entries.sort();
+            for path in entries {
+                if path.is_dir() {
+                    walk(&path, out);
+                } else if path.extension().is_some_and(|e| e == "cs") {
+                    out.push(path);
+                }
+            }
+        }
+        let mut files = Vec::new();
+        walk(std::path::Path::new("tests"), &mut files);
+        walk(std::path::Path::new("examples"), &mut files);
+        assert!(files.len() >= 10, "repository C# fixtures not found");
+        let mut sources: Vec<(String, String)> = files
+            .iter()
+            .map(|p| (p.display().to_string(), std::fs::read_to_string(p).unwrap()))
+            .collect();
+        sources.push(("<edge>".into(), EDGE.into()));
+        sources.extend(
+            SMALL
+                .iter()
+                .map(|s| ("<small>".to_owned(), (*s).to_owned())),
+        );
+        let mut generator = Generator(0x5eed_cafe_f00d_0001);
+        sources.extend((0..150).map(|i| (format!("<generated {i}>"), generator.program())));
+        sources
+    }
+
+    /// Every named node under `root`, in pre-order.
+    fn named_nodes(root: Node<'_>) -> Vec<Node<'_>> {
+        let mut cursor = root.walk();
+        let mut stack = vec![root];
+        let mut nodes = Vec::new();
+        while let Some(node) = stack.pop() {
+            nodes.push(node);
+            let children: Vec<_> = node.named_children(&mut cursor).collect();
+            stack.extend(children.into_iter().rev());
+        }
+        nodes
+    }
+
+    /// Run one traversal and render its items and outcome, partial items included.
+    fn render(out: &[Item], result: Result<()>) -> String {
+        match result {
+            Ok(()) => format!("{out:?}"),
+            Err(error) => format!("ERR {:?} {error} {out:?}", error.kind()),
+        }
+    }
+
+    fn sentinel() -> Item {
+        Item {
+            file: "Earlier.cs".into(),
+            name: "Earlier".into(),
+            kind: "method_declaration".into(),
+            line: 1,
+            column: 1,
+            end_line: 1,
+            complexity: 1,
+            coverage: None,
+            crap: 1.0,
+        }
+    }
+
+    /// Compare [`collect`] with the reference on one root and budget pair, starting from
+    /// an earlier file's item. Returns the traversal and whether the reference succeeded.
+    fn compare(
+        kinds: &KindTable,
+        root: Node<'_>,
+        source: &str,
+        cov: Option<&CoverageIndex>,
+        budgets: (usize, usize),
+        context: &str,
+    ) -> (Traversal, bool) {
+        let (tb, cb) = budgets;
+        let mut want = vec![sentinel()];
+        let reference = collect_reference(root, source, "F.cs", cov, &mut want, tb, cb);
+        let reference_ok = reference.is_ok();
+        let want = render(&want, reference);
+        let mut got = vec![sentinel()];
+        let result = collect(kinds, root, source, "F.cs", cov, &mut got, tb, cb);
+        let traversal = *result.as_ref().unwrap_or(&Traversal::Reference);
+        let got = render(&got, result.map(|_| ()));
+        assert_eq!(got, want, "{context} tb={tb} cb={cb}");
+        (traversal, reference_ok)
+    }
+
+    #[test]
+    /// The kind table classifies every node of the corpus exactly as the string comparisons do.
+    fn kind_table_matches_string_classification_on_every_corpus_node() {
+        let kinds = KindTable::new(&csharp());
+        for (name, source) in corpus() {
+            let tree = parse(&source);
+            let mut scratch = tree.walk();
+            for node in named_nodes(tree.root_node()) {
+                let context = format!("{} at {:?} in {name}", node.kind(), node.start_position());
+                assert_eq!(kinds.callable(node), callable(node), "callable: {context}");
+                assert_eq!(
+                    kinds.decision(node, &mut scratch),
+                    decision(node, &source),
+                    "decision: {context}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    /// Every classified name and field exists in the grammar and occurs in the edge source,
+    /// so the classification test above exercises every entry of the table.
+    fn kind_table_entries_exist_in_the_grammar_and_the_edge_source() {
+        let language = csharp();
+        let kinds = KindTable::new(&language);
+        assert_eq!(kinds.classes.len(), language.node_kind_count());
+        assert!(kinds.body.is_some() && kinds.value.is_some() && kinds.operator.is_some());
+        let tree = parse(EDGE);
+        let mut seen = std::collections::BTreeSet::new();
+        let mut cursor = tree.walk();
+        let mut stack = vec![tree.root_node()];
+        while let Some(node) = stack.pop() {
+            seen.insert(node.kind());
+            stack.extend(node.children(&mut cursor));
+        }
+        for &(name, class) in CLASSES {
+            let ids: Vec<u16> = (0..language.node_kind_count() as u16)
+                .filter(|&id| language.node_kind_for_id(id) == Some(name))
+                .collect();
+            assert!(!ids.is_empty(), "{name} is not a kind of the grammar");
+            for id in ids {
+                assert_eq!(kinds.classes[usize::from(id)], class, "{name}");
+            }
+            assert!(seen.contains(name), "{name} does not occur in EDGE");
+        }
+        let unclassified = language.id_for_node_kind("identifier", true);
+        assert_eq!(kinds.classes[usize::from(unclassified)], Class::Other);
+    }
+
+    #[test]
+    /// With production budgets the single pass finishes on every corpus source, with and
+    /// without coverage, and its items equal the reference's.
+    fn single_pass_matches_reference_on_corpus() {
+        let kinds = KindTable::new(&csharp());
+        let mut callables = 0;
+        for (name, source) in corpus() {
+            let tree = parse(&source);
+            let lines = source.lines().count().max(1);
+            let index = CoverageIndex::new((1..=lines).map(|l| (l, (l % 3) as u64)));
+            for cov in [None, Some(&index)] {
+                let budgets = (1_000_000, 1_000_000);
+                let (traversal, ok) =
+                    compare(&kinds, tree.root_node(), &source, cov, budgets, &name);
+                assert!(ok, "{name}");
+                assert_eq!(traversal, Traversal::SinglePass, "{name}");
+            }
+            callables += named_nodes(tree.root_node())
+                .into_iter()
+                .filter(|&n| callable(n))
+                .count();
+        }
+        assert!(callables > 1000, "corpus has only {callables} callables");
+    }
+
+    #[test]
+    /// Started below the tree root, the single pass stays inside the given subtree.
+    fn single_pass_matches_reference_on_every_subtree() {
+        let kinds = KindTable::new(&csharp());
+        let mut generator = Generator(0x0dd_ba11);
+        let sources = [EDGE.to_owned(), generator.program(), generator.program()];
+        for source in &sources {
+            let tree = parse(source);
+            let index = CoverageIndex::new((1..=40).map(|l| (l, (l % 2) as u64)));
+            for node in named_nodes(tree.root_node()) {
+                let context = format!("subtree {} at {:?}", node.kind(), node.start_position());
+                let budgets = (1_000_000, 1_000_000);
+                let (traversal, _) = compare(&kinds, node, source, Some(&index), budgets, &context);
+                assert_eq!(traversal, Traversal::SinglePass, "{context}");
+            }
+        }
+    }
+
+    #[test]
+    /// On every budget pair up to 40, the result, error, partial items and limit reported
+    /// first equal the reference's, and the reference runs exactly when a limit is hit.
+    fn collect_matches_reference_on_budget_boundaries() {
+        let kinds = KindTable::new(&csharp());
+        let mut generator = Generator(0x00b0_d6e7);
+        let mut sources: Vec<String> = SMALL.iter().map(|s| (*s).to_owned()).collect();
+        sources.push(EDGE.to_owned());
+        sources.extend((0..3).map(|_| generator.program()));
+        let (mut fast, mut fallback) = (0, 0);
+        for source in &sources {
+            let tree = parse(source);
+            for tb in 0..=40 {
+                for cb in 0..=40 {
+                    let context = format!("{source:.60}");
+                    let (traversal, ok) =
+                        compare(&kinds, tree.root_node(), source, None, (tb, cb), &context);
+                    let expected = if ok {
+                        Traversal::SinglePass
+                    } else {
+                        Traversal::Reference
+                    };
+                    assert_eq!(traversal, expected, "{context} tb={tb} cb={cb}");
+                    if ok {
+                        fast += 1;
+                    } else {
+                        fallback += 1;
+                    }
+                }
+            }
+        }
+        assert!(
+            fast > 100 && fallback > 100,
+            "fast={fast} fallback={fallback}"
+        );
+    }
+
+    #[test]
+    /// The callable limit fires inside the first callable before the tree limit is reached,
+    /// and the fallback reports it, as the reference does.
+    fn fallback_reports_the_limit_the_reference_reports_first() {
+        let source = "class C { void F() { int a = 1; int b = 2; } void G() {} }";
+        let tree = parse(source);
+        let kinds = KindTable::new(&csharp());
+        let mut items = Vec::new();
+        let error = collect(
+            &kinds,
+            tree.root_node(),
+            source,
+            "C.cs",
+            None,
+            &mut items,
+            9,
+            6,
+        )
+        .err()
+        .unwrap();
+        assert_eq!(error.to_string(), "callable resource limit exceeded");
+        assert!(items.is_empty());
+    }
+
+    #[test]
+    /// One table built once serves parsers on several threads by shared reference.
+    fn kind_table_is_shared_across_threads() {
+        let kinds = KindTable::new(&csharp());
+        let mut generator = Generator(0x7ead);
+        let sources: Vec<String> = (0..8).map(|_| generator.program()).collect();
+        let sequential: Vec<String> = sources
+            .iter()
+            .map(|source| {
+                let tree = parse(source);
+                let mut items = Vec::new();
+                collect_reference(
+                    tree.root_node(),
+                    source,
+                    "F.cs",
+                    None,
+                    &mut items,
+                    1_000_000,
+                    1_000_000,
+                )
+                .unwrap();
+                format!("{items:?}")
+            })
+            .collect();
+        let kinds = &kinds;
+        let parallel: Vec<String> = std::thread::scope(|scope| {
+            let workers: Vec<_> = sources
+                .iter()
+                .map(|source| {
+                    scope.spawn(move || {
+                        let tree = parse(source);
+                        let mut items = Vec::new();
+                        let traversal = collect(
+                            kinds,
+                            tree.root_node(),
+                            source,
+                            "F.cs",
+                            None,
+                            &mut items,
+                            1_000_000,
+                            1_000_000,
+                        )
+                        .unwrap();
+                        assert_eq!(traversal, Traversal::SinglePass);
+                        format!("{items:?}")
+                    })
+                })
+                .collect();
+            workers.into_iter().map(|w| w.join().unwrap()).collect()
+        });
+        assert_eq!(parallel, sequential);
     }
 }
