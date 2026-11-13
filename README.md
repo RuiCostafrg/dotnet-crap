@@ -9,8 +9,8 @@ A Rust command-line quality gate for **C# CRAP scores**, inspired by
 
 This first version parses real `.cs` files with Tree-sitter and reports callable
 complexity, coverage, and CRAP scores. It is distributed as a native executable
-for Linux and macOS, installable with Homebrew, npm, a shell installer, a
-GitHub Action, or as a .NET tool. Scanning needs no Rust, Node.js or .NET runtime
+for Linux and macOS, installable as a .NET tool, with Homebrew, a shell
+installer, or a GitHub Action. Scanning needs no Rust, Node.js or .NET runtime
 except for the .NET tool launcher.
 
 ```text
@@ -69,28 +69,37 @@ baselines, and additional report formats are future work. See the
 [full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature
 mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
-## Installation (pending the first release)
+## Installation
 
-> **No release has been published yet.** The commands below describe the
-> channels that every PR already builds and installs from candidate assets
-> (see [distribution design](docs/DISTRIBUTION.md)); they work once the first
-> `v*` release is published. Pin an exact version in CI.
+> The immutable GitHub release **v0.1.0** exists. NuGet.org availability and
+> live installation support for each channel require separate verification;
+> candidate CI alone does not prove them. Pin an exact version in CI. See
+> [distribution design](docs/DISTRIBUTION.md).
+> npm distribution has been retired; existing private stages are not approved.
 
 Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
 fully static musl builds that also run on Alpine). Windows is only bundled in
 the .NET tool for now.
 
+**.NET tool** (primary channel; requires a .NET 10 or .NET 11 runtime):
+
+Download `dotnet-crap.0.1.0.nupkg` from the immutable
+[v0.1.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
+into a local directory and authenticate its provenance before installing:
+
+```sh
+gh attestation verify ./download/dotnet-crap.0.1.0.nupkg --repo RuiCostafrg/dotnet-crap
+dotnet tool install --global dotnet-crap --version 0.1.0 --add-source ./download
+```
+
+This uses the release package as a local feed and does not claim NuGet.org
+availability. A standalone NuGet publisher is a separate integration followup.
+See [packaging](packaging/README.md) for local package creation.
+
 **Homebrew** (macOS and Linux):
 
 ```sh
 brew install RuiCostafrg/tap/dotnet-crap
-```
-
-**npm** (also pnpm, Yarn, Bun; downloads only the binary for your platform):
-
-```sh
-npm install --save-dev dotnet-crap
-npx dotnet-crap --root . --threshold 10
 ```
 
 **Shell installer** (installs to `~/.local/bin`):
@@ -126,18 +135,6 @@ provenance and SHA-256, then optionally scans and uploads SARIF):
 Collect `coverage.json` beforehand with `dotnet-crap collect` (see
 [Coverlet collection](docs/COVERLET.md)); the action puts `dotnet-crap` on `PATH`.
 Ubuntu and macOS runners are supported.
-
-**.NET tool** (requires a .NET 10 or .NET 11 runtime; the launcher starts the bundled
-native executable):
-
-```sh
-dotnet tool install --global dotnet-crap --version 0.1.0
-```
-
-NuGet.org publication is not automated yet; until it is, install the attested
-`dotnet-crap.<version>.nupkg` from the GitHub release with
-`--add-source <download directory>`. See [packaging](packaging/README.md) for
-local package creation.
 
 ## Development
 
