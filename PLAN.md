@@ -220,6 +220,11 @@ Depends on step 3; use separate PRs for local Git and remote PR resolution.
 
 ### 6. Modern C# syntax and explicit preprocessor policy
 
+- [ ] Logical-pattern scoring: count each explicit `and`/`or` combinator once,
+  preserve comparison/negation and callable ownership rules, and validate
+  physical SDK fixtures with independent complexity and partial/full coverage
+  expectations. Implementation is on `feat/modern-csharp-patterns`; integration
+  and complete validation remain pending. See `docs/CSHARP_PATTERNS.md`.
 - [ ] Define scoring for top-level statements, advanced patterns, records and
   primary constructors; extend async/iterator fixtures where coverage is missing.
 - [ ] Document source-as-written versus compilation-symbol behavior before
