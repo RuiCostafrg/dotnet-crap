@@ -1,0 +1,68 @@
+name: Publish released NuGet tool
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Exact released version without v (v0.1.0 is excluded)'
+        required: true
+        type: string
+      source_sha:
+        description: 'Full 40-character source commit of the selected release tag'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Dispatch ON the immutable v* tag, never main: release permits tags only.
+    # Both the original actor and any rerun actor must be the repository owner.
+    if: >-
+      github.repository == 'RuiCostafrg/dotnet-crap' &&
+      github.actor == 'RuiCostafrg' && github.triggering_actor == 'RuiCostafrg' &&
+      github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v') &&
+      vars.DOTNET_CRAP_NUGET_PUBLISH == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: read
+      attestations: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify released bytes and source before requesting NuGet credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: python3 scripts/verify-nuget-release.py
+      - name: Exchange GitHub OIDC for a short-lived NuGet key
+        uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
+        id: login
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: Push the exact verified package
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ inputs.version }}
+        # Deliberately no --skip-duplicate: any conflict fails, even on retry.
+        # Never normalize/rebuild an archive to explain a byte mismatch.
+        run: |
+          test -n "$NUGET_API_KEY"
+          cd verified-nuget
+          sha256sum --check --strict "dotnet-crap.$VERSION.nupkg.sha256"
+          dotnet nuget push "dotnet-crap.$VERSION.nupkg" \
+            --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
