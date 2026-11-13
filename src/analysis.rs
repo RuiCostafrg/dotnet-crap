@@ -371,7 +371,10 @@ impl KindTable {
             ),
             // The grammar stores the operator token in `operator`, and a token's text
             // is its kind name, so no source text is read. Other children of a valid
-            // expression cannot spell exactly an operator.
+            // expression cannot spell exactly an operator. This relies on the caller
+            // rejecting trees with errors before `collect`: an `ERROR` child may
+            // spell an operator outside the field. `#if A && B` conditions are
+            // aliased to `binary_expression` and keep the operator in the same field.
             Class::Operation => u32::from(
                 self.operator
                     .and_then(|id| n.child_by_field_id(id.get()))
@@ -953,6 +956,15 @@ class C<T> {
         var s = "&&" + '|' + (a & b) + (c | d);
         z += 1;
     }
+    void N() {
+#if A && B
+        int x = 1;
+#elif C || !D
+        void L() { if (y) { } }
+#else
+        int z = a ?? b;
+#endif
+    }
 }"#;
 
     /// Small sources for the budget grid, where limits fall inside nested callables.
@@ -1029,6 +1041,11 @@ class C<T> {
                     self.block(d)
                 ),
                 15 => "// a && b || c\n".to_owned(),
+                16 => format!(
+                    "\n#if A && B\n{}\n#elif C || D\n{}\n#else\nx++;\n#endif\n",
+                    self.block(d),
+                    self.block(d)
+                ),
                 _ => self.statement(0),
             }
         }
