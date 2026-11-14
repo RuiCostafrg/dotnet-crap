@@ -56,12 +56,20 @@ searched or imported. A command that ignores `{results}` fails with missing repo
 
 ## Snapshot and publication
 
-Before executing the command, the adapter scans selected sources, retains their
-original decoded text and SHA-256 byte hashes in memory, and verifies those hashes.
+Before executing the command, the adapter scans selected sources once, retains
+their SHA-256 byte hashes and line counts in memory, and verifies those hashes.
 After the command succeeds it re-verifies original source bytes, parses all fresh
-reports, stages native evidence beside the destination, validates it through the
-native scanner, and verifies original hashes again immediately before atomic
-publication without replacing an existing file. Temporary evidence and the private
+reports, and stages native evidence beside the destination. It then checks the
+staged file with the native scanner's reader, validator and source binding (hash
+and line bounds) against the snapshot, and verifies original hashes again
+immediately before atomic publication without replacing an existing file.
+
+The staged evidence is not checked by a second full scan. The snapshot's hashes
+and line counts come from the same bytes that were parsed, and the final hash
+verification proves those bytes are unchanged, so a second parse could only
+repeat the first. As a consequence, a source edited after the post-command
+verification is always reported as a changed source (`SourceChanged`), never as
+a syntax or stale-coverage error. Temporary evidence and the private
 results directory are removed on success or error. Failed tests, missing reports,
 invalid XML, invalid paths, changed or deleted sources, and publication errors
 leave no new native artifact from the adapter.
