@@ -6,5 +6,3 @@
 /mutants.out/
 /mutants.out.old/
 __pycache__/
-# The npm launcher is source, not build output.
-!packaging/npm/bin/

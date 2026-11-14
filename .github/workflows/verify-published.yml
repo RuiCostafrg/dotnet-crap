@@ -10,10 +10,6 @@ on:
         description: Expected full lowercase release source SHA
         type: string
         required: true
-      verify-npm:
-        description: Verify public npm packages (enable after all five stages are approved)
-        type: boolean
-        default: true
       verify-homebrew:
         description: Verify the live tap (enable after its formula PR is merged)
         type: boolean
@@ -29,56 +25,6 @@ jobs:
     with:
       version: ${{ inputs.version }}
       source-sha: ${{ inputs.source-sha }}
-  npm:
-    needs: release
-    if: inputs.verify-npm
-    name: Published npm/pnpm/Yarn/Bun (${{ matrix.runner }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ubuntu-26.04, ubuntu-26.04-arm, macos-26, macos-26-intel]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: published-release-assets
-          path: authenticated-assets
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24.22.2
-      - name: Compare registry tarballs with the exact attested release-run artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
-          SOURCE_SHA: ${{ inputs.source-sha }}
-        run: |
-          python3 scripts/verify-published.py npm --version "$VERSION" --source-sha "$SOURCE_SHA" \
-            --assets authenticated-assets --output authenticated-npm > npm-evidence.json
-          cat npm-evidence.json
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: published-npm-evidence-${{ matrix.runner }}
-          path: npm-evidence.json
-          if-no-files-found: error
-          retention-days: 90
-      - name: Install the pinned package managers
-        run: |
-          npm uninstall -g yarn pnpm
-          npm install -g --no-audit --no-fund pnpm@12.16.1 @yarnpkg/cli-dist@4.18.1 bun@1.4.4
-          test "$(pnpm --version)" = 12.16.1
-          test "$(yarn --version)" = 4.18.1
-          test "$(bun --version)" = 1.4.4
-      - name: Install exact registry versions without scripts and compare executable bytes
-        env:
-          VERSION: ${{ inputs.version }}
-          SOURCE_SHA: ${{ inputs.source-sha }}
-        run: |
-          python3 scripts/verify-published-install.py registry --assets authenticated-assets \
-            --version "$VERSION" --source-sha "$SOURCE_SHA"
   shell:
     needs: release
     name: Published shell installer (${{ matrix.target }})

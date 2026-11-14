@@ -6,7 +6,7 @@
     <RollForward>Major</RollForward>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <PackAsTool>true</PackAsTool><ToolCommandName>dotnet-crap</ToolCommandName>
-    <PackageId>dotnet-crap</PackageId><Version>0.1.0</Version>
+    <PackageId>dotnet-crap</PackageId><Version>0.1.1</Version>
     <Authors>dotnet-crap contributors</Authors><Description>Code quality analysis for .NET projects.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile><IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
