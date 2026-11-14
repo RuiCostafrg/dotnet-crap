@@ -89,8 +89,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     let evidence = build_evidence(lines, &hashes);
     let parent = destination_parent(&options.output);
     let mut stage = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
-    serde_json::to_writer_pretty(&mut stage, &evidence).kind(ErrorKind::Output)?;
-    stage.write_all(b"\n").kind(ErrorKind::Output)?;
+    write_evidence(&mut stage, &evidence)?;
     stage.as_file().sync_all().kind(ErrorKind::Output)?;
     // Exercise the native validator and scoring on exactly the staged evidence.
     let mut verify = selection;
@@ -102,6 +101,17 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         .persist_noclobber(&options.output)
         .context(ErrorKind::Output, "publishing native coverage")?;
     Ok(())
+}
+
+/// Write pretty evidence JSON and a trailing newline through a buffer, since
+/// unbuffered pretty JSON issues one `write(2)` per token. The explicit flush
+/// reports a deferred write failure as an output error instead of losing it
+/// when the buffer is dropped.
+fn write_evidence(sink: impl Write, evidence: &crate::Coverage) -> Result<()> {
+    let mut writer = std::io::BufWriter::new(sink);
+    serde_json::to_writer_pretty(&mut writer, evidence).kind(ErrorKind::Output)?;
+    writer.write_all(b"\n").kind(ErrorKind::Output)?;
+    writer.flush().kind(ErrorKind::Output)
 }
 
 /// Enforce collection policy before any filesystem or process work.
@@ -418,6 +428,43 @@ mod deadline_tests {
             error.to_string(),
             "collector results cannot contain symbolic links"
         );
+    }
+
+    /// Sink that accepts nothing, so a buffered write only fails at flush.
+    struct FailingSink;
+    impl Write for FailingSink {
+        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("sink refused"))
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    /// One-file evidence for the writer tests.
+    fn sample_evidence() -> crate::Coverage {
+        let mut lines = crate::cobertura::LineEvidence::new();
+        lines.insert("src/a.cs".to_owned(), BTreeMap::from([(5u32, 2u64)]));
+        let hashes = BTreeMap::from([("src/a.cs".to_owned(), "abc123".to_owned())]);
+        build_evidence(lines, &hashes)
+    }
+
+    #[test]
+    /// Evidence goes through the buffer verbatim, with a trailing newline.
+    fn write_evidence_matches_unbuffered_pretty_json() {
+        let evidence = sample_evidence();
+        let mut out = Vec::new();
+        write_evidence(&mut out, &evidence).unwrap();
+        let mut expected = serde_json::to_vec_pretty(&evidence).unwrap();
+        expected.push(b'\n');
+        assert_eq!(out, expected);
+    }
+
+    #[test]
+    /// A small document stays in the buffer, so only the flush can report the failure.
+    fn write_evidence_reports_a_flush_failure_as_an_output_error() {
+        let error = write_evidence(FailingSink, &sample_evidence()).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::Output);
     }
 
     #[test]
