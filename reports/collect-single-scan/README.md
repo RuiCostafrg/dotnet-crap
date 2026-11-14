@@ -43,3 +43,10 @@ small-files, dense-file, many-callables, deep-nesting and solution. The harness
 validated expected scores and exact evidence bytes in every paired run (four
 measured pairs per workload). Invocation-private JSON and logs are retained under
 `/tmp/collect-single-scan-validation/`; their local timings are not claims.
+
+The current integrated source tree passed formatting, warnings-denied Clippy,
+locked debug and release tests, explicit live SDK/Coverlet tests (xUnit, MSTest
+and NUnit), and Python contracts (147 tests, two skipped); every command exited
+zero. These results precede only documentation additions. The Python suite's
+fixture score output is not a production mutation score: the full hosted mutation
+run and its inventory/survivor review remain pending.
