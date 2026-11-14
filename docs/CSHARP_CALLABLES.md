@@ -8,7 +8,9 @@ symbols are applied.
 
 Complexity follows the convention in the [initial release contract](FEATURE_PARITY.md#initial-release-contract):
 start at 1; add one for `if`, loops, `catch`, `?:`, non-default case labels,
-non-discard switch-expression arms, `when`, `&&`, `||`, `??`, and `??=`.
+non-discard switch-expression arms, `when`, `&&`, `||`, `??`, `??=`, and
+each logical-pattern `and`/`or` combinator. The [pattern scoring contract](CSHARP_PATTERNS.md)
+defines the extension and its release boundary.
 
 ## Supported callables
 

@@ -180,6 +180,7 @@ fn scan_impl(args: &ScanOptions, mut line_counts: Option<&mut Vec<usize>>) -> Re
     parser
         .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
         .kind(ErrorKind::Source)?;
+    let kinds = analysis::KindTable::new(&tree_sitter_c_sharp::LANGUAGE.into());
     let mut items = Vec::new();
     let mut source_hashes = Vec::new();
     for path in &files {
@@ -230,6 +231,7 @@ fn scan_impl(args: &ScanOptions, mut line_counts: Option<&mut Vec<usize>>) -> Re
             )
         });
         analysis::collect(
+            &kinds,
             tree.root_node(),
             &source,
             &relative,

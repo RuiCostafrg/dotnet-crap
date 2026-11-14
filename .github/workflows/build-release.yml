@@ -1,7 +1,6 @@
-# Builds the complete candidate release with cargo-dist, packs the .NET tool and
-# npm packages from those exact archives, and uploads them as the calling run's
-# `release-assets` and `npm-packages` artifacts. Read-only: no environment, no
-# secrets, no write permission. release.yml and distribution.yml both call it.
+# Builds candidate archives, installers, formula and the .NET tool as the
+# calling run's release-assets artifact. Read-only: no environment, secrets
+# or write permission. release.yml and distribution.yml both call it.
 name: Build release assets
 on:
   workflow_call:
@@ -21,7 +20,7 @@ on:
         description: Application version
         value: ${{ jobs.plan.outputs.version }}
       digest:
-        description: SHA-256 of the sorted name/digest listing of release-assets and npm-packages
+        description: SHA-256 of the sorted name/digest listing of release-assets
         value: ${{ jobs.assemble.outputs.digest }}
 permissions:
   contents: read
@@ -201,48 +200,18 @@ jobs:
           status=0
           target/tool/dotnet-crap --root examples/Fixture --threshold 0 || status=$?
           [[ "$status" == 1 ]]
-      - name: Validate the exact asset set, then pack and verify npm packages
+      - name: Validate the exact asset set
         env:
           VERSION: ${{ needs.plan.outputs.version }}
-        run: |
-          python3 scripts/prepare-release.py target/distrib release-assets --version "$VERSION"
-          # npm packages repackage the verified release archives; every byte is rechecked.
-          python3 scripts/npm-packages.py --assets release-assets --version "$VERSION" --output npm-packages
-          python3 scripts/npm-packages.py --assets release-assets --version "$VERSION" --output target/npm-packages-again
-          diff -r npm-packages target/npm-packages-again
-          python3 scripts/verify-npm-packages.py --assets release-assets --packages npm-packages --version "$VERSION"
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24.22.2
-      - name: Dry-run the release's stage-publish command with its pinned npm CLI
-        env:
-          VERSION: ${{ needs.plan.outputs.version }}
-        run: |
-          curl --proto '=https' --tlsv1.2 -fsSL -o "$RUNNER_TEMP/npm-12.2.1.tgz" https://registry.npmjs.org/npm/-/npm-12.2.1.tgz
-          echo "6ca0a6151553fc107e60f1186d9c10d57508dcde6de31292a54d4cc4e8e8ef3de25b3281274657442d7115d10df930bb3794ddcb0681cdfd9d317189abf7b63d  $RUNNER_TEMP/npm-12.2.1.tgz" | sha512sum --check
-          npm install -g --ignore-scripts --no-audit --no-fund "$RUNNER_TEMP/npm-12.2.1.tgz"
-          [[ "$(npm --version)" == 12.2.1 ]]
-          # Same command and path form as publish-npm in release.yml; nothing is uploaded.
-          for name in dotnet-crap-linux-x64 dotnet-crap-linux-arm64 dotnet-crap-darwin-x64 dotnet-crap-darwin-arm64 dotnet-crap; do
-            npm stage publish --dry-run --force "./npm-packages/$name-$VERSION.tgz" --access public --tag latest
-          done
+        run: python3 scripts/prepare-release.py target/distrib release-assets --version "$VERSION"
       - name: Digest of the exact payload handed to publication
         id: digest
         run: |
           digest=$(cd release-assets && sha256sum -- * | LC_ALL=C sort -k2 | sha256sum | cut -d' ' -f1)
-          npm_digest=$(cd npm-packages && sha256sum -- * | LC_ALL=C sort -k2 | sha256sum | cut -d' ' -f1)
-          echo "digest=$digest-$npm_digest" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-assets
           path: release-assets/*
           if-no-files-found: error
-          retention-days: 90
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: npm-packages
-          path: npm-packages/*
-          if-no-files-found: error
-          # Exact bytes support approval, retries and published verification for
-          # 90 days. Never rebuild over an expired, attested payload.
           retention-days: 90

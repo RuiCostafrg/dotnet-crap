@@ -2,7 +2,7 @@
 
 Candidate Distribution CI installs local artifacts and mocks the Action's
 GitHub downloads. The workflows here exercise actual public services after a
-release exists. No published release has been verified yet.
+release exists. Live verification results must be recorded separately from candidate CI.
 
 Both workflows run only from `main` in `RuiCostafrg/dotnet-crap`, with read-only
 contents, Actions and attestation access. They require a canonical exact
@@ -31,22 +31,17 @@ runs the .NET launcher through version, passing scan and failing gate checks.
 NuGet does not preserve Unix execute bits; the launcher makes its own private
 executable copy. This does not imply publication on NuGet.org.
 
-After npm approvals and the tap formula merge, run all channels:
+After the tap formula merge, run all channels:
 
 ```sh
 gh workflow run verify-published.yml --repo RuiCostafrg/dotnet-crap --ref main \
   -f version=0.1.0 -f source-sha=<full-tagged-main-SHA> \
-  -F verify-npm=true -F verify-homebrew=true
+  -F verify-homebrew=true
 ```
 
 The combined workflow includes release-asset authentication and all five tool
 RIDs, plus:
 
-- npm, pnpm, Yarn Plug'n'Play, Yarn node_modules and Bun installing the exact
-  public registry version without package lifecycle scripts on Linux/macOS,
-  x64 and ARM64. Registry tarballs must match the exact attested `npm-packages`
-  artifact of the matching release run, and executables must match the release
-  archives. Tarballs are never reconstructed to substitute for original bytes.
 - The actual authenticated shell installer, retaining its real GitHub download
   URLs, on Linux/macOS x64 and ARM64. Installation goes to a temporary home.
 - The actual public Homebrew tap on Linux x64 and macOS x64/ARM64. The live
@@ -60,23 +55,17 @@ RIDs, plus:
   SARIF files are retained as artifacts rather than uploaded to code scanning.
   Candidate CI separately exercises SARIF upload from an isolated main-only job.
 
-Before all packages and the formula are public, `verify-npm=false` and/or
-`verify-homebrew=false` allow staged verification. A skipped channel is not
-evidence that it works; completion requires a run with both inputs true.
+Before the formula is public, `verify-homebrew=false` allows partial verification.
+A skipped channel is not evidence that it works; full verification requires the
+tap check enabled.
 
 ## Evidence and recovery limits
 
 Record the run URL, exact version and full source SHA, platform results,
-checksum/provenance results, registry integrity and original release-run ID.
-Keep the README's pending notices until the respective live channels pass.
-The workflows retain `published-release-evidence` and per-runner
-`published-npm-evidence-*` JSON artifacts with the hashes, registry integrity and
-original release-run/artifact IDs, alongside the per-framework SARIF reports.
-
-The original release and npm run artifacts are retained for 90 days. Complete
-verification within that window. An expired or missing npm artifact fails
-closed; rebuilding an equivalent archive cannot prove exact published-byte
-identity. Reusing the existing immutable artifacts is required for retries.
+checksum/provenance results and installed-byte comparisons.
+The workflows retain `published-release-evidence` JSON with authenticated asset
+hashes alongside the per-framework SARIF reports for 90 days. Reuse existing
+immutable published assets for retries; never rebuild to replace published bytes.
 
 The live Homebrew check deliberately tests the current public tap. Verifying
 an older version after the formula has advanced fails instead of silently
@@ -92,5 +81,5 @@ actionlint
 
 The main Python contract suite runs on PRs and includes these tests. Offline
 tests exercise input validation, provenance command restrictions and rejection,
-checksum/registry tampering and installed-byte identity. They do not replace
-live verification of GitHub, npm or the tap.
+checksum tampering and installed-byte identity. They do not replace
+live verification of GitHub or the tap.
