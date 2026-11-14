@@ -290,6 +290,8 @@ const CLASSES: &[(&str, Class)] = &[
     ("catch_clause", Class::Decision),
     ("conditional_expression", Class::Decision),
     ("when_clause", Class::Decision),
+    ("and_pattern", Class::Decision),
+    ("or_pattern", Class::Decision),
     ("switch_section", Class::SwitchSection),
     ("switch_expression_arm", Class::SwitchArm),
     ("binary_expression", Class::Operation),
@@ -958,6 +960,7 @@ class C<T> {
         var s = "&&" + '|' + (a & b) + (c | d);
         z += 1;
     }
+    bool Patterns(int x) => x is > 0 and < 10 or 20;
     void N() {
 #if A && B
         int x = 1;
