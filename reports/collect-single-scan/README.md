@@ -44,9 +44,12 @@ validated expected scores and exact evidence bytes in every paired run (four
 measured pairs per workload). Invocation-private JSON and logs are retained under
 `/tmp/collect-single-scan-validation/`; their local timings are not claims.
 
-The current integrated source tree passed formatting, warnings-denied Clippy,
+The initial integrated source tree (`6873463`) passed formatting, warnings-denied Clippy,
 locked debug and release tests, explicit live SDK/Coverlet tests (xUnit, MSTest
 and NUnit), and Python contracts (147 tests, two skipped); every command exited
-zero. These results precede only documentation additions. The Python suite's
+zero. Subsequent review fixes keep each source's path/hash/count in one record,
+add a first-error precedence test, and clarify documentation. At `e22d136`,
+Clippy and all 48 library tests passed; a full standard/live rerun is pending.
+The Python suite's
 fixture score output is not a production mutation score: the full hosted mutation
 run and its inventory/survivor review remain pending.
