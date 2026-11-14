@@ -146,17 +146,28 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
     scan_impl(args, None)
 }
 
-/// [`scan`] that also returns each selected source's `str::lines` count, in
-/// `source_hashes` order, taken from exactly the bytes that were hashed and
-/// parsed. `collect` uses them to bound Cobertura lines without re-reading.
-pub(crate) fn scan_with_line_counts(args: &ScanOptions) -> Result<(ScanResult, Vec<usize>)> {
-    let mut line_counts = Vec::new();
-    let result = scan_impl(args, Some(&mut line_counts))?;
-    Ok((result, line_counts))
+/// Facts about one source, kept together to avoid positional hash/count pairing.
+pub(crate) struct ScannedSource {
+    pub(crate) path: PathBuf,
+    pub(crate) hash: String,
+    pub(crate) line_count: usize,
 }
 
-/// Shared [`scan`] body; `line_counts`, when given, receives one count per source.
-fn scan_impl(args: &ScanOptions, mut line_counts: Option<&mut Vec<usize>>) -> Result<ScanResult> {
+/// [`scan`] that also returns source facts from exactly the bytes hashed and
+/// parsed, in scan order. `collect` uses them without re-reading source text.
+pub(crate) fn scan_with_line_counts(
+    args: &ScanOptions,
+) -> Result<(ScanResult, Vec<ScannedSource>)> {
+    let mut sources = Vec::new();
+    let result = scan_impl(args, Some(&mut sources))?;
+    Ok((result, sources))
+}
+
+/// Shared [`scan`] body; `sources`, when given, receives facts for each source.
+fn scan_impl(
+    args: &ScanOptions,
+    mut sources: Option<&mut Vec<ScannedSource>>,
+) -> Result<ScanResult> {
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         fail!(InvalidInput, "threshold must be finite and nonnegative");
     }
@@ -220,8 +231,12 @@ fn scan_impl(args: &ScanOptions, mut line_counts: Option<&mut Vec<usize>>) -> Re
         if let Some(c) = cov {
             evidence::check_binding(c, &hash, source.lines().count(), &relative)?;
         }
-        if let Some(counts) = line_counts.as_mut() {
-            counts.push(source.lines().count());
+        if let Some(sources) = sources.as_mut() {
+            sources.push(ScannedSource {
+                path: path.clone(),
+                hash,
+                line_count: source.lines().count(),
+            });
         }
         let points = cov.map(|c| {
             analysis::CoverageIndex::new(

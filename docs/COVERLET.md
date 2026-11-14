@@ -56,6 +56,10 @@ searched or imported. A command that ignores `{results}` fails with missing repo
 
 ## Snapshot and publication
 
+Source paths containing a colon or a literal backslash on Unix cannot be
+represented by native coverage and are rejected before the command runs. Windows
+path separators are normalized to `/`.
+
 Before executing the command, the adapter scans selected sources once, retains
 their SHA-256 byte hashes and line counts in memory, and verifies those hashes.
 After the command succeeds it re-verifies original source bytes, parses all fresh
@@ -68,8 +72,9 @@ The staged evidence is not checked by a second full scan. The snapshot's hashes
 and line counts come from the same bytes that were parsed, and the final hash
 verification proves those bytes are unchanged, so a second parse could only
 repeat the first. As a consequence, a source edited after the post-command
-verification is always reported as a changed source (`SourceChanged`), never as
-a syntax or stale-coverage error. Temporary evidence and the private
+verification, while still readable, is reported as a changed source
+(`SourceChanged`) rather than a syntax or stale-coverage error. Deleted or
+unreadable sources retain their I/O errors. Temporary evidence and the private
 results directory are removed on success or error. Failed tests, missing reports,
 invalid XML, invalid paths, changed or deleted sources, and publication errors
 leave no new native artifact from the adapter.

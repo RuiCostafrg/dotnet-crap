@@ -48,12 +48,13 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     };
     // The scan hashes, parses and verifies each selected file once; its line
     // counts come from exactly those bytes, so no source is read again here.
-    let (snapshot, line_counts) = scan_with_line_counts(&selection)?;
+    let (snapshot, scanned_sources) = scan_with_line_counts(&selection)?;
     let mut sources = BTreeMap::new();
     let mut hashes = BTreeMap::new();
-    let mut bindings = Vec::with_capacity(line_counts.len());
-    for ((path, hash), &line_count) in snapshot.source_hashes.iter().zip(&line_counts) {
-        let relative = path
+    let mut bindings = Vec::with_capacity(scanned_sources.len());
+    for source in scanned_sources {
+        let relative = source
+            .path
             .strip_prefix(snapshot.root())
             .kind(ErrorKind::InvalidInput)?
             .to_str()
@@ -65,9 +66,9 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         if relative.contains(':') || relative.contains('\\') {
             fail!(Source, "unsupported source path for native coverage");
         }
-        bindings.push((relative.clone(), hash.clone(), line_count));
-        sources.insert(relative.clone(), line_count);
-        hashes.insert(relative, hash.clone());
+        bindings.push((relative.clone(), source.hash.clone(), source.line_count));
+        sources.insert(relative.clone(), source.line_count);
+        hashes.insert(relative, source.hash);
     }
     if sources.is_empty() {
         fail!(InvalidInput, "collection requires selected sources");

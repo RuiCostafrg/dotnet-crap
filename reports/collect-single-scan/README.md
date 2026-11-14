@@ -26,9 +26,9 @@ Counters and call sites compile only in unit-test builds. No dependencies or
 unsafe code were added.
 
 Independent Terra static review of the integrated implementation found no concrete
-binding or publication issue. It did not execute Windows behavior. The private
-parallel hash/count vectors are the least directly mutation-tested bookkeeping;
-the differing-length two-source collection fixture checks their observable use.
+binding or publication issue. It did not execute Windows behavior. Source paths, hashes and line counts are kept in one record per source; the
+differing-length two-source collection fixture checks their observable use.
+A two-failure snapshot test checks error ordering independently of JSON order.
 
 Acceptance requires current-head standard/live tests, complete mutation inventory
 and survivor review with a score strictly above 90%, and hosted same-job Benchmark

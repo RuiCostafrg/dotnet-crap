@@ -417,7 +417,7 @@ fn add_candidate(
             candidates.insert(canonical);
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            // The parser receives source text rather than reading selected files.
+            // The parser receives source line counts without reading selected files.
             // A missing lexical path is still exact evidence when its
             // root-relative identity is an explicitly selected source.
             if let Ok(relative) = candidate.strip_prefix(root) {

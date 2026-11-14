@@ -174,6 +174,17 @@ mod snapshot_tests {
     }
 
     #[test]
+    fn reports_first_failure_in_snapshot_order() {
+        // JSON entry order differs from snapshot order; both bindings fail.
+        let json = format!(
+            r#"{{"version":1,"files":{{"b.cs":{{"sha256":"{HASH}","lines":{{"2":1}}}},"a.cs":{{"sha256":"{HASH}","lines":{{"4":1}}}}}}}}"#
+        );
+        let error = check(&json).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::Coverage);
+        assert_eq!(error.to_string(), "coverage line outside a.cs");
+    }
+
+    #[test]
     /// The same reader, validator and binding errors as `scan`, with the same kinds.
     fn rejects_like_scan() {
         for (json, kind, text) in [
