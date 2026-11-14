@@ -49,7 +49,19 @@ locked debug and release tests, explicit live SDK/Coverlet tests (xUnit, MSTest
 and NUnit), and Python contracts (147 tests, two skipped); every command exited
 zero. Subsequent review fixes keep each source's path/hash/count in one record,
 add a first-error precedence test, and clarify documentation. At `e22d136`,
-Clippy and all 48 library tests passed; a full standard/live rerun is pending.
+Clippy and all 48 library tests passed, followed by a passing full
+standard/live rerun (all commands exited zero; Python 147 tests, two skipped).
 The Python suite's
 fixture score output is not a production mutation score: the full hosted mutation
 run and its inventory/survivor review remain pending.
+
+With the round-2 benchmark harness integrated, Python contracts passed again:
+194 tests, three skipped. At tree `3017075`, base (#38, `d63fa0a`) and head
+were built sequentially with `--profile dist` on the same toolchain. All 21
+comparisons (seven default-scale generated workloads × scan/scan-coverage/collect,
+four paired measurements each) passed expected-score and exact-output validation.
+The additional workloads are many-medium and skew. Artifacts are retained under
+`/tmp/collect-single-scan-validation/dist-comparison/`. Subsequent dependency
+merges change ancestry only, leaving these source and harness files identical.
+At publication, full final-head hosted mutation inventory/survivor review and
+hosted separated collect rows remain pending; local timings establish no speedup.
