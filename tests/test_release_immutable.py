@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class ImmutablePublication(unittest.TestCase):
     def publish(self, immutable):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()
-        step = workflow.split('      - name: Publish verified assets\n', 1)[1].split('  publish-npm:', 1)[0]
+        step = workflow.split('      - name: Publish verified assets\n', 1)[1]
         script = textwrap.dedent(step.split('        run: |\n', 1)[1])
         mock = '''gh() {
           case "$1 $2" in
@@ -37,7 +37,7 @@ class ImmutablePublication(unittest.TestCase):
         result = self.publish('true')
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_mutable_or_missing_metadata_blocks_npm_staging(self):
+    def test_mutable_or_missing_metadata_fails_publication(self):
         for value in ('false', 'null', ''):
             with self.subTest(value=value):
                 result = self.publish(value)
