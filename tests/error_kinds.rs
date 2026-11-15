@@ -42,6 +42,7 @@ fn collect_options(
         expected_reports,
         timeout: Duration::from_secs(60),
         jobs: None,
+        defines: Vec::new(),
     }
 }
 

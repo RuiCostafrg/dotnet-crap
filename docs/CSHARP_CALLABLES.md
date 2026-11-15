@@ -3,8 +3,8 @@
 This document describes the callable forms scored by `dotnet-crap` and their
 limits. It covers syntax as written by the Tree-sitter C# grammar (`tree-sitter-c-sharp`
 0.23.x). It is not Roslyn semantics: overloads, generic constraints, and
-conversions are not resolved, and no compilation or conditional-compilation
-symbols are applied.
+conversions are not resolved. Conditional-compilation symbols are applied only
+to files that do not parse as written ([conditional compilation](PREPROCESSOR.md)).
 
 Complexity follows the convention in the [initial release contract](FEATURE_PARITY.md#initial-release-contract):
 start at 1; add one for `if`, loops, `catch`, `?:`, non-default case labels,
@@ -102,7 +102,9 @@ These forms have no implementation and produce no record:
 - An indexer has no block body of its own. Block bodies appear only on explicit
   accessors, which keep their `get`/`set` names.
 - Both branches of a `#if`/`#else` are scored as written, regardless of the
-  symbols a build would define.
+  symbols a build would define. Only a file that does not parse as written has
+  its `#if` groups resolved with `--define` symbols, and then only the active
+  branch is scored; see [conditional compilation](PREPROCESSOR.md).
 - Coverage ownership is line based. A line containing both a parent's code and
   the start of a nested callable is excluded from the parent. This is the same
   same-line ambiguity documented for all callables and is not resolved here.

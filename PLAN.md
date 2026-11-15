@@ -228,7 +228,11 @@ Depends on step 3; use separate PRs for local Git and remote PR resolution.
 - [ ] Define scoring for top-level statements, advanced patterns, records and
   primary constructors; extend async/iterator fixtures where coverage is missing.
 - [ ] Document source-as-written versus compilation-symbol behavior before
-  claiming compilation-aware analysis.
+  claiming compilation-aware analysis. Files that parse are scored as written;
+  files that do not are reparsed with `#if` groups resolved from `--define`
+  symbols ([conditional compilation](docs/PREPROCESSOR.md)). Open: whether a file
+  that still cannot be parsed may be skipped by an explicit opt-in, and whether
+  `#if A && B` inside a body should keep adding a decision point.
 - [ ] Add physical SDK-compilable fixtures with hand-derived complexity, nested
   ownership and partial/full coverage expectations for each supported construct.
 

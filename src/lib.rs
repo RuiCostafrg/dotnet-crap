@@ -16,6 +16,7 @@
 use crate::error::{fail, OptionExt, ResultExt};
 use sha2::{Digest, Sha256};
 use std::{
+    collections::BTreeSet,
     fs,
     num::NonZeroUsize,
     path::{Path, PathBuf},
@@ -28,6 +29,8 @@ mod analysis;
 mod evidence;
 /// Deterministic ordered worker pool for per-file work.
 mod par;
+/// Conditional-compilation fallback for sources that do not parse as written.
+mod preprocess;
 /// Report model and text rendering.
 mod report;
 /// Input path resolution and source file discovery.
@@ -56,6 +59,12 @@ pub struct ScanOptions {
     /// Worker threads for per-file scanning and source verification; `None`
     /// uses the available parallelism. The report is identical for any value.
     pub jobs: Option<NonZeroUsize>,
+    /// Conditional compilation symbols, as the CLI's `--define`. They are used
+    /// only for a file that does not parse as written: its `#if` groups are
+    /// then resolved with these symbols and the file is parsed again. Each
+    /// must be a letter or `_` followed by letters, digits or `_`, and not
+    /// `true` or `false`. Empty by default (no symbol defined).
+    pub defines: Vec<String>,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -67,6 +76,7 @@ impl Default for ScanOptions {
             fail_on_empty: false,
             paths: Vec::new(),
             jobs: None,
+            defines: Vec::new(),
         }
     }
 }
@@ -201,6 +211,13 @@ fn scan_impl(
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         fail!(InvalidInput, "threshold must be finite and nonnegative");
     }
+    if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {
+        fail!(
+            InvalidInput,
+            "invalid conditional compilation symbol {symbol:?}: use a letter or `_` followed by letters, digits or `_`, other than `true` and `false`"
+        );
+    }
+    let defines: BTreeSet<String> = args.defines.iter().cloned().collect();
     let root = args
         .root
         .canonicalize()
@@ -232,6 +249,7 @@ fn scan_impl(
         root: &root,
         coverage: coverage.as_ref(),
         kinds: &kinds,
+        defines: &defines,
         want_lines: want_sources,
         budget,
     };
@@ -287,6 +305,7 @@ struct FileContext<'a> {
     root: &'a Path,
     coverage: Option<&'a Coverage>,
     kinds: &'a analysis::KindTable,
+    defines: &'a BTreeSet<String>,
     want_lines: bool,
     budget: &'a par::ByteBudget,
 }
@@ -331,9 +350,19 @@ impl FileContext<'_> {
             .context(ErrorKind::Source, "parser failed")?;
         #[cfg(test)]
         work::count(work::Unit::Parse);
-        if tree.root_node().has_error() {
-            fail!(Syntax, "invalid C# syntax in {relative}");
-        }
+        // Files that parse as written are scored from their own text. Only a
+        // failed parse pays for conditional-compilation resolution and a
+        // second parse; the resolved text keeps every byte offset and line.
+        let (source, tree) = if tree.root_node().has_error() {
+            drop(tree);
+            let Some(resolved) = self.reparse_resolved(parser, &source)? else {
+                fail!(Syntax, "invalid C# syntax in {relative}");
+            };
+            drop(source);
+            resolved
+        } else {
+            (source, tree)
+        };
         let cov = self.coverage.and_then(|c| c.files.get(&relative));
         let line_count = (cov.is_some() || self.want_lines).then(|| source.lines().count());
         if let Some(c) = cov {
@@ -363,6 +392,24 @@ impl FileContext<'_> {
             line_count,
             items,
         })
+    }
+
+    /// Resolve conditional compilation in a source whose tree has errors and
+    /// parse it again. `None` means the original syntax error stands.
+    fn reparse_resolved(
+        &self,
+        parser: &mut TsParser,
+        source: &str,
+    ) -> Result<Option<(String, tree_sitter::Tree)>> {
+        let Some(resolved) = preprocess::resolve(source, self.defines) else {
+            return Ok(None);
+        };
+        let tree = parser
+            .parse(&resolved, None)
+            .context(ErrorKind::Source, "parser failed")?;
+        #[cfg(test)]
+        work::count(work::Unit::Parse);
+        Ok((!tree.root_node().has_error()).then_some((resolved, tree)))
     }
 }
 
@@ -602,5 +649,38 @@ mod tests {
         scan(&options(dir.path(), 4)).unwrap();
         // One read, hash, decode and parse per file, plus the verification's read and hash.
         assert_eq!(work::take(), [80, 80, 40, 40]);
+    }
+
+    #[test]
+    fn only_files_that_fail_to_parse_are_resolved_and_parsed_again() {
+        let dir = tempfile::tempdir().unwrap();
+        // Parses as written, `#if` included: one parse, whatever is defined.
+        fs::write(
+            dir.path().join("a.cs"),
+            "class A {\n#if X\n int F() { return 1; }\n#endif\n}\n",
+        )
+        .unwrap();
+        // Fails as written, parses once resolved: two parses.
+        fs::write(
+            dir.path().join("b.cs"),
+            "class B {\n int G()\n#if X\n { return 1; }\n#else\n ;\n#endif\n}\n",
+        )
+        .unwrap();
+        for defines in [vec![], vec!["X".to_owned()]] {
+            work::take();
+            let result = scan(&ScanOptions {
+                defines,
+                ..options(dir.path(), 1)
+            })
+            .unwrap();
+            assert_eq!(work::take(), [4, 4, 2, 3]);
+            assert_eq!(result.report().functions[0].name, "F");
+        }
+        // Fails with nothing to resolve: no second parse, the original error.
+        fs::write(dir.path().join("c.cs"), "class {\n").unwrap();
+        work::take();
+        let error = scan(&options(dir.path(), 1)).unwrap_err();
+        assert_eq!(error.to_string(), "invalid C# syntax in c.cs");
+        assert_eq!(work::take(), [3, 3, 3, 4]);
     }
 }
