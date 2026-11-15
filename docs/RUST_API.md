@@ -82,13 +82,16 @@ selected files), each with its own C# parser. Results are assembled in the
 selected-file order, so the report, the JSON, text and SARIF bytes, and the
 source hashes are identical for every worker count. When several files fail,
 the error is the one the first failing file in selection order produces, with
-the same kind and message as a single-threaded scan; work on later files is
-abandoned. Larger files are started first so one large file does not run alone
-at the end. To bound memory, a parse starts only while the source bytes being
-parsed at once stay within `max(1 MiB, the size of the file to parse)`: a file
-above 1 MiB is parsed alone, so a tree of very large files has the same peak
-memory as a single-threaded scan. `verify_sources` uses the scan's worker count
-and also reports the first changed file in selection order.
+the same kind and message as a single-threaded scan; files not yet started are
+skipped. Larger files are started first so one large file does not run alone
+at the end. To bound memory, a file is read only while the source bytes being
+read, decoded and parsed at once stay within `max(1 MiB, the size of that
+file)`: a file above 1 MiB is processed alone, so a tree of very large files
+holds at most one file's source and syntax tree at a time, as a single-threaded
+scan does. The admitted size is the file's size just before it is read.
+Per-file results are kept until the report is assembled, as before. `verify_sources` uses the scan's worker count
+and also reports the first changed file in selection order; it only hashes, so
+it holds at most one file's bytes per worker.
 
 ## Results, policy, and errors
 

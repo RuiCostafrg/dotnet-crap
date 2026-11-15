@@ -295,6 +295,13 @@ impl FileContext<'_> {
     /// Read, hash, decode, parse and score one source. The check order defines
     /// which error a file reports and matches the sequential scan exactly.
     fn scan_file(&self, parser: &mut TsParser, path: &Path) -> Result<FileScan> {
+        // Admit the file before reading it, so its raw bytes, decoded text and
+        // tree all count against the budget. Admission cannot fail; a file that
+        // cannot be stat'ed is admitted as empty and its read reports the error.
+        // Declared first, so it is dropped last, after the tree and the text.
+        let size_hint =
+            fs::metadata(path).map_or(0, |m| usize::try_from(m.len()).unwrap_or(usize::MAX));
+        let _permit = self.budget.acquire(size_hint);
         let bytes =
             fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
         #[cfg(test)]
@@ -304,7 +311,6 @@ impl FileContext<'_> {
         work::count(work::Unit::Hash);
         let source = decode_source(&bytes)
             .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
-        let size = bytes.len();
         drop(bytes);
         let relative = path
             .strip_prefix(self.root)
@@ -320,8 +326,6 @@ impl FileContext<'_> {
                 "source path contains characters unsupported by native coverage: {relative}"
             );
         }
-        // Declared before the tree, so the tree is dropped before its bytes are released.
-        let _permit = self.budget.acquire(size);
         let tree = parser
             .parse(&source, None)
             .context(ErrorKind::Source, "parser failed")?;
