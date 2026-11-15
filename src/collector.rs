@@ -2,7 +2,7 @@
 use crate::error::{fail, ErrorKind, OptionExt, Result, ResultExt};
 use crate::{
     output::{destination_parent, is_csharp_path},
-    scan, ScanOptions,
+    scan_with_line_counts, ScanOptions,
 };
 use std::{
     collections::BTreeMap,
@@ -46,27 +46,33 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         paths: options.paths.clone(),
         ..Default::default()
     };
-    let snapshot = scan(&selection)?;
+    // The scan hashes, parses and verifies each selected file once; its line
+    // counts come from exactly those bytes, so no source is read again here.
+    let (snapshot, scanned_sources) = scan_with_line_counts(&selection)?;
     let mut sources = BTreeMap::new();
     let mut hashes = BTreeMap::new();
-    for (path, hash) in &snapshot.source_hashes {
-        let relative = path
+    let mut bindings = Vec::with_capacity(scanned_sources.len());
+    for source in scanned_sources {
+        let relative = source
+            .path
             .strip_prefix(snapshot.root())
             .kind(ErrorKind::InvalidInput)?
             .to_str()
-            .context(ErrorKind::Source, "non-UTF-8 source path")?
-            .replace('\\', "/");
+            .context(ErrorKind::Source, "non-UTF-8 source path")?;
+        #[cfg(windows)]
+        let relative = relative.replace('\\', "/");
+        #[cfg(not(windows))]
+        let relative = relative.to_owned();
         if relative.contains(':') || relative.contains('\\') {
             fail!(Source, "unsupported source path for native coverage");
         }
-        let bytes = fs::read(path).kind(ErrorKind::Io)?;
-        sources.insert(relative.clone(), crate::decode_source(&bytes)?);
-        hashes.insert(relative, hash.clone());
+        bindings.push((relative.clone(), source.hash.clone(), source.line_count));
+        sources.insert(relative.clone(), source.line_count);
+        hashes.insert(relative, source.hash);
     }
     if sources.is_empty() {
         fail!(InvalidInput, "collection requires selected sources");
     }
-    snapshot.verify_sources()?;
     let mut results_builder = tempfile::Builder::new();
     results_builder.prefix("dotnet-crap-coverlet-");
     #[cfg(unix)]
@@ -85,16 +91,16 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     }
     snapshot.verify_sources()?;
     let reports = find_reports(results.path(), options.expected_reports)?;
-    let lines = crate::cobertura::parse_reports(snapshot.root(), &sources, &reports)?;
+    let lines = crate::cobertura::parse_reports_counted(snapshot.root(), &sources, &reports)?;
     let evidence = build_evidence(lines, &hashes);
     let parent = destination_parent(&options.output);
     let mut stage = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
     write_evidence(&mut stage, &evidence)?;
     stage.as_file().sync_all().kind(ErrorKind::Output)?;
-    // Exercise the native validator and scoring on exactly the staged evidence.
-    let mut verify = selection;
-    verify.coverage = Some(stage.path().to_owned());
-    scan(&verify)?;
+    // Run the native reader, validator and source binding on exactly the staged
+    // evidence. The snapshot's hashes and line counts stand in for a second
+    // read and parse; the verification below proves those bytes are unchanged.
+    crate::evidence::check_snapshot(stage.path(), &bindings)?;
     snapshot.verify_sources()?;
     validate_destination(&options.output)?;
     stage
@@ -486,4 +492,62 @@ mod deadline_tests {
     }
 
     use super::*;
+}
+
+#[cfg(test)]
+mod work_count_tests {
+    use super::*;
+
+    /// Child that writes one Cobertura report covering both fixture sources.
+    const REPORT: &str = r#"import pathlib,sys
+p=pathlib.Path(sys.argv[1])/'run'; p.mkdir()
+(p/'coverage.cobertura.xml').write_text('<coverage><sources/><packages><package><classes><class filename="A.cs"><lines><line number="1" hits="1"/></lines></class><class filename="B.cs"><lines><line number="2" hits="0"/></lines></class></classes></package></packages></coverage>')
+"#;
+
+    #[test]
+    /// Each selected file is read and hashed four times (snapshot, the
+    /// snapshot's own verification, after the command, before publishing),
+    /// and decoded and parsed once. Counted, not timed.
+    fn collect_reads_hashes_decodes_and_parses_each_file_a_fixed_number_of_times() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(
+            dir.path().join("A.cs"),
+            "class A { int F() { return 1; } }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("B.cs"),
+            "class B {\n int G() { return 2; }\n}\n",
+        )
+        .unwrap();
+        let options = CollectOptions {
+            root: dir.path().to_owned(),
+            paths: Vec::new(),
+            output: dir.path().join("native.json"),
+            command: ["python3", "-c", REPORT, "{results}"]
+                .into_iter()
+                .map(OsString::from)
+                .collect(),
+            expected_reports: 1,
+            timeout: Duration::from_secs(60),
+        };
+        crate::work::take();
+        collect(&options).unwrap();
+        let files = 2;
+        assert_eq!(
+            crate::work::take(),
+            [4 * files, 4 * files, files, files],
+            "[reads, hashes, decodes, parses]"
+        );
+        let native: serde_json::Value =
+            serde_json::from_slice(&fs::read(&options.output).unwrap()).unwrap();
+        assert_eq!(
+            native["files"]["A.cs"]["lines"],
+            serde_json::json!({"1": 1})
+        );
+        assert_eq!(
+            native["files"]["B.cs"]["lines"],
+            serde_json::json!({"2": 0})
+        );
+    }
 }

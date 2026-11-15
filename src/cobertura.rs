@@ -40,6 +40,22 @@ pub fn parse_reports(
     sources: &BTreeMap<String, String>,
     reports: &[PathBuf],
 ) -> Result<LineEvidence> {
+    let line_counts = sources
+        .iter()
+        .map(|(name, text)| (name.clone(), text.lines().count()))
+        .collect();
+    parse_reports_counted(root, &line_counts, reports)
+}
+
+/// [`parse_reports`] with each selected source's `str::lines` count in place of
+/// its text. The importer needs only each source's name and line count, so the
+/// collector passes counts taken from the snapshot scan's hashed bytes instead
+/// of keeping or re-reading the decoded sources.
+pub(crate) fn parse_reports_counted(
+    root: &Path,
+    sources: &BTreeMap<String, usize>,
+    reports: &[PathBuf],
+) -> Result<LineEvidence> {
     if reports.is_empty() {
         fail!(Cobertura, "no Cobertura reports to import");
     }
@@ -50,29 +66,24 @@ pub fn parse_reports(
         fail!(InvalidInput, "coverage root must be a directory");
     }
     let mut evidence = LineEvidence::new();
-    // Line counts per selected source are file properties, not report
-    // properties, so one lazy cache serves every report in this call.
-    let mut line_counts = HashMap::new();
     for report in reports {
         // Keep the inner kind: an unreadable report is `Io`, rejected content is `Cobertura`.
-        import_report(&root, sources, report, &mut evidence, &mut line_counts).map_err(
-            |error| error.wrap(format!("invalid Cobertura report {}", report.display())),
-        )?;
+        import_report(&root, sources, report, &mut evidence).map_err(|error| {
+            error.wrap(format!("invalid Cobertura report {}", report.display()))
+        })?;
     }
     Ok(evidence)
 }
 
 /// Import one report, merging class-level lines into the shared evidence map.
 ///
-/// `line_counts` caches the source line count per resolved selected source name
-/// across reports. Resolution results are memoized per filename within this
-/// report because `<sources>` prefixes are per report.
+/// Resolution results are memoized per filename within this report because
+/// `<sources>` prefixes are per report.
 fn import_report(
     root: &Path,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     report: &Path,
     evidence: &mut LineEvidence,
-    line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
     let file = fs::File::open(report)
@@ -108,15 +119,7 @@ fn import_report(
         let classes = child_elements(classes, "class");
         for class in classes {
             found_class = true;
-            import_class(
-                class,
-                root,
-                sources,
-                &prefixes,
-                evidence,
-                &mut resolutions,
-                line_counts,
-            )?;
+            import_class(class, root, sources, &prefixes, evidence, &mut resolutions)?;
         }
     }
     if !found_class {
@@ -220,17 +223,15 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
 /// Resolve one class filename and import its class-level line records.
 ///
 /// `resolutions` memoizes successful filename resolutions for this report;
-/// failures return errors directly and are not cached. `line_counts` caches
-/// the line count per resolved selected source so a dense file with many
-/// classes is measured once instead of once per class.
+/// failures return errors directly and are not cached. `sources` maps each
+/// selected source to its line count.
 fn import_class<'a>(
     class: Node<'a, 'a>,
     root: &Path,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     prefixes: &[PathBuf],
     evidence: &mut LineEvidence,
     resolutions: &mut HashMap<&'a str, Option<String>>,
-    line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
     let filename = class.attribute("filename").context(
         ErrorKind::Cobertura,
@@ -248,21 +249,10 @@ fn import_class<'a>(
         }
     };
     let source_line_count = match &resolved {
-        Some(name) => Some(match line_counts.get(name) {
-            Some(count) => *count,
-            None => {
-                let count = sources
-                    .get(name)
-                    .context(
-                        ErrorKind::Cobertura,
-                        "resolved selected source is missing from the source map",
-                    )?
-                    .lines()
-                    .count();
-                line_counts.insert(name.clone(), count);
-                count
-            }
-        }),
+        Some(name) => Some(*sources.get(name).context(
+            ErrorKind::Cobertura,
+            "resolved selected source is missing from the source map",
+        )?),
         None => None,
     };
     let mut parsed = Vec::with_capacity(lines.len());
@@ -331,7 +321,7 @@ fn resolve_filename(
     root: &Path,
     prefixes: &[PathBuf],
     filename: &str,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
 ) -> Result<Option<String>> {
     let path =
         normalize_path(filename).context(ErrorKind::Cobertura, "invalid Cobertura filename")?;
@@ -404,7 +394,7 @@ fn add_candidate(
     root: &Path,
     base: &Path,
     filename: &str,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     candidates: &mut BTreeSet<PathBuf>,
 ) -> Result<()> {
     let candidate = base.join(filename);
@@ -427,7 +417,7 @@ fn add_candidate(
             candidates.insert(canonical);
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            // The parser receives source text rather than reading selected files.
+            // The parser receives source line counts without reading selected files.
             // A missing lexical path is still exact evidence when its
             // root-relative identity is an explicitly selected source.
             if let Ok(relative) = candidate.strip_prefix(root) {
@@ -646,8 +636,8 @@ mod resource_tests {
 
 #[cfg(test)]
 mod dense_class_regression_tests {
-    //! Many `<class>` records name the same dense source file, so per-class
-    //! resolution and per-class line counting must be cached without changing
+    //! Many `<class>` records name the same dense source file, so resolution is
+    //! memoized and each source's line count is computed once, without changing
     //! merge, range or resolution semantics for later classes.
 
     use super::{parse_reports, LineEvidence};
@@ -750,7 +740,7 @@ mod dense_class_regression_tests {
     }
 
     #[test]
-    /// A cached line count for an earlier class must still bound later classes.
+    /// The line count used for an earlier class must still bound later classes.
     fn out_of_range_line_in_later_class_is_rejected_with_the_same_message() {
         let mut fixture = Fixture::new();
         fixture.source("src/Dense.cs", "one\ntwo\nthree\n");
@@ -770,7 +760,7 @@ mod dense_class_regression_tests {
     }
 
     #[test]
-    /// Line counts are cached per resolved source, never across different files.
+    /// Line counts belong to each resolved source, never shared across files.
     fn cached_line_count_of_one_source_does_not_bound_another() {
         let mut fixture = Fixture::new();
         fixture.source("src/Short.cs", "one\n");
