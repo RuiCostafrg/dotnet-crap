@@ -4,6 +4,8 @@ use crate::error::{fail, ErrorKind, Result, ResultExt};
 
 /// Decode UTF-8 or BOM-marked UTF-16 source, rejecting malformed bytes instead of replacing them.
 pub(crate) fn decode_source(bytes: &[u8]) -> Result<String> {
+    #[cfg(test)]
+    crate::work::count(crate::work::Unit::Decode);
     if bytes.starts_with(&[0xff, 0xfe]) || bytes.starts_with(&[0xfe, 0xff]) {
         let le = bytes[0] == 0xff;
         let data = &bytes[2..];

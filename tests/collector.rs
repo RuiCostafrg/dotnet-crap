@@ -362,3 +362,21 @@ fn duplicate_reports_are_union_evidence_and_do_not_attest_project_completeness()
         None
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn literal_backslashes_cannot_alias_native_source_paths() {
+    for with_collision in [false, true] {
+        let (dir, options) = fixture("import pathlib; pathlib.Path('executed').touch()");
+        fs::write(dir.path().join(r"A\B.cs"), "class Literal {}\n").unwrap();
+        if with_collision {
+            fs::create_dir(dir.path().join("A")).unwrap();
+            fs::write(dir.path().join("A/B.cs"), "class Nested {}\n").unwrap();
+        }
+        let error = collect(&options).unwrap_err();
+        assert_eq!(error.kind(), dotnet_crap::ErrorKind::Source);
+        assert!(error.to_string().contains("unsupported source path"));
+        assert!(!dir.path().join("executed").exists());
+        assert!(!options.output.exists());
+    }
+}
