@@ -1,0 +1,4 @@
+k=1 wall med 1679 ms | per-process cpu mean 1493 ms, max 1493 ms
+k=2 wall med 1977 ms | per-process cpu mean 1736 ms, max 1793 ms
+k=4 wall med 2469 ms | per-process cpu mean 2095 ms, max 2255 ms
+k=8 wall med 4613 ms | per-process cpu mean 3387 ms, max 3558 ms

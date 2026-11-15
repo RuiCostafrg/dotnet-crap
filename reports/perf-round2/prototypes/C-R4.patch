@@ -1,0 +1,19 @@
+diff --git a/src/collector.rs b/src/collector.rs
+index 337d0b3..8909e6f 100644
+--- a/src/collector.rs
++++ b/src/collector.rs
+@@ -112,8 +112,12 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+     let evidence = build_evidence(lines, &hashes);
+     let parent = destination_parent(&options.output);
+     let mut stage = tempfile::NamedTempFile::new_in(parent).kind(ErrorKind::Output)?;
+-    serde_json::to_writer_pretty(&mut stage, &evidence).kind(ErrorKind::Output)?;
+-    stage.write_all(b"\n").kind(ErrorKind::Output)?;
++    // Buffer: unbuffered pretty JSON issues one write(2) per token.
++    let mut writer = std::io::BufWriter::new(&mut stage);
++    serde_json::to_writer_pretty(&mut writer, &evidence).kind(ErrorKind::Output)?;
++    writer.write_all(b"\n").kind(ErrorKind::Output)?;
++    writer.flush().kind(ErrorKind::Output)?;
++    drop(writer);
+     drop(p);
+     let p = prof::phase("evidence_fsync");
+     stage.as_file().sync_all().kind(ErrorKind::Output)?;

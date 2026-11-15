@@ -1,0 +1,170 @@
+diff --git a/src/collector.rs b/src/collector.rs
+index 8909e6f..52b4d2e 100644
+--- a/src/collector.rs
++++ b/src/collector.rs
+@@ -2,7 +2,7 @@
+ use crate::error::{fail, ErrorKind, OptionExt, Result, ResultExt};
+ use crate::{
+     output::{destination_parent, is_csharp_path},
+-    prof, scan, scan_retaining, ScanOptions,
++    prof, scan_retaining, ScanOptions,
+ };
+ use std::{
+     collections::BTreeMap,
+@@ -60,6 +60,7 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+     let p = prof::phase("source_reread");
+     let mut sources = BTreeMap::new();
+     let mut hashes = BTreeMap::new();
++    let mut bindings = Vec::with_capacity(scanned.len());
+     for ((path, hash), file) in snapshot.source_hashes.iter().zip(&scanned) {
+         let relative = path
+             .strip_prefix(snapshot.root())
+@@ -70,6 +71,7 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+         if relative.contains(':') || relative.contains('\\') {
+             fail!(Source, "unsupported source path for native coverage");
+         }
++        bindings.push((relative.clone(), hash.clone(), file.line_count));
+         sources.insert(relative.clone(), file.line_count);
+         hashes.insert(relative, hash.clone());
+     }
+@@ -122,11 +124,11 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+     let p = prof::phase("evidence_fsync");
+     stage.as_file().sync_all().kind(ErrorKind::Output)?;
+     drop(p);
+-    // Exercise the native validator and scoring on exactly the staged evidence.
+-    let mut verify = selection;
+-    verify.coverage = Some(stage.path().to_owned());
++    // Exercise the native reader, validator and source binding on exactly the
++    // staged evidence. The snapshot's hashes and line counts stand in for a
++    // second read/parse; the check below re-proves the bytes are unchanged.
+     let p = prof::phase("verify_scan");
+-    scan(&verify)?;
++    crate::check_coverage_against_snapshot(stage.path(), &bindings)?;
+     drop(p);
+     let p = prof::phase("verify_before_publish");
+     snapshot.verify_sources()?;
+diff --git a/src/lib.rs b/src/lib.rs
+index 5094b3c..c5b70f9 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -153,6 +153,39 @@ pub(crate) struct ScannedFile {
+     pub(crate) line_count: usize,
+ }
+ 
++/// Bind one validated coverage entry to a scanned source: the entry must carry
++/// the source's hash and stay within its `str::lines` count.
++fn check_binding(c: &CoverageFile, hash: &str, line_count: usize, relative: &str) -> Result<()> {
++    if !hash.eq_ignore_ascii_case(&c.sha256) {
++        fail!(Coverage, "stale coverage for {relative}");
++    }
++    if c.lines
++        .keys()
++        .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
++    {
++        fail!(Coverage, "coverage line outside {relative}");
++    }
++    Ok(())
++}
++
++/// Read native coverage with scan's reader and validator, then bind every
++/// entry for a snapshot source exactly as a scan of the unchanged snapshot
++/// bytes would. `files` holds `(relative, sha256, line_count)` in scan order;
++/// entries for unselected files are ignored, as in scan.
++pub(crate) fn check_coverage_against_snapshot(
++    coverage: &Path,
++    files: &[(String, String, usize)],
++) -> Result<()> {
++    let coverage = evidence::read(coverage)?;
++    evidence::validate(&coverage)?;
++    for (relative, hash, line_count) in files {
++        if let Some(c) = coverage.files.get(relative) {
++            check_binding(c, hash, *line_count, relative)?;
++        }
++    }
++    Ok(())
++}
++
+ /// [`scan`] that also returns per-file facts for the collector.
+ pub(crate) fn scan_retaining(args: &ScanOptions) -> Result<(ScanResult, Vec<ScannedFile>)> {
+     let mut files = Vec::new();
+@@ -221,16 +254,7 @@ fn scan_impl(args: &ScanOptions, mut retain: Option<&mut Vec<ScannedFile>>) -> R
+         }
+         let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
+         if let Some(c) = cov {
+-            if !hash.eq_ignore_ascii_case(&c.sha256) {
+-                fail!(Coverage, "stale coverage for {relative}");
+-            }
+-            let line_count = source.lines().count();
+-            if c.lines
+-                .keys()
+-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
+-            {
+-                fail!(Coverage, "coverage line outside {relative}");
+-            }
++            check_binding(c, &hash, source.lines().count(), &relative)?;
+         }
+         let points = cov.map(|c| {
+             analysis::CoverageIndex::new(
+@@ -278,3 +302,62 @@ fn scan_impl(args: &ScanOptions, mut retain: Option<&mut Vec<ScannedFile>>) -> R
+     result.verify_sources()?;
+     Ok(result)
+ }
++
++#[cfg(test)]
++mod snapshot_binding_tests {
++    use super::*;
++
++    const HASH: &str = "ab00000000000000000000000000000000000000000000000000000000000000";
++
++    /// Write `json` and check it against one snapshot file `a.cs` with 3 lines.
++    fn check(json: &str) -> Result<()> {
++        let dir = tempfile::tempdir().unwrap();
++        let path = dir.path().join("c.json");
++        fs::write(&path, json).unwrap();
++        check_coverage_against_snapshot(&path, &[("a.cs".into(), HASH.to_uppercase(), 3)])
++    }
++    fn entry(name: &str, sha: &str, line: &str) -> String {
++        format!(
++            r#"{{"version":1,"files":{{"{name}":{{"sha256":"{sha}","lines":{{"{line}":1}}}}}}}}"#
++        )
++    }
++
++    #[test]
++    /// Matching hash (case-insensitively) and the last line pass; unselected entries are ignored.
++    fn accepts_bound_entries_and_ignores_unselected_files() {
++        check(&entry("a.cs", HASH, "3")).unwrap();
++        check(&entry("b.cs", &"cd".repeat(32), "999")).unwrap();
++    }
++
++    #[test]
++    /// The same reader, validator and binding errors as scan, with the same kinds.
++    fn rejects_like_scan() {
++        for (json, kind, text) in [
++            (
++                entry("a.cs", &"cd".repeat(32), "1"),
++                ErrorKind::Coverage,
++                "stale coverage for a.cs",
++            ),
++            (
++                entry("a.cs", HASH, "4"),
++                ErrorKind::Coverage,
++                "coverage line outside a.cs",
++            ),
++            (
++                entry("a.cs", HASH, "0"),
++                ErrorKind::Coverage,
++                "invalid coverage line: 0",
++            ),
++            ("{".to_owned(), ErrorKind::Coverage, "invalid coverage JSON"),
++            (
++                r#"{"version":2,"files":{}}"#.to_owned(),
++                ErrorKind::Coverage,
++                "unsupported coverage version",
++            ),
++        ] {
++            let error = check(&json).unwrap_err();
++            assert_eq!(error.kind(), kind, "{json}");
++            assert_eq!(error.to_string(), text, "{json}");
++        }
++    }
++}
