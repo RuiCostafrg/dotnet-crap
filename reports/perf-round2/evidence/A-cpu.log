@@ -1,0 +1,12 @@
+dense-file scan wall: base med 706 min 634 max 864 | cand med 525 min 506 max 590 | ratio 0.743 | separated yes
+dense-file scan cpu: base med 596 min 569 max 691 | cand med 464 min 432 max 478 | ratio 0.779 | separated yes
+dense-file scan rss KiB: base 64170 cand 64088
+many-callables scan wall: base med 462 min 415 max 576 | cand med 375 min 346 max 521 | ratio 0.811 | separated no
+many-callables scan cpu: base med 385 min 367 max 464 | cand med 317 min 297 max 409 | ratio 0.824 | separated no
+many-callables scan rss KiB: base 44914 cand 44768
+deep-nesting scan wall: base med 206 min 187 max 237 | cand med 181 min 156 max 225 | ratio 0.880 | separated no
+deep-nesting scan cpu: base med 171 min 155 max 190 | cand med 151 min 127 max 174 | ratio 0.881 | separated no
+deep-nesting scan rss KiB: base 26098 cand 26400
+small-files scan wall: base med 1105 min 870 max 1326 | cand med 1203 min 842 max 1386 | ratio 1.089 | separated no
+small-files scan cpu: base med 512 min 455 max 556 | cand med 498 min 433 max 529 | ratio 0.972 | separated no
+small-files scan rss KiB: base 14484 cand 14484

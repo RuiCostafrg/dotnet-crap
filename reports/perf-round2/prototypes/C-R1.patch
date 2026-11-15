@@ -1,0 +1,251 @@
+diff --git a/src/cobertura.rs b/src/cobertura.rs
+index b31df15..4b5f2d6 100644
+--- a/src/cobertura.rs
++++ b/src/cobertura.rs
+@@ -39,6 +39,23 @@ pub fn parse_reports(
+     root: &Path,
+     sources: &BTreeMap<String, String>,
+     reports: &[PathBuf],
++) -> Result<LineEvidence> {
++    let line_counts = sources
++        .iter()
++        .map(|(name, text)| (name.clone(), text.lines().count()))
++        .collect();
++    parse_reports_counted(root, &line_counts, reports)
++}
++
++/// [`parse_reports`] keyed by selected source line counts instead of source text.
++///
++/// The importer only needs each selected source's identity and `str::lines`
++/// count, so the collector passes counts taken from the snapshot scan rather
++/// than keeping (or re-reading) every decoded source.
++pub(crate) fn parse_reports_counted(
++    root: &Path,
++    sources: &BTreeMap<String, usize>,
++    reports: &[PathBuf],
+ ) -> Result<LineEvidence> {
+     if reports.is_empty() {
+         fail!(Cobertura, "no Cobertura reports to import");
+@@ -51,29 +68,24 @@ pub fn parse_reports(
+         fail!(InvalidInput, "coverage root must be a directory");
+     }
+     let mut evidence = LineEvidence::new();
+-    // Line counts per selected source are file properties, not report
+-    // properties, so one lazy cache serves every report in this call.
+-    let mut line_counts = HashMap::new();
+     for report in reports {
+         // Keep the inner kind: an unreadable report is `Io`, rejected content is `Cobertura`.
+-        import_report(&root, sources, report, &mut evidence, &mut line_counts).map_err(
+-            |error| error.wrap(format!("invalid Cobertura report {}", report.display())),
+-        )?;
++        import_report(&root, sources, report, &mut evidence).map_err(|error| {
++            error.wrap(format!("invalid Cobertura report {}", report.display()))
++        })?;
+     }
+     Ok(evidence)
+ }
+ 
+ /// Import one report, merging class-level lines into the shared evidence map.
+ ///
+-/// `line_counts` caches the source line count per resolved selected source name
+-/// across reports. Resolution results are memoized per filename within this
+-/// report because `<sources>` prefixes are per report.
++/// Resolution results are memoized per filename within this report because
++/// `<sources>` prefixes are per report.
+ fn import_report(
+     root: &Path,
+-    sources: &BTreeMap<String, String>,
++    sources: &BTreeMap<String, usize>,
+     report: &Path,
+     evidence: &mut LineEvidence,
+-    line_counts: &mut HashMap<String, usize>,
+ ) -> Result<()> {
+     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
+     let read_phase = crate::prof::phase("cob_read");
+@@ -112,15 +124,7 @@ fn import_report(
+         let classes = child_elements(classes, "class");
+         for class in classes {
+             found_class = true;
+-            import_class(
+-                class,
+-                root,
+-                sources,
+-                &prefixes,
+-                evidence,
+-                &mut resolutions,
+-                line_counts,
+-            )?;
++            import_class(class, root, sources, &prefixes, evidence, &mut resolutions)?;
+         }
+     }
+     if !found_class {
+@@ -211,17 +215,15 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>>
+ /// Resolve one class filename and import its class-level line records.
+ ///
+ /// `resolutions` memoizes successful filename resolutions for this report;
+-/// failures return errors directly and are not cached. `line_counts` caches
+-/// the line count per resolved selected source so a dense file with many
+-/// classes is measured once instead of once per class.
++/// failures return errors directly and are not cached. `sources` maps each
++/// selected source to its precomputed line count.
+ fn import_class<'a>(
+     class: Node<'a, 'a>,
+     root: &Path,
+-    sources: &BTreeMap<String, String>,
++    sources: &BTreeMap<String, usize>,
+     prefixes: &[PathBuf],
+     evidence: &mut LineEvidence,
+     resolutions: &mut HashMap<&'a str, Option<String>>,
+-    line_counts: &mut HashMap<String, usize>,
+ ) -> Result<()> {
+     let filename = class.attribute("filename").context(
+         ErrorKind::Cobertura,
+@@ -239,21 +241,10 @@ fn import_class<'a>(
+         }
+     };
+     let source_line_count = match &resolved {
+-        Some(name) => Some(match line_counts.get(name) {
+-            Some(count) => *count,
+-            None => {
+-                let count = sources
+-                    .get(name)
+-                    .context(
+-                        ErrorKind::Cobertura,
+-                        "resolved selected source is missing from the source map",
+-                    )?
+-                    .lines()
+-                    .count();
+-                line_counts.insert(name.clone(), count);
+-                count
+-            }
+-        }),
++        Some(name) => Some(*sources.get(name).context(
++            ErrorKind::Cobertura,
++            "resolved selected source is missing from the source map",
++        )?),
+         None => None,
+     };
+     let mut parsed = Vec::with_capacity(lines.len());
+@@ -322,7 +313,7 @@ fn resolve_filename(
+     root: &Path,
+     prefixes: &[PathBuf],
+     filename: &str,
+-    sources: &BTreeMap<String, String>,
++    sources: &BTreeMap<String, usize>,
+ ) -> Result<Option<String>> {
+     let path =
+         normalize_path(filename).context(ErrorKind::Cobertura, "invalid Cobertura filename")?;
+@@ -381,7 +372,7 @@ fn add_candidate(
+     root: &Path,
+     base: &Path,
+     filename: &str,
+-    sources: &BTreeMap<String, String>,
++    sources: &BTreeMap<String, usize>,
+     candidates: &mut BTreeSet<PathBuf>,
+ ) -> Result<()> {
+     let candidate = base.join(filename);
+diff --git a/src/collector.rs b/src/collector.rs
+index 75321f3..337d0b3 100644
+--- a/src/collector.rs
++++ b/src/collector.rs
+@@ -2,8 +2,7 @@
+ use crate::error::{fail, ErrorKind, OptionExt, Result, ResultExt};
+ use crate::{
+     output::{destination_parent, is_csharp_path},
+-    prof::{self, Counter},
+-    scan, ScanOptions,
++    prof, scan, scan_retaining, ScanOptions,
+ };
+ use std::{
+     collections::BTreeMap,
+@@ -55,12 +54,13 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+         ..Default::default()
+     };
+     let p = prof::phase("snapshot_scan");
+-    let snapshot = scan(&selection)?;
++    // Keep line counts of exactly the hashed snapshot bytes; nothing is re-read.
++    let (snapshot, scanned) = scan_retaining(&selection)?;
+     drop(p);
+     let p = prof::phase("source_reread");
+     let mut sources = BTreeMap::new();
+     let mut hashes = BTreeMap::new();
+-    for (path, hash) in &snapshot.source_hashes {
++    for ((path, hash), file) in snapshot.source_hashes.iter().zip(&scanned) {
+         let relative = path
+             .strip_prefix(snapshot.root())
+             .kind(ErrorKind::InvalidInput)?
+@@ -70,19 +70,14 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+         if relative.contains(':') || relative.contains('\\') {
+             fail!(Source, "unsupported source path for native coverage");
+         }
+-        let bytes = fs::read(path).kind(ErrorKind::Io)?;
+-        prof::add(Counter::SourceRead, 1);
+-        prof::add(Counter::Decode, 1);
+-        prof::add(Counter::RetainedSourceBytes, bytes.len() as u64);
+-        sources.insert(relative.clone(), crate::decode_source(&bytes)?);
++        sources.insert(relative.clone(), file.line_count);
+         hashes.insert(relative, hash.clone());
+     }
+     if sources.is_empty() {
+         fail!(InvalidInput, "collection requires selected sources");
+     }
+-    drop(p);
+-    let p = prof::phase("verify_after_snapshot");
+-    snapshot.verify_sources()?;
++    // The snapshot scan's own final verification just ran; nothing has been
++    // read or executed since, so a second pass here proved nothing new.
+     drop(p);
+     let p = prof::phase("tempdir");
+     let mut results_builder = tempfile::Builder::new();
+@@ -111,7 +106,7 @@ fn collect_inner(options: &CollectOptions) -> Result<()> {
+     let reports = find_reports(results.path(), options.expected_reports)?;
+     drop(p);
+     let p = prof::phase("cobertura_import");
+-    let lines = crate::cobertura::parse_reports(snapshot.root(), &sources, &reports)?;
++    let lines = crate::cobertura::parse_reports_counted(snapshot.root(), &sources, &reports)?;
+     drop(p);
+     let p = prof::phase("evidence_write");
+     let evidence = build_evidence(lines, &hashes);
+diff --git a/src/lib.rs b/src/lib.rs
+index d1c6574..5094b3c 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -142,6 +142,26 @@ pub use error::{Error, ErrorKind, Result};
+ 
+ /// Validate inputs and scan selected C# sources.
+ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
++    scan_impl(args, None)
++}
++
++/// Facts about one scanned source that `collect` reuses instead of re-reading it.
++/// Entries are in `ScanResult::source_hashes` order and derive from exactly the
++/// hashed bytes.
++pub(crate) struct ScannedFile {
++    /// `str::lines` count of the decoded source, as Cobertura import bounds lines.
++    pub(crate) line_count: usize,
++}
++
++/// [`scan`] that also returns per-file facts for the collector.
++pub(crate) fn scan_retaining(args: &ScanOptions) -> Result<(ScanResult, Vec<ScannedFile>)> {
++    let mut files = Vec::new();
++    let result = scan_impl(args, Some(&mut files))?;
++    Ok((result, files))
++}
++
++/// Shared scan body; `retain` collects per-file facts for internal callers.
++fn scan_impl(args: &ScanOptions, mut retain: Option<&mut Vec<ScannedFile>>) -> Result<ScanResult> {
+     if !args.threshold.is_finite() || args.threshold < 0.0 {
+         fail!(InvalidInput, "threshold must be finite and nonnegative");
+     }
+@@ -228,6 +248,11 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+             1_000_000,
+             1_000_000,
+         )?;
++        if let Some(retain) = retain.as_mut() {
++            retain.push(ScannedFile {
++                line_count: source.lines().count(),
++            });
++        }
+     }
+     let coverage_complete = items.iter().all(|i| i.coverage.is_some());
+     let failed = items.iter().any(|i| i.crap > args.threshold)

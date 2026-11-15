@@ -1,0 +1,515 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 0b50e12..2e80b5a 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -25,6 +25,8 @@ use tree_sitter::Parser as TsParser;
+ mod analysis;
+ /// Native coverage schema, reading and validation.
+ mod evidence;
++/// Deterministic ordered parallel map.
++mod par;
+ /// Report model and text rendering.
+ mod report;
+ /// Input path resolution and source file discovery.
+@@ -85,16 +87,28 @@ impl ScanResult {
+     }
+     /// Verify that selected source bytes still match the scanned bytes.
+     pub fn verify_sources(&self) -> Result<()> {
+-        for (path, hash) in &self.source_hashes {
+-            if hex::encode(Sha256::digest(fs::read(path).kind(ErrorKind::Io)?)) != *hash {
+-                fail!(
+-                    SourceChanged,
+-                    "source changed during scan: {}",
+-                    path.display()
+-                );
+-            }
+-        }
+-        Ok(())
++        self.verify_with(par::default_cap())
++    }
++    /// Verify sources with at most `cap` worker threads.
++    fn verify_with(&self, cap: usize) -> Result<()> {
++        par::ordered_map(
++            self.source_hashes.len(),
++            (0..par::workers_for(self.source_hashes.len(), cap))
++                .map(|_| ())
++                .collect(),
++            |(), i| {
++                let (path, hash) = &self.source_hashes[i];
++                if hex::encode(Sha256::digest(fs::read(path).kind(ErrorKind::Io)?)) != *hash {
++                    fail!(
++                        SourceChanged,
++                        "source changed during scan: {}",
++                        path.display()
++                    );
++                }
++                Ok(())
++            },
++        )
++        .map(drop)
+     }
+     /// Render the report using the policies captured by the scan.
+     pub fn render(&self, format: ReportFormat) -> Result<String> {
+@@ -136,6 +150,11 @@ pub use error::{Error, ErrorKind, Result};
+ 
+ /// Validate inputs and scan selected C# sources.
+ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
++    scan_with(args, par::default_cap())
++}
++
++/// Scan with at most `cap` worker threads; `1` is the sequential path.
++fn scan_with(args: &ScanOptions, cap: usize) -> Result<ScanResult> {
+     if !args.threshold.is_finite() || args.threshold < 0.0 {
+         fail!(InvalidInput, "threshold must be finite and nonnegative");
+     }
+@@ -155,68 +174,25 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+         evidence::validate(c)?;
+     }
+     let files = selection::select(&root, &args.paths)?;
+-    let mut parser = TsParser::new();
+-    parser
+-        .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
+-        .kind(ErrorKind::Source)?;
++    let paths: Vec<&PathBuf> = files.iter().collect();
++    let workers = par::workers_for(paths.len(), cap);
++    let parsers = (0..workers)
++        .map(|_| {
++            let mut parser = TsParser::new();
++            parser
++                .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
++                .kind(ErrorKind::Source)?;
++            Ok(parser)
++        })
++        .collect::<Result<Vec<_>>>()?;
++    let scanned = par::ordered_map(paths.len(), parsers, |parser, i| {
++        scan_file(parser, &root, paths[i], coverage.as_ref())
++    })?;
+     let mut items = Vec::new();
+     let mut source_hashes = Vec::new();
+-    for path in &files {
+-        let bytes =
+-            fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
+-        let hash = hex::encode(Sha256::digest(&bytes));
+-        let source = decode_source(&bytes)
+-            .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
+-        let relative = path
+-            .strip_prefix(&root)
+-            .kind(ErrorKind::InvalidInput)?
+-            .to_str()
+-            .context(ErrorKind::Source, "non-UTF-8 source path")?
+-            .to_owned();
+-        #[cfg(windows)]
+-        let relative = relative.replace('\\', "/");
+-        if coverage.is_some() && relative.contains(['\\', ':']) {
+-            fail!(
+-                Source,
+-                "source path contains characters unsupported by native coverage: {relative}"
+-            );
+-        }
+-        source_hashes.push((path.clone(), hash.clone()));
+-        let tree = parser
+-            .parse(&source, None)
+-            .context(ErrorKind::Source, "parser failed")?;
+-        if tree.root_node().has_error() {
+-            fail!(Syntax, "invalid C# syntax in {relative}");
+-        }
+-        let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
+-        if let Some(c) = cov {
+-            if !hash.eq_ignore_ascii_case(&c.sha256) {
+-                fail!(Coverage, "stale coverage for {relative}");
+-            }
+-            let line_count = source.lines().count();
+-            if c.lines
+-                .keys()
+-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
+-            {
+-                fail!(Coverage, "coverage line outside {relative}");
+-            }
+-        }
+-        let points = cov.map(|c| {
+-            analysis::CoverageIndex::new(
+-                c.lines
+-                    .iter()
+-                    .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits)),
+-            )
+-        });
+-        analysis::collect(
+-            tree.root_node(),
+-            &source,
+-            &relative,
+-            points.as_ref(),
+-            &mut items,
+-            1_000_000,
+-            1_000_000,
+-        )?;
++    for (hash, mut file_items) in scanned {
++        source_hashes.push(hash);
++        items.append(&mut file_items);
+     }
+     let coverage_complete = items.iter().all(|i| i.coverage.is_some());
+     let failed = items.iter().any(|i| i.crap > args.threshold)
+@@ -239,6 +215,202 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+         require_coverage: args.require_coverage,
+         fail_on_empty: args.fail_on_empty,
+     };
+-    result.verify_sources()?;
++    result.verify_with(cap)?;
+     Ok(result)
+ }
++
++/// Read, hash, decode, parse and score one source; the check order defines which error a file reports.
++fn scan_file(
++    parser: &mut TsParser,
++    root: &Path,
++    path: &Path,
++    coverage: Option<&Coverage>,
++) -> Result<((PathBuf, String), Vec<Item>)> {
++    let bytes =
++        fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
++    let hash = hex::encode(Sha256::digest(&bytes));
++    let source = decode_source(&bytes)
++        .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
++    drop(bytes);
++    let relative = path
++        .strip_prefix(root)
++        .kind(ErrorKind::InvalidInput)?
++        .to_str()
++        .context(ErrorKind::Source, "non-UTF-8 source path")?
++        .to_owned();
++    #[cfg(windows)]
++    let relative = relative.replace('\\', "/");
++    if coverage.is_some() && relative.contains(['\\', ':']) {
++        fail!(
++            Source,
++            "source path contains characters unsupported by native coverage: {relative}"
++        );
++    }
++    let tree = parser
++        .parse(&source, None)
++        .context(ErrorKind::Source, "parser failed")?;
++    if tree.root_node().has_error() {
++        fail!(Syntax, "invalid C# syntax in {relative}");
++    }
++    let cov = coverage.and_then(|c| c.files.get(&relative));
++    if let Some(c) = cov {
++        if !hash.eq_ignore_ascii_case(&c.sha256) {
++            fail!(Coverage, "stale coverage for {relative}");
++        }
++        let line_count = source.lines().count();
++        if c.lines
++            .keys()
++            .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
++        {
++            fail!(Coverage, "coverage line outside {relative}");
++        }
++    }
++    let points = cov.map(|c| {
++        analysis::CoverageIndex::new(
++            c.lines
++                .iter()
++                .map(|(line, &hits)| (line.parse::<usize>().expect("validated line"), hits)),
++        )
++    });
++    let mut items = Vec::new();
++    analysis::collect(
++        tree.root_node(),
++        &source,
++        &relative,
++        points.as_ref(),
++        &mut items,
++        1_000_000,
++        1_000_000,
++    )?;
++    Ok(((path.to_path_buf(), hash), items))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    const OK: &str = "class C { int F(int x) { return x > 0 ? 1 : 2; } }";
++
++    fn options(root: &Path) -> ScanOptions {
++        ScanOptions {
++            root: root.to_path_buf(),
++            threshold: 1e12,
++            ..Default::default()
++        }
++    }
++
++    /// Many valid files followed by a slow-to-parse failing file and a fast failing file.
++    fn failing_tree() -> tempfile::TempDir {
++        let dir = tempfile::tempdir().unwrap();
++        for i in 0..30 {
++            fs::write(dir.path().join(format!("a{i:02}.cs")), OK).unwrap();
++        }
++        // First failure in sorted order: syntax error buried after a large valid body.
++        let mut big = String::from("class Big {");
++        for i in 0..4000 {
++            big.push_str(&format!("int M{i}(int x) {{ return x > {i} ? 1 : 2; }}\n"));
++        }
++        big.push_str("int Broken( {");
++        fs::write(dir.path().join("b_slow_syntax.cs"), big).unwrap();
++        // Later files fail differently and immediately.
++        fs::write(dir.path().join("c_bad_utf8.cs"), [0xffu8, 0xfe, 0x41]).unwrap();
++        fs::write(dir.path().join("d_syntax.cs"), "class {").unwrap();
++        dir
++    }
++
++    #[test]
++    fn parallel_scan_reports_the_first_failing_file_in_sorted_order() {
++        let dir = failing_tree();
++        let sequential = scan_with(&options(dir.path()), 1).unwrap_err();
++        assert_eq!(sequential.kind(), ErrorKind::Syntax);
++        assert!(sequential.to_string().ends_with("b_slow_syntax.cs"));
++        for _ in 0..25 {
++            for cap in [2, 4, 8] {
++                let error = scan_with(&options(dir.path()), cap).unwrap_err();
++                assert_eq!(error.kind(), sequential.kind());
++                assert_eq!(format!("{error:#}"), format!("{sequential:#}"));
++            }
++        }
++    }
++
++    #[test]
++    fn parallel_scan_keeps_check_order_within_a_file() {
++        // Decode failure must win over the syntax failure in the same file and later files.
++        let dir = tempfile::tempdir().unwrap();
++        fs::write(dir.path().join("a.cs"), [0xffu8, 0xfe, 0x41]).unwrap();
++        fs::write(dir.path().join("b.cs"), "class {").unwrap();
++        for cap in [1, 2, 4] {
++            let error = scan_with(&options(dir.path()), cap).unwrap_err();
++            assert_eq!(error.kind(), ErrorKind::Source, "cap {cap}");
++        }
++    }
++
++    #[test]
++    fn parallel_scan_matches_sequential_report_and_hash_order() {
++        let dir = tempfile::tempdir().unwrap();
++        for i in 0..40 {
++            let sub = dir.path().join(format!("p{:02}", i % 7));
++            fs::create_dir_all(&sub).unwrap();
++            let body = (0..=i % 5).fold(String::new(), |s, n| {
++                format!("{s} int M{n}(int x) {{ return x > {n} ? 1 : 2; }}")
++            });
++            fs::write(
++                sub.join(format!("f{i:02}.cs")),
++                format!("class C{i} {{{body} }}"),
++            )
++            .unwrap();
++        }
++        let base = scan_with(&options(dir.path()), 1).unwrap();
++        for cap in [2, 3, 8, 64] {
++            let other = scan_with(&options(dir.path()), cap).unwrap();
++            assert_eq!(
++                serde_json::to_string(other.report()).unwrap(),
++                serde_json::to_string(base.report()).unwrap(),
++                "cap {cap}"
++            );
++            assert_eq!(other.report().files_scanned, 40);
++            assert_eq!(other.source_hashes, base.source_hashes);
++            assert_eq!(other.input_paths(), base.input_paths());
++        }
++    }
++
++    #[test]
++    fn parallel_verify_reports_the_first_changed_file_in_order() {
++        let dir = tempfile::tempdir().unwrap();
++        for i in 0..20 {
++            fs::write(dir.path().join(format!("f{i:02}.cs")), OK).unwrap();
++        }
++        let result = scan_with(&options(dir.path()), 4).unwrap();
++        result.verify_with(4).unwrap();
++        fs::write(dir.path().join("f05.cs"), format!("{OK} ")).unwrap();
++        fs::write(dir.path().join("f12.cs"), format!("{OK} ")).unwrap();
++        fs::remove_file(dir.path().join("f03.cs")).unwrap();
++        for cap in [1, 2, 8] {
++            let error = result.verify_with(cap).unwrap_err();
++            assert_eq!(error.kind(), ErrorKind::Io, "cap {cap}");
++        }
++        fs::write(dir.path().join("f03.cs"), OK).unwrap();
++        for cap in [1, 2, 8] {
++            let error = result.verify_with(cap).unwrap_err();
++            assert_eq!(error.kind(), ErrorKind::SourceChanged);
++            assert!(error.to_string().ends_with("f05.cs"), "cap {cap}");
++        }
++    }
++
++    #[test]
++    fn default_cap_honours_the_environment_override_only_when_valid() {
++        // Only this test touches the variable; scan_with-based tests never read it.
++        let var = par::JOBS_ENV;
++        std::env::set_var(var, "3");
++        assert_eq!(par::default_cap(), 3);
++        for invalid in ["0", "abc", "", "-2"] {
++            std::env::set_var(var, invalid);
++            assert!(par::default_cap() >= 1);
++            assert_ne!(par::default_cap(), 0);
++        }
++        std::env::set_var(var, " 1 ");
++        assert_eq!(par::default_cap(), 1);
++        std::env::remove_var(var);
++        assert!(par::default_cap() >= 1);
++    }
++}
+diff --git a/src/par.rs b/src/par.rs
+new file mode 100644
+index 0000000..350573a
+--- /dev/null
++++ b/src/par.rs
+@@ -0,0 +1,155 @@
++//! Deterministic ordered parallel map over indexed work items (std only).
++//!
++//! Workers claim indices from one atomic counter and store a per-index result.
++//! The caller receives results in index order, or the error of the lowest
++//! failing index, exactly like a sequential `for` loop with `?`.
++
++use crate::error::Result;
++use std::{
++    sync::{
++        atomic::{AtomicUsize, Ordering},
++        Mutex,
++    },
++    thread,
++};
++
++/// Environment variable capping the worker count; `1` selects the sequential path.
++pub(crate) const JOBS_ENV: &str = "DOTNET_CRAP_THREADS";
++
++/// Worker cap: the environment override if valid, else the available cores.
++pub(crate) fn default_cap() -> usize {
++    std::env::var(JOBS_ENV)
++        .ok()
++        .and_then(|v| v.trim().parse::<usize>().ok())
++        .filter(|&n| n > 0)
++        .unwrap_or_else(|| thread::available_parallelism().map_or(1, usize::from))
++}
++
++/// Worker count for `items` units of work under `cap`: never above `items`, never zero.
++pub(crate) fn workers_for(items: usize, cap: usize) -> usize {
++    cap.min(items).max(1)
++}
++
++/// Run `work(state, index)` for every index in `0..items` using one state per worker.
++///
++/// `states` fixes the worker count (one thread per state; a single state runs inline
++/// on the calling thread without spawning). Returns the results in index order, or the
++/// error with the lowest index. Indices above the lowest known failure are skipped, so
++/// work past the first error is cancelled, but every index below it is always completed.
++pub(crate) fn ordered_map<S: Send, T: Send>(
++    items: usize,
++    mut states: Vec<S>,
++    work: impl Fn(&mut S, usize) -> Result<T> + Sync,
++) -> Result<Vec<T>> {
++    if states.len() <= 1 {
++        let mut state = states.pop();
++        return (0..items)
++            .map(|i| work(state.as_mut().expect("one state"), i))
++            .collect();
++    }
++    let next = AtomicUsize::new(0);
++    let first_failure = AtomicUsize::new(usize::MAX);
++    let slots: Vec<Mutex<Option<Result<T>>>> = (0..items).map(|_| Mutex::new(None)).collect();
++    thread::scope(|scope| {
++        for state in &mut states {
++            let (next, first_failure, slots, work) = (&next, &first_failure, &slots, &work);
++            scope.spawn(move || loop {
++                let i = next.fetch_add(1, Ordering::Relaxed);
++                if i >= items || i > first_failure.load(Ordering::Relaxed) {
++                    return;
++                }
++                let result = work(state, i);
++                if result.is_err() {
++                    first_failure.fetch_min(i, Ordering::Relaxed);
++                }
++                *slots[i].lock().unwrap_or_else(|e| e.into_inner()) = Some(result);
++            });
++        }
++    });
++    slots
++        .into_iter()
++        .map(|slot| {
++            slot.into_inner()
++                .unwrap_or_else(|e| e.into_inner())
++                .expect("every index up to the first failure is completed")
++        })
++        .collect()
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::error::{fail, ErrorKind};
++    use std::time::Duration;
++
++    #[test]
++    fn workers_are_capped_by_items_and_never_zero() {
++        assert_eq!(workers_for(0, 8), 1);
++        assert_eq!(workers_for(1, 8), 1);
++        assert_eq!(workers_for(3, 8), 3);
++        assert_eq!(workers_for(100, 8), 8);
++        assert_eq!(workers_for(100, 0), 1);
++    }
++
++    #[test]
++    fn results_keep_index_order_for_any_worker_count() {
++        for workers in 1..=6 {
++            let out = ordered_map(50, vec![(); workers], |(), i| Ok(i * 2)).unwrap();
++            assert_eq!(out, (0..50).map(|i| i * 2).collect::<Vec<_>>());
++        }
++        assert!(ordered_map(0, vec![(); 4], |(), i| Ok(i))
++            .unwrap()
++            .is_empty());
++    }
++
++    #[test]
++    fn lowest_failing_index_wins_even_when_a_later_one_fails_first() {
++        for _ in 0..40 {
++            let error = ordered_map(8, vec![(); 4], |(), i| match i {
++                // The earliest failure is slow; later failures finish immediately.
++                2 => {
++                    thread::sleep(Duration::from_millis(15));
++                    fail!(Syntax, "failure 2")
++                }
++                5 | 7 => fail!(Io, "failure later"),
++                _ => Ok(i),
++            })
++            .unwrap_err();
++            assert_eq!(error.to_string(), "failure 2");
++            assert_eq!(error.kind(), ErrorKind::Syntax);
++        }
++    }
++
++    #[test]
++    fn work_after_the_first_failure_is_cancelled() {
++        let calls = AtomicUsize::new(0);
++        let error = ordered_map(10_000, vec![(); 2], |(), i| {
++            calls.fetch_add(1, Ordering::Relaxed);
++            if i == 0 {
++                fail!(Io, "boom");
++            }
++            thread::sleep(Duration::from_micros(200));
++            Ok(i)
++        })
++        .unwrap_err();
++        assert_eq!(error.to_string(), "boom");
++        assert!(calls.load(Ordering::Relaxed) < 10_000);
++    }
++
++    #[test]
++    fn a_single_state_runs_inline_and_stops_at_the_first_failure() {
++        let main = thread::current().id();
++        let calls = AtomicUsize::new(0);
++        let error = ordered_map(5, vec![()], |(), i| {
++            assert_eq!(thread::current().id(), main);
++            calls.fetch_add(1, Ordering::Relaxed);
++            if i == 2 {
++                fail!(Io, "stop");
++            }
++            Ok(i)
++        })
++        .unwrap_err();
++        assert_eq!(error.to_string(), "stop");
++        assert_eq!(calls.load(Ordering::Relaxed), 3);
++    }
++}

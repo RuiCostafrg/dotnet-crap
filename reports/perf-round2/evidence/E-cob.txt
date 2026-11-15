@@ -1,0 +1,4 @@
+INFO hwm_reset_supported=true mode=cobfull
+STAGE 0-start 2300 2300 1286 2310 6746 42 0 0 0 0 9.3
+STAGE 1-sources-map 5160 7004 1947838 3893838 3903330 58 0 0 0 0 16.5
+STAGE 2-parse_reports(returned LineEvidence) 8136 141172 3420218 113300969 231790053 133724 0 0 0 0 633.6
