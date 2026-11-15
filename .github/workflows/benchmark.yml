@@ -76,13 +76,15 @@ jobs:
           # Only a head with --jobs can be swept. The arguments reach the head
           # only, and the harness rejects any set whose output differs from the
           # base binary's, so `--jobs 1` is also a byte-identity check against it.
+          # Five executables (base plus four argument sets) rotate positions, so
+          # --runs must be a multiple of five.
           "target/$profile/dotnet-crap" --help > target/head-help.txt
           if ! grep -q -- '--jobs' target/head-help.txt; then
             echo "head has no --jobs option; skipping the sweep"
             exit 0
           fi
           for workload in small-files solution many-medium skew; do
-            python3 scripts/benchmark.py --workload "$workload" --mode scan --runs 8 \
+            python3 scripts/benchmark.py --workload "$workload" --mode scan --runs 10 \
               --binary "target/$profile/dotnet-crap" \
               --baseline "../base-target/$profile/dotnet-crap" \
               --candidate-args='--jobs 1' --candidate-args='--jobs 2' \
