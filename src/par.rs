@@ -147,7 +147,8 @@ impl ByteBudget {
     pub(crate) fn acquire(&self, bytes: usize) -> Permit<'_> {
         let limit = self.floor.max(bytes);
         let mut state = self.state.lock().unwrap_or_else(|e| e.into_inner());
-        while state.in_flight > 0 && state.in_flight.saturating_add(bytes) > limit {
+        // `bytes <= limit`, so this never waits when nothing is in flight.
+        while state.in_flight.saturating_add(bytes) > limit {
             state = self.released.wait(state).unwrap_or_else(|e| e.into_inner());
         }
         state.in_flight += bytes;
@@ -372,6 +373,7 @@ mod tests {
         let b = budget.acquire(60);
         assert_eq!(budget.peak(), 100);
         drop((a, b));
+        assert_eq!(budget.state.lock().unwrap().in_flight, 0);
         let big = budget.acquire(500);
         assert_eq!(budget.peak(), 500);
         drop(big);
