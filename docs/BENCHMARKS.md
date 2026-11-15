@@ -190,7 +190,11 @@ observations, not budgets. The `Benchmark` workflow builds the PR base and head 
 the same job on Linux and macOS and uploads JSON plus a Linux `perf` profile. It builds
 both with the `dist` profile when both define it and with `release` otherwise (so the
 two are always built alike), and the summary names the profile. Do not compare
-numbers across its jobs. No timing budget is enforced. `--max-median-ms`
+numbers across its jobs. When the head binary accepts `--jobs`, the workflow also
+sweeps `--jobs 1`, `2`, `4` and `8` on the multi-file workloads (`small-files`,
+`solution`, `many-medium`, `skew`, scan mode) against the base; those rows carry a
+`head args` label. Every swept set must produce the base's output byte for byte.
+No timing budget is enforced. `--max-median-ms`
 exists for locally controlled experiments only.
 
 ## Platforms

@@ -38,3 +38,14 @@ pub(crate) fn count(unit: Unit) {
 pub(crate) fn take() -> [u64; 4] {
     COUNTS.with(|c| c.replace([0; 4]))
 }
+
+/// Add counts gathered on another thread, such as a finished scan worker.
+pub(crate) fn add(counts: [u64; 4]) {
+    COUNTS.with(|c| {
+        let mut total = c.get();
+        for (sum, n) in total.iter_mut().zip(counts) {
+            *sum += n;
+        }
+        c.set(total);
+    });
+}

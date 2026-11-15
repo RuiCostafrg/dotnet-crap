@@ -33,6 +33,9 @@ pub struct CollectOptions {
     pub expected_reports: usize,
     /// Deadline for the immediate trusted test process; must be nonzero.
     pub timeout: Duration,
+    /// Worker threads for scanning and verifying the selected sources; `None`
+    /// uses the available parallelism. The evidence is identical for any value.
+    pub jobs: Option<std::num::NonZeroUsize>,
 }
 
 /// Snapshot selected bytes, run trusted tests in the canonical source root, then
@@ -44,6 +47,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
     let selection = ScanOptions {
         root: options.root.clone(),
         paths: options.paths.clone(),
+        jobs: options.jobs,
         ..Default::default()
     };
     // The scan hashes, parses and verifies each selected file once; its line
@@ -298,6 +302,7 @@ mod deadline_tests {
             command: vec![OsString::from("dotnet"), OsString::from("{results}")],
             expected_reports: 1,
             timeout: Duration::from_secs(1),
+            jobs: None,
         }
     }
 
@@ -530,6 +535,7 @@ p=pathlib.Path(sys.argv[1])/'run'; p.mkdir()
                 .collect(),
             expected_reports: 1,
             timeout: Duration::from_secs(60),
+            jobs: None,
         };
         crate::work::take();
         collect(&options).unwrap();

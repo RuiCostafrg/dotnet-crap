@@ -231,6 +231,7 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         root: fixture.clone(),
         paths: vec!["Alpha.Library".into(), "Beta.Library".into()],
         timeout: std::time::Duration::from_secs(600),
+        jobs: None,
         output: native.clone(),
         expected_reports: 4,
         command: [

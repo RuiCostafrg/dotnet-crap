@@ -40,6 +40,9 @@ the calling directory. Reports are produced for passing and failing score gates.
 Exit codes are **0** for pass, **1** for a score gate failure, and **2** for an
 argument, source, coverage, or I/O error. `--fail-on-empty` rejects an empty scan.
 Missing required coverage and empty-selection gate failures also exit 1.
+`--jobs <N>` sets the number of worker threads that scan files (default:
+available parallelism, `--jobs 1` scans on one thread); it never changes the
+report or which error is reported, and `0` is rejected.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
@@ -48,6 +51,7 @@ empty-selection diagnostics for code-scanning integrations.
 The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
 code can scan and render reports without starting the CLI. Gate failures are
 reported by `ScanResult::report().failed`; input errors are returned as `Err`.
+`ScanOptions::jobs` is the library form of `--jobs`.
 See the [Rust API guide](docs/RUST_API.md) for consumption, verification, and
 limits. Run the bundled example with `cargo run --example scan -- <root>`.
 

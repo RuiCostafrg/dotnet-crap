@@ -17,6 +17,7 @@ fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
         root: dir.path().to_owned(),
         paths: vec![],
         timeout: std::time::Duration::from_secs(60),
+        jobs: None,
         output: dir.path().join("native.json"),
         expected_reports: 1,
         command: ["python3", "-c", script, "{results}"]
@@ -379,4 +380,46 @@ fn literal_backslashes_cannot_alias_native_source_paths() {
         assert!(!dir.path().join("executed").exists());
         assert!(!options.output.exists());
     }
+}
+
+#[test]
+/// `--jobs` never changes evidence bytes and rejects zero before any work.
+fn cli_collect_jobs_keeps_evidence_identical_and_rejects_zero() {
+    let (dir, options) = fixture(REPORT);
+    for i in 0..6 {
+        fs::write(
+            dir.path().join(format!("Extra{i}.cs")),
+            format!("class Extra{i} {{ int F() {{ return {i}; }} }}\n"),
+        )
+        .unwrap();
+    }
+    let collect_with = |jobs: &str, name: &str| {
+        let output = dir.path().join(name);
+        let status = std::process::Command::new(env!("CARGO_BIN_EXE_dotnet-crap"))
+            .arg("collect")
+            .arg("--root")
+            .arg(dir.path())
+            .arg("--output")
+            .arg(&output)
+            .arg(format!("--jobs={jobs}"))
+            .args(["--", "python3", "-c", REPORT, "{results}"])
+            .output()
+            .unwrap();
+        (status, output)
+    };
+    let (first, one) = collect_with("1", "one.json");
+    assert_eq!(
+        first.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&first.stderr)
+    );
+    let (second, four) = collect_with("4", "four.json");
+    assert_eq!(second.status.code(), Some(0));
+    assert_eq!(fs::read(&one).unwrap(), fs::read(&four).unwrap());
+    let (zero, none) = collect_with("0", "zero.json");
+    assert_eq!(zero.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&zero.stderr).contains("is not a positive integer"));
+    assert!(!none.exists());
+    assert!(!options.output.exists());
 }

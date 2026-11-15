@@ -60,7 +60,8 @@ fn main() {
 
 `ScanOptions::default()` matches the CLI defaults: `root` is `.`, `threshold` is
 `10.0`, there is no coverage input, neither `require_coverage` nor
-`fail_on_empty` is set, and `paths` is empty (which selects the whole root).
+`fail_on_empty` is set, `paths` is empty (which selects the whole root), and
+`jobs` is `None` (one worker per available CPU).
 
 ### `ScanOptions`
 
@@ -72,6 +73,25 @@ fn main() {
 | `require_coverage: bool` | Makes any callable without coverage evidence a policy failure. |
 | `fail_on_empty: bool` | Makes a scan that finds no callables a policy failure, including selected files without callable bodies. |
 | `paths: Vec<PathBuf>` | Files or directories to select. Relative values resolve against `root`. Absolute values must be inside `root`. Empty selects `root`. |
+| `jobs: Option<NonZeroUsize>` | Worker threads for scanning and source verification, as the CLI's `--jobs`. `None` uses `std::thread::available_parallelism()` (1 if unknown). The value never changes the report, its order, or which error is returned. `Some(1)` scans on the calling thread without spawning. |
+
+### Worker count and determinism
+
+Files are scanned on up to `jobs` threads (never more than the number of
+selected files), each with its own C# parser. Results are assembled in the
+selected-file order, so the report, the JSON, text and SARIF bytes, and the
+source hashes are identical for every worker count. When several files fail,
+the error is the one the first failing file in selection order produces, with
+the same kind and message as a single-threaded scan; files not yet started are
+skipped. Larger files are started first so one large file does not run alone
+at the end. To bound memory, a file is read only while the source bytes being
+read, decoded and parsed at once stay within `max(1 MiB, the size of that
+file)`: a file above 1 MiB is processed alone, so a tree of very large files
+holds at most one file's source and syntax tree at a time, as a single-threaded
+scan does. The admitted size is the file's size just before it is read.
+Per-file results are kept until the report is assembled, as before. `verify_sources` uses the scan's worker count
+and also reports the first changed file in selection order; it only hashes, so
+it holds at most one file's bytes per worker.
 
 ## Results, policy, and errors
 
@@ -235,6 +255,7 @@ Key points for library callers:
   ambiguous and are not resolved.
 - `scan` never runs tests. Explicit process collection is available separately via
   `collector::{CollectOptions, collect}`; see [Coverlet collection](COVERLET.md).
+  `CollectOptions::jobs` has the same meaning as `ScanOptions::jobs`.
   `cobertura::parse_reports` imports line evidence without starting a process.
 
 ## Source selection and parsing limits
