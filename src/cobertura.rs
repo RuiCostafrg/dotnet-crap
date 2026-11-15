@@ -10,9 +10,16 @@
 //! `<sources>` are tried literally; basename/suffix guessing, SourceLink URLs
 //! and deterministic `/_/` mappings are rejected rather than reinterpreted.
 
+#[cfg(test)]
+mod differential_tests;
+#[cfg(test)]
+mod dom_oracle;
+mod xml;
+
+use self::xml::{End, Events, Index, Level, Malformed, Role, Token};
 use crate::error::{fail, Error, ErrorKind, OptionExt, Result, ResultExt};
-use roxmltree::{Document, Node, ParsingOptions};
 use std::{
+    borrow::Cow,
     collections::{BTreeMap, BTreeSet, HashMap},
     fs,
     io::Read,
@@ -101,35 +108,61 @@ fn import_report(
     let text = std::str::from_utf8(&bytes)
         .context(ErrorKind::Cobertura, "Cobertura report is not UTF-8")?;
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
-    let document = parse_document(text)?;
-    let coverage = document.root_element();
-    if coverage.tag_name().name() != "coverage" {
+    import_xml(root, sources, text, evidence)
+}
+
+/// Most XML nodes a report may hold, counted as roxmltree counts them: the
+/// document node, elements, text runs, comments and processing instructions.
+const NODES_LIMIT: u32 = 500_000;
+
+/// Import one decoded report without building a document tree.
+///
+/// A first pass accepts the report only if it is well-formed under the rules in
+/// [`check_document`] and records the few child counts needed to report
+/// structural errors in the same order as a tree walk would. A second pass
+/// streams class and line records into `evidence`.
+fn import_xml(
+    root: &Path,
+    sources: &BTreeMap<String, usize>,
+    text: &str,
+    evidence: &mut LineEvidence,
+) -> Result<()> {
+    let index = check_document(text, NODES_LIMIT)?;
+    if index.root != "coverage" {
         fail!(Cobertura, "root element must be <coverage>");
     }
-    let prefixes = source_prefixes(coverage, root)?;
-    let packages = only_child(coverage, "packages")?;
-    let packages = child_elements(packages, "package");
-    if packages.is_empty() {
+    let prefixes = source_prefixes(&index, root)?;
+    only_count(index.packages, "packages")?;
+    if index.package == 0 {
         fail!(Cobertura, "<packages> contains no <package> elements");
     }
-    let mut found_class = false;
-    let mut resolutions: HashMap<&str, Option<String>> = HashMap::new();
-    for package in packages {
-        let classes = only_child(package, "classes")?;
-        let classes = child_elements(classes, "class");
-        for class in classes {
-            found_class = true;
-            import_class(class, root, sources, &prefixes, evidence, &mut resolutions)?;
-        }
-    }
-    if !found_class {
+    let mut importer = ClassImporter {
+        root,
+        sources,
+        prefixes: &prefixes,
+        evidence,
+        counts: index.counts.iter(),
+        levels: Vec::new(),
+        role: Role::Other,
+        count: 0,
+        attributes: [None; 2],
+        class: None,
+        found_class: false,
+        resolutions: HashMap::new(),
+    };
+    xml::tokenize(text, &mut importer)?;
+    if !importer.found_class {
         fail!(Cobertura, "Cobertura report contains no class records");
     }
     Ok(())
 }
 
-/// Parse XML with DTD processing explicitly disabled and reject unsafe declarations.
-fn parse_document(text: &str) -> Result<Document<'_>> {
+/// Reject unsafe declarations, then accept only XML that roxmltree accepts with
+/// DTD processing disabled and at most `nodes_limit` nodes.
+///
+/// A rejected report is parsed again by roxmltree solely to render its
+/// diagnostic, so messages keep their wording and positions.
+fn check_document(text: &str, nodes_limit: u32) -> Result<Index<'_>> {
     let [doctype, entity, stylesheet] =
         contains_ascii_ci(text, ["<!doctype", "<!entity", "<?xml-stylesheet"]);
     if doctype {
@@ -150,7 +183,31 @@ fn parse_document(text: &str) -> Result<Document<'_>> {
             "Cobertura report contains a forbidden external XML stylesheet"
         );
     }
-    parse_with_node_limit(text, 500_000)
+    xml::check(text, nodes_limit).map_err(|Malformed| malformed_xml(text, nodes_limit))
+}
+
+/// Render roxmltree's diagnostic for a report the streaming reader rejected.
+#[cold]
+fn malformed_xml(text: &str, nodes_limit: u32) -> Error {
+    // Keep every field explicit: `..Default::default()` would drop the node
+    // limit, and no entity resolver preserves the no-external-entity contract.
+    let options = roxmltree::ParsingOptions {
+        nodes_limit,
+        allow_dtd: false,
+        entity_resolver: None,
+    };
+    let message = match roxmltree::Document::parse_with_options(text, options) {
+        Err(error) => error.to_string(),
+        Ok(_) => "the streaming reader rejected a report roxmltree accepts".to_owned(),
+    };
+    Error::new(ErrorKind::Cobertura, format!("malformed XML: {message}"))
+}
+
+impl From<Malformed> for Error {
+    /// Only reachable if the second pass disagrees with the first.
+    fn from(_: Malformed) -> Self {
+        Error::new(ErrorKind::Cobertura, "malformed XML")
+    }
 }
 
 /// Report which lowercase ASCII `needles` occur in `text`, ignoring ASCII case,
@@ -169,42 +226,29 @@ fn contains_ascii_ci<const N: usize>(text: &str, needles: [&str; N]) -> [bool; N
     found
 }
 
-/// Bound DOM allocation independently of the byte limit.
-fn parse_with_node_limit(text: &str, nodes_limit: u32) -> Result<Document<'_>> {
-    // Keep every field explicit: `..Default::default()` would drop the node
-    // limit, and no entity resolver preserves the no-external-entity contract.
-    let options = ParsingOptions {
-        nodes_limit,
-        allow_dtd: false,
-        entity_resolver: None,
-    };
-    Document::parse_with_options(text, options)
-        .map_err(|error| Error::new(ErrorKind::Cobertura, format!("malformed XML: {error}")))
+/// Require exactly one child element named `name`, given how many there are.
+fn only_count(count: usize, name: &str) -> Result<()> {
+    match count {
+        0 => fail!(Cobertura, "missing <{name}> element"),
+        1 => Ok(()),
+        _ => fail!(Cobertura, "duplicate <{name}> elements"),
+    }
 }
 
 /// Read literal `<sources><source>` prefixes, anchoring relative prefixes at root.
-fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> {
-    let sources = child_elements(coverage, "sources");
-    if sources.len() > 1 {
+fn source_prefixes(index: &Index<'_>, root: &Path) -> Result<Vec<PathBuf>> {
+    if index.sources > 1 {
         fail!(Cobertura, "duplicate <sources> elements");
     }
-    let Some(sources) = sources.into_iter().next() else {
-        return Ok(Vec::new());
-    };
     let mut prefixes = Vec::new();
-    for source in child_elements(sources, "source") {
-        if source.children().any(|child| child.is_element()) {
+    for source in &index.prefixes {
+        if source.has_element {
             fail!(
                 Cobertura,
                 "Cobertura source prefix must not contain elements"
             );
         }
-        let text = source
-            .children()
-            .filter(|child| child.is_text())
-            .filter_map(|child| child.text())
-            .collect::<String>();
-        let raw = text.as_str();
+        let raw = source.text.as_str();
         if raw.trim().is_empty() {
             fail!(Cobertura, "empty Cobertura source prefix");
         }
@@ -220,76 +264,150 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
     Ok(prefixes)
 }
 
-/// Resolve one class filename and import its class-level line records.
+/// Second pass: streams class and line records into the evidence map.
 ///
-/// `resolutions` memoizes successful filename resolutions for this report;
-/// failures return errors directly and are not cached. `sources` maps each
-/// selected source to its line count.
-fn import_class<'a>(
-    class: Node<'a, 'a>,
-    root: &Path,
-    sources: &BTreeMap<String, usize>,
-    prefixes: &[PathBuf],
-    evidence: &mut LineEvidence,
-    resolutions: &mut HashMap<&'a str, Option<String>>,
-) -> Result<()> {
-    let filename = class.attribute("filename").context(
-        ErrorKind::Cobertura,
-        "Cobertura <class> is missing filename",
-    )?;
-    let lines = only_child(class, "lines")?;
-    let lines = child_elements(lines, "line");
+/// Every check a tree walk made before visiting a class's lines is decided from
+/// the first pass's counts, so errors keep their order.
+struct ClassImporter<'r, 'a> {
+    root: &'r Path,
+    sources: &'r BTreeMap<String, usize>,
+    prefixes: &'r [PathBuf],
+    evidence: &'r mut LineEvidence,
+    /// [`Index::counts`], consumed in start-tag order.
+    counts: std::slice::Iter<'r, usize>,
+    levels: Vec<Level>,
+    /// Role of the start tag being read.
+    role: Role,
+    /// Its child count from the first pass, for packages and classes.
+    count: usize,
+    /// Its first `filename`, or `number` and `hits`, attribute by local name, raw.
+    attributes: [Option<&'a str>; 2],
+    /// The class whose lines are being read.
+    class: Option<Class<'a>>,
+    found_class: bool,
+    /// Successful filename resolutions in this report; failures are errors.
+    resolutions: HashMap<Cow<'a, str>, Option<String>>,
+}
 
-    let resolved = match resolutions.get(filename) {
-        Some(cached) => cached.clone(),
-        None => {
-            let resolved = resolve_filename(root, prefixes, filename, sources)?;
-            resolutions.insert(filename, resolved.clone());
-            resolved
-        }
-    };
-    let source_line_count = match &resolved {
-        Some(name) => Some(*sources.get(name).context(
-            ErrorKind::Cobertura,
-            "resolved selected source is missing from the source map",
-        )?),
-        None => None,
-    };
-    let mut parsed = Vec::with_capacity(lines.len());
-    for line in lines {
-        let number = parse_line_number(line)?;
-        let hits = parse_hits(line)?;
-        if let Some(limit) = source_line_count {
-            if number as usize > limit {
-                fail!(
-                    Cobertura,
-                    "Cobertura line {number} is outside source {filename:?}"
-                );
+/// A class record whose filename is resolved.
+struct Class<'a> {
+    filename: Cow<'a, str>,
+    /// The selected source it names, if any, and that source's line count.
+    selected: Option<(String, usize)>,
+}
+
+impl<'a> Events<'a> for ClassImporter<'_, 'a> {
+    type Error = Error;
+
+    fn token(&mut self, token: Token<'a>) -> Result<()> {
+        match token {
+            Token::ElementStart(_, local) => {
+                self.role = xml::role_of(self.levels.last_mut(), local);
+                if matches!(self.role, Role::Package | Role::Class) {
+                    self.count = self.counts.next().copied().unwrap_or_default();
+                }
+                self.attributes = [None; 2];
             }
+            // roxmltree's `attribute(name)` matched the first attribute with
+            // that local name in any namespace; `xmlns:*` are declarations.
+            Token::Attribute(prefix, local, raw) if prefix != "xmlns" => {
+                let slot = match (self.role, local) {
+                    (Role::Class, "filename") | (Role::Line, "number") => 0,
+                    (Role::Line, "hits") => 1,
+                    _ => return Ok(()),
+                };
+                self.attributes[slot].get_or_insert(raw);
+            }
+            Token::ElementEnd(End::Open) => {
+                self.element()?;
+                self.levels.push(Level::new(self.role));
+            }
+            Token::ElementEnd(End::Empty) => self.element()?,
+            Token::ElementEnd(End::Close(..)) => {
+                self.levels.pop();
+            }
+            _ => {}
         }
-        parsed.push((number, hits));
+        Ok(())
     }
-    let Some(name) = resolved else {
-        return Ok(());
-    };
-    if parsed.is_empty() {
-        return Ok(());
+}
+
+impl<'a> ClassImporter<'_, 'a> {
+    /// Act on a complete start tag.
+    fn element(&mut self) -> Result<()> {
+        match self.role {
+            Role::Package => only_count(self.count, "classes"),
+            Role::Class => self.class(),
+            Role::Line => self.line(),
+            _ => Ok(()),
+        }
     }
-    let entry = evidence.entry(name).or_default();
-    for (line, hits) in parsed {
-        entry
-            .entry(line)
+
+    /// Resolve one class filename before its line records are read.
+    fn class(&mut self) -> Result<()> {
+        self.found_class = true;
+        let filename = self.attributes[0].context(
+            ErrorKind::Cobertura,
+            "Cobertura <class> is missing filename",
+        )?;
+        let filename = xml::normalize_attribute(filename)?;
+        only_count(self.count, "lines")?;
+        let resolved = match self.resolutions.get(filename.as_ref()) {
+            Some(cached) => cached.clone(),
+            None => {
+                let resolved = resolve_filename(self.root, self.prefixes, &filename, self.sources)?;
+                self.resolutions.insert(filename.clone(), resolved.clone());
+                resolved
+            }
+        };
+        let selected = match resolved {
+            Some(name) => {
+                let count = *self.sources.get(&name).context(
+                    ErrorKind::Cobertura,
+                    "resolved selected source is missing from the source map",
+                )?;
+                Some((name, count))
+            }
+            None => None,
+        };
+        self.class = Some(Class { filename, selected });
+        Ok(())
+    }
+
+    /// Import one class-level line record, merging by maximum hit count.
+    fn line(&mut self) -> Result<()> {
+        let [number, hits] = self.attributes;
+        let number =
+            parse_line_number(number.map(xml::normalize_attribute).transpose()?.as_deref())?;
+        let hits = parse_hits(hits.map(xml::normalize_attribute).transpose()?.as_deref())?;
+        let Some(class) = &self.class else {
+            return Ok(());
+        };
+        let Some((name, limit)) = &class.selected else {
+            return Ok(());
+        };
+        if number as usize > *limit {
+            fail!(
+                Cobertura,
+                "Cobertura line {number} is outside source {:?}",
+                class.filename
+            );
+        }
+        let lines = match self.evidence.get_mut(name) {
+            Some(lines) => lines,
+            None => self.evidence.entry(name.clone()).or_default(),
+        };
+        lines
+            .entry(number)
             .and_modify(|current| *current = (*current).max(hits))
             .or_insert(hits);
+        Ok(())
     }
-    Ok(())
 }
 
 /// Parse a canonical positive line number.
-fn parse_line_number(line: Node<'_, '_>) -> Result<u32> {
-    let raw = line
-        .attribute("number")
-        .context(ErrorKind::Cobertura, "Cobertura <line> is missing number")?;
+fn parse_line_number(raw: Option<&str>) -> Result<u32> {
+    let raw = raw.context(ErrorKind::Cobertura, "Cobertura <line> is missing number")?;
     let number: u32 = raw.parse().with_context(ErrorKind::Cobertura, || {
         format!("invalid Cobertura line number {raw:?}")
     })?;
@@ -303,10 +421,8 @@ fn parse_line_number(line: Node<'_, '_>) -> Result<u32> {
 }
 
 /// Parse a canonical unsigned hit count, including zero.
-fn parse_hits(line: Node<'_, '_>) -> Result<u64> {
-    let raw = line
-        .attribute("hits")
-        .context(ErrorKind::Cobertura, "Cobertura <line> is missing hits")?;
+fn parse_hits(raw: Option<&str>) -> Result<u64> {
+    let raw = raw.context(ErrorKind::Cobertura, "Cobertura <line> is missing hits")?;
     let hits: u64 = raw.parse().with_context(ErrorKind::Cobertura, || {
         format!("invalid Cobertura hit count {raw:?}")
     })?;
@@ -513,25 +629,6 @@ fn is_host_absolute(path: &str) -> bool {
     }
 }
 
-/// Collect direct element children with the requested local name.
-fn child_elements<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Vec<Node<'a, 'input>> {
-    node.children()
-        .filter(|child| child.is_element() && child.tag_name().name() == name)
-        .collect()
-}
-
-/// Require exactly one direct element child with the requested local name.
-fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node<'a, 'input>> {
-    let mut children = child_elements(node, name).into_iter();
-    let child = children
-        .next()
-        .ok_or_else(|| Error::new(ErrorKind::Cobertura, format!("missing <{name}> element")))?;
-    if children.next().is_some() {
-        fail!(Cobertura, "duplicate <{name}> elements");
-    }
-    Ok(child)
-}
-
 #[cfg(test)]
 mod resource_tests {
     const NEEDLES: [&str; 3] = ["<!doctype", "<!entity", "<?xml-stylesheet"];
@@ -616,21 +713,25 @@ mod resource_tests {
 
     #[test]
     fn declarations_are_rejected_in_the_documented_order() {
-        let message = |text: &str| super::parse_document(text).unwrap_err().to_string();
+        let message = |text: &str| {
+            super::check_document(text, super::NODES_LIMIT)
+                .unwrap_err()
+                .to_string()
+        };
         let doctype = "Cobertura report contains a forbidden DOCTYPE declaration";
         let entity = "Cobertura report contains a forbidden entity declaration";
         let stylesheet = "Cobertura report contains a forbidden external XML stylesheet";
         assert_eq!(message("<?xml-stylesheet?><!ENTITY><!DOCTYPE>"), doctype);
         assert_eq!(message("<?xml-stylesheet?><!ENTITY>"), entity);
         assert_eq!(message("<?XML-STYLESHEET?><a/>"), stylesheet);
-        assert!(super::parse_document("<a/>").is_ok());
+        assert!(super::check_document("<a/>", super::NODES_LIMIT).is_ok());
     }
 
     #[test]
     fn node_limit_rejects_excess_nodes_without_requiring_a_large_allocation() {
         let text = "<coverage><a/></coverage>";
-        assert!(super::parse_with_node_limit(text, 2).is_err());
-        assert!(super::parse_with_node_limit(text, 3).is_ok());
+        assert!(super::check_document(text, 2).is_err());
+        assert!(super::check_document(text, 3).is_ok());
     }
 }
 

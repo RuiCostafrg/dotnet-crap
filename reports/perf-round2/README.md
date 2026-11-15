@@ -188,6 +188,17 @@ counting Rust allocator and a counting tree-sitter allocator.
   ([`evidence/E-cob.txt`](evidence/E-cob.txt)). With the 16 MiB per-report cap that
   is up to about 125 MB per report. On dense-file, `collect` peaks at 103 MB where
   plain scan peaks at 66 MB.
+- **PR 6 (streaming reader) removes the DOM.** A local import-only probe calls
+  `parse_reports` on a compact 15.3 MB report: 1,000 classes × 330 lines, 99,700
+  distinct lines. Five alternating runs on the PRoot box, base `35a8035`: peak RSS
+  132.6–132.9 MB → 20.8–21.2 MB, identical evidence. Import time went from
+  360–564 ms to 501–681 ms, about 1.4× slower, because the report is tokenized
+  twice. Like every local timing, that is direction only. The PR's hosted
+  Benchmark run is the evidence.
+- Found along the way, not changed: the 500,000-node limit counts whitespace
+  text. An *indented* Coverlet-style report of about 15 MB (1,000 × 250 lines)
+  fails with `nodes limit reached` on both the old and the new importer, well
+  before the 16 MiB byte cap.
 
 ## Hosted results for the merged-path PRs
 

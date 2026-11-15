@@ -127,7 +127,22 @@ XML parsing rejects malformed XML, DTD/entity declarations, external references,
 invalid/zero/out-of-range line numbers and invalid hit counts. Reports are
 limited to 16 MiB and 500,000 XML nodes before further
 processing. Empty class line lists leave evidence absent. The parser does
-not retrieve network or filesystem entities. Source hashes are generated from the
+not retrieve network or filesystem entities.
+
+The importer reads a report in two streaming passes and builds no document tree,
+so memory stays near the report's own size. The first pass accepts exactly the
+XML that roxmltree 0.21 accepts with DTD processing disabled. That covers the node
+count, namespace rules, references and character classes. The first pass also
+records how many `<sources>`, `<packages>`, `<classes>` and `<lines>` children each
+relevant element has, so structural errors come out in the same order a tree walk
+would give them. The second pass streams class and line records. When the first
+pass rejects a report, roxmltree parses it once more only to render its
+diagnostic, so malformed-XML messages keep their wording and positions. Element
+and attribute names match by local name, as before. `filename`, `number` and
+`hits` are the first attribute with that local name, whatever its namespace.
+Differential tests in `src/cobertura/differential_tests.rs` compare the
+streaming reader with the previous DOM importer on generated, mutated and
+hostile reports. Source hashes are generated from the
 pre-command snapshot, never from bytes first observed after tests.
 
 ## Runner evidence and limits
@@ -155,4 +170,4 @@ Primary references used for the design:
 - [Coverlet deterministic builds](https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/DeterministicBuild.md): deterministic path behavior; this adapter does not guess remappings.
 - [Microsoft unit-test coverage](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-code-coverage): XPlat collector workflow.
 - [Microsoft Testing Platform coverage](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-code-coverage): separate runner extensions.
-- [roxmltree parsing options](https://docs.rs/roxmltree/0.20.0/roxmltree/struct.ParsingOptions.html): DTD parsing is disabled by default; the importer additionally rejects declarations explicitly.
+- [roxmltree parsing options](https://docs.rs/roxmltree/0.21.2/roxmltree/struct.ParsingOptions.html): the streaming reader's acceptance rules follow roxmltree with DTD parsing disabled, and roxmltree renders the diagnostics for rejected reports; the importer additionally rejects declarations explicitly.
