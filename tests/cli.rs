@@ -221,3 +221,45 @@ fn rejects_duplicate_and_invalid_coverage() {
         );
     }
 }
+#[test]
+fn jobs_rejects_zero_and_never_changes_output() {
+    let dir = tempfile::tempdir().unwrap();
+    for i in 0..12 {
+        let body = (0..=i % 4).fold(String::new(), |s, n| {
+            format!("{s} int M{n}(int x) {{ if (x > {n}) return 1; return 2; }}")
+        });
+        fs::write(
+            dir.path().join(format!("f{i:02}.cs")),
+            format!("class C{i} {{{body} }}"),
+        )
+        .unwrap();
+    }
+    for format in ["text", "json", "sarif"] {
+        let reference = run(dir.path(), &["--format", format]);
+        assert!(reference.status.success(), "{reference:?}");
+        for jobs in ["1", "2", "3", "8", "64"] {
+            let output = run(dir.path(), &["--format", format, "--jobs", jobs]);
+            assert_eq!(output.status.code(), Some(0));
+            assert_eq!(output.stdout, reference.stdout, "{format} --jobs {jobs}");
+        }
+    }
+    for invalid in ["0", "-1", "abc", ""] {
+        let output = run(dir.path(), &[&format!("--jobs={invalid}")]);
+        assert_eq!(output.status.code(), Some(2), "--jobs {invalid:?}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            stderr.contains("is not a positive integer; use 1 or more"),
+            "{stderr}"
+        );
+        assert!(output.stdout.is_empty());
+    }
+    fs::write(dir.path().join("f05.cs"), "class {").unwrap();
+    for jobs in ["1", "4"] {
+        let output = run(dir.path(), &["--jobs", jobs]);
+        assert_eq!(output.status.code(), Some(2));
+        assert_eq!(
+            String::from_utf8_lossy(&output.stderr),
+            "error: invalid C# syntax in f05.cs\n"
+        );
+    }
+}

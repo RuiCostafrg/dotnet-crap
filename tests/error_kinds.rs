@@ -41,6 +41,7 @@ fn collect_options(
         command: command.iter().map(OsString::from).collect(),
         expected_reports,
         timeout: Duration::from_secs(60),
+        jobs: None,
     }
 }
 

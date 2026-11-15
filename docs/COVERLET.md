@@ -37,7 +37,8 @@ must execute the intended project/target set; duplicate reports are not project
 identity attestations. An existing destination, including a symlink or
 hardlink, is an error. Its parent directory must exist; `.cs` destinations fail.
 `collect` is reserved as the first CLI argument; use `./collect` to scan a
-directory with that name. The child deadline defaults to 900 seconds
+directory with that name. `--jobs <N>` sets the worker threads used to snapshot
+and verify sources, as for scanning; evidence bytes do not depend on it. The child deadline defaults to 900 seconds
 (`--timeout-seconds`); a timeout
 kills and reaps the immediate process and publishes nothing. Statuses first
 observed at or after the deadline are rejected even if the child has exited;

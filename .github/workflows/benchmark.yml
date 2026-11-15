@@ -70,6 +70,25 @@ jobs:
                 --output "target/benchmarks/$workload-$mode.json" > /dev/null
             done
           done
+      - name: Sweep scan worker counts on multi-file workloads
+        run: |
+          profile="$(cat target/profile.txt)"
+          # Only a head with --jobs can be swept. The arguments reach the head
+          # only, and the harness rejects any set whose output differs from the
+          # base binary's, so `--jobs 1` is also a byte-identity check against it.
+          "target/$profile/dotnet-crap" --help > target/head-help.txt
+          if ! grep -q -- '--jobs' target/head-help.txt; then
+            echo "head has no --jobs option; skipping the sweep"
+            exit 0
+          fi
+          for workload in small-files solution many-medium skew; do
+            python3 scripts/benchmark.py --workload "$workload" --mode scan --runs 8 \
+              --binary "target/$profile/dotnet-crap" \
+              --baseline "../base-target/$profile/dotnet-crap" \
+              --candidate-args='--jobs 1' --candidate-args='--jobs 2' \
+              --candidate-args='--jobs 4' --candidate-args='--jobs 8' \
+              --output "target/benchmarks/jobs-$workload-scan.json" > /dev/null
+          done
       # The next three steps fetch third-party C# source as data. Only *.cs files
       # are materialized (sparse checkout), nothing is built, restored or run from
       # them, and no credentials are persisted. Each commit is pinned by its full SHA.

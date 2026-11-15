@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, num::NonZeroUsize, path::PathBuf};
 
 #[derive(Parser)]
 #[command(
@@ -23,7 +23,17 @@ struct Args {
     require_coverage: bool,
     #[arg(long)]
     fail_on_empty: bool,
+    /// Worker threads for scanning [default: available parallelism]
+    #[arg(long, value_name = "N", value_parser = parse_jobs)]
+    jobs: Option<NonZeroUsize>,
     paths: Vec<PathBuf>,
+}
+
+/// Parse a worker count, rejecting zero and non-numbers with one clear message.
+fn parse_jobs(value: &str) -> std::result::Result<NonZeroUsize, String> {
+    value
+        .parse::<NonZeroUsize>()
+        .map_err(|_| format!("`{value}` is not a positive integer; use 1 or more"))
 }
 use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
 
@@ -46,6 +56,9 @@ struct CollectArgs {
     expected_reports: usize,
     #[arg(long, default_value_t = 900)]
     timeout_seconds: u64,
+    /// Worker threads for scanning sources [default: available parallelism]
+    #[arg(long, value_name = "N", value_parser = parse_jobs)]
+    jobs: Option<NonZeroUsize>,
 }
 
 /// Dispatch the reserved collection command while leaving ordinary scan argv unchanged.
@@ -63,6 +76,7 @@ fn execute() -> Result<bool> {
             command: args.test_command,
             expected_reports: args.expected_reports,
             timeout: std::time::Duration::from_secs(args.timeout_seconds),
+            jobs: args.jobs,
         })?;
         Ok(false)
     } else {
@@ -79,6 +93,7 @@ fn run(args: Args) -> Result<bool> {
         require_coverage: args.require_coverage,
         fail_on_empty: args.fail_on_empty,
         paths: args.paths,
+        jobs: args.jobs,
     })?;
     let format = match args.format.as_str() {
         "json" => ReportFormat::Json,
