@@ -11,7 +11,7 @@ use std::{
     num::NonZeroUsize,
     sync::{
         atomic::{AtomicUsize, Ordering},
-        Condvar, Mutex,
+        Condvar, Mutex, MutexGuard,
     },
     thread,
 };
@@ -149,7 +149,7 @@ impl ByteBudget {
         let mut state = self.state.lock().unwrap_or_else(|e| e.into_inner());
         // `bytes <= limit`, so this never waits when nothing is in flight.
         while state.in_flight.saturating_add(bytes) > limit {
-            state = self.released.wait(state).unwrap_or_else(|e| e.into_inner());
+            state = self.wait(state);
         }
         state.in_flight += bytes;
         state.peak = state.peak.max(state.in_flight);
@@ -157,6 +157,21 @@ impl ByteBudget {
             budget: self,
             bytes,
         }
+    }
+    /// Wait for a release.
+    #[cfg(not(test))]
+    fn wait<'a>(&self, state: MutexGuard<'a, BudgetState>) -> MutexGuard<'a, BudgetState> {
+        self.released.wait(state).unwrap_or_else(|e| e.into_inner())
+    }
+    /// Wait for a release; a wait that never ends fails the test instead of hanging it.
+    #[cfg(test)]
+    fn wait<'a>(&self, state: MutexGuard<'a, BudgetState>) -> MutexGuard<'a, BudgetState> {
+        let (state, wait) = self
+            .released
+            .wait_timeout(state, std::time::Duration::from_secs(30))
+            .unwrap_or_else(|e| e.into_inner());
+        assert!(!wait.timed_out(), "byte budget wait did not end");
+        state
     }
     /// The most bytes ever admitted at once.
     #[cfg(test)]
@@ -184,7 +199,7 @@ impl Drop for Permit<'_> {
 mod tests {
     use super::*;
     use crate::error::{fail, ErrorKind};
-    use std::{sync::Barrier, time::Duration};
+    use std::time::{Duration, Instant};
 
     #[test]
     fn jobs_resolve_to_the_request_or_the_available_parallelism() {
@@ -224,8 +239,9 @@ mod tests {
 
     #[test]
     fn every_worker_state_is_used() {
-        // Two workers meet at a barrier, so both must hold an item at once.
-        let barrier = Barrier::new(2);
+        // Each item waits for the other to start, so two workers must hold one each.
+        // The wait is bounded so a broken pool fails instead of hanging.
+        let arrived = AtomicUsize::new(0);
         let claimed = Mutex::new(Vec::new());
         let used = ordered_map(
             2,
@@ -233,7 +249,15 @@ mod tests {
             |i| i as u64,
             |state, i| {
                 claimed.lock().unwrap().push(i);
-                barrier.wait();
+                arrived.fetch_add(1, Ordering::SeqCst);
+                let deadline = Instant::now() + Duration::from_secs(20);
+                while arrived.load(Ordering::SeqCst) < 2 {
+                    assert!(
+                        Instant::now() < deadline,
+                        "workers did not run concurrently"
+                    );
+                    thread::yield_now();
+                }
                 *state += 1;
                 Ok(*state)
             },
