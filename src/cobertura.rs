@@ -40,6 +40,22 @@ pub fn parse_reports(
     sources: &BTreeMap<String, String>,
     reports: &[PathBuf],
 ) -> Result<LineEvidence> {
+    let line_counts = sources
+        .iter()
+        .map(|(name, text)| (name.clone(), text.lines().count()))
+        .collect();
+    parse_reports_counted(root, &line_counts, reports)
+}
+
+/// [`parse_reports`] with each selected source's `str::lines` count in place of
+/// its text. The importer needs only each source's name and line count, so the
+/// collector passes counts taken from the snapshot scan's hashed bytes instead
+/// of keeping or re-reading the decoded sources.
+pub(crate) fn parse_reports_counted(
+    root: &Path,
+    sources: &BTreeMap<String, usize>,
+    reports: &[PathBuf],
+) -> Result<LineEvidence> {
     if reports.is_empty() {
         fail!(Cobertura, "no Cobertura reports to import");
     }
@@ -50,29 +66,24 @@ pub fn parse_reports(
         fail!(InvalidInput, "coverage root must be a directory");
     }
     let mut evidence = LineEvidence::new();
-    // Line counts per selected source are file properties, not report
-    // properties, so one lazy cache serves every report in this call.
-    let mut line_counts = HashMap::new();
     for report in reports {
         // Keep the inner kind: an unreadable report is `Io`, rejected content is `Cobertura`.
-        import_report(&root, sources, report, &mut evidence, &mut line_counts).map_err(
-            |error| error.wrap(format!("invalid Cobertura report {}", report.display())),
-        )?;
+        import_report(&root, sources, report, &mut evidence).map_err(|error| {
+            error.wrap(format!("invalid Cobertura report {}", report.display()))
+        })?;
     }
     Ok(evidence)
 }
 
 /// Import one report, merging class-level lines into the shared evidence map.
 ///
-/// `line_counts` caches the source line count per resolved selected source name
-/// across reports. Resolution results are memoized per filename within this
-/// report because `<sources>` prefixes are per report.
+/// Resolution results are memoized per filename within this report because
+/// `<sources>` prefixes are per report.
 fn import_report(
     root: &Path,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     report: &Path,
     evidence: &mut LineEvidence,
-    line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
     const MAX_REPORT_BYTES: u64 = 16 * 1024 * 1024;
     let file = fs::File::open(report)
@@ -108,15 +119,7 @@ fn import_report(
         let classes = child_elements(classes, "class");
         for class in classes {
             found_class = true;
-            import_class(
-                class,
-                root,
-                sources,
-                &prefixes,
-                evidence,
-                &mut resolutions,
-                line_counts,
-            )?;
+            import_class(class, root, sources, &prefixes, evidence, &mut resolutions)?;
         }
     }
     if !found_class {
@@ -127,26 +130,43 @@ fn import_report(
 
 /// Parse XML with DTD processing explicitly disabled and reject unsafe declarations.
 fn parse_document(text: &str) -> Result<Document<'_>> {
-    let lower = text.to_ascii_lowercase();
-    if lower.contains("<!doctype") {
+    let [doctype, entity, stylesheet] =
+        contains_ascii_ci(text, ["<!doctype", "<!entity", "<?xml-stylesheet"]);
+    if doctype {
         fail!(
             Cobertura,
             "Cobertura report contains a forbidden DOCTYPE declaration"
         );
     }
-    if lower.contains("<!entity") {
+    if entity {
         fail!(
             Cobertura,
             "Cobertura report contains a forbidden entity declaration"
         );
     }
-    if lower.contains("<?xml-stylesheet") {
+    if stylesheet {
         fail!(
             Cobertura,
             "Cobertura report contains a forbidden external XML stylesheet"
         );
     }
     parse_with_node_limit(text, 500_000)
+}
+
+/// Report which lowercase ASCII `needles` occur in `text`, ignoring ASCII case,
+/// in one pass and without copying the report. Every needle starts with `<`.
+fn contains_ascii_ci<const N: usize>(text: &str, needles: [&str; N]) -> [bool; N] {
+    let bytes = text.as_bytes();
+    let mut found = [false; N];
+    for (start, _) in bytes.iter().enumerate().filter(|(_, b)| **b == b'<') {
+        let rest = &bytes[start..];
+        for (flag, needle) in found.iter_mut().zip(needles) {
+            *flag |= rest
+                .get(..needle.len())
+                .is_some_and(|window| window.eq_ignore_ascii_case(needle.as_bytes()));
+        }
+    }
+    found
 }
 
 /// Bound DOM allocation independently of the byte limit.
@@ -203,17 +223,15 @@ fn source_prefixes(coverage: Node<'_, '_>, root: &Path) -> Result<Vec<PathBuf>> 
 /// Resolve one class filename and import its class-level line records.
 ///
 /// `resolutions` memoizes successful filename resolutions for this report;
-/// failures return errors directly and are not cached. `line_counts` caches
-/// the line count per resolved selected source so a dense file with many
-/// classes is measured once instead of once per class.
+/// failures return errors directly and are not cached. `sources` maps each
+/// selected source to its line count.
 fn import_class<'a>(
     class: Node<'a, 'a>,
     root: &Path,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     prefixes: &[PathBuf],
     evidence: &mut LineEvidence,
     resolutions: &mut HashMap<&'a str, Option<String>>,
-    line_counts: &mut HashMap<String, usize>,
 ) -> Result<()> {
     let filename = class.attribute("filename").context(
         ErrorKind::Cobertura,
@@ -231,21 +249,10 @@ fn import_class<'a>(
         }
     };
     let source_line_count = match &resolved {
-        Some(name) => Some(match line_counts.get(name) {
-            Some(count) => *count,
-            None => {
-                let count = sources
-                    .get(name)
-                    .context(
-                        ErrorKind::Cobertura,
-                        "resolved selected source is missing from the source map",
-                    )?
-                    .lines()
-                    .count();
-                line_counts.insert(name.clone(), count);
-                count
-            }
-        }),
+        Some(name) => Some(*sources.get(name).context(
+            ErrorKind::Cobertura,
+            "resolved selected source is missing from the source map",
+        )?),
         None => None,
     };
     let mut parsed = Vec::with_capacity(lines.len());
@@ -314,7 +321,7 @@ fn resolve_filename(
     root: &Path,
     prefixes: &[PathBuf],
     filename: &str,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
 ) -> Result<Option<String>> {
     let path =
         normalize_path(filename).context(ErrorKind::Cobertura, "invalid Cobertura filename")?;
@@ -324,14 +331,19 @@ fn resolve_filename(
     if absolute {
         add_candidate(root, Path::new(""), &path, sources, &mut candidates)?;
     } else {
-        for prefix in prefixes {
+        // An already-tried base joins to the same candidate path, so resolving
+        // it again can neither add a candidate nor raise a new error. Coverlet
+        // usually lists the project root itself as the only prefix.
+        for prefix in first_occurrences(prefixes) {
             add_candidate(root, prefix, &path, sources, &mut candidates)?;
         }
         // Use the root as a fallback when there are no prefixes, when no prefix
         // produced an exact candidate, or when the filename is itself an exact
         // selected root-relative identity. A basename is never guessed.
         let prefix_candidate = !candidates.is_empty();
-        if prefixes.is_empty() || !prefix_candidate || sources.contains_key(&path) {
+        let root_tried = prefixes.iter().any(|prefix| prefix == root);
+        if !root_tried && (prefixes.is_empty() || !prefix_candidate || sources.contains_key(&path))
+        {
             add_candidate(root, root, &path, sources, &mut candidates)?;
         }
     }
@@ -367,13 +379,22 @@ fn resolve_filename(
     Ok(sources.contains_key(&relative).then_some(relative))
 }
 
+/// Each distinct prefix once, in its original order.
+fn first_occurrences(prefixes: &[PathBuf]) -> impl Iterator<Item = &PathBuf> {
+    prefixes
+        .iter()
+        .enumerate()
+        .filter(|(index, prefix)| !prefixes[..*index].contains(prefix))
+        .map(|(_, prefix)| prefix)
+}
+
 /// Add one exact candidate. Existing files are canonicalized and contained;
 /// an absent lexical path is accepted only when it is an exact selected source.
 fn add_candidate(
     root: &Path,
     base: &Path,
     filename: &str,
-    sources: &BTreeMap<String, String>,
+    sources: &BTreeMap<String, usize>,
     candidates: &mut BTreeSet<PathBuf>,
 ) -> Result<()> {
     let candidate = base.join(filename);
@@ -396,7 +417,7 @@ fn add_candidate(
             candidates.insert(canonical);
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            // The parser receives source text rather than reading selected files.
+            // The parser receives source line counts without reading selected files.
             // A missing lexical path is still exact evidence when its
             // root-relative identity is an explicitly selected source.
             if let Ok(relative) = candidate.strip_prefix(root) {
@@ -513,6 +534,98 @@ fn only_child<'a, 'input: 'a>(node: Node<'a, 'input>, name: &str) -> Result<Node
 
 #[cfg(test)]
 mod resource_tests {
+    const NEEDLES: [&str; 3] = ["<!doctype", "<!entity", "<?xml-stylesheet"];
+
+    /// The copy-free scan must agree with the lower-cased copy it replaces.
+    fn assert_scan_matches_lowercase(text: &str, expected: [bool; 3]) {
+        let lower = text.to_ascii_lowercase();
+        let oracle = NEEDLES.map(|needle| lower.contains(needle));
+        assert_eq!(oracle, expected, "oracle for {text:?}");
+        assert_eq!(
+            super::contains_ascii_ci(text, NEEDLES),
+            oracle,
+            "scan for {text:?}"
+        );
+    }
+
+    #[test]
+    fn declaration_scan_matches_ascii_lowercase_contains_on_edge_cases() {
+        let padded_end = format!("{}<!entity", "x".repeat(8191));
+        let padded_start = format!("<?xml-stylesheet{}", "x".repeat(8191));
+        let padded_middle = format!("{}<!DOCTYPE{}", "<".repeat(4093), ">".repeat(4096));
+        for (text, expected) in [
+            ("", [false, false, false]),
+            ("<", [false, false, false]),
+            ("<coverage/>", [false, false, false]),
+            // Needle at the very start, at the very end, and the whole input.
+            ("<!doctype", [true, false, false]),
+            ("<!doctype x>", [true, false, false]),
+            ("a<!entity", [false, true, false]),
+            ("<?xml-stylesheet", [false, false, true]),
+            // One byte short of a needle at the end of input.
+            ("<!doctyp", [false, false, false]),
+            ("x<!entit", [false, false, false]),
+            // Mixed case, including non-needle letters in odd positions.
+            ("<!DocType x>", [true, false, false]),
+            ("<!EnTiTy foo>", [false, true, false]),
+            ("<?XML-Stylesheet?>", [false, false, true]),
+            // Overlapping partial matches before the real one.
+            ("<!doc<!doctype", [true, false, false]),
+            ("<<!entity", [false, true, false]),
+            ("<!<!entity", [false, true, false]),
+            ("<!doctype <!doctyp<!entity", [true, true, false]),
+            ("<<<?xml-style<?xml-stylesheet", [false, false, true]),
+            // Near misses: wrong or missing `<`/`!`/`?`, or a split needle.
+            ("!doctype <doctype", [false, false, false]),
+            ("<! doctype", [false, false, false]),
+            ("<!doc type", [false, false, false]),
+            ("<?xml_stylesheet", [false, false, false]),
+            // The same needle twice, and all three together.
+            ("<!entity><!entity>", [false, true, false]),
+            ("<!ENTITY><!doctype><?xml-stylesheet", [true, true, true]),
+            // Non-ASCII bytes around, and inside look-alikes of, a needle.
+            ("é<!doctype>é", [true, false, false]),
+            ("日本<!ENTITY>語", [false, true, false]),
+            ("<!doctypé", [false, false, false]),
+            ("<!ſtylesheet <?xml-ſtylesheet", [false, false, false]),
+            // Needles that straddle where a chunked scan could split the input.
+            (padded_end.as_str(), [false, true, false]),
+            (padded_start.as_str(), [false, false, true]),
+            (padded_middle.as_str(), [true, false, false]),
+        ] {
+            assert_scan_matches_lowercase(text, expected);
+        }
+    }
+
+    #[test]
+    fn repeated_prefixes_are_tried_once_in_original_order() {
+        let paths = |names: &[&str]| {
+            names
+                .iter()
+                .map(std::path::PathBuf::from)
+                .collect::<Vec<_>>()
+        };
+        let prefixes = paths(&["/r", "/a", "/r", "/b", "/a", "/r"]);
+        let distinct: Vec<_> = super::first_occurrences(&prefixes).collect();
+        assert_eq!(
+            distinct,
+            paths(&["/r", "/a", "/b"]).iter().collect::<Vec<_>>()
+        );
+        assert_eq!(super::first_occurrences(&[]).count(), 0);
+    }
+
+    #[test]
+    fn declarations_are_rejected_in_the_documented_order() {
+        let message = |text: &str| super::parse_document(text).unwrap_err().to_string();
+        let doctype = "Cobertura report contains a forbidden DOCTYPE declaration";
+        let entity = "Cobertura report contains a forbidden entity declaration";
+        let stylesheet = "Cobertura report contains a forbidden external XML stylesheet";
+        assert_eq!(message("<?xml-stylesheet?><!ENTITY><!DOCTYPE>"), doctype);
+        assert_eq!(message("<?xml-stylesheet?><!ENTITY>"), entity);
+        assert_eq!(message("<?XML-STYLESHEET?><a/>"), stylesheet);
+        assert!(super::parse_document("<a/>").is_ok());
+    }
+
     #[test]
     fn node_limit_rejects_excess_nodes_without_requiring_a_large_allocation() {
         let text = "<coverage><a/></coverage>";
@@ -523,8 +636,8 @@ mod resource_tests {
 
 #[cfg(test)]
 mod dense_class_regression_tests {
-    //! Many `<class>` records name the same dense source file, so per-class
-    //! resolution and per-class line counting must be cached without changing
+    //! Many `<class>` records name the same dense source file, so resolution is
+    //! memoized and each source's line count is computed once, without changing
     //! merge, range or resolution semantics for later classes.
 
     use super::{parse_reports, LineEvidence};
@@ -627,7 +740,7 @@ mod dense_class_regression_tests {
     }
 
     #[test]
-    /// A cached line count for an earlier class must still bound later classes.
+    /// The line count used for an earlier class must still bound later classes.
     fn out_of_range_line_in_later_class_is_rejected_with_the_same_message() {
         let mut fixture = Fixture::new();
         fixture.source("src/Dense.cs", "one\ntwo\nthree\n");
@@ -647,7 +760,7 @@ mod dense_class_regression_tests {
     }
 
     #[test]
-    /// Line counts are cached per resolved source, never across different files.
+    /// Line counts belong to each resolved source, never shared across files.
     fn cached_line_count_of_one_source_does_not_bound_another() {
         let mut fixture = Fixture::new();
         fixture.source("src/Short.cs", "one\n");
@@ -695,6 +808,39 @@ mod dense_class_regression_tests {
             ],
         );
 
+        let error = format!("{:#}", fixture.parse().unwrap_err());
+        assert!(
+            error.contains(
+                r#"Cobertura filename "src/Missing.cs" does not resolve to a root-contained file"#
+            ),
+            "{error}"
+        );
+    }
+
+    #[test]
+    /// The root, spelled once or repeated, resolves a class exactly as no prefix does,
+    /// and a miss under it keeps the same message.
+    fn root_and_repeated_prefixes_resolve_like_a_single_prefix() {
+        let mut fixture = Fixture::new();
+        fixture.source("src/A.cs", "one\ntwo\n");
+        let root = fixture.root().display().to_string();
+        let found = [class("src/A.cs", &[(1, 1)])];
+        fixture.report(std::slice::from_ref(&root), &found);
+        fixture.report(&[root.clone(), root.clone(), format!("{root}/")], &found);
+        fixture.report(
+            &[format!("{root}/src"), format!("{root}/src")],
+            &[class("A.cs", &[(2, 4)])],
+        );
+        let parsed = fixture.parse().unwrap();
+        assert_eq!(
+            parsed.get("src/A.cs").unwrap(),
+            &BTreeMap::from([(1, 1), (2, 4)])
+        );
+
+        let mut fixture = Fixture::new();
+        fixture.source("src/A.cs", "one\ntwo\n");
+        let root = fixture.root().display().to_string();
+        fixture.report(&[root.clone(), root], &[class("src/Missing.cs", &[(1, 1)])]);
         let error = format!("{:#}", fixture.parse().unwrap_err());
         assert!(
             error.contains(

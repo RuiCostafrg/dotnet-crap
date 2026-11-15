@@ -42,9 +42,12 @@ include a one-based line, UTF-8 byte column, and end line.
 
 Complexity begins at 1 and adds one for `if`, loops, `catch`, ternaries,
 non-default switch labels and non-discard switch-expression arms, `when` guards,
-`&&`, `||`, `??`, and `??=`. Comments and strings do not contribute.
+`&&`, `||`, `??`, `??=`, and each logical-pattern `and` or `or` combinator.
+Relational patterns and `not` do not add separate decisions. Comments and
+strings do not contribute. See [logical pattern scoring](CSHARP_PATTERNS.md)
+for hand-counted examples, ownership and executed fixture evidence.
 This is the tool's convention, not a claim of Roslyn or IDE metric equivalence.
-Top-level statements, advanced patterns, primary constructors, and
+Top-level statements, broader pattern/callable completeness, primary constructors, and
 conditional-compilation symbols still need broader support.
 
 Native coverage is validated for version, unknown/duplicate keys, canonical

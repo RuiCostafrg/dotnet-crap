@@ -31,6 +31,9 @@ mod report;
 mod selection;
 /// Source byte decoding.
 mod source;
+/// Test-only per-file work counters.
+#[cfg(test)]
+mod work;
 
 /// Inputs and policy for a scan. Relative source paths are resolved against `root`.
 #[derive(Debug, Clone)]
@@ -86,6 +89,10 @@ impl ScanResult {
     /// Verify that selected source bytes still match the scanned bytes.
     pub fn verify_sources(&self) -> Result<()> {
         for (path, hash) in &self.source_hashes {
+            #[cfg(test)]
+            work::count(work::Unit::Read);
+            #[cfg(test)]
+            work::count(work::Unit::Hash);
             if hex::encode(Sha256::digest(fs::read(path).kind(ErrorKind::Io)?)) != *hash {
                 fail!(
                     SourceChanged,
@@ -136,6 +143,31 @@ pub use error::{Error, ErrorKind, Result};
 
 /// Validate inputs and scan selected C# sources.
 pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
+    scan_impl(args, None)
+}
+
+/// Facts about one source, kept together to avoid positional hash/count pairing.
+pub(crate) struct ScannedSource {
+    pub(crate) path: PathBuf,
+    pub(crate) hash: String,
+    pub(crate) line_count: usize,
+}
+
+/// [`scan`] that also returns source facts from exactly the bytes hashed and
+/// parsed, in scan order. `collect` uses them without re-reading source text.
+pub(crate) fn scan_with_line_counts(
+    args: &ScanOptions,
+) -> Result<(ScanResult, Vec<ScannedSource>)> {
+    let mut sources = Vec::new();
+    let result = scan_impl(args, Some(&mut sources))?;
+    Ok((result, sources))
+}
+
+/// Shared [`scan`] body; `sources`, when given, receives facts for each source.
+fn scan_impl(
+    args: &ScanOptions,
+    mut sources: Option<&mut Vec<ScannedSource>>,
+) -> Result<ScanResult> {
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         fail!(InvalidInput, "threshold must be finite and nonnegative");
     }
@@ -159,12 +191,17 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
     parser
         .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
         .kind(ErrorKind::Source)?;
+    let kinds = analysis::KindTable::new(&tree_sitter_c_sharp::LANGUAGE.into());
     let mut items = Vec::new();
     let mut source_hashes = Vec::new();
     for path in &files {
         let bytes =
             fs::read(path).with_context(ErrorKind::Io, || format!("reading {}", path.display()))?;
+        #[cfg(test)]
+        work::count(work::Unit::Read);
         let hash = hex::encode(Sha256::digest(&bytes));
+        #[cfg(test)]
+        work::count(work::Unit::Hash);
         let source = decode_source(&bytes)
             .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
         let relative = path
@@ -185,21 +222,21 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
         let tree = parser
             .parse(&source, None)
             .context(ErrorKind::Source, "parser failed")?;
+        #[cfg(test)]
+        work::count(work::Unit::Parse);
         if tree.root_node().has_error() {
             fail!(Syntax, "invalid C# syntax in {relative}");
         }
         let cov = coverage.as_ref().and_then(|c| c.files.get(&relative));
         if let Some(c) = cov {
-            if !hash.eq_ignore_ascii_case(&c.sha256) {
-                fail!(Coverage, "stale coverage for {relative}");
-            }
-            let line_count = source.lines().count();
-            if c.lines
-                .keys()
-                .any(|l| l.parse::<usize>().unwrap_or(usize::MAX) > line_count)
-            {
-                fail!(Coverage, "coverage line outside {relative}");
-            }
+            evidence::check_binding(c, &hash, source.lines().count(), &relative)?;
+        }
+        if let Some(sources) = sources.as_mut() {
+            sources.push(ScannedSource {
+                path: path.clone(),
+                hash,
+                line_count: source.lines().count(),
+            });
         }
         let points = cov.map(|c| {
             analysis::CoverageIndex::new(
@@ -209,6 +246,7 @@ pub fn scan(args: &ScanOptions) -> Result<ScanResult> {
             )
         });
         analysis::collect(
+            &kinds,
             tree.root_node(),
             &source,
             &relative,

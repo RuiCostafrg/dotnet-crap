@@ -1,5 +1,5 @@
 # Builds the candidate release exactly as release.yml does, then installs it
-# through every channel before anything is published: npm/pnpm/Yarn/Bun, the
+# through the remaining native channels before anything is published: the
 # shell installer, a local Homebrew tap, and the GitHub Action against NUnit
 # and MSTest projects with fresh Coverlet coverage. Nothing is published here.
 name: Distribution
@@ -18,11 +18,6 @@ jobs:
     # Fork-hosted workflow runs are skipped; upstream fork PRs remain read-only.
     if: github.repository == 'RuiCostafrg/dotnet-crap'
     uses: ./.github/workflows/build-release.yml
-  npm:
-    needs: build
-    uses: ./.github/workflows/npm-install.yml
-    with:
-      version: ${{ needs.build.outputs.version }}
   installation:
     needs: build
     uses: ./.github/workflows/installation.yml
