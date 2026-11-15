@@ -5,8 +5,10 @@ memory go and what can be removed without changing output. This file records wha
 was measured. The implementation order is in
 [`docs/PERFORMANCE_PLAN.md`](../../docs/PERFORMANCE_PLAN.md).
 
-Nothing here is merged. The patches in [`prototypes/`](prototypes/) are starting
-points, not reviewed code. `A`, `B`, `C-all-R1-R5`, `C-R5` and `E` each apply to
+The prototype patches themselves are not merged; the approaches behind A,
+C-R1–C-R5 and the benchmark harness landed as #36, #38, #45 and #37. The
+patches in [`prototypes/`](prototypes/) are starting points, not reviewed code.
+`A`, `B`, `C-all-R1-R5`, `C-R5` and `E` each apply to
 `1fc580e` on their own (`git apply --check`). `C-R1` to `C-R4` apply only in order
 on top of `C-R0`, the instrumentation patch.
 
@@ -203,12 +205,25 @@ On macos-26 the same runs were noisier: #36 separated only on dense-file scan
 The local prototype predicted 0.78 for dense-file scan from the traversal; the
 hosted figure is 0.879.
 
+#45/#37: `collect` single scan measured by the PR 0 harness, run
+[43662205339](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/43662205339):
+base and head built and measured in one job, 21 generated workload/mode
+comparisons (seven workloads × scan/scan-coverage/collect), output
+byte-identical on ubuntu-26.04 and macos-26. Every Linux
+`collect` row separated (7 of 7). On macos-26 the separated `collect` rows are
+dense-file (0.606), many-medium (0.560) and skew (0.613). Example Linux
+deep-nesting `collect` row: median wall 128.1 ms → 75.8 ms (0.59), CPU
+118.7 → 66.5 ms (0.56), peak RSS ~25.1 MB → ~24.8 MB. The complete mutation
+gate for the same head passed in run
+[43662205329](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/43662205329):
+413 mutants, 362 caught, 21 missed, 30 unviable, score 94.52%.
+
 ## Not measured
 
 - Thread scaling on glibc, macOS and Windows.
-- Timings on real C# repositories. All timed corpora are generated; the dense
-  single-file workloads are worst cases for memory and best cases for traversal
-  gains. Real repositories were scanned for correctness only, see the next section.
+- Timings on real C# repositories beyond the three pinned ones the PR 0 harness
+  runs. The dense single-file workloads are worst cases for memory and best
+  cases for traversal gains.
 - A streaming Cobertura reader, a custom tree-sitter allocator (`unsafe_code` is
   forbidden in this crate) and an on-disk per-file result cache were not prototyped.
 

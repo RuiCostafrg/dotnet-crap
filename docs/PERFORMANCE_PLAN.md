@@ -3,7 +3,8 @@
 Continues [PLAN step 8](../PLAN.md). Evidence for every number below is in
 [`reports/perf-round2/README.md`](../reports/perf-round2/README.md). Prototype
 patches are in `reports/perf-round2/prototypes/`. They were cut against
-`main@1fc580e`; `src/` has not changed on `main` since.
+`main@1fc580e`. PRs 0–3 have since merged and changed `src/`, so the
+patches no longer apply to `main`.
 
 ## What the investigation settled
 
@@ -71,6 +72,8 @@ gate strictly above 90%) and attaches the Benchmark workflow summary.
 
 ### PR 0: benchmark harness for this round
 
+*Status: merged as #37 (merge commit 440958e).*
+
 *Sonnet 5.5. Files: `scripts/benchmark.py`, `scripts/bench_workloads.py`, their
 tests, `.github/workflows/benchmark.yml`, `docs/BENCHMARKS.md`. No `src/` change.*
 
@@ -91,6 +94,8 @@ in the summary.
 
 ### PR 1: `collect` quick wins (R4, R5, R2)
 
+*Status: merged as #38.*
+
 *Sonnet 5.5. Port the R4, R5 and R2 hunks from `C-all-R1-R5.patch`. Files:
 `src/collector.rs`, `src/cobertura.rs`.*
 
@@ -108,6 +113,8 @@ the flag scan with `to_ascii_lowercase().contains` on edge cases. No behaviour o
 documentation change.
 
 ### PR 2: `collect` parses each file once (R1, R3)
+
+*Status: merged as #45; landed into `main` via #37.*
 
 *Opus 5.5, reviewed by Sonnet 5.5. Port the R1 and R3 hunks from
 `C-all-R1-R5.patch` on top of PR 1. Files:
@@ -135,6 +142,8 @@ Expected from the prototype: `collect` wall and CPU down by 40–50% on every wo
 
 ### PR 3: single-pass traversal
 
+*Status: merged as #36.*
+
 *Opus 5.5, reviewed by Sonnet 5.5. Start from `A-single-pass-traversal.patch`.
 Files: `src/analysis.rs`, two lines in `src/lib.rs`.*
 
@@ -155,6 +164,8 @@ Expected from the prototype: scan CPU −22% on dense-file (separated locally),
 −12% to −18% on the other single-file workloads (not separated locally).
 
 ### PR 4: parallel per-file scan
+
+*Status: not started (next).*
 
 *Opus 5.5, reviewed by Sonnet 5.5. Start from `B-parallel-scan.patch`, rebased on
 PRs 2 and 3. Files: `src/lib.rs`, new `src/par.rs`, `src/main.rs`,
@@ -196,6 +207,8 @@ record the result in `reports/perf-round2/README.md`. `strip = "symbols"` is a p
 PLAN step 9, not part of this experiment.
 
 ### PR 6: streaming Cobertura reader (prototype first)
+
+*Status: not started.*
 
 *Opus 5.5 for a research prototype, then a decision. Files: `src/cobertura.rs`.*
 
