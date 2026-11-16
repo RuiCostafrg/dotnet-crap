@@ -28,22 +28,30 @@ use std::collections::BTreeSet;
 /// Keeps the recursive evaluator well within any worker thread's stack.
 const MAX_EXPRESSION_DEPTH: usize = 256;
 
-/// Return whether `name` is accepted as a conditional compilation symbol: a
-/// letter or `_`, then letters, digits or `_`, and neither `true` nor `false`.
+/// Longest directive identifier the fallback accepts. The compiler truncates
+/// longer identifiers in directives to this many characters, so two distinct
+/// long symbols could collide; the fallback declines instead of guessing.
+const MAX_SYMBOL_LEN: usize = 128;
+
+/// Return whether `name` is accepted as a conditional compilation symbol: an
+/// ASCII letter or `_`, then ASCII letters, digits or `_`, at most
+/// [`MAX_SYMBOL_LEN`] characters, and not `true` or `false` in any letter case.
 ///
-/// "Letter" is Rust's `char::is_alphabetic` (the Unicode `Alphabetic`
-/// property) and "digit" adds `char::is_numeric`. This approximates the C#
-/// identifier categories without a Unicode category table: it also accepts
-/// `Other_Alphabetic` characters (mostly `Mn` and `Mc` marks) at the start
-/// and `No` digits inside, and rejects `Mn`, `Mc`, `Pc` and `Cf` characters
-/// that are not `Alphabetic` or `_`. Unicode escapes (`\u0041`) are not
-/// decoded, so they are rejected.
+/// The compiler reads `true` and `false` in a directive expression with
+/// `bool.TryParse`, which ignores case, so every casing is a literal and can
+/// never be a symbol. Non-ASCII identifiers are not accepted: Rust has no
+/// table of the C# identifier categories (its `Alphabetic` property admits
+/// combining marks that C# rejects at the start of an identifier), so a
+/// directive with one makes the fallback decline rather than guess.
 pub(crate) fn is_symbol(name: &str) -> bool {
-    let mut chars = name.chars();
-    chars.next().is_some_and(|c| c == '_' || c.is_alphabetic())
-        && chars.all(|c| c == '_' || c.is_alphanumeric())
-        && name != "true"
-        && name != "false"
+    let mut bytes = name.bytes();
+    bytes
+        .next()
+        .is_some_and(|b| b == b'_' || b.is_ascii_alphabetic())
+        && bytes.all(|b| b == b'_' || b.is_ascii_alphanumeric())
+        && name.len() <= MAX_SYMBOL_LEN
+        && !name.eq_ignore_ascii_case("true")
+        && !name.eq_ignore_ascii_case("false")
 }
 
 /// Whether an open group is `#if` or `#region`.
@@ -260,9 +268,12 @@ fn apply<'a>(
                 symbols.remove(symbol);
             }
         }
-        "nullable" => nullable(rest)?,
+        // The compiler skips inactive `#nullable` and `#line` lines without
+        // checking their arguments.
+        "nullable" if active => nullable(rest)?,
+        "line" if active => line(rest)?,
         "error" if active => return None,
-        "pragma" | "line" | "warning" | "error" => {}
+        "nullable" | "line" | "pragma" | "warning" | "error" => {}
         _ => return None,
     }
     Some(())
@@ -278,6 +289,42 @@ fn nullable(rest: &str) -> Option<()> {
         && target.is_none_or(|t| matches!(t, "warnings" | "annotations"))
         && words.next().is_none())
     .then_some(())
+}
+
+/// Accept an active `#line` argument the compiler accepts: `default`,
+/// `hidden`, or a decimal line number of at least 1 optionally followed by
+/// whitespace and a double-quoted file name, then an optional `//` comment.
+/// The number is at most `i32::MAX`, with any leading zeros. The file name has no escapes and runs to the next `"`. The C# 11 span form
+/// `(l, c) - (l, c) [offset] "file"` is not followed and declines.
+fn line(rest: &str) -> Option<()> {
+    let args = rest.trim_start_matches(is_space);
+    for keyword in ["default", "hidden"] {
+        if let Some(after) = args.strip_prefix(keyword) {
+            return (!after.starts_with(|c: char| c == '_' || c.is_alphanumeric()))
+                .then(|| ends_cleanly(after))
+                .flatten();
+        }
+    }
+    let digits = args.bytes().take_while(u8::is_ascii_digit).count();
+    let (number, after) = args.split_at(digits);
+    // At least 1, and an `int` as in the compiler (a larger number is an
+    // error there; a number above 16707565 only warns).
+    if !number
+        .parse::<u32>()
+        .is_ok_and(|n| (1..=i32::MAX as u32).contains(&n))
+    {
+        return None;
+    }
+    // The number ends at whitespace, a comment or the end of the line, so
+    // hexadecimal, digit separators and a glued file name decline.
+    if !after.is_empty() && !after.starts_with(is_space) && !after.starts_with("//") {
+        return None;
+    }
+    let after = after.trim_start_matches(is_space);
+    match after.strip_prefix('"') {
+        Some(name) => ends_cleanly(&name[name.find('"')? + 1..]),
+        None => ends_cleanly(after),
+    }
 }
 
 /// Remove a trailing `//` comment.
@@ -324,7 +371,12 @@ enum Mode {
 #[derive(Default)]
 struct Lexer {
     /// Open comments, strings and holes, innermost last; empty in plain code.
+    /// Change it only through [`Lexer::push`] and [`Lexer::pop`].
     stack: Vec<Mode>,
+    /// How many open strings in `stack` must end on their line (regular and
+    /// single-line raw), kept equal to a scan of `stack` so the end-of-line
+    /// check is constant time however deeply holes nest.
+    line_bound: usize,
     /// Whether any token has been seen in active text.
     seen_token: bool,
 }
@@ -340,7 +392,35 @@ fn run(bytes: &[u8], byte: u8) -> usize {
     bytes.iter().take_while(|&&b| b == byte).count()
 }
 
+/// Whether an open string of this mode must end on the line it starts on.
+fn ends_on_line(mode: Mode) -> bool {
+    matches!(
+        mode,
+        Mode::Text {
+            quote: Quote::Regular
+                | Quote::Raw {
+                    multi_line: false,
+                    ..
+                },
+            ..
+        }
+    )
+}
+
 impl Lexer {
+    /// Open a level of nesting.
+    fn push(&mut self, mode: Mode) {
+        self.line_bound += usize::from(ends_on_line(mode));
+        self.stack.push(mode);
+    }
+
+    /// Close the innermost level.
+    fn pop(&mut self) {
+        if let Some(mode) = self.stack.pop() {
+            self.line_bound -= usize::from(ends_on_line(mode));
+        }
+    }
+
     /// Whether the next line starts in plain code, where directives apply.
     fn in_code(&self) -> bool {
         self.stack.is_empty()
@@ -375,7 +455,7 @@ impl Lexer {
                 None | Some(Mode::Hole { .. }) => self.code(line, i)?,
                 Some(Mode::Comment) => match line[i..].find("*/") {
                     Some(at) => {
-                        self.stack.pop();
+                        self.pop();
                         i + at + 2
                     }
                     None => line.len(),
@@ -388,20 +468,7 @@ impl Lexer {
         }
         // Regular and single-line raw strings end on their line. A hole that
         // continues past the end of such a string's line is not followed.
-        (!self.stack.iter().any(|m| {
-            matches!(
-                m,
-                Mode::Text {
-                    quote: Quote::Regular
-                        | Quote::Raw {
-                            multi_line: false,
-                            ..
-                        },
-                    ..
-                }
-            )
-        }))
-        .then_some(())
+        (self.line_bound == 0).then_some(())
     }
 
     /// Lex code (plain or in a hole) at byte `i` of `line`; return where to
@@ -420,7 +487,7 @@ impl Lexer {
                 return (!in_hole).then_some(line.len());
             }
             (b'/', Some(b'*')) => {
-                self.stack.push(Mode::Comment);
+                self.push(Mode::Comment);
                 return Some(i + 2);
             }
             _ => {}
@@ -469,7 +536,7 @@ impl Lexer {
                 if run(&bytes[i..], b'}') < closing {
                     return None;
                 }
-                self.stack.pop();
+                self.pop();
                 return Some(i + closing);
             }
             b':' if *depth == 0 => {
@@ -526,7 +593,7 @@ impl Lexer {
             let multi_line = line[j..].bytes().all(is_ascii_space);
             Quote::Raw { quotes, multi_line }
         };
-        self.stack.push(Mode::Text { quote, dollars });
+        self.push(Mode::Text { quote, dollars });
         Some(j)
     }
 
@@ -538,12 +605,12 @@ impl Lexer {
         match (quote, b) {
             (Quote::Regular, b'\\') => return Some(i + 2),
             (Quote::Regular, b'"') => {
-                self.stack.pop();
+                self.pop();
                 return Some(i + 1);
             }
             (Quote::Verbatim, b'"') if next == Some(b'"') => return Some(i + 2),
             (Quote::Verbatim, b'"') => {
-                self.stack.pop();
+                self.pop();
                 return Some(i + 1);
             }
             (Quote::Raw { quotes, multi_line }, b'"') => {
@@ -556,7 +623,7 @@ impl Lexer {
                 if found > quotes || multi_line && !line[..i].bytes().all(is_ascii_space) {
                     return None;
                 }
-                self.stack.pop();
+                self.pop();
                 return Some(i + found);
             }
             _ => {}
@@ -574,14 +641,14 @@ impl Lexer {
             if b == b'}' || found >= 2 * dollars {
                 return None;
             }
-            self.stack.push(Mode::Hole { depth: 0 });
+            self.push(Mode::Hole { depth: 0 });
             return Some(i + found);
         }
         // `{{` and `}}` are escaped braces; one `{` opens a hole.
         match (b, next) {
             (_, Some(n)) if n == b => Some(i + 2),
             (b'{', _) => {
-                self.stack.push(Mode::Hole { depth: 0 });
+                self.push(Mode::Hole { depth: 0 });
                 Some(i + 1)
             }
             _ => None,
@@ -616,13 +683,21 @@ fn tokenize(text: &str) -> Option<Vec<Token<'_>>> {
         if rest.is_empty() || rest.starts_with("//") {
             return Some(tokens);
         }
-        let first = rest.chars().next().expect("nonempty after the check above");
-        let (token, len) = if first == '_' || first.is_alphabetic() {
+        let first = rest.as_bytes()[0];
+        let (token, len) = if first == b'_' || first.is_ascii_alphabetic() {
             let len = word_len(rest);
-            let token = match &rest[..len] {
-                "true" => Token::Literal(true),
-                "false" => Token::Literal(false),
-                word => Token::Symbol(word),
+            let word = &rest[..len];
+            // Non-ASCII and over-long identifiers decline (see `is_symbol`).
+            if !word.is_ascii() || len > MAX_SYMBOL_LEN {
+                return None;
+            }
+            // `bool.TryParse` in the compiler: any letter case.
+            let token = if word.eq_ignore_ascii_case("true") {
+                Token::Literal(true)
+            } else if word.eq_ignore_ascii_case("false") {
+                Token::Literal(false)
+            } else {
+                Token::Symbol(word)
             };
             (token, len)
         } else {
@@ -784,23 +859,32 @@ mod tests {
 
     #[test]
     fn symbols_follow_identifier_rules() {
+        let longest = "a".repeat(MAX_SYMBOL_LEN);
         for good in [
             "A",
             "_",
             "_x1",
+            "Ab_9",
             "DEBUG",
             "NET8_0_OR_GREATER",
-            "é",
             "if",
             "Truex",
+            "_true",
+            "trues",
+            &longest,
         ] {
             assert!(is_symbol(good), "{good}");
         }
+        let too_long = "a".repeat(MAX_SYMBOL_LEN + 1);
         for bad in [
-            "", "1A", "A-B", "A B", "true", "false", "@A", "A.B", " A", "A,B",
+            "", "1A", "A-B", "A B", "@A", "A.B", " A", "A,B", "true", "false", "TRUE", "True",
+            "tRuE", "FALSE", "False",
+            "fAlSe", // Not ASCII: declined rather than approximated.
+            "é", "Aé", "éA", "ःA", "A\u{301}", "\u{ff21}", &too_long,
         ] {
             assert!(!is_symbol(bad), "{bad}");
         }
+        assert_eq!(MAX_SYMBOL_LEN, 128);
     }
 
     #[test]
@@ -831,7 +915,22 @@ mod tests {
             ("  A\t&&B ", &["A", "B"], true),
             ("A // B && false", &["A"], true),
             ("A//comment", &["A"], true),
-            ("NET8_0 || é", &["é"], true),
+            // `true` and `false` are literals in every letter case.
+            ("TRUE", &[], true),
+            ("True", &[], true),
+            ("tRuE", &[], true),
+            ("FALSE", &[], false),
+            ("False", &["False"], false),
+            ("fAlSe", &[], false),
+            ("!FALSE", &[], true),
+            ("A == TRUE", &["A"], true),
+            ("FALSE || A", &["A"], true),
+            ("TRUE && FALSE", &[], false),
+            ("(True)", &[], true),
+            ("Truex", &["Truex"], true),
+            ("Truex", &[], false),
+            ("_TRUE", &["_TRUE"], true),
+            ("A // TRUE", &["A"], true),
         ];
         for (text, names, expected) in cases {
             assert_eq!(eval(text, names), Some(*expected), "{text} with {names:?}");
@@ -842,9 +941,34 @@ mod tests {
     fn malformed_expressions_are_rejected() {
         for text in [
             "", "// x", "A B", "A &&", "&& A", "(A", "A)", "()", "&A", "A = B", "A | B", "!", "1",
-            "A.B", "A ==", "A !", "#A",
+            "A.B", "A ==", "A !", "#A", "@true", "@A",
         ] {
             assert_eq!(eval(text, &["A", "B"]), None, "{text:?}");
+        }
+        // Non-ASCII identifiers and identifiers over 128 characters decline,
+        // even when the same text is among the symbols.
+        let long = "a".repeat(MAX_SYMBOL_LEN);
+        let too_long = format!("{long}a");
+        assert_eq!(eval(&long, &[&long]), Some(true));
+        assert_eq!(eval(&long, &[]), Some(false));
+        assert_eq!(
+            eval(&format!("!{long} && ({long} || A)"), &["A"]),
+            Some(true)
+        );
+        assert_eq!(eval(&too_long, &[&too_long]), None);
+        assert_eq!(eval(&format!("A && {too_long}"), &["A"]), None);
+        for text in [
+            "ःA",
+            "A && ःA",
+            "é",
+            "Aé",
+            "A\u{301}",
+            "\u{ff21}",
+            "A || é",
+            "ःtrue",
+            "trueé",
+        ] {
+            assert_eq!(eval(text, &["A", "ःA", "é", "Aé"]), None, "{text:?}");
         }
     }
 
@@ -889,6 +1013,53 @@ mod tests {
                 Token::Literal(false),
             ]
         );
+    }
+
+    #[test]
+    fn literals_ignore_letter_case() {
+        assert_eq!(
+            tokenize("TRUE True tRuE FALSE False fAlSe true false").unwrap(),
+            [
+                Token::Literal(true),
+                Token::Literal(true),
+                Token::Literal(true),
+                Token::Literal(false),
+                Token::Literal(false),
+                Token::Literal(false),
+                Token::Literal(true),
+                Token::Literal(false),
+            ]
+        );
+        assert_eq!(tokenize("Truex").unwrap(), [Token::Symbol("Truex")]);
+    }
+
+    /// `#if` and `#elif` with every casing of `true` and `false` take the
+    /// branch the literal selects, with or without symbols.
+    #[test]
+    fn if_and_elif_literals_ignore_letter_case() {
+        for t in ["true", "TRUE", "True", "tRuE", "trUE"] {
+            let in_if = format!("#if {t}\na\n#else\nb\n#endif\n");
+            let in_elif = format!("#if false\na\n#elif {t}\nb\n#else\nc\n#endif\n");
+            let negated = format!("#if !{t}\na\n#else\nb\n#endif\n");
+            for names in [&[][..], &["A", "x"]] {
+                assert_eq!(visible(&in_if, names), ["a"], "{t}");
+                assert_eq!(visible(&in_elif, names), ["b"], "{t}");
+                assert_eq!(visible(&negated, names), ["b"], "{t}");
+            }
+        }
+        for f in ["false", "FALSE", "False", "fAlSe", "faLSE"] {
+            let in_if = format!("#if {f}\na\n#else\nb\n#endif\n");
+            let in_elif = format!("#if false\na\n#elif {f}\nb\n#else\nc\n#endif\n");
+            let negated = format!("#if !{f}\na\n#else\nb\n#endif\n");
+            for names in [&[][..], &["A", "x"]] {
+                assert_eq!(visible(&in_if, names), ["b"], "{f}");
+                assert_eq!(visible(&in_elif, names), ["c"], "{f}");
+                assert_eq!(visible(&negated, names), ["a"], "{f}");
+            }
+        }
+        // A symbol named like a literal is never consulted, and never defined.
+        assert_eq!(visible("#if FALSE\na\n#else\nb\n#endif", &["FALSE"]), ["b"]);
+        assert_eq!(visible("#if TRUE\na\n#else\nb\n#endif", &[]), ["a"]);
     }
 
     const SPLIT: &str = "class C {\n    Task OnEmptyBatchAsync()\n#if X\n    {\n        return Task.CompletedTask;\n    }\n#else\n    ;\n#endif\n}\n";
@@ -951,7 +1122,6 @@ mod tests {
             "#define 1",
             "#undef true",
             "#else x",
-            "#nullable on",
         ] {
             let text = format!("#if false\n#if A\n{bad}\n#endif\n#endif\nz");
             assert_eq!(resolve(&text, &set(&[])), None, "{bad}");
@@ -1055,8 +1225,22 @@ mod tests {
             "#define\n",
             "#define 1A\n",
             "#define true\n",
+            "#define TRUE\n",
+            "#define True\n",
             "#define A B\n",
             "#undef false\n",
+            "#undef FALSE\n",
+            "#undef fAlSe\n",
+            "#define é\n",
+            "#define ःA\n",
+            "#undef ःA\n",
+            "#define Aé\n",
+            "#if ःA\n#endif\n",
+            "#if é\n#endif\n",
+            "#if A\n#elif ःA\n#endif\n",
+            "#if false\n#define TRUE\n#endif\n",
+            "#if false\n#undef true\n#endif\n",
+            "#if false\n#define ःA\n#endif\n",
             "#unknown\n",
             "#\n",
             "#if A\n#endif\n#endif\n",
@@ -1090,6 +1274,192 @@ mod tests {
             ["b"]
         );
         assert_eq!(visible("#if(A)\na\n#endif\n", &["A"]), ["a"]);
+    }
+
+    /// `directive` on its own line before a member: resolved text keeps the
+    /// member, or `None` when the fallback declines.
+    fn resolves_with(directive: &str) -> bool {
+        resolve(&format!("{directive}\nclass C {{ }}\n"), &set(&[])).is_some()
+    }
+
+    #[test]
+    fn active_nullable_is_validated_and_inactive_is_not() {
+        for ok in [
+            "#nullable enable",
+            "#nullable disable warnings",
+            "#nullable restore annotations // c",
+        ] {
+            assert!(resolves_with(ok), "{ok}");
+        }
+        for bad in [
+            "#nullable on",
+            "#nullable",
+            "#nullable enable all",
+            "#nullable enable warnings x",
+        ] {
+            assert!(!resolves_with(bad), "{bad}");
+            // The compiler skips it in inactive text, so it is accepted.
+            let inactive = format!("#if false\n{bad}\n#endif\nclass C {{ }}\n");
+            assert_eq!(visible(&inactive, &[]), ["class C { }"], "{bad}");
+            let nested = format!("#if A\n#else\n{bad}\n#endif\nclass C {{ }}\n");
+            assert_eq!(visible(&nested, &["A"]), ["class C { }"], "{bad}");
+        }
+    }
+
+    #[test]
+    fn active_line_directives_follow_the_compiler() {
+        for ok in [
+            "#line default",
+            "#line hidden",
+            "#line 1",
+            "#line 5",
+            "#line   7\t",
+            "#line 007",
+            "#line 2147483647",
+            "#line 16707566",
+            "#  line 5",
+            "#line default // c",
+            "#line hidden//c",
+            "#line 5 // c",
+            "#line 5//c",
+            "#line 5 \"f.cs\"",
+            "#line 5\t\"f.cs\"  ",
+            "#line 5 \"\"",
+            "#line 5 \"a\\b.cs\"",
+            "#line 5 \"a // b.cs\" // c",
+            "#line 5 \"ü 日本.cs\"",
+        ] {
+            assert!(resolves_with(ok), "{ok}");
+        }
+        for bad in [
+            "#line",
+            "#line abc",
+            "#line \"f.cs\"",
+            "#line 0",
+            "#line 000",
+            "#line -1",
+            "#line +1",
+            "#line 5 6",
+            "#line 5 \"a\" extra",
+            "#line 5 /*c*/",
+            "#line 5\"f.cs\"",
+            "#line 5 \"f.cs",
+            "#line 5 \"f.cs\"\"",
+            "#line 0x10",
+            "#line 1_000",
+            "#line 5x",
+            "#line 5.0",
+            "#line Default",
+            "#line defaultx",
+            "#line default x",
+            "#line hidden \"f.cs\"",
+            "#line hidden 5",
+            "#line default /*c*/",
+            // The span form is valid C# 11 but not followed.
+            "#line (1, 1) - (2, 2) \"f.cs\"",
+            "#line (1,1)-(2,2) 4 \"f.cs\"",
+        ] {
+            assert!(!resolves_with(bad), "{bad}");
+            // Inactive `#line` is not checked.
+            let inactive = format!("#if false\n{bad}\n#endif\nclass C {{ }}\n");
+            assert_eq!(visible(&inactive, &[]), ["class C { }"], "{bad}");
+        }
+        // Numbers over `i32::MAX` decline when active. The compiler also
+        // rejects them inactive, which the fallback does not check.
+        for bad in ["#line 2147483648", "#line 99999999999999999999"] {
+            assert!(!resolves_with(bad), "{bad}");
+        }
+        // The text after the directive is untouched and the line is blanked.
+        assert_eq!(
+            visible("#line 5 \"f.cs\"\nclass C { }\n", &[]),
+            ["class C { }"]
+        );
+    }
+
+    #[test]
+    fn symbol_length_is_bounded_at_128() {
+        let at = "a".repeat(MAX_SYMBOL_LEN);
+        let over = format!("{at}a");
+        let text = |symbol: &str| {
+            format!("#define {symbol}\n#define {symbol}\n#undef {symbol}\n#define {symbol}\n#if {symbol}\nx\n#else\ny\n#endif\n")
+        };
+        assert_eq!(visible(&text(&at), &[]), ["x"]);
+        assert_eq!(resolve(&text(&over), &set(&[])), None);
+        for directive in ["#if", "#elif", "#define", "#undef"] {
+            let text = format!("#if A\n#endif\n#if false\n#endif\n{directive} {over}\n#endif\n");
+            assert_eq!(resolve(&text, &set(&[])), None, "{directive}");
+        }
+        // Over-long names decline in inactive text too.
+        let inactive = format!("#if false\n#define {over}\n#endif\n");
+        assert_eq!(resolve(&inactive, &set(&[])), None);
+        let inactive = format!("#if false\n#if {over}\n#endif\n#endif\n");
+        assert_eq!(resolve(&inactive, &set(&[])), None);
+        // A 128-character `--define` is a symbol; one more character is not.
+        let exact = format!("#if {at}\nx\n#else\ny\n#endif\n");
+        assert_eq!(visible(&exact, &[&at]), ["x"]);
+        assert_eq!(visible(&exact, &[]), ["y"]);
+    }
+
+    #[test]
+    fn defines_and_undefs_of_literal_names_decline_in_any_case() {
+        for name in ["true", "TRUE", "True", "false", "FALSE", "False", "fAlSe"] {
+            for directive in ["#define", "#undef"] {
+                let text = format!("{directive} {name}\nclass C {{ }}\n");
+                assert_eq!(resolve(&text, &set(&[])), None, "{text:?}");
+            }
+        }
+        // Names that merely contain one are symbols.
+        let text = "#define Truex\n#define _FALSE\n#if Truex && _FALSE\nx\n#endif\n";
+        assert_eq!(visible(text, &[]), ["x"]);
+    }
+
+    /// A deadline far beyond any honest run on a slow machine: a quadratic
+    /// scan of the lexer stack at each line end takes minutes at this depth.
+    const DEEP_LIMIT: std::time::Duration = std::time::Duration::from_secs(30);
+
+    #[test]
+    fn deeply_nested_interpolation_is_resolved_quickly() {
+        let levels = 20_000;
+        // Each level opens a verbatim interpolated string and its hole over
+        // several lines; every line of a hole is checked at its end.
+        let open = "var s = $@\"{\nvar a = 1;\nvar b = 2;\n".repeat(levels);
+        let close = "}\"\n".repeat(levels);
+        let text = format!("{open}x\n{close};\n#if A\na\n#else\nb\n#endif\n");
+        let start = std::time::Instant::now();
+        let out = resolve(&text, &set(&["A"]));
+        assert!(start.elapsed() < DEEP_LIMIT, "{:?}", start.elapsed());
+        let out = out.expect("nested verbatim holes resolve");
+        assert_same_shape(&text, &out);
+        let last = out.split('\n').map(str::trim).rfind(|l| !l.is_empty());
+        assert_eq!(last, Some("a"));
+
+        // A regular string must end on its line: the same nesting declines.
+        let open = "var s = $\"{\nvar a = 1;\nvar b = 2;\n".repeat(levels);
+        let text = format!("{open}x\n{close};\n#if A\na\n#endif\n");
+        let start = std::time::Instant::now();
+        assert_eq!(resolve(&text, &set(&["A"])), None);
+        assert!(start.elapsed() < DEEP_LIMIT, "{:?}", start.elapsed());
+
+        // Levels on one line, with a regular string deep inside, decline.
+        let text = format!("{}\n#if A\n#endif\n", "$@\"{$\"{".repeat(levels));
+        let start = std::time::Instant::now();
+        assert_eq!(resolve(&text, &set(&["A"])), None);
+        assert!(start.elapsed() < DEEP_LIMIT, "{:?}", start.elapsed());
+    }
+
+    #[test]
+    fn open_regular_string_counter_matches_the_stack() {
+        // Push and pop of every string form keep `line_bound` equal to a
+        // scan of the stack, line by line.
+        let text = "var a = \"x\"; var b = @\"y\nz\"; var c = $@\"{ \"q\" + $\"{1}\" }\n{2}\"; var d = \"\"\"\n  raw\n  \"\"\"; var e = \"\"\"r\"\"\"; /* c\n */ var f = $\"{1}\";\n";
+        let mut lexer = Lexer::default();
+        for line in text.split('\n') {
+            lexer.line(line).expect("lexes");
+            let scanned = lexer.stack.iter().filter(|m| ends_on_line(**m)).count();
+            assert_eq!(lexer.line_bound, scanned, "{line:?}");
+        }
+        assert!(lexer.in_code());
+        assert_eq!(lexer.line_bound, 0);
     }
 
     /// `#if A` ... `#else` ... `#endif` after `prefix`: `["a"]` when `A` is

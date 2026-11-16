@@ -209,12 +209,16 @@ fn resolved_files_bind_coverage_by_original_lines_and_hash() {
 #[test]
 fn invalid_symbols_are_input_errors() {
     let dir = tree(&[("C.cs", SPLIT)]);
-    for bad in ["", "1X", "A-B", "true", "false", "A B"] {
+    let too_long = "a".repeat(129);
+    for bad in [
+        "", "1X", "A-B", "true", "false", "A B", "TRUE", "True", "tRuE", "FALSE", "False", "é",
+        "Aé", "ःA", &too_long,
+    ] {
         let error = scan(&options(dir.path(), &["X", bad])).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidInput, "{bad:?}");
         assert_eq!(
             error.to_string(),
-            format!("invalid conditional compilation symbol {bad:?}: use a letter or `_` followed by letters, digits or `_`, other than `true` and `false`")
+            format!("invalid conditional compilation symbol {bad:?}: use an ASCII letter or `_` followed by ASCII letters, digits or `_`, at most 128 characters, other than `true` and `false` in any letter case")
         );
     }
     for args in [
@@ -222,6 +226,10 @@ fn invalid_symbols_are_input_errors() {
         &["--define", "X,"],
         &["--define", "A;-B"],
         &["--define=true"],
+        &["--define", "TRUE"],
+        &["--define", "False"],
+        &["--define", "ःA"],
+        &["--define", "é"],
     ] {
         let output = cli(dir.path(), args);
         assert_eq!(output.status.code(), Some(2), "{args:?}");
@@ -509,4 +517,151 @@ fn byte_order_marks_are_not_part_of_the_first_line() {
         .unwrap()
         .verify_sources()
         .unwrap();
+}
+
+/// An `#if` that splits a method header from its body, so the file parses only
+/// through the fallback. The `#if` branch scores 1, the `#else` branch 2.
+fn literal_case(condition: &str) -> String {
+    format!("class C\n{{\n    int F(int x)\n#if {condition}\n    {{\n        return 1;\n    }}\n#else\n    {{\n        if (x > 0) return 2;\n        return 3;\n    }}\n#endif\n}}\n")
+}
+
+#[test]
+fn true_and_false_are_literals_in_every_letter_case() {
+    // The compiler reads them with `bool.TryParse`, which ignores case.
+    for (condition, complexity) in [
+        ("true", 1),
+        ("TRUE", 1),
+        ("True", 1),
+        ("tRuE", 1),
+        ("!FALSE", 1),
+        ("false", 2),
+        ("FALSE", 2),
+        ("False", 2),
+        ("fAlSe", 2),
+        ("!TRUE", 2),
+    ] {
+        let dir = tree(&[("C.cs", &literal_case(condition))]);
+        for defines in [&[][..], &["X"]] {
+            assert_eq!(
+                callables(dir.path(), defines),
+                [(3, "F".to_owned(), complexity)],
+                "#if {condition}"
+            );
+        }
+    }
+    // `#elif TRUE` takes its branch too.
+    let elif = literal_case("FALSE").replace("#else", "#elif TRUE");
+    let dir = tree(&[("C.cs", &elif)]);
+    assert_eq!(callables(dir.path(), &[]), [(3, "F".to_owned(), 2)]);
+    let elif = literal_case("X").replace("#else", "#elif TRUE");
+    let dir = tree(&[("C.cs", &elif)]);
+    assert_eq!(callables(dir.path(), &[]), [(3, "F".to_owned(), 2)]);
+    assert_eq!(callables(dir.path(), &["X"]), [(3, "F".to_owned(), 1)]);
+}
+
+#[test]
+fn literal_names_cannot_be_defined() {
+    // `--define FALSE` is rejected rather than shadowing the literal, so the
+    // `#else` branch is the one scored, with or without other symbols.
+    let dir = tree(&[("C.cs", &literal_case("FALSE"))]);
+    for bad in ["FALSE", "False", "TRUE", "true"] {
+        let error = scan(&options(dir.path(), &[bad])).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::InvalidInput, "{bad}");
+        let output = cli(dir.path(), &["--define", bad]);
+        assert_eq!(output.status.code(), Some(2), "{bad}");
+        assert!(String::from_utf8_lossy(&output.stderr)
+            .starts_with("error: invalid conditional compilation symbol"));
+    }
+    assert_eq!(callables(dir.path(), &["X"]), [(3, "F".to_owned(), 2)]);
+    // In the file, `#define` or `#undef` of one in any case declines.
+    for name in ["true", "TRUE", "True", "false", "FALSE", "False"] {
+        for directive in ["define", "undef"] {
+            let text = format!("#{directive} {name}\n{}", literal_case("X"));
+            assert_declines(&text, &[&[], &["X"]]);
+        }
+    }
+}
+
+#[test]
+fn active_line_directives_are_checked_and_inactive_ones_are_not() {
+    let with = |line: &str| format!("#line {line}\n{}", literal_case("X"));
+    for ok in [
+        "default",
+        "hidden",
+        "5",
+        "5 \"f.cs\"",
+        "5 \"a\\b.cs\" // c",
+        "5 // c",
+    ] {
+        let dir = tree(&[("C.cs", &with(ok))]);
+        // The first line is the directive, so `F` moves down one line.
+        assert_eq!(
+            callables(dir.path(), &["X"]),
+            [(4, "F".to_owned(), 1)],
+            "{ok}"
+        );
+        // The original file lines, not the `#line` numbers, are reported.
+        assert_eq!(callables(dir.path(), &[]), [(4, "F".to_owned(), 2)], "{ok}");
+    }
+    assert_declines(&with("2147483648"), &[&[], &["X"]]);
+    for bad in [
+        "abc",
+        "\"f.cs\"",
+        "0",
+        "-1",
+        "5 6",
+        "5 \"a\" extra",
+        "5 /*c*/",
+        "5\"f.cs\"",
+        "0x10",
+        "1_000",
+        "(1, 1) - (2, 2) \"f.cs\"",
+    ] {
+        assert_declines(&with(bad), &[&[], &["X"]]);
+        // The same directive in an inactive branch is not checked.
+        let inactive = format!("#if false\n#line {bad}\n#endif\n{}", literal_case("X"));
+        let dir = tree(&[("C.cs", &inactive)]);
+        assert_eq!(
+            callables(dir.path(), &["X"]),
+            [(6, "F".to_owned(), 1)],
+            "{bad}"
+        );
+    }
+}
+
+#[test]
+fn nullable_is_checked_only_when_active() {
+    let text = |nullable: &str| format!("#nullable {nullable}\n{}", literal_case("X"));
+    let dir = tree(&[("C.cs", &text("enable warnings"))]);
+    assert_eq!(callables(dir.path(), &["X"]), [(4, "F".to_owned(), 1)]);
+    assert_declines(&text("on"), &[&[], &["X"]]);
+    let inactive = format!("#if false\n#nullable on\n#endif\n{}", literal_case("X"));
+    let dir = tree(&[("C.cs", &inactive)]);
+    assert_eq!(callables(dir.path(), &["X"]), [(6, "F".to_owned(), 1)]);
+}
+
+#[test]
+fn symbols_are_ascii_identifiers_of_at_most_128_characters() {
+    let dir = tree(&[("C.cs", &literal_case("Ab_9"))]);
+    assert_eq!(callables(dir.path(), &["Ab_9"]), [(3, "F".to_owned(), 1)]);
+    assert_eq!(callables(dir.path(), &[]), [(3, "F".to_owned(), 2)]);
+    let output = cli(dir.path(), &["--define", "Ab_9", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["functions"][0]["complexity"], 1);
+    // A 128-character symbol is accepted; 129 is rejected as an input error.
+    let long = "a".repeat(128);
+    let dir = tree(&[("C.cs", &literal_case(&long))]);
+    assert_eq!(callables(dir.path(), &[&long]), [(3, "F".to_owned(), 1)]);
+    let error = scan(&options(dir.path(), &["a".repeat(129).as_str()])).unwrap_err();
+    assert_eq!(error.kind(), ErrorKind::InvalidInput);
+    // In the file, a non-ASCII or 129-character symbol makes the fallback
+    // decline.
+    assert_declines(&literal_case("ःA"), &[&[], &["X"]]);
+    assert_declines(&literal_case("A && é"), &[&[], &["X"]]);
+    assert_declines(&literal_case(&"a".repeat(129)), &[&[], &["X"]]);
+    assert_declines(
+        &format!("#define {}\n{}", "a".repeat(129), literal_case("X")),
+        &[&[]],
+    );
 }

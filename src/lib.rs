@@ -62,8 +62,9 @@ pub struct ScanOptions {
     /// Conditional compilation symbols, as the CLI's `--define`. They are used
     /// only for a file that does not parse as written: its `#if` groups are
     /// then resolved with these symbols and the file is parsed again. Each
-    /// must be a letter or `_` followed by letters, digits or `_`, and not
-    /// `true` or `false`. Empty by default (no symbol defined).
+    /// must match `[A-Za-z_][A-Za-z0-9_]*`, be at most 128 characters and not
+    /// be `true` or `false` in any letter case. Empty by default (no symbol
+    /// defined).
     pub defines: Vec<String>,
 }
 impl Default for ScanOptions {
@@ -232,7 +233,7 @@ fn scan_impl(
     if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {
         fail!(
             InvalidInput,
-            "invalid conditional compilation symbol {symbol:?}: use a letter or `_` followed by letters, digits or `_`, other than `true` and `false`"
+            "invalid conditional compilation symbol {symbol:?}: use an ASCII letter or `_` followed by ASCII letters, digits or `_`, at most 128 characters, other than `true` and `false` in any letter case"
         );
     }
     let defines: BTreeSet<String> = args.defines.iter().cloned().collect();

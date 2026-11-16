@@ -26,7 +26,9 @@ declines and the original error is reported.
   `--define` (none by default). `#define` and `#undef` in active text update
   the symbols in order. Expressions use identifiers, `true`, `false`, `!`,
   `==`, `!=`, `&&`, `||` and parentheses with C# precedence; a trailing `//`
-  comment is allowed.
+  comment is allowed. `true` and `false` are literals in every letter case
+  (`TRUE`, `True` and `tRuE` are true), as the compiler reads them with
+  `bool.TryParse`; they are never symbols.
 - Active text is lexed: `//` and `/* */` comments, character literals, regular,
   verbatim (`@"..."`) and raw (`"""..."""`) strings, and interpolated forms of
   each (`$"..."`, `$@"..."`, `@$"..."`, `$$"""..."""`), including the code in
@@ -50,9 +52,13 @@ fallback, when:
 - a directive is one the compiler rejects: unbalanced or crossed `#if` and
   `#region` groups, an invalid `#if`/`#elif` expression or `#define`/`#undef`
   symbol (also in inactive text, where the compiler still checks them), an
-  unknown directive (also in inactive text), an invalid `#nullable` setting,
-  an active `#error`, or `#define`, `#undef` or `#:` after the first token of
-  the file;
+  unknown directive (also in inactive text), an invalid `#nullable` setting
+  or `#line` argument (checked only in active text, which is all the compiler
+  reads), an active `#error`, or `#define`, `#undef` or `#:` after the first
+  token of the file;
+- a directive has a symbol the fallback does not follow: one with a non-ASCII
+  character, or longer than 128 characters (also in inactive text), or a
+  `#define` or `#undef` of `true` or `false` in any letter case;
 - active text cannot be lexed with confidence (see Limits);
 - no line would change.
 
@@ -79,9 +85,10 @@ dotnet-crap collect --root . --define NET8_0 --output coverage.json -- ...
 
 `--define` is repeatable on `scan` and `collect`, and each value may be a
 comma- or semicolon-separated list, as MSBuild `DefineConstants` are written.
-A symbol is a letter or `_` followed by letters, digits or `_`, and is not
-`true` or `false`; anything else, including an empty list entry, is rejected
-with exit 2. The library takes the same list as `ScanOptions::defines` and
+A symbol is an ASCII letter or `_` followed by ASCII letters, digits or `_`,
+at most 128 characters, and is not `true` or `false` in any letter case
+(`[A-Za-z_][A-Za-z0-9_]*`); anything else, including an empty list entry, is
+rejected with exit 2. The library takes the same list as `ScanOptions::defines` and
 `CollectOptions::defines`.
 
 Symbols are not read from project files. Choose the set that matches the build
@@ -99,13 +106,28 @@ you want to score; a file's `#if` groups that parse as written are not affected.
   the line of a regular or single-line raw string, a `//` comment or `::` in a
   hole, a format clause that is not plain text on its line, and malformed
   quote, brace or `$` runs.
-- `#line` and `#pragma` arguments are not checked.
-- Symbol names are compared as written, without Unicode normalization, and
-  Unicode escapes (`\u0041`) in directive identifiers are not supported and
-  make the fallback decline. A
-  symbol's letters and digits follow Rust's Unicode `Alphabetic` and numeric
-  properties, an approximation of the C# identifier categories (see the
-  [library notes](RUST_API.md)).
+- An active `#line` is accepted only as `default`, `hidden`, or a decimal
+  number from 1 to 2147483647 optionally followed by whitespace and a
+  double-quoted file name (no escapes), then an optional `//` comment. The C# 11
+  span form (`#line (1, 1) - (2, 2) "f.cs"`) is valid but not followed, so it
+  declines, as do hexadecimal numbers, digit separators, a missing or glued
+  file name and trailing text. `#line` in inactive text, and `#pragma`
+  arguments anywhere, are not checked, so a few invalid ones the compiler
+  rejects (an integer literal over the `int` range, for instance) are
+  accepted.
+- Directive identifiers must be ASCII. The fallback has no Unicode table of the
+  C# identifier categories, and Rust's `Alphabetic` property accepts some
+  combining marks that C# rejects at the start of an identifier, so any
+  directive whose symbol has a non-ASCII character declines instead of
+  guessing, and `--define` rejects such a symbol. Unicode escapes (`\u0041`)
+  in directive identifiers decline too. Symbols are compared as written.
+- A symbol longer than 128 characters declines in a directive and is rejected by
+  `--define`: the compiler truncates directive identifiers to 128 characters,
+  so two different long names could name the same symbol.
+- `#:` and `#!` lines are blanked anywhere before the first token, also in a
+  program that is not a file-based app, where the compiler rejects them.
+  A file that fails to parse for another reason can therefore be scored
+  through the fallback although the compiler would not build it.
 - Contextual keywords used as identifiers (`var with = ...`) and non-UTF-8
   sources are not addressed; those files still fail.
 - While a file is resolved, its decoded and resolved texts are both held, so
