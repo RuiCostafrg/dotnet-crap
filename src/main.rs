@@ -26,6 +26,10 @@ struct Args {
     /// Worker threads for scanning [default: available parallelism]
     #[arg(long, value_name = "N", value_parser = parse_jobs)]
     jobs: Option<NonZeroUsize>,
+    /// Conditional compilation symbol for files that do not parse as written
+    /// (repeatable; comma- or semicolon-separated lists are accepted)
+    #[arg(long = "define", value_name = "SYMBOL")]
+    defines: Vec<String>,
     paths: Vec<PathBuf>,
 }
 
@@ -59,6 +63,20 @@ struct CollectArgs {
     /// Worker threads for scanning sources [default: available parallelism]
     #[arg(long, value_name = "N", value_parser = parse_jobs)]
     jobs: Option<NonZeroUsize>,
+    /// Conditional compilation symbol for files that do not parse as written
+    /// (repeatable; comma- or semicolon-separated lists are accepted)
+    #[arg(long = "define", value_name = "SYMBOL")]
+    defines: Vec<String>,
+}
+
+/// Split `--define` values on `,` and `;`, as MSBuild `DefineConstants` lists
+/// are written, trimming spaces. Empty entries are kept so they are rejected.
+fn split_defines(values: Vec<String>) -> Vec<String> {
+    values
+        .iter()
+        .flat_map(|v| v.split([',', ';']))
+        .map(|s| s.trim().to_owned())
+        .collect()
 }
 
 /// Dispatch the reserved collection command while leaving ordinary scan argv unchanged.
@@ -77,6 +95,7 @@ fn execute() -> Result<bool> {
             expected_reports: args.expected_reports,
             timeout: std::time::Duration::from_secs(args.timeout_seconds),
             jobs: args.jobs,
+            defines: split_defines(args.defines),
         })?;
         Ok(false)
     } else {
@@ -94,6 +113,7 @@ fn run(args: Args) -> Result<bool> {
         fail_on_empty: args.fail_on_empty,
         paths: args.paths,
         jobs: args.jobs,
+        defines: split_defines(args.defines),
     })?;
     let format = match args.format.as_str() {
         "json" => ReportFormat::Json,

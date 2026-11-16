@@ -61,7 +61,8 @@ fn main() {
 `ScanOptions::default()` matches the CLI defaults: `root` is `.`, `threshold` is
 `10.0`, there is no coverage input, neither `require_coverage` nor
 `fail_on_empty` is set, `paths` is empty (which selects the whole root), and
-`jobs` is `None` (one worker per available CPU).
+`jobs` is `None` (one worker per available CPU), and `defines` is empty (no
+conditional compilation symbol).
 
 ### `ScanOptions`
 
@@ -74,6 +75,7 @@ fn main() {
 | `fail_on_empty: bool` | Makes a scan that finds no callables a policy failure, including selected files without callable bodies. |
 | `paths: Vec<PathBuf>` | Files or directories to select. Relative values resolve against `root`. Absolute values must be inside `root`. Empty selects `root`. |
 | `jobs: Option<NonZeroUsize>` | Worker threads for scanning and source verification, as the CLI's `--jobs`. `None` uses `std::thread::available_parallelism()` (1 if unknown). The value never changes the report, its order, or which error is returned. `Some(1)` scans on the calling thread without spawning. |
+| `defines: Vec<String>` | Conditional compilation symbols, as the CLI's `--define`. Used only for a file that does not parse as written: its `#if` groups are resolved with these symbols and it is parsed again, with line numbers and the source hash unchanged. Each must match `[A-Za-z_][A-Za-z0-9_]*`, be at most 128 characters long and not be `true` or `false` in any letter case; otherwise `scan` returns `InvalidInput`, after the root, coverage and path checks. A non-ASCII symbol is rejected, and a directive in a file with a non-ASCII or over-long symbol makes the fallback decline, because no Unicode identifier table is used. A file that parses only after resolution is then subject to the normal analysis limits, so it may report `ResourceLimit` instead of `Syntax`; while it is resolved, its text is held twice. See [conditional compilation](PREPROCESSOR.md). |
 
 ### Worker count and determinism
 
@@ -127,7 +129,7 @@ wrapped underlying error, such as a `std::io::Error`, for downcasting. `ErrorKin
 
 | Kind | Cause |
 | --- | --- |
-| `InvalidInput` | Invalid threshold, root, input path or collection options. |
+| `InvalidInput` | Invalid threshold, root, input path, conditional compilation symbol or collection options. |
 | `Io` | Reading or walking the source tree, a coverage file, a Cobertura report or the results directory failed. |
 | `Source` | A source is not valid UTF-8/UTF-16, its path cannot be a native coverage key, or the C# parser could not be initialized. |
 | `Syntax` | A selected file is not valid C#. |
@@ -255,7 +257,8 @@ Key points for library callers:
   ambiguous and are not resolved.
 - `scan` never runs tests. Explicit process collection is available separately via
   `collector::{CollectOptions, collect}`; see [Coverlet collection](COVERLET.md).
-  `CollectOptions::jobs` has the same meaning as `ScanOptions::jobs`.
+  `CollectOptions::jobs` and `CollectOptions::defines` have the same meaning as
+  the `ScanOptions` fields.
   `cobertura::parse_reports` imports line evidence without starting a process.
 
 ## Source selection and parsing limits
@@ -263,12 +266,14 @@ Key points for library callers:
 - Only `.cs` files are selected. Files ending in `.g.cs`, `.generated.cs`, or
   `.designer.cs` are skipped. Directories named `bin`, `obj`, and `.git` are
   skipped, as are symbolic links found during the walk.
-- Any syntax error in a selected file fails the whole scan.
+- Any syntax error in a selected file fails the whole scan. A file that fails
+  to parse as written is parsed once more with conditional compilation
+  resolved; see [conditional compilation](PREPROCESSOR.md).
 - Syntax traversal budgets do not bound aggregate coverage-point visits. Dense
   coverage across deeply nested callables can repeat work; profiling and
   coverage-range optimization remain in the performance backlog.
-- Analysis works on the source as written. It does not apply compilation
-  symbols, preprocessor policy, or semantic binding. See
+- Analysis works on the source as written. Compilation symbols apply only to
+  files that do not parse as written. There is no semantic binding. See
   [callable support and limits](CSHARP_CALLABLES.md).
 - Scoring is a syntax convention. It does not claim equality with Roslyn or an
   IDE metric.

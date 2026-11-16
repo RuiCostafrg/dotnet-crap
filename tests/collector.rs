@@ -18,6 +18,7 @@ fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
         paths: vec![],
         timeout: std::time::Duration::from_secs(60),
         jobs: None,
+        defines: Vec::new(),
         output: dir.path().join("native.json"),
         expected_reports: 1,
         command: ["python3", "-c", script, "{results}"]

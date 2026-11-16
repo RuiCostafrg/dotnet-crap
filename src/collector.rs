@@ -36,6 +36,9 @@ pub struct CollectOptions {
     /// Worker threads for scanning and verifying the selected sources; `None`
     /// uses the available parallelism. The evidence is identical for any value.
     pub jobs: Option<std::num::NonZeroUsize>,
+    /// Conditional compilation symbols, as `ScanOptions::defines`: used only
+    /// to resolve `#if` groups in files that do not parse as written.
+    pub defines: Vec<String>,
 }
 
 /// Snapshot selected bytes, run trusted tests in the canonical source root, then
@@ -48,6 +51,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         root: options.root.clone(),
         paths: options.paths.clone(),
         jobs: options.jobs,
+        defines: options.defines.clone(),
         ..Default::default()
     };
     // The scan hashes, parses and verifies each selected file once; its line
@@ -303,6 +307,7 @@ mod deadline_tests {
             expected_reports: 1,
             timeout: Duration::from_secs(1),
             jobs: None,
+            defines: Vec::new(),
         }
     }
 
@@ -536,6 +541,7 @@ p=pathlib.Path(sys.argv[1])/'run'; p.mkdir()
             expected_reports: 1,
             timeout: Duration::from_secs(60),
             jobs: None,
+            defines: Vec::new(),
         };
         crate::work::take();
         collect(&options).unwrap();

@@ -39,6 +39,9 @@ hardlink, is an error. Its parent directory must exist; `.cs` destinations fail.
 `collect` is reserved as the first CLI argument; use `./collect` to scan a
 directory with that name. `--jobs <N>` sets the worker threads used to snapshot
 and verify sources, as for scanning; evidence bytes do not depend on it.
+`--define <SYMBOL>` resolves `#if` groups in sources that do not parse as
+written, as for scanning ([conditional compilation](PREPROCESSOR.md)); the
+evidence keeps hashes of the original bytes.
 
 The child deadline defaults to 900 seconds (`--timeout-seconds`); a timeout
 kills and reaps the immediate process and publishes nothing. Statuses first
