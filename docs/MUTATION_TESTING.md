@@ -1,6 +1,45 @@
 # Mutation testing
 
-Install cargo-mutants 27.1.0 (`cargo install cargo-mutants --version 27.1.0 --locked`), then run `python3 scripts/mutation-gate.py`. The script runs the complete production inventory with two workers, a 120 second test timeout and a 600 second build timeout. It requires strictly more than 90% caught among caught + missed + timed out mutants. Unviable mutants are excluded; timeouts are not kills. Missing or incomplete output fails the gate. The mutation workflow runs this same command. Each invocation writes to a unique `target/mutation-runs/run-*` directory, so concurrent runs cannot mix evidence. The complete invocation output is retained and uploaded by CI. Generated output is ignored by Git.
+Install cargo-mutants 27.1.0 (`cargo install cargo-mutants --version 27.1.0 --locked`), then run `python3 scripts/mutation-gate.py`. The script runs the complete production inventory with two workers, a 120 second test timeout and a 600 second build timeout. It requires strictly more than 90% caught among caught + missed + timed out mutants. Unviable mutants are excluded; timeouts are not kills. Missing or incomplete output fails the gate. Each invocation writes to a unique `target/mutation-runs/run-*` directory, so concurrent runs cannot mix evidence. The complete invocation output is retained and uploaded by CI. Generated output is ignored by Git.
+
+## CI sharding
+
+The mutation workflow (.github/workflows/mutation.yml) splits the inventory across a
+matrix of shard jobs instead of one 90 minute job. The shard count is the single
+matrix constant in that workflow (currently 4); each `mutation-shard` job runs
+`python3 scripts/mutation-gate.py --shard k/N` (cargo-mutants' `--shard k/n`, so
+with the default slice sharding each shard owns one consecutive range of the
+inventory) with the same two workers and timeouts as before, and validates that
+its own shard's inventory is complete and disjoint. A shard never enforces the
+score: missed mutants are expected to cluster, and only the union score is the
+verdict. Each shard also records the complete unsharded inventory with `cargo
+mutants --list --json` as `full-mutants.json` beside its `mutants.out`, and
+uploads the whole tree as the `mutation-evidence-shard-<k>` artifact on success
+or failure.
+
+The final job, named `mutation` (the check name required by the branch ruleset),
+downloads every shard artifact and runs `python3 scripts/mutation-gate.py
+aggregate <shard run dirs>`. It fails unless every shard produced validated
+evidence, verifies that the union of shard inventories equals the recorded full
+inventory exactly once (no gaps, no duplicates, no shard disagreement), and only
+then computes the score over the union and enforces the same strictly-greater-
+than-90% rule. A missing, cancelled or incomplete shard therefore fails the
+`mutation` check instead of silently reducing coverage.
+
+## Running shards locally
+
+Run one shard with the same arguments CI uses, e.g.
+`python3 scripts/mutation-gate.py --shard 0/4`. Each invocation still reserves
+its own `target/mutation-runs/run-*` directory and records `full-mutants.json`.
+Aggregate locally over the evidence directories you want combined, e.g.
+
+```sh
+python3 scripts/mutation-gate.py aggregate target/mutation-runs/run-<a> target/mutation-runs/run-<b> ...
+```
+
+Aggregate requires sharded evidence (each directory must contain the recorded
+`full-mutants.json`); a plain unsharded run keeps writing its evidence without
+that file and still enforces the score by itself.
 
 ## Reusable API measurement
 
@@ -49,8 +88,9 @@ passing mutation score is not a substitute for that audit or code review.
 ## Evidence paths and retention
 
 Each invocation reserves `target/mutation-runs/run-<random>/`; cargo-mutants writes
-its inventory, outcomes and logs in the `mutants.out/` child. CI uploads the
-`target/mutation-runs/run-*/` artifact tree. Local runs retain the latest five
+its inventory, outcomes and logs in the `mutants.out/` child, and a sharded run
+records the full inventory as `full-mutants.json` beside it. CI uploads each
+shard's `target/mutation-runs/run-*/` artifact tree. Local runs retain the latest five
 completed invocation directories by default; `--keep-runs N` adjusts this positive
 limit. Current and active runs are never pruned. Interrupted runs without the
 completion marker are retained for investigation and can be removed manually
