@@ -208,7 +208,7 @@ PLAN step 9, not part of this experiment.
 
 ### PR 6: streaming Cobertura reader (prototype first)
 
-*Status: not started.*
+*Status: GO, in review on `perf/streaming-cobertura`. A two-pass pull reader with no new dependency. Local import-only probe on a compact 15.3 MB report: peak RSS 132.6 → 20.9 MB with identical evidence. Local import time is about 1.4× slower (second tokenize pass). The hosted Benchmark result on the PR is the evidence.*
 
 *Opus 5.5 for a research prototype, then a decision. Files: `src/cobertura.rs`.*
 
