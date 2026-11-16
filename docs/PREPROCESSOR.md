@@ -115,6 +115,11 @@ you want to score; a file's `#if` groups that parse as written are not affected.
   arguments anywhere, are not checked, so a few invalid ones the compiler
   rejects (an integer literal over the `int` range, for instance) are
   accepted.
+- `#define TRUE`, `#undef False` and other non-lowercase spellings of the two
+  literals are valid C# (only lowercase `true` and `false` are rejected), but
+  such a symbol can never take effect, because the compiler reads every
+  casing in an expression as the literal. The fallback declines on them
+  rather than track a symbol that cannot matter.
 - Directive identifiers must be ASCII. The fallback has no Unicode table of the
   C# identifier categories, and Rust's `Alphabetic` property accepts some
   combining marks that C# rejects at the start of an identifier, so any
