@@ -775,3 +775,40 @@ fn extended_differential_run() {
         env.assert_same(&text);
     }
 }
+
+/// Prefix shadowing and restoration through the per-prefix index.
+#[test]
+fn namespace_shadowing_matches_the_dom() {
+    let env = Env::new();
+    for text in [
+        "<a xmlns:p='u1'><b xmlns:p='u2' p:x='1'/><c p:y='1'/></a>",
+        "<a xmlns:p='u1'><b xmlns:p='u2'><c p:x='1'/></b><d p:x='1'/></a>",
+        "<a xmlns:p='u1' xmlns:q='u1'><b xmlns:p='u2' p:x='1' q:x='2'/></a>",
+        "<a xmlns:p='u1' xmlns:q='u1'><b p:x='1' q:x='2'/></a>",
+        "<a xmlns:p='u1' xmlns:p='u2'/>",
+        "<a xmlns:p='u1'><b xmlns:p='u1' xmlns:p='u1'/></a>",
+        "<a><b xmlns:p='u1'/><p:c/></a>",
+        "<a><b xmlns:p='u1'></b><c p:x='1'/></a>",
+        "<p:a xmlns:p='u1'><p:b xmlns:p='u2'></p:b></p:a>",
+        "<a xmlns:p='u1'><p:b xmlns:q='u2'><q:c p:x='1'/></p:b><q:d/></a>",
+    ] {
+        env.assert_same(text);
+        assert_index_matches_dom(text);
+    }
+}
+
+/// Re-declaring one prefix at every level stays linear: each lookup is O(1),
+/// not a scan of every live declaration (that shape took minutes before).
+#[test]
+fn a_deep_chain_of_one_redeclared_prefix_is_linear() {
+    let levels = 200_000;
+    let text = format!(
+        "<r xmlns:q='root'>{}{}</r>",
+        "<a xmlns:p='u' q:x='1'>".repeat(levels),
+        "</a>".repeat(levels)
+    );
+    let started = std::time::Instant::now();
+    assert!(xml::check(&text, super::NODES_LIMIT).is_ok());
+    // Generous for slow debug builds; the quadratic scan needed minutes here.
+    assert!(started.elapsed() < std::time::Duration::from_secs(60));
+}

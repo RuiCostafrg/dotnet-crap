@@ -12,7 +12,10 @@
 //! Only predefined and numeric character references exist: no DTD is accepted,
 //! so every other entity reference is rejected, as roxmltree rejects it.
 
-use std::{borrow::Cow, collections::HashSet};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
 /// The report is not one roxmltree accepts; the caller renders its message.
 #[derive(Debug, PartialEq, Eq)]
@@ -166,6 +169,7 @@ pub(super) fn check(text: &str, nodes_limit: u32) -> Res<Index<'_>> {
         tag: Pending::default(),
         attributes: Vec::new(),
         namespaces: Vec::new(),
+        latest: HashMap::new(),
         own_namespaces: 0,
         interned: HashSet::from([(Some(XML_PREFIX), Cow::Borrowed(XML_URI))]),
         root_seen: false,
@@ -198,6 +202,14 @@ struct Open<'a> {
     slot: usize,
 }
 
+/// One in-scope namespace declaration.
+struct Declaration<'a> {
+    name: Option<&'a str>,
+    uri: Cow<'a, str>,
+    /// The declaration of the same prefix it shadows, restored when it goes out of scope.
+    shadows: Option<usize>,
+}
+
 /// Well-formedness, namespace and resource checks of roxmltree's tree builder.
 struct Checker<'a> {
     nodes_limit: u32,
@@ -210,7 +222,10 @@ struct Checker<'a> {
     /// Ordinary attributes of the pending start tag.
     attributes: Vec<(&'a str, &'a str)>,
     /// In-scope declarations, outermost first; `None` is the default namespace.
-    namespaces: Vec<(Option<&'a str>, Cow<'a, str>)>,
+    namespaces: Vec<Declaration<'a>>,
+    /// The innermost live declaration of each prefix, as an index into
+    /// `namespaces`, so a lookup does not scan every live declaration.
+    latest: HashMap<&'a str, usize>,
     /// Where the pending start tag's own declarations start.
     own_namespaces: usize,
     /// Distinct declarations, as roxmltree interns them.
@@ -257,16 +272,29 @@ impl<'a> Checker<'a> {
             }
             self.interned.insert(key.clone());
         }
-        self.namespaces.push(key);
+        let (name, uri) = key;
+        let shadows = name.and_then(|name| self.latest.insert(name, self.namespaces.len()));
+        self.namespaces.push(Declaration { name, uri, shadows });
         Ok(())
     }
 
     fn lookup(&self, prefix: &str) -> Option<&str> {
-        self.namespaces
-            .iter()
-            .rev()
-            .find(|(name, _)| *name == Some(prefix))
-            .map(|(_, uri)| uri.as_ref())
+        self.latest
+            .get(prefix)
+            .map(|&index| self.namespaces[index].uri.as_ref())
+    }
+
+    /// Drop the declarations from `len` on, restoring the ones they shadowed.
+    fn truncate_namespaces(&mut self, len: usize) {
+        while self.namespaces.len() > len {
+            let declaration = self.namespaces.pop().expect("longer than len");
+            if let Some(name) = declaration.name {
+                match declaration.shadows {
+                    Some(previous) => self.latest.insert(name, previous),
+                    None => self.latest.remove(name),
+                };
+            }
+        }
     }
 
     fn element_start(&mut self, prefix: &'a str, local: &'a str) -> Res<()> {
@@ -317,9 +345,12 @@ impl<'a> Checker<'a> {
             if value == XMLNS_URI || (local == XML_PREFIX) != xml_uri {
                 return Err(Malformed);
             }
-            if self.namespaces[self.own_namespaces..]
-                .iter()
-                .any(|(name, _)| *name == Some(local))
+            // The prefix's innermost declaration is this tag's own only if it was
+            // declared at or after the tag's first declaration.
+            if self
+                .latest
+                .get(local)
+                .is_some_and(|&index| index >= self.own_namespaces)
             {
                 return Err(Malformed);
             }
@@ -373,7 +404,7 @@ impl<'a> Checker<'a> {
                 slot: tag.slot,
             });
         } else {
-            self.namespaces.truncate(self.own_namespaces);
+            self.truncate_namespaces(self.own_namespaces);
         }
         Ok(())
     }
@@ -383,7 +414,7 @@ impl<'a> Checker<'a> {
         if open.prefix != prefix || open.local != local {
             return Err(Malformed);
         }
-        self.namespaces.truncate(open.namespaces);
+        self.truncate_namespaces(open.namespaces);
         Ok(())
     }
 }
