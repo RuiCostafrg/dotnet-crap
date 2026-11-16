@@ -101,6 +101,8 @@ pub(crate) fn resolve(text: &str, defines: &BTreeSet<String>) -> Option<String> 
     let mut symbols: BTreeSet<&str> = defines.iter().map(String::as_str).collect();
     let mut groups: Vec<Group> = Vec::new();
     let mut lexer = Lexer::default();
+    // Allocated once with the input's exact length; blanking only overwrites
+    // bytes by index, so the output can never grow.
     let mut out = text.as_bytes().to_vec();
     let mut start = 0;
     for (index, line) in text.split('\n').enumerate() {
@@ -359,9 +361,16 @@ impl Lexer {
     }
 
     /// Lex one active line (without its `\n`).
+    ///
+    /// Every step advances at least one byte and pushes at most one level, so
+    /// the loop runs at most `line.len()` times and the stack grows by at most
+    /// the line's length. A line not finished within that bound declines.
     fn line(&mut self, line: &str) -> Option<()> {
         let mut i = 0;
-        while i < line.len() {
+        for _ in 0..line.len() {
+            if i >= line.len() {
+                break;
+            }
             i = match self.stack.last().copied() {
                 None | Some(Mode::Hole { .. }) => self.code(line, i)?,
                 Some(Mode::Comment) => match line[i..].find("*/") {
@@ -373,6 +382,9 @@ impl Lexer {
                 },
                 Some(Mode::Text { quote, dollars }) => self.text(line, i, quote, dollars)?,
             };
+        }
+        if i < line.len() {
+            return None;
         }
         // Regular and single-line raw strings end on their line. A hole that
         // continues past the end of such a string's line is not followed.
@@ -592,10 +604,14 @@ enum Token<'a> {
 }
 
 /// Split an expression into tokens, stopping at a `//` comment.
+///
+/// Every token takes at least one byte, so the loop runs at most once more
+/// than `text.len()` times and there are at most `text.len()` tokens; an
+/// expression not finished within that bound declines.
 fn tokenize(text: &str) -> Option<Vec<Token<'_>>> {
     let mut tokens = Vec::new();
     let mut rest = text;
-    loop {
+    for _ in 0..=text.len() {
         rest = rest.trim_start_matches(is_space);
         if rest.is_empty() || rest.starts_with("//") {
             return Some(tokens);
@@ -626,6 +642,7 @@ fn tokenize(text: &str) -> Option<Vec<Token<'_>>> {
         tokens.push(token);
         rest = &rest[len..];
     }
+    None
 }
 
 /// Evaluate a conditional expression with C# precedence: `!`, then `==` and
@@ -656,25 +673,34 @@ impl Expression<'_, '_> {
         matched
     }
 
+    // Each binary loop consumes an operator per iteration, so it runs at
+    // most once per token; the bound declines instead of spinning.
+
     fn or(&mut self, depth: usize) -> Option<bool> {
         let mut value = self.and(depth)?;
-        while self.eat(&Token::Or) {
+        for _ in 0..self.tokens.len() {
+            if !self.eat(&Token::Or) {
+                return Some(value);
+            }
             value |= self.and(depth)?;
         }
-        Some(value)
+        None
     }
 
     fn and(&mut self, depth: usize) -> Option<bool> {
         let mut value = self.equality(depth)?;
-        while self.eat(&Token::And) {
+        for _ in 0..self.tokens.len() {
+            if !self.eat(&Token::And) {
+                return Some(value);
+            }
             value &= self.equality(depth)?;
         }
-        Some(value)
+        None
     }
 
     fn equality(&mut self, depth: usize) -> Option<bool> {
         let mut value = self.unary(depth)?;
-        loop {
+        for _ in 0..self.tokens.len() {
             if self.eat(&Token::Equal) {
                 value = value == self.unary(depth)?;
             } else if self.eat(&Token::NotEqual) {
@@ -683,6 +709,7 @@ impl Expression<'_, '_> {
                 return Some(value);
             }
         }
+        None
     }
 
     fn unary(&mut self, depth: usize) -> Option<bool> {
@@ -832,6 +859,14 @@ mod tests {
         assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH), &[]), Some(false));
         assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH + 1), &[]), None);
         assert_eq!(eval(&nested(100_000), &["A"]), None);
+        // Flat expressions of any length fit the per-token loop bounds.
+        let flat = |op: &str, n: usize| vec!["A"; n].join(op);
+        assert_eq!(eval(&flat("||", 5000), &["A"]), Some(true));
+        assert_eq!(eval(&flat(" && ", 5000), &["A"]), Some(true));
+        assert_eq!(eval(&flat("==", 5000), &[]), Some(true));
+        assert_eq!(eval(&flat("!=", 5000), &[]), Some(false));
+        assert_eq!(eval("A==B!=A", &["A"]), Some(true));
+        assert_eq!(tokenize(&"!".repeat(5000)).unwrap().len(), 5000);
     }
 
     #[test]
@@ -1111,6 +1146,16 @@ mod tests {
         }
         // A `#define` in a string defines nothing, so `#if` sees no symbol.
         assert_eq!(branch_after("var s = @\"\n#define A\n\";", &[]), ["b"]);
+    }
+
+    #[test]
+    fn lexer_steps_fit_the_line_length_bound() {
+        // One-byte steps on every byte, and strings closing on the last byte.
+        let dense = format!("x{}", "'a'\"b\"@\"c\"/**/".repeat(500));
+        assert_eq!(branch_after(&dense, &["A"]), ["a"]);
+        for prefix in ["x", "\"\"", "'a'", "/**/", "@\"\"", "\"\\\\\""] {
+            assert_eq!(branch_after(prefix, &[]), ["b"], "{prefix:?}");
+        }
     }
 
     #[test]
