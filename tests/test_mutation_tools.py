@@ -1,3 +1,4 @@
+import argparse
 import concurrent.futures
 import importlib.util
 import json
@@ -28,6 +29,18 @@ def write_inventory(out, names, buckets):
     (out / "mutants.json").write_text(json.dumps([{"name": n, "file": "src/main.rs"} for n in names]))
     for state in gate.STATES:
         (out / f"{state}.txt").write_text("".join(n + "\n" for n in buckets.get(state, [])))
+
+
+def write_shard(root, index, names, buckets, full=None):
+    """Create one shard's evidence directory, including the recorded full inventory."""
+    # Same layout as run mode: the full list in the run's parent directory,
+    # cargo-mutants' evidence in its mutants.out child.
+    parent = root / f"run-shard{index}"
+    write_inventory(parent / "mutants.out", names, buckets)
+    if full is None:
+        full = names
+    (parent / "full-mutants.json").write_text(json.dumps([{"name": n} for n in full]))
+    return parent
 
 
 class MutationTests(unittest.TestCase):
@@ -162,6 +175,167 @@ class MutationTests(unittest.TestCase):
             with mock.patch.object(gate.shutil, "rmtree", side_effect=PermissionError):
                 with self.assertRaises(PermissionError):
                     gate.prune_evidence(root, current, 1)
+
+
+class ShardRunTests(unittest.TestCase):
+    def test_shard_selection_parses_cargo_mutants_form(self):
+        """Accept the k/N form used by cargo-mutants and reject out-of-range or malformed selections."""
+        self.assertEqual(gate.shard_value("0/4"), (0, 4))
+        self.assertEqual(gate.shard_value("3/4"), (3, 4))
+        for text in ["", "4", "1/4/5", "a/b", "4/4", "2/0", "-1/4", "1/", "/4"]:
+            with self.subTest(text=text), self.assertRaises(argparse.ArgumentTypeError):
+                gate.shard_value(text)
+
+    def test_shard_run_passes_flag_and_records_full_inventory(self):
+        """A sharded run passes --shard k/N to cargo-mutants and records the complete inventory."""
+        with tempfile.TemporaryDirectory() as tmp:
+            commands = []
+            def runner(command, **kwargs):
+                """Serve the listing to stdout and emit evidence for the sharded run."""
+                commands.append(list(command))
+                if "--list" in command:
+                    return SimpleNamespace(returncode=0, stderr="",
+                                           stdout=json.dumps([{"name": n} for n in ("a", "b", "c")]))
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["b"], {"caught": ["b"]})
+                return SimpleNamespace(returncode=0)
+            out = gate.run_gate(runner=runner, evidence_root=Path(tmp), keep_runs=1, shard=(1, 2))
+            self.assertEqual(commands[1][commands[1].index("--shard") + 1], "1/2")
+            self.assertEqual(commands[0], ["cargo", "mutants", "--list", "--json"])
+            full = json.loads((out.parent / "full-mutants.json").read_text())
+            self.assertEqual([mutant["name"] for mutant in full], ["a", "b", "c"])
+            self.assertEqual(gate.read_inventory(out), (dict(caught=1, missed=0, timeout=0, unviable=0), 1))
+
+    def test_shard_run_defers_score_to_aggregate(self):
+        """A shard validates evidence completeness only; the union score is the aggregate job's verdict."""
+        with tempfile.TemporaryDirectory() as tmp:
+            def runner(command, **kwargs):
+                """Emit a complete but zero-score shard inventory."""
+                if "--list" in command:
+                    return SimpleNamespace(returncode=0, stderr="", stdout=json.dumps([{"name": "one"}]))
+                parent = Path(command[command.index("--output") + 1])
+                write_inventory(parent / "mutants.out", ["one"], {"missed": ["one"]})
+                return SimpleNamespace(returncode=2)
+            out = gate.run_gate(runner=runner, evidence_root=Path(tmp), keep_runs=1, shard=(0, 1))
+            self.assertTrue((out.parent / ".complete").exists())
+            self.assertEqual(len(list(Path(tmp).glob("run-*/.failed"))), 0)
+
+    def test_shard_runs_feed_aggregate_end_to_end(self):
+        """Aggregate the run directories that sharded runs produce, as the workflow does."""
+        full = ["a", "b", "c", "d"]
+        with tempfile.TemporaryDirectory() as tmp:
+            parents = []
+            for index, names in enumerate((full[:2], full[2:])):
+                def runner(command, names=names, **kwargs):
+                    """List the full inventory, then emit this shard's evidence."""
+                    if "--list" in command:
+                        return SimpleNamespace(returncode=0, stderr="",
+                                               stdout=json.dumps([{"name": n} for n in full]))
+                    parent = Path(command[command.index("--output") + 1])
+                    write_inventory(parent / "mutants.out", names, {"caught": names})
+                    return SimpleNamespace(returncode=0)
+                root = Path(tmp) / f"shard-{index}"
+                out = gate.run_gate(runner=runner, evidence_root=root, keep_runs=1, shard=(index, 2))
+                parents.append(out.parent)
+            counts, total = gate.aggregate_shards([str(p) for p in parents])
+            self.assertEqual((counts["caught"], total), (4, 4))
+
+    def test_failed_listing_blocks_the_run(self):
+        """A failed inventory listing aborts before any mutation run starts."""
+        with tempfile.TemporaryDirectory() as tmp:
+            runs = []
+            def runner(command, **kwargs):
+                """Record every invocation and report a failing listing."""
+                runs.append(list(command))
+                if "--list" in command:
+                    return SimpleNamespace(returncode=1, stderr="boom", stdout="")
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(ValueError, "--list failed with status 1"):
+                gate.run_gate(runner=runner, evidence_root=Path(tmp), keep_runs=1, shard=(0, 2))
+            self.assertEqual(len(runs), 1)
+            self.assertEqual(len(list(Path(tmp).glob("run-*/*"))), 0)
+
+
+class AggregateTests(unittest.TestCase):
+    def test_aggregate_scores_the_union_with_timeouts_in_denominator(self):
+        """Sum shard outcomes, include timeouts in the denominator, and pass above the threshold."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            full = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+            first = write_shard(root, 0, full[:9], {"caught": full[:9]}, full=full)
+            second = write_shard(root, 1, full[9:], {"caught": ["j"], "timeout": ["k"]}, full=full)
+            counts, total = gate.aggregate_shards([str(first), second])
+            self.assertEqual(total, 11)
+            self.assertEqual(counts, dict(caught=10, missed=0, timeout=1, unviable=0))
+
+    def test_aggregate_rejects_the_exact_90_percent_boundary(self):
+        """A union score of exactly ninety percent fails; only strictly more passes."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            full = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+            first = write_shard(root, 0, full[:9], {"caught": full[:9]}, full=full)
+            second = write_shard(root, 1, full[9:], {"missed": ["j"]}, full=full)
+            with self.assertRaisesRegex(ValueError, "must exceed"):
+                gate.aggregate_shards([first, second])
+
+    def test_aggregate_rejects_duplicate_gap_unexpected_and_disagreeing_shards(self):
+        """Fail closed when shards overlap, leave gaps, drift from the full list, or disagree."""
+        cases = [
+            (lambda root: [write_shard(root, 0, ["a"], {"caught": ["a"]}),
+                           write_shard(root, 1, ["a"], {"caught": ["a"]})], "more than one shard"),
+            (lambda root: [write_shard(root, 0, ["a"], {"caught": ["a"]}, full=["a", "b", "c"]),
+                           write_shard(root, 1, ["c"], {"caught": ["c"]},
+                                       full=["a", "b", "c"])], "1 missing"),
+            (lambda root: [write_shard(root, 0, ["a", "x"], {"caught": ["a", "x"]},
+                                       full=["a", "b"])], "unexpected"),
+            (lambda root: [write_shard(root, 0, ["a"], {"caught": ["a"]}, full=["a", "b"]),
+                           write_shard(root, 1, ["b"], {"caught": ["b"]}, full=["a"])], "disagree"),
+            (lambda root: [write_shard(root, 0, ["a"], {"caught": ["a"]}),
+                           root / "run-absent"], "No such file"),
+        ]
+        for build, message in cases:
+            with self.subTest(message=message), tempfile.TemporaryDirectory() as tmp:
+                shards = build(Path(tmp))
+                with self.assertRaisesRegex((ValueError, OSError), message):
+                    gate.aggregate_shards(shards)
+        with self.assertRaisesRegex(ValueError, "requires one or more"):
+            gate.aggregate_shards([])
+
+    def test_aggregate_rejects_incomplete_shard_evidence(self):
+        """Reuse the single-run inventory validation on every shard before scoring."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = write_shard(Path(tmp), 0, ["a", "b"], {"caught": ["a"]})
+            with self.assertRaisesRegex(ValueError, "do not account"):
+                gate.aggregate_shards([out])
+
+    def test_aggregate_requires_recorded_full_inventory(self):
+        """Older evidence without the recorded full list cannot be aggregated."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "run-plain"
+            write_inventory(out / "mutants.out", ["a"], {"caught": ["a"]})
+            with self.assertRaisesRegex(FileNotFoundError, "full-mutants.json"):
+                gate.aggregate_shards([out])
+
+    def test_cli_routes_run_shard_and_aggregate_modes(self):
+        """Route default and explicit commands and reject options that do not apply."""
+        with mock.patch.object(gate, "run_gate") as run_gate_mock:
+            with mock.patch("sys.argv", ["mutation-gate.py"]):
+                gate.main()
+            run_gate_mock.assert_called_once_with(keep_runs=5, shard=None)
+            run_gate_mock.reset_mock()
+            with mock.patch("sys.argv", ["mutation-gate.py", "--shard", "1/4", "--keep-runs", "2"]):
+                gate.main()
+            run_gate_mock.assert_called_once_with(keep_runs=2, shard=(1, 4))
+        with mock.patch.object(gate, "aggregate_shards") as aggregate_mock:
+            with mock.patch("sys.argv", ["mutation-gate.py", "aggregate", "a", "b"]):
+                gate.main()
+            aggregate_mock.assert_called_once_with(["a", "b"])
+        for argv in [["mutation-gate.py", "--keep-runs", "2", "aggregate", "a"],
+                     ["mutation-gate.py", "run", "a"],
+                     ["mutation-gate.py", "--shard", "4/4"]]:
+            with self.subTest(argv=argv):
+                with mock.patch("sys.argv", argv), self.assertRaises(SystemExit):
+                    gate.main()
 
 
 if __name__ == "__main__":
