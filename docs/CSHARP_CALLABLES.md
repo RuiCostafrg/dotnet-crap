@@ -105,6 +105,11 @@ These forms have no implementation and produce no record:
   symbols a build would define. Only a file that does not parse as written has
   its `#if` groups resolved with `--define` symbols, and then only the active
   branch is scored; see [conditional compilation](PREPROCESSOR.md).
+- An `#if A && B` inside a method body adds a decision point for its `&&` when
+  the file parses as written (a grammar quirk), but not when the file is
+  scored through the fallback, where the directive line is blank. The same
+  method can therefore score differently on the two paths. The quirk will be
+  removed in a separate change.
 - Coverage ownership is line based. A line containing both a parent's code and
   the start of a nested callable is excluded from the parent. This is the same
   same-line ambiguity documented for all callables and is not resolved here.

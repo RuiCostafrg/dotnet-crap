@@ -11,19 +11,33 @@
 //! valid UTF-8 because whole lines are replaced. Files that parse as written
 //! never reach this module.
 //!
-//! Directives are recognised per line, as the first non-whitespace text of the
-//! line. A `#` line inside a multi-line comment or string is therefore treated
-//! as a directive too; when that changes the meaning, the reparse usually still
-//! fails and the scan reports the original syntax error.
+//! The rule throughout: the resolved text must be what the C# compiler would
+//! compile, or the fallback declines and the caller reports the original
+//! error. Active text is lexed (comments, character literals and every string
+//! form, including interpolation holes) so that a `#` line inside a multi-line
+//! comment or string is kept as text, exactly as the compiler reads it.
+//! Inactive branches are skipped without lexing, as the compiler skips them,
+//! but their directives are still checked. Anything the lexer does not model
+//! confidently, every directive the compiler rejects, and line breaks other
+//! than `\n` and `\r\n` make the fallback decline.
 
 use std::collections::BTreeSet;
 
-/// Deepest nesting of parentheses and `!` accepted in one `#if` expression.
+/// Deepest nesting of parentheses and `!` accepted in one `#if` expression:
+/// 256 levels are accepted, 257 make the fallback decline.
 /// Keeps the recursive evaluator well within any worker thread's stack.
-const MAX_EXPRESSION_DEPTH: usize = 64;
+const MAX_EXPRESSION_DEPTH: usize = 256;
 
 /// Return whether `name` is accepted as a conditional compilation symbol: a
 /// letter or `_`, then letters, digits or `_`, and neither `true` nor `false`.
+///
+/// "Letter" is Rust's `char::is_alphabetic` (the Unicode `Alphabetic`
+/// property) and "digit" adds `char::is_numeric`. This approximates the C#
+/// identifier categories without a Unicode category table: it also accepts
+/// `Other_Alphabetic` characters (mostly `Mn` and `Mc` marks) at the start
+/// and `No` digits inside, and rejects `Mn`, `Mc`, `Pc` and `Cf` characters
+/// that are not `Alphabetic` or `_`. Unicode escapes (`\u0041`) are not
+/// decoded, so they are rejected.
 pub(crate) fn is_symbol(name: &str) -> bool {
     let mut chars = name.chars();
     chars.next().is_some_and(|c| c == '_' || c.is_alphabetic())
@@ -32,8 +46,16 @@ pub(crate) fn is_symbol(name: &str) -> bool {
         && name != "false"
 }
 
-/// One open `#if` group.
+/// Whether an open group is `#if` or `#region`.
+#[derive(Clone, Copy, PartialEq)]
+enum Kind {
+    If,
+    Region,
+}
+
+/// One open `#if` or `#region` group. They nest within each other strictly.
 struct Group {
+    kind: Kind,
     /// Whether the text around the group is active.
     parent_active: bool,
     /// Whether a branch of the group has already been taken.
@@ -44,27 +66,78 @@ struct Group {
     seen_else: bool,
 }
 
+/// Whether `text` contains a line break the fallback does not split on: a
+/// carriage return not followed by `\n`, U+0085, U+2028 or U+2029. The C#
+/// compiler ends lines at each of them; the fallback declines instead.
+fn has_other_line_break(text: &str) -> bool {
+    let bytes = text.as_bytes();
+    bytes
+        .iter()
+        .enumerate()
+        .any(|(i, &b)| b == b'\r' && bytes.get(i + 1) != Some(&b'\n'))
+        || text.contains(['\u{85}', '\u{2028}', '\u{2029}'])
+}
+
+/// Whether `line` starts with `#` after optional whitespace.
+fn starts_with_hash(line: &str) -> bool {
+    line.trim_start_matches(is_space).starts_with('#')
+}
+
 /// Resolve conditional compilation in `text` with `defines` as the initial
-/// symbol set, honouring `#define` and `#undef` in order.
+/// symbol set, honouring `#define` and `#undef` in active text in order.
 ///
-/// Returns `None` when a directive is malformed (unbalanced groups, an invalid
-/// expression or symbol, an unknown directive in active text) or when no line
-/// would change, so the caller keeps the original parse result.
+/// Returns `None`, so the caller keeps the original parse result, when no line
+/// starts with `#` (without allocating), when no line would change, when the
+/// text has a line break other than `\n` or `\r\n`, when active text is not
+/// lexed confidently (an unterminated comment or string, a `#` line inside an
+/// interpolation hole, an unsupported string form), or when the compiler would
+/// reject a directive: unbalanced or crossed `#if` and `#region` groups, an
+/// invalid expression or symbol (also in inactive text), an unknown directive,
+/// an active `#error`, or `#define`, `#undef` or `#:` after the first token.
 pub(crate) fn resolve(text: &str, defines: &BTreeSet<String>) -> Option<String> {
+    if !text.split('\n').any(starts_with_hash) || has_other_line_break(text) {
+        return None;
+    }
     let mut symbols: BTreeSet<&str> = defines.iter().map(String::as_str).collect();
     let mut groups: Vec<Group> = Vec::new();
+    let mut lexer = Lexer::default();
     let mut out = text.as_bytes().to_vec();
     let mut start = 0;
     for (index, line) in text.split('\n').enumerate() {
         let end = start + line.len();
         let active = groups.last().is_none_or(|g| g.active);
-        let blank = match directive(line, index) {
-            None => !active,
-            Some(Directive::Plain) => true,
-            Some(Directive::Named(name, rest)) => {
-                apply(name, rest, active, &mut groups, &mut symbols)?;
-                true
+        // Lexical state only advances through active lines, and directives
+        // need code state, so text inside a comment or string is active.
+        let blank = if lexer.in_code() {
+            match directive(line, index) {
+                None => {
+                    if active {
+                        lexer.line(line)?;
+                    }
+                    !active
+                }
+                Some(Directive::Plain) => {
+                    // A `#:` line after a token (a `#!` is always first).
+                    if active && lexer.seen_token {
+                        return None;
+                    }
+                    true
+                }
+                Some(Directive::Named(name, rest)) => {
+                    let state = State {
+                        active,
+                        seen_token: lexer.seen_token,
+                    };
+                    apply(name, rest, state, &mut groups, &mut symbols)?;
+                    true
+                }
             }
+        } else {
+            if lexer.in_hole() && starts_with_hash(line) {
+                return None;
+            }
+            lexer.line(line)?;
+            false
         };
         if blank {
             for byte in &mut out[start..end] {
@@ -75,7 +148,7 @@ pub(crate) fn resolve(text: &str, defines: &BTreeSet<String>) -> Option<String> 
         }
         start = end + 1;
     }
-    if !groups.is_empty() || out == text.as_bytes() {
+    if !groups.is_empty() || !lexer.in_code() || out == text.as_bytes() {
         return None;
     }
     Some(String::from_utf8(out).expect("whole lines of UTF-8 replaced by ASCII"))
@@ -83,7 +156,8 @@ pub(crate) fn resolve(text: &str, defines: &BTreeSet<String>) -> Option<String> 
 
 /// A directive line, as recognised by [`directive`].
 enum Directive<'a> {
-    /// A file-based app line (`#:`) or a first-line `#!`, blanked without effect.
+    /// A file-based app line (`#:`) or a first-line `#!`, blanked without
+    /// effect.
     Plain,
     /// A named directive and the text after its name.
     Named(&'a str, &'a str),
@@ -112,57 +186,96 @@ fn directive(line: &str, index: usize) -> Option<Directive<'_>> {
     Some(Directive::Named(&body[..len], &body[len..]))
 }
 
-/// Apply one named directive to the group stack and symbol set.
+/// Where a directive appears.
+#[derive(Clone, Copy)]
+struct State {
+    /// Whether the directive is in active text.
+    active: bool,
+    /// Whether active text before it held a token.
+    seen_token: bool,
+}
+
+/// Apply one named directive to the group stack and symbol set. Directives in
+/// inactive text are checked as the compiler checks them, but do not act.
 fn apply<'a>(
     name: &str,
     rest: &'a str,
-    active: bool,
+    state: State,
     groups: &mut Vec<Group>,
     symbols: &mut BTreeSet<&'a str>,
 ) -> Option<()> {
+    let active = state.active;
     match name {
         "if" => {
-            let taken = !active || evaluate(rest, symbols)?;
+            let value = evaluate(rest, symbols)?;
             groups.push(Group {
+                kind: Kind::If,
                 parent_active: active,
-                taken,
-                active: active && taken,
+                taken: !active || value,
+                active: active && value,
                 seen_else: false,
             });
         }
         "elif" => {
-            let group = groups.last_mut().filter(|g| !g.seen_else)?;
-            let value = !group.parent_active || evaluate(rest, symbols)?;
+            let value = evaluate(rest, symbols)?;
+            let group = groups
+                .last_mut()
+                .filter(|g| g.kind == Kind::If && !g.seen_else)?;
             group.active = group.parent_active && !group.taken && value;
             group.taken |= value;
         }
         "else" => {
-            let group = groups.last_mut().filter(|g| !g.seen_else)?;
             ends_cleanly(rest)?;
+            let group = groups
+                .last_mut()
+                .filter(|g| g.kind == Kind::If && !g.seen_else)?;
             group.active = group.parent_active && !group.taken;
             group.taken = true;
             group.seen_else = true;
         }
         "endif" => {
             ends_cleanly(rest)?;
-            groups.pop()?;
+            groups.pop_if(|g| g.kind == Kind::If)?;
         }
-        "define" | "undef" if active => {
+        "region" => groups.push(Group {
+            kind: Kind::Region,
+            parent_active: active,
+            taken: true,
+            active,
+            seen_else: true,
+        }),
+        "endregion" => {
+            groups.pop_if(|g| g.kind == Kind::Region)?;
+        }
+        "define" | "undef" => {
             let symbol = strip_comment(rest).trim_matches(is_space);
-            if !is_symbol(symbol) {
+            if !is_symbol(symbol) || state.seen_token {
                 return None;
             }
-            if name == "define" {
+            if active && name == "define" {
                 symbols.insert(symbol);
-            } else {
+            } else if active {
                 symbols.remove(symbol);
             }
         }
-        "region" | "endregion" | "pragma" | "nullable" | "line" | "warning" | "error" => {}
-        _ if active => return None,
-        _ => {}
+        "nullable" => nullable(rest)?,
+        "error" if active => return None,
+        "pragma" | "line" | "warning" | "error" => {}
+        _ => return None,
     }
     Some(())
+}
+
+/// Accept a `#nullable` setting: `enable`, `disable` or `restore`, optionally
+/// followed by `warnings` or `annotations`, then an optional `//` comment.
+fn nullable(rest: &str) -> Option<()> {
+    let mut words = strip_comment(rest).split_whitespace();
+    let setting = words.next()?;
+    let target = words.next();
+    (matches!(setting, "enable" | "disable" | "restore")
+        && target.is_none_or(|t| matches!(t, "warnings" | "annotations"))
+        && words.next().is_none())
+    .then_some(())
 }
 
 /// Remove a trailing `//` comment.
@@ -176,6 +289,292 @@ fn ends_cleanly(rest: &str) -> Option<()> {
         .trim_matches(is_space)
         .is_empty()
         .then_some(())
+}
+
+/// The literal form of an open string.
+#[derive(Clone, Copy, PartialEq)]
+enum Quote {
+    /// `"..."`, with backslash escapes, on one line.
+    Regular,
+    /// `@"..."`, with `""` escapes, over any number of lines.
+    Verbatim,
+    /// A raw string closed by this many quotes; `multi_line` when its opening
+    /// quotes end their line.
+    Raw { quotes: usize, multi_line: bool },
+}
+
+/// One level of lexical nesting inside active text.
+#[derive(Clone, Copy, PartialEq)]
+enum Mode {
+    /// Inside `/* ... */`.
+    Comment,
+    /// Literal text of a string; `dollars` is 0 when it is not interpolated.
+    Text { quote: Quote, dollars: usize },
+    /// Code in an interpolation hole of the string below it, with the depth of
+    /// open parentheses, brackets and braces.
+    Hole { depth: usize },
+}
+
+/// Lexical state across the active lines of a file. Only as much of C# is
+/// tokenized as is needed to know where comments and strings end and whether
+/// a token has been seen; every form it cannot follow makes [`Lexer::line`]
+/// return `None`.
+#[derive(Default)]
+struct Lexer {
+    /// Open comments, strings and holes, innermost last; empty in plain code.
+    stack: Vec<Mode>,
+    /// Whether any token has been seen in active text.
+    seen_token: bool,
+}
+
+/// Whether `b` is C# whitespace in the ASCII range (the `\r` of `\r\n`
+/// included).
+fn is_ascii_space(b: u8) -> bool {
+    matches!(b, b' ' | b'\t' | b'\r' | 0x0b | 0x0c)
+}
+
+/// Length of the run of `byte` at the start of `bytes`.
+fn run(bytes: &[u8], byte: u8) -> usize {
+    bytes.iter().take_while(|&&b| b == byte).count()
+}
+
+impl Lexer {
+    /// Whether the next line starts in plain code, where directives apply.
+    fn in_code(&self) -> bool {
+        self.stack.is_empty()
+    }
+
+    /// Whether the next line starts inside an interpolation hole.
+    fn in_hole(&self) -> bool {
+        self.stack.iter().any(|m| matches!(m, Mode::Hole { .. }))
+    }
+
+    /// The string whose hole is innermost, as `(quote, dollars)`.
+    fn hole_owner(&self) -> Option<(Quote, usize)> {
+        let below = self.stack.len().checked_sub(2)?;
+        match self.stack[below] {
+            Mode::Text { quote, dollars } => Some((quote, dollars)),
+            _ => None,
+        }
+    }
+
+    /// Lex one active line (without its `\n`).
+    fn line(&mut self, line: &str) -> Option<()> {
+        let mut i = 0;
+        while i < line.len() {
+            i = match self.stack.last().copied() {
+                None | Some(Mode::Hole { .. }) => self.code(line, i)?,
+                Some(Mode::Comment) => match line[i..].find("*/") {
+                    Some(at) => {
+                        self.stack.pop();
+                        i + at + 2
+                    }
+                    None => line.len(),
+                },
+                Some(Mode::Text { quote, dollars }) => self.text(line, i, quote, dollars)?,
+            };
+        }
+        // Regular and single-line raw strings end on their line. A hole that
+        // continues past the end of such a string's line is not followed.
+        (!self.stack.iter().any(|m| {
+            matches!(
+                m,
+                Mode::Text {
+                    quote: Quote::Regular
+                        | Quote::Raw {
+                            multi_line: false,
+                            ..
+                        },
+                    ..
+                }
+            )
+        }))
+        .then_some(())
+    }
+
+    /// Lex code (plain or in a hole) at byte `i` of `line`; return where to
+    /// continue.
+    fn code(&mut self, line: &str, i: usize) -> Option<usize> {
+        let bytes = line.as_bytes();
+        let b = bytes[i];
+        if is_ascii_space(b) {
+            return Some(i + 1);
+        }
+        let next = bytes.get(i + 1).copied();
+        let in_hole = !self.stack.is_empty();
+        match (b, next) {
+            (b'/', Some(b'/')) => {
+                // A comment would end the hole's line; not followed.
+                return (!in_hole).then_some(line.len());
+            }
+            (b'/', Some(b'*')) => {
+                self.stack.push(Mode::Comment);
+                return Some(i + 2);
+            }
+            _ => {}
+        }
+        if !b.is_ascii() {
+            let c = line[i..].chars().next().expect("char boundary");
+            self.seen_token |= !c.is_whitespace();
+            return Some(i + c.len_utf8());
+        }
+        self.seen_token = true;
+        match b {
+            b'"' | b'@' | b'$' => self.string(line, i),
+            b'\'' => {
+                // A character literal: one character or one escape sequence.
+                let end = if next == Some(b'\\') {
+                    i + 3 + line.get(i + 3..)?.find('\'')?
+                } else {
+                    let c = line.get(i + 1..)?.chars().next()?;
+                    let end = i + 1 + c.len_utf8();
+                    (c != '\'' && bytes.get(end) == Some(&b'\'')).then_some(end)?
+                };
+                Some(end + 1)
+            }
+            _ if in_hole => self.hole_code(line, i),
+            _ => Some(i + 1),
+        }
+    }
+
+    /// Lex one ASCII byte of hole code that is not whitespace, a comment, a
+    /// string or a character literal: track nesting, a format clause and the
+    /// closing braces.
+    fn hole_code(&mut self, line: &str, i: usize) -> Option<usize> {
+        let bytes = line.as_bytes();
+        let (_, dollars) = self.hole_owner()?;
+        let Some(Mode::Hole { depth }) = self.stack.last_mut() else {
+            unreachable!("hole code is lexed only in a hole")
+        };
+        match bytes[i] {
+            b'(' | b'[' | b'{' => *depth += 1,
+            b')' | b']' if *depth == 0 => return None,
+            b')' | b']' => *depth -= 1,
+            b'}' if *depth > 0 => *depth -= 1,
+            b'}' => {
+                // The hole closes with as many braces as the string has `$`.
+                let closing = dollars.max(1);
+                if run(&bytes[i..], b'}') < closing {
+                    return None;
+                }
+                self.stack.pop();
+                return Some(i + closing);
+            }
+            b':' if *depth == 0 => {
+                // A format clause runs to the closing brace, on this line, and
+                // is followed only when it is plain text. `::` is not followed.
+                let clause = &line[i + 1..];
+                let end = clause.find('}')?;
+                if clause.starts_with(':') || clause[..end].contains(['"', '{', '\\', '\'']) {
+                    return None;
+                }
+                return Some(i + 1 + end);
+            }
+            _ => {}
+        }
+        Some(i + 1)
+    }
+
+    /// Lex the start of a string at byte `i`: optional `@` and `$` prefixes,
+    /// then quotes. A `@` without a quote starts a verbatim identifier.
+    fn string(&mut self, line: &str, i: usize) -> Option<usize> {
+        let bytes = line.as_bytes();
+        let mut j = i;
+        let mut verbatim = bytes[j] == b'@';
+        j += usize::from(verbatim);
+        let dollars = run(&bytes[j..], b'$');
+        j += dollars;
+        if !verbatim && bytes.get(j) == Some(&b'@') {
+            verbatim = true;
+            j += 1;
+        }
+        if bytes.get(j) != Some(&b'"') {
+            // `@name` is an identifier; a `$` outside a string is not C#.
+            return (dollars == 0 && j == i + 1).then_some(j);
+        }
+        let quotes = run(&bytes[j..], b'"');
+        let quote = if verbatim {
+            if dollars > 1 {
+                return None;
+            }
+            j += 1;
+            Quote::Verbatim
+        } else if quotes < 3 {
+            if dollars > 1 {
+                return None;
+            }
+            if quotes == 2 {
+                // An empty string.
+                return Some(j + 2);
+            }
+            j += 1;
+            Quote::Regular
+        } else {
+            j += quotes;
+            let multi_line = line[j..].bytes().all(is_ascii_space);
+            Quote::Raw { quotes, multi_line }
+        };
+        self.stack.push(Mode::Text { quote, dollars });
+        Some(j)
+    }
+
+    /// Lex literal text of a string at byte `i`; return where to continue.
+    fn text(&mut self, line: &str, i: usize, quote: Quote, dollars: usize) -> Option<usize> {
+        let bytes = line.as_bytes();
+        let b = bytes[i];
+        let next = bytes.get(i + 1).copied();
+        match (quote, b) {
+            (Quote::Regular, b'\\') => return Some(i + 2),
+            (Quote::Regular, b'"') => {
+                self.stack.pop();
+                return Some(i + 1);
+            }
+            (Quote::Verbatim, b'"') if next == Some(b'"') => return Some(i + 2),
+            (Quote::Verbatim, b'"') => {
+                self.stack.pop();
+                return Some(i + 1);
+            }
+            (Quote::Raw { quotes, multi_line }, b'"') => {
+                let found = run(&bytes[i..], b'"');
+                if found < quotes {
+                    return Some(i + found);
+                }
+                // The closing quotes, exactly as many as opened, and on a line
+                // of their own in a multi-line raw string.
+                if found > quotes || multi_line && !line[..i].bytes().all(is_ascii_space) {
+                    return None;
+                }
+                self.stack.pop();
+                return Some(i + found);
+            }
+            _ => {}
+        }
+        if dollars == 0 || !matches!(b, b'{' | b'}') {
+            return Some(i + 1);
+        }
+        let found = run(&bytes[i..], b);
+        if matches!(quote, Quote::Raw { .. }) {
+            // Fewer braces than `$` are text; up to twice as many open a hole
+            // after the extra ones; a run of closing braces is not followed.
+            if found < dollars {
+                return Some(i + found);
+            }
+            if b == b'}' || found >= 2 * dollars {
+                return None;
+            }
+            self.stack.push(Mode::Hole { depth: 0 });
+            return Some(i + found);
+        }
+        // `{{` and `}}` are escaped braces; one `{` opens a hole.
+        match (b, next) {
+            (_, Some(n)) if n == b => Some(i + 2),
+            (b'{', _) => {
+                self.stack.push(Mode::Hole { depth: 0 });
+                Some(i + 1)
+            }
+            _ => None,
+        }
+    }
 }
 
 /// A token of a `#if` or `#elif` expression.
@@ -287,7 +686,7 @@ impl Expression<'_, '_> {
     }
 
     fn unary(&mut self, depth: usize) -> Option<bool> {
-        if depth >= MAX_EXPRESSION_DEPTH {
+        if depth > MAX_EXPRESSION_DEPTH {
             return None;
         }
         if self.eat(&Token::Not) {
@@ -425,11 +824,13 @@ mod tests {
     #[test]
     fn expression_depth_is_bounded() {
         let nested = |n: usize| format!("{}A{}", "(".repeat(n), ")".repeat(n));
-        assert_eq!(eval(&nested(MAX_EXPRESSION_DEPTH - 1), &["A"]), Some(true));
-        assert_eq!(eval(&nested(MAX_EXPRESSION_DEPTH), &["A"]), None);
+        assert_eq!(MAX_EXPRESSION_DEPTH, 256);
+        assert_eq!(eval(&nested(MAX_EXPRESSION_DEPTH), &["A"]), Some(true));
+        assert_eq!(eval(&nested(MAX_EXPRESSION_DEPTH + 1), &["A"]), None);
         let nots = |n: usize| format!("{}A", "!".repeat(n));
         assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH - 1), &[]), Some(true));
-        assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH), &[]), None);
+        assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH), &[]), Some(false));
+        assert_eq!(eval(&nots(MAX_EXPRESSION_DEPTH + 1), &[]), None);
         assert_eq!(eval(&nested(100_000), &["A"]), None);
     }
 
@@ -504,15 +905,44 @@ mod tests {
         assert_eq!(visible(text, &["A"]), ["a"]);
         assert_eq!(visible(text, &["B"]), ["b"]);
         assert_eq!(visible(text, &["C"]), ["n"]);
-        // Expressions and unknown directives inside inactive text are not evaluated.
-        let skipped = "#if false\n#if &&\nx\n#elif ((\ny\n#endif\n#unknown\n#define 1\n#endif\nz";
+        // Inactive text is not lexed and its directives do not act, but they
+        // are checked as the compiler checks them.
+        let skipped = "#if false\n#if A && !B\nx\n#elif (C)\ny\n#endif\n#error e\n#define D\n\"\n/*\n#endif\nz";
         assert_eq!(visible(skipped, &[]), ["z"]);
+        for bad in [
+            "#if &&",
+            "#elif ((",
+            "#unknown",
+            "#define 1",
+            "#undef true",
+            "#else x",
+            "#nullable on",
+        ] {
+            let text = format!("#if false\n#if A\n{bad}\n#endif\n#endif\nz");
+            assert_eq!(resolve(&text, &set(&[])), None, "{bad}");
+        }
     }
 
     #[test]
     fn define_and_undef_apply_in_order_in_active_text() {
-        let text = "#define A // set\n#if A\na\n#endif\n#undef A\n#if A\nb\n#endif\n#if false\n#define B\n#endif\n#if B\nc\n#endif\n#undef Z\n";
-        assert_eq!(visible(text, &[]), ["a"]);
+        let text = "#define A // set\n#define B\n#undef A\n#if false\n#define C\n#undef B\n#endif\n#undef Z\n#if A\na\n#endif\n#if B\nb\n#endif\n#if C\nc\n#endif\n";
+        assert_eq!(visible(text, &[]), ["b"]);
+        // Comments, blank lines and app lines are not tokens.
+        assert_eq!(
+            visible(
+                "// c\n/* d\n */\n#:sdk X\n\n#define A\n#if A\na\n#endif",
+                &[]
+            ),
+            ["// c", "/* d", " */", "a"]
+        );
+        // Non-ASCII whitespace is not a token; a non-ASCII letter is.
+        assert_eq!(
+            visible("\u{a0}\u{3000}\n#define A\n#if A\na\n#endif", &[]),
+            ["\u{a0}\u{3000}", "a"]
+        );
+        assert_eq!(resolve("é\n#define A\n", &set(&[])), None);
+        // `#:` lines after a token are rejected only in active text.
+        assert_eq!(visible("x\n#if false\n#:sdk X\n#endif\n", &[]), ["x"]);
         assert_eq!(
             visible("#undef A\n#if A\na\n#endif\n", &["A"]),
             Vec::<String>::new()
@@ -522,7 +952,7 @@ mod tests {
 
     #[test]
     fn other_directives_and_app_lines_are_blanked() {
-        let text = "#!/usr/bin/env dotnet\n#:sdk Microsoft.NET.Sdk\n  #:package A@1\n#region R\n#pragma warning disable 1\n#nullable enable\n#line 5\n#line default\n#warning w\n#error e\n#endregion\nclass C { }\n#pragma warning restore 618";
+        let text = "#!/usr/bin/env dotnet\n#:sdk Microsoft.NET.Sdk\n  #:package A@1\n#region R\n#pragma warning disable 1\n#nullable enable\n#nullable restore warnings // w\n#line 5\n#line default\n#warning w\n#if false\n#error e\n#endif\n#endregion\nclass C { }\n#pragma warning restore 618";
         assert_eq!(visible(text, &[]), ["class C { }"]);
         // `#!` is a shebang only on the first line, and only in column one.
         assert_eq!(resolve("x\n#!/bin/sh\n", &set(&[])), None);
@@ -552,7 +982,16 @@ mod tests {
         );
         let out = kept(text, &["A"]);
         assert!(out.contains("var ü = \"日本\";\r\n") && !out.contains('€'));
-        assert_eq!(kept("#if A\nä\rö\n#endif", &[]), "     \n  \r  \n      ");
+        // Line breaks the fallback does not split on make it decline.
+        for text in [
+            "#if A\nä\rö\n#endif",
+            "#if A\nx\n#endif\r",
+            "#if A\nx\u{2028}\n#endif",
+            "#if A\nx\u{2029}\n#endif",
+            "#if A\nx\u{85}\n#endif",
+        ] {
+            assert_eq!(resolve(text, &set(&[])), None, "{text:?}");
+        }
     }
 
     #[test]
@@ -586,6 +1025,27 @@ mod tests {
             "#unknown\n",
             "#\n",
             "#if A\n#endif\n#endif\n",
+            // Stricter than tolerance: what the compiler rejects.
+            "#if true\n#error stop\n#endif\n",
+            "#error stop\n",
+            "x\n#define B\n",
+            "x\n#undef A\n",
+            "x\n#if false\n#define B\n#endif\n",
+            "x\n#:sdk X\n",
+            "#region\n",
+            "#endregion\n",
+            "#region\n#endregion\n#endregion\n",
+            "#region\n#if A\n#endregion\n#endif\n",
+            "#if A\n#region\n#endif\n#endregion\n",
+            "#if A\n#region\n#else\n#endregion\n#endif\n",
+            "#if false\n#endregion\n#endif\n",
+            "#nullable\n",
+            "#nullable on\n",
+            "#nullable enable all\n",
+            "#nullable enable warnings x\n",
+            "#if false\n#bogus\n#endif\n",
+            "#if false\n#if (\n#endif\n#endif\n",
+            "#if A\n#elif !\n#endif\n",
         ] {
             assert_eq!(resolve(text, &set(&["A"])), None, "{text:?}");
         }
@@ -595,6 +1055,105 @@ mod tests {
             ["b"]
         );
         assert_eq!(visible("#if(A)\na\n#endif\n", &["A"]), ["a"]);
+    }
+
+    /// `#if A` ... `#else` ... `#endif` after `prefix`: `["a"]` when `A` is
+    /// taken, `["b"]` otherwise, plus the visible lines of `prefix`.
+    fn branch_after(prefix: &str, names: &[&str]) -> Vec<String> {
+        let text = format!("{prefix}\n#if A\na\n#else\nb\n#endif\n");
+        let prefix_lines = prefix.split('\n').filter(|l| !l.trim().is_empty()).count();
+        visible(&text, names).split_off(prefix_lines)
+    }
+
+    #[test]
+    fn hash_lines_inside_comments_and_strings_are_text() {
+        let cases: &[(&str, usize)] = &[
+            // Block comments, also several per line and nested-looking.
+            ("/*\n#if A\n*/", 3),
+            ("x /* a */ /*\n  #endif\n */ y", 3),
+            ("/* /* */ z", 1),
+            // Verbatim strings, with `""` escapes, plain and interpolated.
+            ("var s = @\"\n#define A\n\";", 3),
+            ("var s = @\"a\"\"\n#else\n\"\"\";", 3),
+            ("var s = $@\"{x}\n#endif {{\n}}\";", 3),
+            ("var s = @$\"\n#if B\n{y}\";", 3),
+            // Raw strings, multi-line, single-line and interpolated.
+            ("var s = \"\"\"\n  #if A\n  \"\"\";", 3),
+            ("var s = \"\"\"\"\n  \"\"\" #endif\n  \"\"\"\";", 3),
+            (
+                "var s = $$\"\"\"\n  {#if} {{x}} {{{y}}}\n  #else\n  \"\"\";",
+                4,
+            ),
+            ("var s = \"\"\"a \"\" b\"\"\"; var t = $\"\"\"{x}\"\"\";", 1),
+            // Holes with strings, braces, parentheses and format clauses.
+            (
+                "var s = $@\"{F(\"}\")}\n#if A\n{(a ? b : c),5:N2} {new { }}\n#endif\";",
+                4,
+            ),
+            ("var s = $@\"{ x\n  + y }\n#if A\n\";", 4),
+            ("var s = $@\"{ /* } */ x }\n#endif\n\";", 3),
+            // Regular strings and characters do not open anything.
+            (
+                "var s = \"/*\\\"\"; var c = '\"'; var d = '\\''; var e = '\\u0041';",
+                1,
+            ),
+            ("var s = \"\"; var t = $\"{x}{{}}\"; // \"", 1),
+            ("var @if = @class; var é = 'ü';", 1),
+        ];
+        for (prefix, lines) in cases {
+            let text = format!("{prefix}\n#if A\na\n#else\nb\n#endif\n");
+            let out = kept(&text, &[]);
+            // The prefix is kept byte for byte, `#` lines included.
+            assert!(out.starts_with(prefix), "{prefix:?} -> {out:?}");
+            assert_eq!(prefix.split('\n').count(), *lines, "{prefix:?}");
+            assert_eq!(branch_after(prefix, &[]), ["b"], "{prefix:?}");
+            assert_eq!(branch_after(prefix, &["A"]), ["a"], "{prefix:?}");
+        }
+        // A `#define` in a string defines nothing, so `#if` sees no symbol.
+        assert_eq!(branch_after("var s = @\"\n#define A\n\";", &[]), ["b"]);
+    }
+
+    #[test]
+    fn unfollowed_lexical_forms_decline_the_fallback() {
+        for prefix in [
+            // Unterminated at the end of the file or of a line.
+            "/* open",
+            "var s = @\"open",
+            "var s = \"\"\"\nopen",
+            "var s = \"open",
+            "var s = \"\"\"a\"\";",
+            "var s = $\"{x}",
+            "var c = 'ab';",
+            "var c = '';",
+            "var c = '",
+            // A `#` line inside an interpolation hole.
+            "var s = $@\"{\n#if A\nx}\";",
+            "var s = $@\"{ /*\n#if A\n*/ x}\";",
+            // Forms the lexer does not follow.
+            "var s = $\"{x\n}\";",
+            "var s = $@\"{x // c\n}\";",
+            "var s = $@\"{x::y}\";",
+            "var s = $@\"{x:\"q\"}\";",
+            "var s = $@\"{x:{y}}\";",
+            "var s = $@\"{x:a\nb}\";",
+            "var s = $@\"{x)}\";",
+            "var s = $@\"}\";",
+            "var s = $\"}\";",
+            "var s = $$\"x\";",
+            "var s = $$@\"x\";",
+            "var s = $$\"\";",
+            "var s = $\"\"\"{{x}}\"\"\";",
+            "var s = $\"\"\"x}\"\"\";",
+            "var s = $$\"\"\"x}}\"\"\";",
+            "var s = \"\"\"a\"\"\"\";",
+            "var s = \"\"\"\n  x \"\"\";",
+            "var s = $$\"\"\"{{x}\"\"\";",
+            "var s = $x;",
+            "var s = @$x;",
+        ] {
+            let text = format!("{prefix}\n#if A\na\n#else\nb\n#endif\n");
+            assert_eq!(resolve(&text, &set(&["A"])), None, "{prefix:?}");
+        }
     }
 
     /// Deterministic xorshift generator for the shape property.
@@ -625,6 +1184,15 @@ mod tests {
             "#pragma x",
             "#:sdk X",
             "#bad",
+            "#region",
+            "#endregion",
+            "/*",
+            "*/",
+            "@\"",
+            "\"",
+            "\"\"\"",
+            "$@\"{",
+            "}\"",
             "int x = 1;",
             "  var é = \"日本\";",
             "",
@@ -635,10 +1203,11 @@ mod tests {
             "€",
             "#if A // ü",
         ];
-        let breaks = ["\n", "\r\n", "\r", ""];
+        // A lone `\r` always declines, so it is rare here.
+        let breaks = ["\n", "\r\n", "\n", "\r\n", "\n", "\r", ""];
         let mut rng = Rng(0x9e37_79b9_7f4a_7c15);
         let mut resolved = 0;
-        for _ in 0..4000 {
+        for _ in 0..20_000 {
             let mut text = String::new();
             for _ in 0..rng.next(14) {
                 text.push_str(pieces[rng.next(pieces.len())]);

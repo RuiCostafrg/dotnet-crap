@@ -211,13 +211,6 @@ fn scan_impl(
     if !args.threshold.is_finite() || args.threshold < 0.0 {
         fail!(InvalidInput, "threshold must be finite and nonnegative");
     }
-    if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {
-        fail!(
-            InvalidInput,
-            "invalid conditional compilation symbol {symbol:?}: use a letter or `_` followed by letters, digits or `_`, other than `true` and `false`"
-        );
-    }
-    let defines: BTreeSet<String> = args.defines.iter().cloned().collect();
     let root = args
         .root
         .canonicalize()
@@ -234,6 +227,15 @@ fn scan_impl(
         evidence::validate(c)?;
     }
     let files: Vec<PathBuf> = selection::select(&root, &args.paths)?.into_iter().collect();
+    // Checked after the root, coverage and paths, so those errors keep their
+    // precedence over a symbol that only matters to the fallback.
+    if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {
+        fail!(
+            InvalidInput,
+            "invalid conditional compilation symbol {symbol:?}: use a letter or `_` followed by letters, digits or `_`, other than `true` and `false`"
+        );
+    }
+    let defines: BTreeSet<String> = args.defines.iter().cloned().collect();
     let jobs = par::resolve(args.jobs);
     let parsers = (0..par::workers_for(files.len(), jobs))
         .map(|_| {
@@ -353,9 +355,11 @@ impl FileContext<'_> {
         // Files that parse as written are scored from their own text. Only a
         // failed parse pays for conditional-compilation resolution and a
         // second parse; the resolved text keeps every byte offset and line.
+        // While resolving, the decoded and resolved texts are both held, so a
+        // fallback file briefly uses twice its text against one admission.
         let (source, tree) = if tree.root_node().has_error() {
             drop(tree);
-            let Some(resolved) = self.reparse_resolved(parser, &source)? else {
+            let Some(resolved) = self.reparse_resolved(parser, &source) else {
                 fail!(Syntax, "invalid C# syntax in {relative}");
             };
             drop(source);
@@ -400,16 +404,13 @@ impl FileContext<'_> {
         &self,
         parser: &mut TsParser,
         source: &str,
-    ) -> Result<Option<(String, tree_sitter::Tree)>> {
-        let Some(resolved) = preprocess::resolve(source, self.defines) else {
-            return Ok(None);
-        };
-        let tree = parser
-            .parse(&resolved, None)
-            .context(ErrorKind::Source, "parser failed")?;
+    ) -> Option<(String, tree_sitter::Tree)> {
+        let resolved = preprocess::resolve(source, self.defines)?;
+        // A parser that returns no tree leaves the original error standing.
+        let tree = parser.parse(&resolved, None)?;
         #[cfg(test)]
         work::count(work::Unit::Parse);
-        Ok((!tree.root_node().has_error()).then_some((resolved, tree)))
+        (!tree.root_node().has_error()).then_some((resolved, tree))
     }
 }
 
@@ -666,7 +667,8 @@ mod tests {
             "class B {\n int G()\n#if X\n { return 1; }\n#else\n ;\n#endif\n}\n",
         )
         .unwrap();
-        for defines in [vec![], vec!["X".to_owned()]] {
+        let mut hashes = Vec::new();
+        for defines in [vec![], vec!["X".to_owned()], vec!["Y".to_owned()]] {
             work::take();
             let result = scan(&ScanOptions {
                 defines,
@@ -675,7 +677,18 @@ mod tests {
             .unwrap();
             assert_eq!(work::take(), [4, 4, 2, 3]);
             assert_eq!(result.report().functions[0].name, "F");
+            hashes.push(result.source_hashes);
         }
+        // Source hashes are over the original bytes, whatever is defined.
+        let expected: Vec<(PathBuf, String)> = ["a.cs", "b.cs"]
+            .iter()
+            .map(|name| {
+                let path = dir.path().canonicalize().unwrap().join(name);
+                let hash = hex::encode(Sha256::digest(fs::read(&path).unwrap()));
+                (path, hash)
+            })
+            .collect();
+        assert!(hashes.iter().all(|h| *h == expected), "{hashes:?}");
         // Fails with nothing to resolve: no second parse, the original error.
         fs::write(dir.path().join("c.cs"), "class {\n").unwrap();
         work::take();
