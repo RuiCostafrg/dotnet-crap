@@ -33,12 +33,14 @@ def write_inventory(out, names, buckets):
 
 def write_shard(root, index, names, buckets, full=None):
     """Create one shard's evidence directory, including the recorded full inventory."""
-    out = root / f"run-shard{index}"
-    write_inventory(out, names, buckets)
+    # Same layout as run mode: the full list in the run's parent directory,
+    # cargo-mutants' evidence in its mutants.out child.
+    parent = root / f"run-shard{index}"
+    write_inventory(parent / "mutants.out", names, buckets)
     if full is None:
         full = names
-    (out / "full-mutants.json").write_text(json.dumps([{"name": n} for n in full]))
-    return out
+    (parent / "full-mutants.json").write_text(json.dumps([{"name": n} for n in full]))
+    return parent
 
 
 class MutationTests(unittest.TestCase):
@@ -218,6 +220,26 @@ class ShardRunTests(unittest.TestCase):
             self.assertTrue((out.parent / ".complete").exists())
             self.assertEqual(len(list(Path(tmp).glob("run-*/.failed"))), 0)
 
+    def test_shard_runs_feed_aggregate_end_to_end(self):
+        """Aggregate the run directories that sharded runs produce, as the workflow does."""
+        full = ["a", "b", "c", "d"]
+        with tempfile.TemporaryDirectory() as tmp:
+            parents = []
+            for index, names in enumerate((full[:2], full[2:])):
+                def runner(command, names=names, **kwargs):
+                    """List the full inventory, then emit this shard's evidence."""
+                    if "--list" in command:
+                        return SimpleNamespace(returncode=0, stderr="",
+                                               stdout=json.dumps([{"name": n} for n in full]))
+                    parent = Path(command[command.index("--output") + 1])
+                    write_inventory(parent / "mutants.out", names, {"caught": names})
+                    return SimpleNamespace(returncode=0)
+                root = Path(tmp) / f"shard-{index}"
+                out = gate.run_gate(runner=runner, evidence_root=root, keep_runs=1, shard=(index, 2))
+                parents.append(out.parent)
+            counts, total = gate.aggregate_shards([str(p) for p in parents])
+            self.assertEqual((counts["caught"], total), (4, 4))
+
     def test_failed_listing_blocks_the_run(self):
         """A failed inventory listing aborts before any mutation run starts."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -290,7 +312,7 @@ class AggregateTests(unittest.TestCase):
         """Older evidence without the recorded full list cannot be aggregated."""
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "run-plain"
-            write_inventory(out, ["a"], {"caught": ["a"]})
+            write_inventory(out / "mutants.out", ["a"], {"caught": ["a"]})
             with self.assertRaisesRegex(FileNotFoundError, "full-mutants.json"):
                 gate.aggregate_shards([out])
 

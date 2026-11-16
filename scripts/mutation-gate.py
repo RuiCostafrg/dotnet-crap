@@ -74,8 +74,11 @@ def aggregate_shards(out_dirs):
     full = None
     shards = []
     for directory in out_dirs:
-        out = pathlib.Path(directory)
-        listed = read_identities(out / FULL_LIST, "full inventory")
+        # Each directory is a run's parent: run mode records the full list
+        # there, and cargo-mutants writes its outcomes to the mutants.out child.
+        parent = pathlib.Path(directory)
+        out = parent / "mutants.out"
+        listed = read_identities(parent / FULL_LIST, "full inventory")
         if full is None:
             full = listed
         elif set(listed) != set(full):
