@@ -538,7 +538,9 @@ fn mutated_reports_fail_identically() {
         malformed > 500,
         "only {malformed} mutated reports were malformed"
     );
-    assert!(accepted > 5, "only {accepted} mutated reports imported");
+    // Mutations rarely leave a report valid, and how often depends on the
+    // temporary root's length (5 of 2500 on Windows). One proves the path runs.
+    assert!(accepted > 0, "no mutated report imported");
 }
 
 /// Token soup exercises the tokenizer away from Cobertura's shape.
