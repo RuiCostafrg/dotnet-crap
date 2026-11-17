@@ -48,6 +48,10 @@ conditional compilation symbols. They matter only for a file that does not
 parse as written: its `#if` groups are then resolved and the file is parsed
 again, keeping line numbers. Files that parse are unaffected. See
 [conditional compilation](docs/PREPROCESSOR.md).
+`--skip-unparsed` (also on `collect`) skips a selected file whose final failure
+is a syntax error instead of failing the scan; skipped files are listed in the
+text, JSON and SARIF reports and contribute no callables. Other errors, such as
+unreadable or non-UTF-8 sources, still fail. Off by default.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
@@ -57,7 +61,7 @@ The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rus
 code can scan and render reports without starting the CLI. Gate failures are
 reported by `ScanResult::report().failed`; input errors are returned as `Err`.
 `ScanOptions::jobs` is the library form of `--jobs`, and `ScanOptions::defines`
-of `--define`.
+of `--define`; `ScanOptions::skip_unparsed` is `--skip-unparsed`.
 See the [Rust API guide](docs/RUST_API.md) for consumption, verification, and
 limits. Run the bundled example with `cargo run --example scan -- <root>`.
 

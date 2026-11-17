@@ -43,6 +43,7 @@ fn collect_options(
         timeout: Duration::from_secs(60),
         jobs: None,
         defines: Vec::new(),
+        skip_unparsed: false,
     }
 }
 

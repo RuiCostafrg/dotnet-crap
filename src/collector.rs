@@ -39,6 +39,10 @@ pub struct CollectOptions {
     /// Conditional compilation symbols, as `ScanOptions::defines`: used only
     /// to resolve `#if` groups in files that do not parse as written.
     pub defines: Vec<String>,
+    /// Skip selected sources whose final failure is a syntax error, as
+    /// `ScanOptions::skip_unparsed`. Their coverage entries are imported like
+    /// those of a selected file with no callables, and the command still runs.
+    pub skip_unparsed: bool,
 }
 
 /// Snapshot selected bytes, run trusted tests in the canonical source root, then
@@ -52,6 +56,7 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         paths: options.paths.clone(),
         jobs: options.jobs,
         defines: options.defines.clone(),
+        skip_unparsed: options.skip_unparsed,
         ..Default::default()
     };
     // The scan hashes, parses and verifies each selected file once; its line
@@ -308,6 +313,7 @@ mod deadline_tests {
             timeout: Duration::from_secs(1),
             jobs: None,
             defines: Vec::new(),
+            skip_unparsed: false,
         }
     }
 
@@ -542,6 +548,7 @@ p=pathlib.Path(sys.argv[1])/'run'; p.mkdir()
             timeout: Duration::from_secs(60),
             jobs: None,
             defines: Vec::new(),
+            skip_unparsed: false,
         };
         crate::work::take();
         collect(&options).unwrap();
