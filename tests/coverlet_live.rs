@@ -233,6 +233,7 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         timeout: std::time::Duration::from_secs(600),
         jobs: None,
         defines: Vec::new(),
+        skip_unparsed: false,
         output: native.clone(),
         expected_reports: 4,
         command: [

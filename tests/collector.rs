@@ -19,6 +19,7 @@ fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
         timeout: std::time::Duration::from_secs(60),
         jobs: None,
         defines: Vec::new(),
+        skip_unparsed: false,
         output: dir.path().join("native.json"),
         expected_reports: 1,
         command: ["python3", "-c", script, "{results}"]
@@ -381,6 +382,61 @@ fn literal_backslashes_cannot_alias_native_source_paths() {
         assert!(!dir.path().join("executed").exists());
         assert!(!options.output.exists());
     }
+}
+
+#[test]
+fn skip_unparsed_snapshots_broken_sources_and_imports_their_coverage() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("C.cs"),
+        "class C {\n int F(int n) {\n if(n > 0) return 1;\n return 0;\n }\n}\n",
+    )
+    .unwrap();
+    fs::write(dir.path().join("Bad.cs"), "class Bad { void M( }\n").unwrap();
+    let script = r#"import pathlib,sys
+p=pathlib.Path(sys.argv[1]); assert p.is_dir() and not list(p.iterdir())
+(p/'run').mkdir()
+(p/'run'/'coverage.cobertura.xml').write_text('<coverage><sources/><packages><package><classes><class filename="C.cs"><lines><line number="3" hits="1"/><line number="4" hits="0"/></lines></class><class filename="Bad.cs"><lines><line number="1" hits="1"/></lines></class></classes></package></packages></coverage>')
+"#;
+    let mut options = CollectOptions {
+        root: dir.path().to_owned(),
+        paths: vec![],
+        output: dir.path().join("native.json"),
+        command: ["python3", "-c", script, "{results}"]
+            .into_iter()
+            .map(OsString::from)
+            .collect(),
+        expected_reports: 1,
+        timeout: std::time::Duration::from_secs(60),
+        jobs: None,
+        defines: Vec::new(),
+        skip_unparsed: false,
+    };
+    let error = collect(&options).unwrap_err();
+    assert_eq!(error.kind(), dotnet_crap::ErrorKind::Syntax);
+    assert!(!options.output.exists());
+    options.skip_unparsed = true;
+    collect(&options).unwrap();
+    let native: Value = serde_json::from_slice(&fs::read(&options.output).unwrap()).unwrap();
+    assert_eq!(
+        native["files"]["Bad.cs"]["lines"],
+        serde_json::json!({"1":1})
+    );
+    // A later scan treats the skipped file's coverage exactly as that of a
+    // selected file with no callables: bound, imported and not gated.
+    let result = scan(&ScanOptions {
+        root: options.root.clone(),
+        coverage: Some(options.output.clone()),
+        require_coverage: true,
+        skip_unparsed: true,
+        ..Default::default()
+    })
+    .unwrap();
+    assert!(result.report().coverage_complete);
+    assert!(!result.report().failed);
+    assert_eq!(result.report().functions.len(), 1);
+    assert_eq!(result.report().functions[0].name, "F");
+    assert_eq!(result.report().skipped[0].path, "Bad.cs");
 }
 
 #[test]

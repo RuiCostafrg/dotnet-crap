@@ -41,7 +41,10 @@ directory with that name. `--jobs <N>` sets the worker threads used to snapshot
 and verify sources, as for scanning; evidence bytes do not depend on it.
 `--define <SYMBOL>` resolves `#if` groups in sources that do not parse as
 written, as for scanning ([conditional compilation](PREPROCESSOR.md)); the
-evidence keeps hashes of the original bytes.
+evidence keeps hashes of the original bytes. `--skip-unparsed` skips such
+sources instead of failing the snapshot, as for scanning; their Cobertura
+entries are imported like those of a selected file with no callables, and the
+command still runs.
 
 The child deadline defaults to 900 seconds (`--timeout-seconds`); a timeout
 kills and reaps the immediate process and publishes nothing. Statuses first

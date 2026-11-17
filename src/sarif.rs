@@ -61,14 +61,37 @@ pub fn render(
         root.to_str()
             .context(ErrorKind::Render, "source root must be valid UTF-8")?,
     );
-    serde_json::to_string_pretty(&json!({
-        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-        "version": "2.1.0",
-        "runs": [{"tool":{"driver":{"name":"dotnet-crap","version":env!("CARGO_PKG_VERSION"),"rules":[
+    let mut run = json!({
+        "tool":{"driver":{"name":"dotnet-crap","version":env!("CARGO_PKG_VERSION"),"rules":[
             {"id":"DNCRAP001","shortDescription":{"text":"CRAP score exceeds threshold"}},
             {"id":"DNCRAP002","shortDescription":{"text":"Required coverage is missing"}},
             {"id":"DNCRAP003","shortDescription":{"text":"No callables found"}}
-        ]}},"originalUriBaseIds":{"%SRCROOT%":{"uri":root_uri}},"results":results}]
+        ]}},"originalUriBaseIds":{"%SRCROOT%":{"uri":root_uri}},"results":results
+    });
+    // Omitted when nothing is skipped, so unchanged scans keep identical bytes.
+    if !report.skipped.is_empty() {
+        let notifications: Vec<Value> = report
+            .skipped
+            .iter()
+            .map(|file| {
+                json!({
+                    "level": "warning",
+                    "message": {"text": file.message},
+                    "locations": [{"physicalLocation": {
+                        "artifactLocation": {"uri": uri(&file.path), "uriBaseId": "%SRCROOT%"}
+                    }}]
+                })
+            })
+            .collect();
+        run["invocations"] = json!([{
+            "executionSuccessful": true,
+            "toolExecutionNotifications": notifications
+        }]);
+    }
+    serde_json::to_string_pretty(&json!({
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [run]
     }))
     .kind(ErrorKind::Render)
 }

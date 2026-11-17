@@ -66,6 +66,12 @@ pub struct ScanOptions {
     /// be `true` or `false` in any letter case. Empty by default (no symbol
     /// defined).
     pub defines: Vec<String>,
+    /// Skip selected files whose final failure is a syntax error instead of
+    /// failing the whole scan. Skipped files contribute no callables and are
+    /// listed in `Report::skipped`, in scan order. Other failures (I/O,
+    /// decoding, resource limits) still fail the scan. Defaults to `false`,
+    /// which fails on the first syntax error as before.
+    pub skip_unparsed: bool,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -78,6 +84,7 @@ impl Default for ScanOptions {
             paths: Vec::new(),
             jobs: None,
             defines: Vec::new(),
+            skip_unparsed: false,
         }
     }
 }
@@ -159,7 +166,7 @@ impl ScanResult {
     }
 }
 pub(crate) use evidence::{Coverage, CoverageFile};
-pub use report::{terminal_safe, Item, Report, ReportFormat};
+pub use report::{terminal_safe, Item, Report, ReportFormat, SkippedFile};
 pub(crate) use source::decode_source;
 /// Strict Cobertura line-evidence importer.
 pub mod cobertura;
@@ -200,6 +207,8 @@ struct FileScan {
     hash: String,
     line_count: Option<usize>,
     items: Vec<Item>,
+    /// Set when the file did not parse and skipping is enabled.
+    skipped: Option<SkippedFile>,
 }
 
 /// Shared [`scan`] body; with `want_sources`, also returns facts for each
@@ -254,6 +263,7 @@ fn scan_impl(
         kinds: &kinds,
         defines: &defines,
         want_lines: want_sources,
+        skip_unparsed: args.skip_unparsed,
         budget,
     };
     let scanned = par::ordered_map(
@@ -264,10 +274,12 @@ fn scan_impl(
         |parser, i| context.scan_file(parser, &files[i]),
     )?;
     let mut items = Vec::new();
+    let mut skipped = Vec::new();
     let mut source_hashes = Vec::with_capacity(scanned.len());
     let mut sources = Vec::new();
     for mut file in scanned {
         items.append(&mut file.items);
+        skipped.extend(file.skipped.take());
         if want_sources {
             sources.push(ScannedSource {
                 path: file.path.clone(),
@@ -284,6 +296,7 @@ fn scan_impl(
     let report = Report {
         threshold: args.threshold,
         files_scanned: files.len(),
+        skipped,
         coverage_complete,
         functions: items,
         failed,
@@ -310,6 +323,7 @@ struct FileContext<'a> {
     kinds: &'a analysis::KindTable,
     defines: &'a BTreeSet<String>,
     want_lines: bool,
+    skip_unparsed: bool,
     budget: &'a par::ByteBudget,
 }
 
@@ -360,11 +374,34 @@ impl FileContext<'_> {
         // fallback file briefly uses twice its text against one admission.
         let (source, tree) = if tree.root_node().has_error() {
             drop(tree);
-            let Some(resolved) = self.reparse_resolved(parser, &source) else {
-                fail!(Syntax, "invalid C# syntax in {relative}");
-            };
-            drop(source);
-            resolved
+            match self.reparse_resolved(parser, &source) {
+                Some(resolved) => {
+                    drop(source);
+                    resolved
+                }
+                // A file whose final failure is a syntax error is skipped when
+                // enabled. It binds coverage like a selected file with no
+                // callables, and contributes no items.
+                None if self.skip_unparsed => {
+                    let cov = self.coverage.and_then(|c| c.files.get(&relative));
+                    let line_count =
+                        (cov.is_some() || self.want_lines).then(|| source.lines().count());
+                    if let Some(c) = cov {
+                        evidence::check_binding(c, &hash, line_count.expect("counted"), &relative)?;
+                    }
+                    return Ok(FileScan {
+                        path: path.to_path_buf(),
+                        hash,
+                        line_count,
+                        items: Vec::new(),
+                        skipped: Some(SkippedFile {
+                            path: relative.clone(),
+                            message: format!("invalid C# syntax in {relative}"),
+                        }),
+                    });
+                }
+                None => fail!(Syntax, "invalid C# syntax in {relative}"),
+            }
         } else {
             (source, tree)
         };
@@ -396,6 +433,7 @@ impl FileContext<'_> {
             hash,
             line_count,
             items,
+            skipped: None,
         })
     }
 
@@ -584,6 +622,38 @@ mod tests {
                     dir.path().canonicalize().unwrap().join("a.cs").display()
                 )
             );
+        }
+    }
+
+    #[test]
+    fn skipped_files_keep_scan_order_for_any_worker_count() {
+        let dir = tempfile::tempdir().unwrap();
+        for i in 0..8 {
+            fs::write(dir.path().join(format!("a{i:02}.cs")), OK).unwrap();
+            fs::write(dir.path().join(format!("b{i:02}.cs")), "class {").unwrap();
+        }
+        let expected: Vec<String> = (0..8).map(|i| format!("b{i:02}.cs")).collect();
+        let sequential = scan(&ScanOptions {
+            skip_unparsed: true,
+            ..options(dir.path(), 1)
+        })
+        .unwrap();
+        for jobs in 1..=4 {
+            let result = scan(&ScanOptions {
+                skip_unparsed: true,
+                ..options(dir.path(), jobs)
+            })
+            .unwrap();
+            let report = result.report();
+            assert_eq!(report.files_scanned, 16);
+            assert_eq!(report.functions.len(), 8);
+            let paths: Vec<&str> = report.skipped.iter().map(|s| s.path.as_str()).collect();
+            assert_eq!(paths, expected, "jobs {jobs}");
+            assert!(report
+                .skipped
+                .iter()
+                .all(|s| s.message == format!("invalid C# syntax in {}", s.path)));
+            assert_eq!(json(&result), json(&sequential), "jobs {jobs}");
         }
     }
 

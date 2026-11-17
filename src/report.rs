@@ -34,6 +34,14 @@ pub struct Item {
     /// Calculated CRAP score.
     pub crap: f64,
 }
+/// A selected source skipped because it does not parse.
+#[derive(Debug, Serialize)]
+pub struct SkippedFile {
+    /// Root-relative source path.
+    pub path: String,
+    /// Syntax error message that would have failed the scan.
+    pub message: String,
+}
 /// Ordered scan results and the resulting policy decision.
 #[derive(Debug, Serialize)]
 pub struct Report {
@@ -41,6 +49,9 @@ pub struct Report {
     pub threshold: f64,
     /// Number of selected source files.
     pub files_scanned: usize,
+    /// Selected sources skipped because they did not parse, in scan order.
+    #[serde(rename = "skipped_files", skip_serializing_if = "Vec::is_empty")]
+    pub skipped: Vec<SkippedFile>,
     /// Whether every callable has coverage evidence.
     pub coverage_complete: bool,
     /// Callables in deterministic scan order.
@@ -80,6 +91,19 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
                 .map_or_else(|| "absent".into(), |v| format!("{:.1}%", v * 100.0)),
             i.crap
         ));
+    }
+    if !report.skipped.is_empty() {
+        s.push_str(&format!(
+            "skipped {} unparsed file(s):\n",
+            report.skipped.len()
+        ));
+        for file in &report.skipped {
+            s.push_str(&format!(
+                "  {}: {}\n",
+                terminal_safe(&file.path),
+                terminal_safe(&file.message)
+            ));
+        }
     }
     s
 }
