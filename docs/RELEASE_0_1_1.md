@@ -36,6 +36,77 @@ PRs [#39](https://github.com/RuiCostafrg/dotnet-crap/pull/39) and
 changes in that comparison. This is not a claim of full Roslyn parity, complete
 statement coverage, or implementation of the remaining feature backlog.
 
+## Changes after the audit endpoint
+
+These merged after the comparison endpoint above and are not yet covered by an
+audit of the final tree.
+
+### Rust library API break
+
+`ScanOptions` and `CollectOptions` gained public fields: `jobs`
+([#46](https://github.com/RuiCostafrg/dotnet-crap/pull/46)), `defines`
+([#48](https://github.com/RuiCostafrg/dotnet-crap/pull/48)) and `skip_unparsed`
+([#52](https://github.com/RuiCostafrg/dotnet-crap/pull/52)). `Report` gained
+`skipped`. Code that builds these structs with a literal listing every field no
+longer compiles. To migrate:
+
+- `ScanOptions`: end the literal with `..Default::default()`, or add
+  `jobs: None, defines: Vec::new(), skip_unparsed: false`.
+- `CollectOptions` has no `Default`: add
+  `jobs: None, defines: Vec::new(), skip_unparsed: false`.
+- Code that builds a `Report` must add `skipped: Vec::new()`.
+
+These values keep the previous behaviour. Because this breaks the 0.x public
+API, Cargo semver calls for 0.2.0 rather than 0.1.1. Choosing the version is an
+owner decision; these notes do not change it.
+
+### Behaviour
+
+- **Directive conditions add no complexity**
+  ([#51](https://github.com/RuiCostafrg/dotnet-crap/pull/51)): the `&&` and
+  `||` in an `#if` or `#elif` condition inside a callable no longer add a
+  decision. Affected callables lose one complexity point per such operator, so
+  CRAP scores can only go down.
+- **Conditional compilation fallback**
+  ([#48](https://github.com/RuiCostafrg/dotnet-crap/pull/48)): a file that
+  does not parse as written is parsed again with inactive `#if` branches
+  blanked, using the symbols from the new repeatable `--define`. Files that
+  already parsed score exactly as before. On sampled real repositories,
+  unparseable files dropped from 66 to 0 (Newtonsoft.Json), 4 to 0 (Polly) and
+  18 to 1 (Serilog). See [conditional compilation](PREPROCESSOR.md).
+- **`--skip-unparsed`**
+  ([#52](https://github.com/RuiCostafrg/dotnet-crap/pull/52)): opt-in, on
+  `scan` and `collect`. Files that still fail with a syntax error are listed
+  in text, JSON (`skipped_files`) and SARIF (`toolExecutionNotifications`)
+  output instead of failing the run. Without the flag, or when nothing is
+  skipped, output is byte-identical to before.
+- **`--jobs N`** ([#46](https://github.com/RuiCostafrg/dotnet-crap/pull/46)):
+  files are scanned in parallel, one worker per CPU by default. The report,
+  its order and the error returned are identical for any value.
+
+### Performance
+
+From the hosted Benchmark workflow, with base and head measured in the same job:
+
+- Single-pass syntax traversal
+  ([#36](https://github.com/RuiCostafrg/dotnet-crap/pull/36)): scan wall time
+  0.88–0.92× on Ubuntu.
+- `collect` quick wins and single scan
+  ([#38](https://github.com/RuiCostafrg/dotnet-crap/pull/38),
+  [#45](https://github.com/RuiCostafrg/dotnet-crap/pull/45)): `collect` wall
+  time 0.59–0.85×.
+- Parallel scan ([#46](https://github.com/RuiCostafrg/dotnet-crap/pull/46)):
+  about 2.5× faster on real repositories.
+- Streaming Cobertura reader
+  ([#47](https://github.com/RuiCostafrg/dotnet-crap/pull/47)): no DOM;
+  `collect` peak memory 18–55% lower, at 1–6% more import time on Linux.
+  Error messages are unchanged.
+
+CI: the mutation gate now runs in four shards
+([#49](https://github.com/RuiCostafrg/dotnet-crap/pull/49)) and the required
+macOS checks run on macOS 15
+([#53](https://github.com/RuiCostafrg/dotnet-crap/pull/53)).
+
 ## Pending integration
 
 The owner chose .NET-tool-first distribution and removal of npm. The npm-removal
