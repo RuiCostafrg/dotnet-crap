@@ -40,7 +40,10 @@ jobs:
         include:
           # Keep existing required-check identities while moving their runners.
           - { os: ubuntu-26.04, rid: linux-x64, executable: dotnet-crap, major: 10, check: 'dotnet-e2e (ubuntu-24.04, linux-x64, dotnet-crap)' }
-          - { os: macos-26, rid: osx-arm64, executable: dotnet-crap, major: 10, check: 'dotnet-e2e (macos-15, osx-arm64, dotnet-crap)' }
+          # The required macOS check runs on macos-15, whose hosted pool is larger;
+          # macos-26 jobs were repeatedly cancelled unstarted for lack of runners.
+          # The .NET 11 entry below keeps macos-26 covered on every PR.
+          - { os: macos-15, rid: osx-arm64, executable: dotnet-crap, major: 10, check: 'dotnet-e2e (macos-15, osx-arm64, dotnet-crap)' }
           - { os: windows-latest, rid: win-x64, executable: dotnet-crap.exe, major: 10, check: 'dotnet-e2e (windows-latest, win-x64, dotnet-crap.exe)' }
           - { os: ubuntu-26.04, rid: linux-x64, executable: dotnet-crap, major: 11, check: 'dotnet-e2e (ubuntu-26.04, .NET 11)' }
           - { os: macos-26, rid: osx-arm64, executable: dotnet-crap, major: 11, check: 'dotnet-e2e (macos-26, .NET 11)' }

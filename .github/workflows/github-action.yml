@@ -41,11 +41,11 @@ jobs:
             target: x86_64-unknown-linux-musl
             framework: MSTest
             library: Alpha.Library
-          - runner: macos-26
+          - runner: macos-15
             target: aarch64-apple-darwin
             framework: NUnit
             library: Beta.Library
-          - runner: macos-26
+          - runner: macos-15
             target: aarch64-apple-darwin
             framework: MSTest
             library: Alpha.Library
@@ -256,7 +256,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-26.04, macos-26]
+        runner: [ubuntu-26.04, macos-15]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
