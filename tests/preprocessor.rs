@@ -67,6 +67,28 @@ fn split_declaration_scans_with_and_without_its_symbol() {
 }
 
 #[test]
+fn directive_conditions_score_the_same_on_both_paths() {
+    // `Split.cs` fails to parse as written: `#if K` separates the method header
+    // from its body, so it is scored through the fallback. `Written.cs` parses
+    // as written and keeps its branch directives in the method tree.
+    let split = "class C\n{\n    int F(int x, int y)\n#if K\n    {\n#if A && B\n        if (x && y) return 1;\n#endif\n        return 0;\n    }\n#else\n    => 0;\n#endif\n}\n";
+    let written = "class C\n{\n    int F(int x, int y)\n    {\n#if A && B\n        if (x && y) return 1;\n#endif\n        return 0;\n    }\n}\n";
+    let dir = tree(&[("Split.cs", split), ("Written.cs", written)]);
+    // With K defined, both paths score the same method: base + `if` + `&&`.
+    // Neither scores the directive's own `&&`.
+    assert_eq!(
+        callables(dir.path(), &["K", "A", "B"]),
+        [(3, "F".to_owned(), 3), (3, "F".to_owned(), 3)]
+    );
+    // Without K the fallback keeps only the `#else` body, while the file that
+    // parses as written still scores its branch text.
+    assert_eq!(
+        callables(dir.path(), &["A", "B"]),
+        [(3, "F".to_owned(), 1), (3, "F".to_owned(), 3)]
+    );
+}
+
+#[test]
 fn trailing_directive_and_file_based_app_lines_scan() {
     let dir = tree(&[
         (
@@ -94,8 +116,8 @@ fn trailing_directive_and_file_based_app_lines_scan() {
 
 #[test]
 fn files_that_parse_as_written_ignore_defines() {
-    // Both branches are scored as written, and `#if A && B` keeps its
-    // decision point, exactly as before the fallback existed.
+    // Both branches are scored as written, while `#if A && B` adds no decision
+    // point, just as on the fallback path.
     let text = "class C\n{\n#if A\n    int F() { return 1; }\n#else\n    int F() { return 2; }\n#endif\n    int G()\n    {\n#if A && B\n        return 1;\n#endif\n        return 0;\n    }\n}\n";
     let dir = tree(&[("C.cs", text)]);
     let plain = scan(&options(dir.path(), &[])).unwrap();
@@ -111,7 +133,7 @@ fn files_that_parse_as_written_ignore_defines() {
         [
             (4, "F".to_owned(), 1),
             (6, "F".to_owned(), 1),
-            (8, "G".to_owned(), 2)
+            (8, "G".to_owned(), 1)
         ]
     );
 }

@@ -69,14 +69,12 @@ listed as skipped, while every other error still fails the scan. A file that
 parses only through the fallback is then analysed like any other file, so it
 can report a resource-limit error instead of the syntax error.
 
-## The same code can score differently on the two paths
+## Directive conditions add no decision points
 
-The grammar reads an `#if` inside a method body as part of the method, and an
-`#if A && B` there adds one decision point for its `&&` on the parse-as-written
-path. On the fallback path the directive line is blank, so the same method
-scores one less. A file moves from one path to the other when an unrelated
-part of it starts or stops parsing as written. This grammar quirk is tracked
-for removal in a separate change.
+The compiler resolves `#if` and `#elif` conditions before the program runs, so
+their `&&` and `||` never add a decision point on either path. Only code inside
+the branches is scored, and the same method scores the same as written or
+through the fallback.
 
 ## Symbols
 
