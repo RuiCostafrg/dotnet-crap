@@ -115,8 +115,10 @@ gh api repos/RuiCostafrg/<repo>/private-vulnerability-reporting
 ### .NET 11 CI matrix
 
 The .NET 10 Linux/macOS/Windows check names above are deliberately retained even
-though CI now runs Ubuntu 26.04 and macOS 26. These are compatibility names for
-the existing ruleset, not runner-version claims. New `.NET 11` checks run on all
+though CI now runs Ubuntu 26.04. These are compatibility names for the existing
+ruleset, not runner-version claims. The required .NET 10 macOS check runs on
+macOS 15 because its hosted pool is larger (macOS 26 jobs were repeatedly
+cancelled before starting); the .NET 11 macOS check runs on macOS 26. New `.NET 11` checks run on all
 three platforms. Before treating .NET 11 as a protected merge gate, the owner
 should add `dotnet-e2e (ubuntu-26.04, .NET 11)` and
 `dotnet-e2e (macos-26, .NET 11)` to required checks. This PR does not change
