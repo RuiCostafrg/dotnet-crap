@@ -797,6 +797,107 @@ fn namespace_shadowing_matches_the_dom() {
     }
 }
 
+/// Namespace interning stops exactly where roxmltree's does. Each `<b>` holds
+/// one distinct declaration; `xml` is predeclared, so `u16::MAX` declarations
+/// fit and one more does not.
+#[test]
+fn namespace_interning_limit_matches_the_dom() {
+    let report = |count: usize| {
+        format!(
+            "<coverage>{}</coverage>",
+            (0..count)
+                .map(|i| format!("<b xmlns:p='u{i}'/>"))
+                .collect::<String>()
+        )
+    };
+    for count in [65_534, 65_535] {
+        let text = report(count);
+        assert!(
+            dom_oracle::parse_document(&text, super::NODES_LIMIT).is_ok(),
+            "the DOM must accept {count} distinct declarations"
+        );
+        assert!(
+            super::check_document(&text, super::NODES_LIMIT).is_ok(),
+            "the streaming reader must accept {count} distinct declarations"
+        );
+    }
+    let text = report(65_536);
+    assert!(
+        dom_oracle::parse_document(&text, super::NODES_LIMIT).is_err(),
+        "the DOM must reject 65536 distinct declarations"
+    );
+    assert!(
+        super::check_document(&text, super::NODES_LIMIT).is_err(),
+        "the streaming reader must reject 65536 distinct declarations"
+    );
+}
+
+/// Only an actual `<package>` child of `<packages>` is a package record.
+#[test]
+fn package_children_are_counted_by_local_name() {
+    let env = Env::new();
+    for text in [
+        "<coverage><packages><not-package/></packages></coverage>",
+        "<coverage><packages><not-package/><package/></packages></coverage>",
+        "<coverage><packages><classes/><package/></packages></coverage>",
+    ] {
+        env.assert_same(text);
+    }
+}
+
+/// `xml:` attributes resolve to the namespace every document predeclares.
+#[test]
+fn xml_prefix_attributes_resolve_without_a_declaration() {
+    let env = Env::new();
+    for text in [
+        "<coverage xml:lang='en'><packages/></coverage>",
+        "<coverage xml:space='preserve'><sources><source>src</source></sources><packages/></coverage>",
+        "<coverage><packages><package><classes><class filename='src/A.cs' xml:lang='en'><lines/></class></classes></package></packages></coverage>",
+    ] {
+        env.assert_same(text);
+    }
+}
+
+/// A source prefix made only of carriage returns is still normalized as the DOM
+/// normalizes it, even though it then fails as an empty prefix.
+#[test]
+fn source_text_line_ends_decode_like_the_dom() {
+    let env = Env::new();
+    for prefix in ["\r", "\r\r", "\r\r\r", "\r\n", "a\r", "a\r\rb"] {
+        let text =
+            format!("<coverage><sources><source>{prefix}</source></sources><packages/></coverage>");
+        env.assert_same(&text);
+    }
+}
+
+/// Every predefined entity decodes, in text and in attribute values.
+#[test]
+fn predefined_references_decode_in_text_and_attributes() {
+    let env = Env::new();
+    for text in [
+        "<coverage a='&quot;&apos;&gt;&lt;&amp;'><packages/></coverage>",
+        "<coverage><sources><source>&quot;&apos;&gt;&lt;&amp;</source></sources><packages/></coverage>",
+        "<coverage><packages><package><classes><class filename='&quot;A&amp;B&quot;.cs'><lines/></class></classes></package></packages></coverage>",
+        "<coverage>&quot;&apos;&gt;</coverage>",
+    ] {
+        env.assert_same(text);
+    }
+}
+
+/// A `?` in processing-instruction data is text, not the start of `?>`.
+#[test]
+fn processing_instruction_data_may_contain_question_marks() {
+    let env = Env::new();
+    for text in [
+        "<coverage><?pi a?b?></coverage>",
+        "<coverage><?pi??></coverage>",
+        "<?pi a?b?><coverage/>",
+        "<coverage><?pi a?b?><packages><package><classes><class filename='src/A.cs'><lines><line number='1' hits='1'/></lines></class></classes></package></packages></coverage>",
+    ] {
+        env.assert_same(text);
+    }
+}
+
 /// Re-declaring one prefix at every level stays linear: each lookup is O(1),
 /// not a scan of every live declaration (that shape took minutes before).
 #[test]
