@@ -519,6 +519,8 @@ fn single_pass(
     let mut open: Vec<Open> = Vec::new();
     let mut visited = 0usize;
     let mut depth = 0usize;
+    // Id of the most recent directive condition, which the walk never enters.
+    let mut skip: Option<usize> = None;
     'visit: loop {
         let node = cursor.node();
         count(&mut visited, traversal_budget)?;
@@ -563,18 +565,15 @@ fn single_pass(
             });
         }
         // Descend to the first named child; anonymous tokens are skipped, never entered.
-        // A directive condition is compile-time only, so its subtree is skipped and
-        // the walk resumes at the directive's next named child, its branch content.
+        // A directive condition is compile-time only, so its subtree is skipped
+        // wherever it sits among the directive's children (a comment may precede it).
+        // Node ids are unique within the tree, so a stale `skip` never matches.
+        if let Some(condition) = kinds.condition(node) {
+            skip = Some(condition.id());
+        }
         if cursor.goto_first_child() {
             depth += 1;
-            let condition = kinds.condition(node).map(|condition| condition.id());
-            let descended = seek_named(&mut cursor)
-                && if Some(cursor.node().id()) == condition {
-                    cursor.goto_next_sibling() && seek_named(&mut cursor)
-                } else {
-                    true
-                };
-            if descended {
+            if seek_scored(&mut cursor, skip) {
                 continue 'visit;
             }
             cursor.goto_parent();
@@ -586,7 +585,7 @@ fn single_pass(
             if let Some(callable) = open.pop_if(|callable| callable.depth == depth) {
                 callable.finish(cov, out);
             }
-            if cursor.goto_next_sibling() && seek_named(&mut cursor) {
+            if cursor.goto_next_sibling() && seek_scored(&mut cursor, skip) {
                 continue 'visit;
             }
             if !cursor.goto_parent() {
@@ -594,6 +593,22 @@ fn single_pass(
                 return Ok(());
             }
             depth -= 1;
+        }
+    }
+}
+
+/// Move to the first named node among the current node and its following
+/// siblings, passing over the node whose id is `skip`.
+fn seek_scored(cursor: &mut TreeCursor<'_>, skip: Option<usize>) -> bool {
+    loop {
+        if !seek_named(cursor) {
+            return false;
+        }
+        if Some(cursor.node().id()) != skip {
+            return true;
+        }
+        if !cursor.goto_next_sibling() {
+            return false;
         }
     }
 }
@@ -1016,6 +1031,16 @@ mod tests {
 #endif
     } }";
         assert_eq!(score(inside), 3);
+
+        // A comment before or after the condition does not expose it.
+        let commented = "class C { void M() {
+#if /* a && b */ A && B // c && d
+        int a = 1;
+#elif /* x */ C || D
+        int b = 2;
+#endif
+    } }";
+        assert_eq!(score(commented), 1);
     }
 
     /// Hand-written source that uses every kind named in [`CLASSES`]: every callable
@@ -1048,6 +1073,11 @@ class C<T> {
         void L() { if (y) { } }
 #else
         int z = a ?? b;
+#endif
+    }
+    void O() {
+#if /* c && d */ A && B // e || f
+        int w = 1;
 #endif
     }
 }"#;
