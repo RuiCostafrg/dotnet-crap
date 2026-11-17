@@ -242,6 +242,22 @@ fn span_coverage(
     (total > 0).then(|| hit as f64 / total as f64)
 }
 
+/// A preprocessor directive's `condition` expression, which the compiler
+/// evaluates before the program runs and so contributes no decision point.
+fn directive_condition(n: Node<'_>) -> Option<Node<'_>> {
+    if matches!(n.kind(), "preproc_if" | "preproc_elif") {
+        n.child_by_field_name("condition")
+    } else {
+        None
+    }
+}
+
+/// Whether `child` is the compile-time condition of `parent`, which scoring
+/// must skip while still visiting the directive's branch content.
+fn is_directive_condition(parent: Node<'_>, child: Node<'_>) -> bool {
+    directive_condition(parent).is_some_and(|condition| condition.id() == child.id())
+}
+
 /// Syntactic role of a node kind, as the string comparisons in [`callable`] and
 /// [`decision`] classify it.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -265,6 +281,8 @@ enum Class {
     Case,
     Discard,
     LogicalOperator,
+    /// `preproc_if` or `preproc_elif`: its `condition` is not runtime code.
+    Preprocessor,
 }
 
 /// Kind names and their roles. Must stay in step with [`callable`] and [`decision`];
@@ -302,6 +320,8 @@ const CLASSES: &[(&str, Class)] = &[
     ("||", Class::LogicalOperator),
     ("??", Class::LogicalOperator),
     ("??=", Class::LogicalOperator),
+    ("preproc_if", Class::Preprocessor),
+    ("preproc_elif", Class::Preprocessor),
 ];
 
 /// Node-kind classification indexed by kind id, so the traversal dispatches on
@@ -316,6 +336,7 @@ pub(crate) struct KindTable {
     body: Option<NonZeroU16>,
     value: Option<NonZeroU16>,
     operator: Option<NonZeroU16>,
+    condition: Option<NonZeroU16>,
 }
 
 impl KindTable {
@@ -337,6 +358,7 @@ impl KindTable {
             body: language.field_id_for_name("body"),
             value: language.field_id_for_name("value"),
             operator: language.field_id_for_name("operator"),
+            condition: language.field_id_for_name("condition"),
         }
     }
 
@@ -358,6 +380,15 @@ impl KindTable {
                 field(self.value).is_some_and(|v| self.class(v) == Class::Arrow)
             }
             _ => false,
+        }
+    }
+
+    /// Same result as [`directive_condition`].
+    fn condition<'t>(&self, n: Node<'t>) -> Option<Node<'t>> {
+        if self.class(n) == Class::Preprocessor {
+            self.condition.and_then(|id| n.child_by_field_id(id.get()))
+        } else {
+            None
         }
     }
 
@@ -532,9 +563,18 @@ fn single_pass(
             });
         }
         // Descend to the first named child; anonymous tokens are skipped, never entered.
+        // A directive condition is compile-time only, so its subtree is skipped and
+        // the walk resumes at the directive's next named child, its branch content.
         if cursor.goto_first_child() {
             depth += 1;
-            if seek_named(&mut cursor) {
+            let condition = kinds.condition(node).map(|condition| condition.id());
+            let descended = seek_named(&mut cursor)
+                && if Some(cursor.node().id()) == condition {
+                    cursor.goto_next_sibling() && seek_named(&mut cursor)
+                } else {
+                    true
+                };
+            if descended {
                 continue 'visit;
             }
             cursor.goto_parent();
@@ -592,7 +632,10 @@ fn collect_reference(
             fail!(ResourceLimit, "syntax tree resource limit exceeded");
         }
         let mut cursor = n.walk();
-        let children: Vec<_> = n.named_children(&mut cursor).collect();
+        let children: Vec<_> = n
+            .named_children(&mut cursor)
+            .filter(|&child| !is_directive_condition(n, child))
+            .collect();
         nodes.extend(children.into_iter().rev());
         if !callable(n) {
             continue;
@@ -614,7 +657,11 @@ fn collect_reference(
                 .checked_add(decision(node, source))
                 .context(ErrorKind::ResourceLimit, "complexity overflow")?;
             let mut cursor = node.walk();
-            stack.extend(node.named_children(&mut cursor).map(|child| (child, false)));
+            stack.extend(
+                node.named_children(&mut cursor)
+                    .filter(|&child| !is_directive_condition(node, child))
+                    .map(|child| (child, false)),
+            );
         }
         // Exclude nested spans as intervals, never one allocation per source
         // line. Long overlapping local-function spans must not expand work.
@@ -938,6 +985,39 @@ mod tests {
         assert_eq!(inner_lambda.coverage, Some(3.0 / 4.0));
     }
 
+    #[test]
+    /// Directive conditions are compile-time expressions and add no decisions,
+    /// while code inside their branches is scored as usual.
+    fn directive_conditions_add_no_decisions_but_branch_code_does() {
+        let score = |source: &str| {
+            let items = collect_with_limits(source, 1_000_000, 1_000_000).unwrap();
+            assert_eq!(items.len(), 1);
+            items[0].complexity
+        };
+        let plain = "class C { void M() { int a = 1; int b = 2; int c = 3; } }";
+        let directives = "class C { void M() {
+#if A && B
+        int a = 1;
+#elif C || D
+        int b = 2;
+#else
+        int c = 3;
+#endif
+    } }";
+        assert_eq!(score(directives), score(plain));
+        assert_eq!(score(directives), 1);
+
+        // Base 1, the branch's `if`, and its `&&`: two decisions beyond the base.
+        let inside = "class C { void M() {
+#if A && B
+        if (x && y) { int a = 1; }
+#elif C || D
+        int b = 2;
+#endif
+    } }";
+        assert_eq!(score(inside), 3);
+    }
+
     /// Hand-written source that uses every kind named in [`CLASSES`]: every callable
     /// form, nested callables, every decision form, logical and other operators,
     /// comments as extras, and operator spellings inside literals and comments.
@@ -1201,7 +1281,12 @@ class C<T> {
         let language = csharp();
         let kinds = KindTable::new(&language);
         assert_eq!(kinds.classes.len(), language.node_kind_count());
-        assert!(kinds.body.is_some() && kinds.value.is_some() && kinds.operator.is_some());
+        assert!(
+            kinds.body.is_some()
+                && kinds.value.is_some()
+                && kinds.operator.is_some()
+                && kinds.condition.is_some()
+        );
         let tree = parse(EDGE);
         let mut seen = std::collections::BTreeSet::new();
         let mut cursor = tree.walk();

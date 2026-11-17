@@ -11,7 +11,8 @@ Each callable starts at one. Parentheses and relational/type/constant tests
 add no separate decision, and `not` adds none, just like ordinary comparison
 operators and Boolean negation. Nested combinators each count once, including
 those inside property and list patterns. Pattern words inside strings and
-comments do not contribute.
+comments do not contribute. Preprocessor directive conditions (`#if`/`#elif`)
+add no decision for their `&&` or `||`, because the compiler resolves them.
 
 Switch rules remain unchanged: each non-default statement case contributes
 one, each non-discard switch-expression arm contributes one, and each `when`
