@@ -78,6 +78,7 @@ fn library_defaults_match_documented_cli_defaults() {
     assert!(!opts.require_coverage);
     assert!(!opts.fail_on_empty);
     assert!(opts.paths.is_empty());
+    assert!(!opts.skip_unparsed);
 }
 
 #[test]
@@ -107,6 +108,33 @@ fn scan_has_independent_results_and_matches_cli_in_all_formats() {
     assert_equivalent(dir.path(), &opts, &["--threshold", "12"]);
     opts.threshold = 0.0;
     assert_equivalent(dir.path(), &opts, &["--threshold", "0"]);
+}
+
+#[test]
+fn skip_unparsed_reports_syntax_failures_without_failing_the_scan() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("good.cs"),
+        "class Good { int M() { return 1; } }\n",
+    )
+    .unwrap();
+    fs::write(dir.path().join("bad.cs"), "class Bad { void M( }\n").unwrap();
+    let mut opts = options(dir.path());
+    let error = scan(&opts).unwrap_err();
+    assert_eq!(error.kind(), dotnet_crap::ErrorKind::Syntax);
+    opts.skip_unparsed = true;
+    let result = scan(&opts).unwrap();
+    assert!(!result.report().failed);
+    assert_eq!(result.report().files_scanned, 2);
+    assert_eq!(result.report().functions.len(), 1);
+    assert_eq!(result.report().functions[0].file, "good.cs");
+    assert_eq!(result.report().skipped.len(), 1);
+    assert_eq!(result.report().skipped[0].path, "bad.cs");
+    assert_eq!(
+        result.report().skipped[0].message,
+        "invalid C# syntax in bad.cs"
+    );
+    assert_equivalent(dir.path(), &opts, &["--skip-unparsed"]);
 }
 
 #[test]

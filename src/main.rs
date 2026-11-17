@@ -30,6 +30,9 @@ struct Args {
     /// (repeatable; comma- or semicolon-separated lists are accepted)
     #[arg(long = "define", value_name = "SYMBOL")]
     defines: Vec<String>,
+    /// Skip files that still do not parse instead of failing the scan
+    #[arg(long)]
+    skip_unparsed: bool,
     paths: Vec<PathBuf>,
 }
 
@@ -67,6 +70,9 @@ struct CollectArgs {
     /// (repeatable; comma- or semicolon-separated lists are accepted)
     #[arg(long = "define", value_name = "SYMBOL")]
     defines: Vec<String>,
+    /// Skip files that still do not parse instead of failing the collection
+    #[arg(long)]
+    skip_unparsed: bool,
 }
 
 /// Split `--define` values on `,` and `;`, as MSBuild `DefineConstants` lists
@@ -96,6 +102,7 @@ fn execute() -> Result<bool> {
             timeout: std::time::Duration::from_secs(args.timeout_seconds),
             jobs: args.jobs,
             defines: split_defines(args.defines),
+            skip_unparsed: args.skip_unparsed,
         })?;
         Ok(false)
     } else {
@@ -114,6 +121,7 @@ fn run(args: Args) -> Result<bool> {
         paths: args.paths,
         jobs: args.jobs,
         defines: split_defines(args.defines),
+        skip_unparsed: args.skip_unparsed,
     })?;
     let format = match args.format.as_str() {
         "json" => ReportFormat::Json,

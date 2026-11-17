@@ -8,7 +8,10 @@ Gate failures retain the CLI's normal exit codes and still produce a report.
 - `DNCRAP003`: empty selection, only with `--fail-on-empty`.
 
 Passing scans produce an empty results array. A callable can have both score and
-completeness findings. Coverage semantics and safe output replacement are the same
+completeness findings. Skipped files add one `warning` notification per file to
+the run's invocation (`runs[0].invocations[0].toolExecutionNotifications`) with
+the file's root-relative location; the notification list is omitted when
+nothing is skipped. Coverage semantics and safe output replacement are the same
 as text/JSON. No coverage collector is introduced by this format.
 
 Locations use percent-encoded, root-relative UTF-8 URI paths. `%SRCROOT%` resolves

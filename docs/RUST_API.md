@@ -13,8 +13,8 @@ The documented surface is:
 dotnet_crap::{ScanOptions, scan, ReportFormat, Error, ErrorKind, Result}
 ```
 
-plus the `ScanResult`, `Report`, and `Item` types and `output::write_report`
-described below.
+plus the `ScanResult`, `Report`, `Item`, and `SkippedFile` types and
+`output::write_report` described below.
 
 ## Consuming the package
 
@@ -60,9 +60,10 @@ fn main() {
 
 `ScanOptions::default()` matches the CLI defaults: `root` is `.`, `threshold` is
 `10.0`, there is no coverage input, neither `require_coverage` nor
-`fail_on_empty` is set, `paths` is empty (which selects the whole root), and
-`jobs` is `None` (one worker per available CPU), and `defines` is empty (no
-conditional compilation symbol).
+`fail_on_empty` is set, `paths` is empty (which selects the whole root),
+`jobs` is `None` (one worker per available CPU), `defines` is empty (no
+conditional compilation symbol), and `skip_unparsed` is `false` (a syntax error
+fails the scan).
 
 ### `ScanOptions`
 
@@ -76,6 +77,7 @@ conditional compilation symbol).
 | `paths: Vec<PathBuf>` | Files or directories to select. Relative values resolve against `root`. Absolute values must be inside `root`. Empty selects `root`. |
 | `jobs: Option<NonZeroUsize>` | Worker threads for scanning and source verification, as the CLI's `--jobs`. `None` uses `std::thread::available_parallelism()` (1 if unknown). The value never changes the report, its order, or which error is returned. `Some(1)` scans on the calling thread without spawning. |
 | `defines: Vec<String>` | Conditional compilation symbols, as the CLI's `--define`. Used only for a file that does not parse as written: its `#if` groups are resolved with these symbols and it is parsed again, with line numbers and the source hash unchanged. Each must match `[A-Za-z_][A-Za-z0-9_]*`, be at most 128 characters long and not be `true` or `false` in any letter case; otherwise `scan` returns `InvalidInput`, after the root, coverage and path checks. A non-ASCII symbol is rejected, and a directive in a file with a non-ASCII or over-long symbol makes the fallback decline, because no Unicode identifier table is used. A file that parses only after resolution is then subject to the normal analysis limits, so it may report `ResourceLimit` instead of `Syntax`; while it is resolved, its text is held twice. See [conditional compilation](PREPROCESSOR.md). |
+| `skip_unparsed: bool` | Skip a selected file whose final failure is a `Syntax` error instead of returning `Err`, as the CLI's `--skip-unparsed`. A skipped file contributes no `Item`s and is listed in `Report::skipped` in selection order. Only syntax failures are skipped: I/O, decoding, resource-limit and every other error still fail the scan. Coverage entries for a skipped file are bound like those of a selected file with no callables. Defaults to `false`. |
 
 ### Worker count and determinism
 
@@ -102,9 +104,9 @@ it holds at most one file's bytes per worker.
 - **`Err(dotnet_crap::Error)`**: the scan could not produce a trustworthy result. This
   covers an invalid threshold, a missing or non-directory root, a path outside
   `root`, an unreadable file, non-UTF-8 or malformed UTF-16 source, a C# syntax
-  error in any selected file, invalid or stale coverage, a coverage line outside
-  its file, or a source that changed during the scan. The CLI reports these as
-  exit **2**.
+  error in any selected file (unless `skip_unparsed` is set), invalid or stale
+  coverage, a coverage line outside its file, or a source that changed during
+  the scan. The CLI reports these as exit **2**.
 - **`Ok(ScanResult)` with `report().failed == true`**: the scan succeeded but a
   policy gate failed (score above threshold, missing required coverage, or
   a scan with no callables and `fail_on_empty`). The CLI reports this as exit
@@ -156,10 +158,18 @@ These fields are public and match the current JSON output.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `threshold` | `f64` | The threshold used by the scan. |
-| `files_scanned` | `usize` | Number of selected `.cs` files that were parsed. |
+| `files_scanned` | `usize` | Number of selected `.cs` files. |
+| `skipped` | `Vec<SkippedFile>` | Selected sources skipped because they did not parse, in selection order. Serialized as `skipped_files`, and omitted from JSON when empty. Empty unless `skip_unparsed` is set and a file failed. |
 | `coverage_complete` | `bool` | `true` when every callable has coverage evidence. |
 | `functions` | `Vec<Item>` | Callable records in deterministic order. |
 | `failed` | `bool` | The policy decision described above. |
+
+`SkippedFile`:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `path` | `String` | Path relative to `root`, with `/` separators, as for `Item::file`. |
+| `message` | `String` | The syntax error message that would have failed the scan. |
 
 `Item`:
 
@@ -191,12 +201,16 @@ These fields are public and match the current JSON output.
   print.
 - Each returned string ends with a newline. The CLI writes exactly these bytes
   to stdout or to `--output`.
-- `Json` is the CLI's existing shape. Field names and order are unchanged.
+- `Json` is the CLI's existing shape. Field names and order are unchanged,
+  except that a non-empty skipped list adds `skipped_files` after
+  `files_scanned`.
 - `Sarif` returns an error if the canonical root cannot be represented as UTF-8.
   It emits SARIF 2.1.0. Its rule identifiers and location rules are described in
   [SARIF output](SARIF.md).
-- `Text` escapes control characters in file names and callable names. JSON and
-  SARIF carry the raw strings, so escape them in your own sinks if needed.
+- `Text` escapes control characters in file names and callable names. A
+  non-empty skipped list follows the callable lines as `skipped N unparsed
+  file(s):` and one indented `path: message` line per file. JSON and SARIF carry
+  the raw strings, so escape them in your own sinks if needed.
 - `render` uses the `require_coverage` and `fail_on_empty` values captured by
   `scan`, so SARIF and text diagnostics match the scan's policy.
 
@@ -257,8 +271,9 @@ Key points for library callers:
   ambiguous and are not resolved.
 - `scan` never runs tests. Explicit process collection is available separately via
   `collector::{CollectOptions, collect}`; see [Coverlet collection](COVERLET.md).
-  `CollectOptions::jobs` and `CollectOptions::defines` have the same meaning as
-  the `ScanOptions` fields.
+  `CollectOptions::jobs`, `CollectOptions::defines` and
+  `CollectOptions::skip_unparsed` have the same meaning as the `ScanOptions`
+  fields.
   `cobertura::parse_reports` imports line evidence without starting a process.
 
 ## Source selection and parsing limits
@@ -266,9 +281,11 @@ Key points for library callers:
 - Only `.cs` files are selected. Files ending in `.g.cs`, `.generated.cs`, or
   `.designer.cs` are skipped. Directories named `bin`, `obj`, and `.git` are
   skipped, as are symbolic links found during the walk.
-- Any syntax error in a selected file fails the whole scan. A file that fails
-  to parse as written is parsed once more with conditional compilation
-  resolved; see [conditional compilation](PREPROCESSOR.md).
+- Any syntax error in a selected file fails the whole scan, unless
+  `skip_unparsed` is set; then that file is listed in `Report::skipped` and
+  contributes no callables, while every non-syntax error still fails. A file
+  that fails to parse as written is parsed once more with conditional
+  compilation resolved; see [conditional compilation](PREPROCESSOR.md).
 - Syntax traversal budgets do not bound aggregate coverage-point visits. Dense
   coverage across deeply nested callables can repeat work; profiling and
   coverage-range optimization remain in the performance backlog.

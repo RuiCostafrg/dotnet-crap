@@ -222,6 +222,97 @@ fn rejects_duplicate_and_invalid_coverage() {
     }
 }
 #[test]
+fn skip_unparsed_skips_only_syntax_failures() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("good.cs"),
+        "class Good { int M() { return 1; } }\n",
+    )
+    .unwrap();
+    fs::write(dir.path().join("bad.cs"), "class Bad { void M( }\n").unwrap();
+    // Without the flag the scan still fails on the first syntax error.
+    let output = run(dir.path(), &[]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        "error: invalid C# syntax in bad.cs\n"
+    );
+    // Text: the valid callable, then the skipped-file list.
+    let output = run(dir.path(), &["--skip-unparsed"]);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let text = String::from_utf8(output.stdout).unwrap();
+    assert!(
+        text.contains("good.cs:1 M complexity=1 coverage=absent CRAP=2.00\n"),
+        "{text}"
+    );
+    assert!(
+        text.ends_with("skipped 1 unparsed file(s):\n  bad.cs: invalid C# syntax in bad.cs\n"),
+        "{text}"
+    );
+    // JSON: the skipped list is present only when non-empty.
+    let output = run(dir.path(), &["--skip-unparsed", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0));
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["files_scanned"], 2);
+    assert_eq!(report["functions"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        report["skipped_files"],
+        serde_json::json!([{"path": "bad.cs", "message": "invalid C# syntax in bad.cs"}])
+    );
+    // SARIF: one warning notification with the skipped file's location.
+    let output = run(dir.path(), &["--skip-unparsed", "--format", "sarif"]);
+    assert_eq!(output.status.code(), Some(0));
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(report["runs"][0]["results"].as_array().unwrap().is_empty());
+    let notifications = report["runs"][0]["invocations"][0]["toolExecutionNotifications"]
+        .as_array()
+        .unwrap();
+    assert_eq!(notifications.len(), 1);
+    assert_eq!(notifications[0]["level"], "warning");
+    assert_eq!(
+        notifications[0]["message"]["text"],
+        "invalid C# syntax in bad.cs"
+    );
+    let location = &notifications[0]["locations"][0]["physicalLocation"];
+    assert_eq!(location["artifactLocation"]["uri"], "bad.cs");
+    assert_eq!(location["artifactLocation"]["uriBaseId"], "%SRCROOT%");
+}
+
+#[test]
+fn skip_unparsed_does_not_skip_non_syntax_failures() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("good.cs"), "class Good { int M() => 1; }\n").unwrap();
+    fs::write(dir.path().join("bad_utf8.cs"), [0xffu8, 0xfe, 0x41]).unwrap();
+    let output = run(dir.path(), &["--skip-unparsed"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("invalid UTF-16 source"), "{stderr}");
+    assert!(stderr.contains("bad_utf8.cs"), "{stderr}");
+}
+
+#[test]
+fn json_has_no_skipped_files_key_without_skips() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("good.cs"), "class Good { int M() => 1; }\n").unwrap();
+    for args in [
+        vec!["--format", "json"],
+        vec!["--format", "json", "--skip-unparsed"],
+    ] {
+        let output = run(dir.path(), &args);
+        assert_eq!(output.status.code(), Some(0), "{args:?}");
+        let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert!(report.get("skipped_files").is_none(), "{args:?}");
+    }
+}
+
+#[test]
 fn jobs_rejects_zero_and_never_changes_output() {
     let dir = tempfile::tempdir().unwrap();
     for i in 0..12 {

@@ -62,9 +62,12 @@ fallback, when:
 - active text cannot be lexed with confidence (see Limits);
 - no line would change.
 
-A file that does not parse fails the whole scan, as before. A file that parses
-only through the fallback is then analysed like any other file, so it can
-report a resource-limit error instead of the syntax error.
+A file that does not parse fails the whole scan, as before, unless
+`--skip-unparsed` (or `--skip-unparsed` on `collect`, or the library's
+`skip_unparsed` field) is set; then that file contributes no callables and is
+listed as skipped, while every other error still fails the scan. A file that
+parses only through the fallback is then analysed like any other file, so it
+can report a resource-limit error instead of the syntax error.
 
 ## The same code can score differently on the two paths
 
