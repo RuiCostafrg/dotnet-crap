@@ -1637,4 +1637,55 @@ mod tests {
         }
         assert!(resolved > 300, "{resolved}");
     }
+
+    #[test]
+    fn escaped_character_literals_leave_the_rest_of_the_line_as_code() {
+        // The closing quote of `'\n'` ends the character literal, so the
+        // verbatim string after it opens and the `#if` line inside is text.
+        let text = "var c = '\\n'; var s = @\"\n#if A\nx\";\n#if A\na\n#else\nb\n#endif\n";
+        assert_eq!(
+            visible(text, &["A"]),
+            ["var c = '\\n'; var s = @\"", "#if A", "x\";", "a"]
+        );
+    }
+
+    #[test]
+    fn raw_string_closing_quotes_leave_following_code_intact() {
+        // The single-line raw string closes before the verbatim string that
+        // follows it, so the `#if` line inside that string is text.
+        let text = "var s = \"\"\"x\"\"\"; var t = @\"\n#if A\nx\";\n#if A\na\n#else\nb\n#endif\n";
+        assert_eq!(
+            visible(text, &["A"]),
+            ["var s = \"\"\"x\"\"\"; var t = @\"", "#if A", "x\";", "a"]
+        );
+    }
+
+    #[test]
+    fn format_clauses_ending_in_a_dollar_sign_are_followed() {
+        // `$` is ordinary format-clause text up to the closing brace.
+        let text = "var s = $\"{x:a$}\";\n#if A\na\n#else\nb\n#endif\n";
+        assert_eq!(visible(text, &[]), ["var s = $\"{x:a$}\";", "b"]);
+    }
+
+    #[test]
+    fn closing_brace_runs_in_raw_interpolated_strings_decline() {
+        // A `}` run in a raw interpolated string is an unfollowed form.
+        let text = "var s = $\"\"\"\na}b\n}\n\"\"\";\n#if A\nx\n#endif\n";
+        assert_eq!(resolve(text, &set(&[])), None);
+    }
+
+    #[test]
+    fn doubled_opening_braces_in_raw_interpolated_strings_decline() {
+        // Two `{` with one `$` are an unfollowed opening-brace run.
+        let text = "var s = $\"\"\"\na{{b\n}\n\"\"\";\n#if A\nx\n#endif\n";
+        assert_eq!(resolve(text, &set(&[])), None);
+    }
+
+    #[test]
+    fn doubled_closing_braces_in_interpolated_strings_are_text() {
+        // `}}` is an escaped `}`, so the string closes and the branches work.
+        let text = "var s = $\"x}}\";\n#if A\na\n#else\nb\n#endif\n";
+        assert_eq!(visible(text, &[]), ["var s = $\"x}}\";", "b"]);
+        assert_eq!(visible(text, &["A"]), ["var s = $\"x}}\";", "a"]);
+    }
 }
