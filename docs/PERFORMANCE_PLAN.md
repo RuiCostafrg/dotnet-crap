@@ -165,7 +165,7 @@ Expected from the prototype: scan CPU −22% on dense-file (separated locally),
 
 ### PR 4: parallel per-file scan
 
-*Status: not started (next).*
+*Status: merged as #46 (`--jobs N`, ordered worker pool with a byte budget).*
 
 *Opus 5.5, reviewed by Sonnet 5.5. Start from `B-parallel-scan.patch`, rebased on
 PRs 2 and 3. Files: `src/lib.rs`, new `src/par.rs`, `src/main.rs`,
@@ -208,7 +208,14 @@ PLAN step 9, not part of this experiment.
 
 ### PR 6: streaming Cobertura reader (prototype first)
 
-*Status: GO, in review on `perf/streaming-cobertura`. A two-pass pull reader with no new dependency. Local import-only probe on a compact 15.3 MB report: peak RSS 132.6 → 20.9 MB with identical evidence. Local import time is about 1.4× slower (second tokenize pass). The hosted Benchmark result on the PR is the evidence.*
+*Status: merged as #47. A two-pass pull reader with no new dependency. Local import-only probe on a compact 15.3 MB report: peak RSS 132.6 → 20.9 MB with identical evidence. Local import time is about 1.4× slower (second tokenize pass).*
+
+*Single-pass follow-up: considered, not planned. At the 16 MiB report cap the
+second pass costs on the order of 140 ms, and a few milliseconds on typical
+reports, while `collect` spends seconds to minutes in `dotnet test`. One pass
+would have to buffer class records until `<sources>` is known and hold every
+semantic error until the whole document is proven well-formed, which reworks
+the roxmltree-parity contract for well under 1% of end-to-end time.*
 
 *Opus 5.5 for a research prototype, then a decision. Files: `src/cobertura.rs`.*
 
