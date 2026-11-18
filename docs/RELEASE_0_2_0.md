@@ -1,9 +1,12 @@
-# 0.1.1 preparation (unreleased)
+# 0.2.0 preparation (unreleased)
 
 This is a source preparation milestone, not a qualified release candidate or
 permission to tag or publish. The immutable
 [v0.1.0 release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
 remains unchanged at commit `2565412e3d2326d79e98963ed0b8df7de3020659`.
+
+0.1.1 was prepared but never tagged. Its changes ship in 0.2.0, which takes a
+minor version because the Rust library API breaks (see below).
 
 ## Audited changes since v0.1.0
 
@@ -26,7 +29,7 @@ refreshed after the remaining distribution PRs integrate.
   incompatible `gh api --slurp --jq` combination and retains records beyond
   the first page. This fix does not constitute live published-path evidence.
 - **Version preparation:** Cargo manifest/lockfile and the .NET launcher
-  project declare 0.1.1. The CLI and SARIF driver obtain the version from Cargo
+  project declare 0.2.0 (originally prepared as 0.1.1). The CLI and SARIF driver obtain the version from Cargo
   at build time. The composite Action has no version default; consumers must
   explicitly choose a published version. Historical 0.1.0 test data and
   published-version examples are intentionally retained.
@@ -57,8 +60,7 @@ longer compiles. To migrate:
 - Code that builds a `Report` must add `skipped: Vec::new()`.
 
 These values keep the previous behaviour. Because this breaks the 0.x public
-API, Cargo semver calls for 0.2.0 rather than 0.1.1. Choosing the version is an
-owner decision; these notes do not change it.
+API, the owner chose 0.2.0 rather than 0.1.1, as Cargo semver requires.
 
 ### Behaviour
 
@@ -107,15 +109,15 @@ CI: the mutation gate now runs in four shards
 macOS checks run on macOS 15
 ([#53](https://github.com/RuiCostafrg/dotnet-crap/pull/53)).
 
-## Pending integration
+## Distribution
 
-The owner chose .NET-tool-first distribution and removal of npm. The npm-removal
-and NuGet publisher changes belong to separate PRs and are prerequisites for
-0.1.1 qualification; these notes do not claim they are integrated or published.
-The packaging script's version default and distribution documentation/workflows
-are owned by those PRs and must agree with the final version.
+npm distribution is removed and the .NET tool is the primary channel
+([#43](https://github.com/RuiCostafrg/dotnet-crap/pull/43)); the NuGet.org
+publisher is integrated
+([#44](https://github.com/RuiCostafrg/dotnet-crap/pull/44)). Neither is proof
+that NuGet.org publication works until the published path is verified.
 
-Follow [release integration](RELEASE_INTEGRATION.md) in order: integrate the
-reviewed prerequisites, qualify the exact final main SHA with CI, Security and
-Distribution push runs, then seek fresh owner authorization for a new tag and
-publication approvals. A successful preparation PR cannot qualify a later tree.
+Follow [release integration](RELEASE_INTEGRATION.md) in order: qualify the exact
+final main SHA with CI, Security and Distribution push runs, then tag `v0.2.0`
+at that SHA with the owner's authorization and approvals, then verify the
+published paths. A successful preparation PR cannot qualify a later tree.
