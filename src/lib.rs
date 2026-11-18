@@ -345,9 +345,8 @@ impl FileContext<'_> {
         let hash = hex::encode(Sha256::digest(&bytes));
         #[cfg(test)]
         work::count(work::Unit::Hash);
-        let source = decode_source(&bytes)
+        let source = decode_source(bytes)
             .with_context(ErrorKind::Source, || format!("decoding {}", path.display()))?;
-        drop(bytes);
         let relative = path
             .strip_prefix(self.root)
             .kind(ErrorKind::InvalidInput)?
