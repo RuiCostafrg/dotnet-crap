@@ -50,7 +50,7 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: python3 scripts/verify-nuget-release.py
       - name: Exchange GitHub OIDC for a short-lived NuGet key
-        uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
         id: login
         with:
           user: ${{ vars.NUGET_USER }}
