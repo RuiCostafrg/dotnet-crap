@@ -37,7 +37,7 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
    for the verified owner. Review policy activation/expiry warnings in NuGet's UI.
 3. The documented repository Actions allowlist currently allows GitHub-owned
    Actions and selected Rust installers. Propose adding **only**
-   `NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e` (reviewed v1, Node 24),
+   `NuGet/login@8d196754b4036150537f80ac539e15c2f1028841` (the commit behind the reviewed v1 tag, Node 24),
    if it is not already allowed. Keep SHA enforcement and all existing restrictions.
    This workflow cannot run until that action is allowed; no settings are changed here.
 4. Keep the existing `release` environment: owner reviewer `RuiCostafrg`, no admin
