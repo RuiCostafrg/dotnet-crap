@@ -2,7 +2,7 @@
 
 The `dotnet_crap` library is the scanning and rendering core behind the
 `dotnet-crap` CLI. Rust code can scan C# sources and render text, JSON, or SARIF
-reports without starting the CLI process. The source crate is version 0.1.1
+reports without starting the CLI process. The source crate is version 0.2.0
 (unreleased) and this repository has no crates.io publishing workflow, so consume
 it from a local path or a git revision. No semantic-versioning guarantee is made
 for this surface yet.

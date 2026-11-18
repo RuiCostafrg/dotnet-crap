@@ -1,6 +1,6 @@
 # Next-release integration
 
-Updated for 0.1.1 preparation on 2026-11-13. This replaces the stale
+Updated for 0.2.0 preparation on 2026-11-18. This replaces the stale
 2026-11-12 first-release audit; historical review inventories and approval
 instructions are available in Git history and are not current authorization.
 
@@ -18,13 +18,14 @@ instructions are available in Git history and are not current authorization.
 - The owner selected .NET-tool-first distribution and dropping npm. Existing
   npm 0.1.0 stages remain unapproved: do not approve them or access credentials.
   Old release and QA schedules are disabled and must remain disabled.
-- [0.1.1 preparation notes](RELEASE_0_1_1.md) describe the audited changes and
+- [0.2.0 preparation notes](RELEASE_0_2_0.md) describe the audited changes and
   score impact. Version preparation is not release-candidate qualification.
 
 ## Required ordering
 
-1. **Integrate reviewed prerequisites.** The owner must integrate the version
-   preparation, npm-removal and NuGet publisher PRs before qualification. Check
+1. **Integrate reviewed prerequisites.** The npm-removal (#43) and NuGet
+   publisher (#44) PRs are integrated; the 0.2.0 version preparation must be
+   integrated before qualification. Check
    the combined diff and version agreement across Cargo, the launcher,
    packaging defaults and release/distribution contracts. Do not infer that
    the publisher is configured or that NuGet.org publication works from a local
@@ -39,7 +40,7 @@ instructions are available in Git history and are not current authorization.
    Preserve source-qualified mutation and platform evidence with their actual
    revisions and limitations.
 3. **Future owner decision: tag and publication.** Only after the preceding
-   gates, request explicit further permission for a new `v0.1.1` tag at the
+   gates, request explicit further permission for a new `v0.2.0` tag at the
    qualified SHA and the relevant owner publication/environment approvals.
    This preparation authorizes no tags, releases, publishing, merges, new
    secrets, settings changes or environment approval. Do not reuse historical
