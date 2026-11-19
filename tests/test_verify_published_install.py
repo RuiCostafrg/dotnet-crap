@@ -41,6 +41,29 @@ class PublishedInstall(unittest.TestCase):
         path.with_name(path.name + '.sha256').write_text(f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n')
         return data
 
+    def nupkg(self, name, entries, *, signature=True):
+        path = self.root / name
+        with zipfile.ZipFile(path, 'w') as archive:
+            for entry, data in entries.items():
+                archive.writestr(entry, data)
+            if signature:
+                archive.writestr('.signature.p7s', b'nuget.org repository signature')
+        return path
+
+    def installed_tool(self, work, binary):
+        native = work / 'tool/.store/dotnet-crap/0.1.0/tools/net10.0/any/native/linux-x64/dotnet-crap'
+        native.parent.mkdir(parents=True)
+        native.write_bytes(binary)
+        native.chmod(0o600)
+        shim = work / 'tool/dotnet-crap'
+        shim.write_text('#!/bin/sh\n'
+                        'if [ "$1" = --version ]; then echo "dotnet-crap 0.1.0"; exit 0; fi\n'
+                        'while [ "$#" -gt 0 ]; do\n'
+                        '  if [ "$1" = --threshold ] && [ "$2" = 0 ]; then exit 1; fi\n'
+                        '  shift\n'
+                        'done\n')
+        shim.chmod(0o755)
+
     def test_altered_installed_binary_is_not_executed(self):
         self.archive()
         binary = self.root / 'dotnet-crap'
@@ -102,23 +125,66 @@ class PublishedInstall(unittest.TestCase):
                 self.assertEqual(command[command.index('--add-source') + 1], str(work / 'feed'))
                 self.assertEqual(kwargs['env']['NUGET_PACKAGES'], str(work / 'cache'))
                 self.assertNotIn('GH_TOKEN', kwargs['env'])
-                native = work / 'tool/.store/dotnet-crap/0.1.0/tools/net10.0/any/native/linux-x64/dotnet-crap'
-                native.parent.mkdir(parents=True)
-                native.write_bytes(binary)
-                native.chmod(0o600)
-                shim = work / 'tool/dotnet-crap'
-                shim.write_text('#!/bin/sh\n'
-                                'if [ "$1" = --version ]; then echo "dotnet-crap 0.1.0"; exit 0; fi\n'
-                                'while [ "$#" -gt 0 ]; do\n'
-                                '  if [ "$1" = --threshold ] && [ "$2" = 0 ]; then exit 1; fi\n'
-                                '  shift\n'
-                                'done\n')
-                shim.chmod(0o755)
+                self.installed_tool(work, binary)
                 return ''
             return original_run(command, **kwargs)
 
         with patch.object(install, 'run', side_effect=fake) as run:
             install.tool(self.args, work)
+        self.assertEqual(len(run.call_args_list), 4)
+
+    def test_nuget_comparison_ignores_repository_signature(self):
+        entries = {'dotnet-crap.nuspec': b'<package />', 'lib/net10.0/dotnet-crap.dll': b'payload'}
+        expected = self.nupkg('release.nupkg', entries, signature=False)
+        actual = self.nupkg('nuget.nupkg', entries)
+        install.compare_packages(expected, actual)
+
+    def test_nuget_comparison_rejects_differing_entry(self):
+        expected = self.nupkg('release.nupkg', {'dotnet-crap.nuspec': b'<package />'}, signature=False)
+        actual = self.nupkg('nuget.nupkg', {'dotnet-crap.nuspec': b'<package modified="true" />'})
+        with self.assertRaisesRegex(ValueError, 'dotnet-crap.nuspec'):
+            install.compare_packages(expected, actual)
+
+    def test_nuget_comparison_requires_repository_signature(self):
+        entries = {'dotnet-crap.nuspec': b'<package />'}
+        expected = self.nupkg('release.nupkg', entries, signature=False)
+        actual = self.nupkg('nuget.nupkg', entries, signature=False)
+        with self.assertRaisesRegex(ValueError, 'signature'):
+            install.compare_packages(expected, actual)
+
+    def test_nuget_downloads_and_installs_only_from_nuget_org(self):
+        entries = {'dotnet-crap.nuspec': b'<package />', 'lib/net10.0/dotnet-crap.dll': b'payload'}
+        self.nupkg('assets/dotnet-crap.0.1.0.nupkg', entries, signature=False)
+        binary = self.archive()
+        work = self.root / 'work'
+        work.mkdir()
+
+        def fake_download(url, destination):
+            self.assertEqual(url, 'https://api.nuget.org/v3-flatcontainer/dotnet-crap/'
+                                  '0.1.0/dotnet-crap.0.1.0.nupkg')
+            with zipfile.ZipFile(destination, 'w') as archive:
+                for entry, data in entries.items():
+                    archive.writestr(entry, data)
+                archive.writestr('.signature.p7s', b'nuget.org repository signature')
+
+        original_run = install.run
+
+        def fake(command, **kwargs):
+            if command[:3] == ['dotnet', 'tool', 'install']:
+                self.assertNotIn('--add-source', command)
+                config = (work / 'NuGet.Config').read_text()
+                self.assertIn('<clear />', config)
+                self.assertIn('https://api.nuget.org/v3/index.json', config)
+                self.assertEqual(config.count('<add '), 1)
+                self.assertEqual(kwargs['env']['NUGET_PACKAGES'], str(work / 'cache'))
+                self.assertNotIn('GH_TOKEN', kwargs['env'])
+                self.installed_tool(work, binary)
+                return ''
+            return original_run(command, **kwargs)
+
+        with patch.object(install, 'download', side_effect=fake_download), \
+                patch.object(install, 'run', side_effect=fake) as run:
+            install.nuget(self.args, work)
         self.assertEqual(len(run.call_args_list), 4)
 
 

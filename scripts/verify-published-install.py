@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise real public installers using authenticated release assets as the oracle."""
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
@@ -8,8 +9,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import urllib.request
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+NUGET_ORG = 'https://api.nuget.org/v3/index.json'
 
 
 def load(name):
@@ -53,6 +57,32 @@ def check_binary(executable, assets, targets, version, fixture):
     run([str(executable), '--root', str(fixture), '--threshold', '0'], env=env, expected=1)
 
 
+def download(url, destination):
+    request = urllib.request.Request(url, headers={'User-Agent': 'dotnet-crap-published-verification'})
+    with urllib.request.urlopen(request, timeout=120) as response:
+        destination.write_bytes(response.read())
+
+
+def compare_packages(expected, actual):
+    """Require identical contents apart from NuGet.org's repository signature."""
+    def entries(path):
+        with zipfile.ZipFile(path) as archive:
+            return {entry.filename: archive.read(entry) for entry in archive.infolist()}
+
+    expected_entries = entries(expected)
+    actual_entries = entries(actual)
+    if '.signature.p7s' not in actual_entries:
+        raise ValueError('NuGet.org package is missing the repository signature .signature.p7s')
+    expected_entries.pop('.signature.p7s', None)
+    actual_entries.pop('.signature.p7s')
+    differences = sorted(expected_entries.keys() ^ actual_entries.keys())
+    differences += sorted(name for name in expected_entries.keys() & actual_entries.keys()
+                          if hashlib.sha256(expected_entries[name]).digest()
+                          != hashlib.sha256(actual_entries[name]).digest())
+    if differences:
+        raise ValueError(f'NuGet.org package differs from the authenticated release: {differences}')
+
+
 def shell(args, work):
     home = work / 'home'
     home.mkdir()
@@ -81,17 +111,7 @@ def homebrew(args):
     check_binary(prefix / 'bin/dotnet-crap', args.assets, [args.target], args.version, args.fixture)
 
 
-def tool(args, work):
-    feed = work / 'feed'
-    feed.mkdir()
-    shutil.copyfile(args.assets / f'dotnet-crap.{args.version}.nupkg', feed / f'dotnet-crap.{args.version}.nupkg')
-    config = work / 'NuGet.Config'
-    config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
-    destination = work / 'tool'
-    env = {key: value for key, value in os.environ.items() if key not in ('GH_TOKEN', 'GITHUB_TOKEN')}
-    env['NUGET_PACKAGES'] = str(work / 'cache')
-    run(['dotnet', 'tool', 'install', 'dotnet-crap', '--tool-path', str(destination),
-         '--configfile', str(config), '--add-source', str(feed), '--version', args.version], env=env)
+def check_tool(args, destination, env):
     native_name = 'dotnet-crap.exe' if args.rid == 'win-x64' else 'dotnet-crap'
     copies = list(destination.rglob(f'native/{args.rid}/{native_name}'))
     if len(copies) != 1:
@@ -107,9 +127,38 @@ def tool(args, work):
     run([str(shim), '--root', str(args.fixture), '--threshold', '0'], env=env, expected=1)
 
 
+def install_tool(args, work, config, extra_sources):
+    destination = work / 'tool'
+    env = {key: value for key, value in os.environ.items() if key not in ('GH_TOKEN', 'GITHUB_TOKEN')}
+    env['NUGET_PACKAGES'] = str(work / 'cache')
+    run(['dotnet', 'tool', 'install', 'dotnet-crap', '--tool-path', str(destination),
+         '--configfile', str(config), *extra_sources, '--version', args.version], env=env)
+    check_tool(args, destination, env)
+
+
+def tool(args, work):
+    feed = work / 'feed'
+    feed.mkdir()
+    shutil.copyfile(args.assets / f'dotnet-crap.{args.version}.nupkg', feed / f'dotnet-crap.{args.version}.nupkg')
+    config = work / 'NuGet.Config'
+    config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+    install_tool(args, work, config, ['--add-source', str(feed)])
+
+
+def nuget(args, work):
+    version = args.version.lower()
+    package = work / f'dotnet-crap.{version}.nupkg'
+    download(f'https://api.nuget.org/v3-flatcontainer/dotnet-crap/{version}/dotnet-crap.{version}.nupkg', package)
+    compare_packages(args.assets / f'dotnet-crap.{args.version}.nupkg', package)
+    config = work / 'NuGet.Config'
+    config.write_text(f'<configuration><packageSources><clear />'
+                      f'<add key="nuget.org" value="{NUGET_ORG}" /></packageSources></configuration>')
+    install_tool(args, work, config, [])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('channel', choices=('shell', 'homebrew', 'tool'))
+    parser.add_argument('channel', choices=('shell', 'homebrew', 'tool', 'nuget'))
     parser.add_argument('--assets', required=True, type=Path)
     parser.add_argument('--version', required=True)
     parser.add_argument('--source-sha', required=True)
@@ -123,6 +172,8 @@ def main():
         parser.error('--target is required for this channel')
     if args.channel == 'tool' and not args.rid:
         parser.error('--rid is required for tool installation')
+    if args.channel == 'nuget' and not args.rid:
+        parser.error('--rid is required for NuGet.org installation')
     for name in ('GH_TOKEN', 'GITHUB_TOKEN'):
         os.environ.pop(name, None)
     with tempfile.TemporaryDirectory(prefix='published-install-') as temporary:
@@ -131,6 +182,8 @@ def main():
             shell(args, work)
         elif args.channel == 'homebrew':
             homebrew(args)
+        elif args.channel == 'nuget':
+            nuget(args, work)
         else:
             tool(args, work)
     print(json.dumps({'channel': args.channel, 'version': args.version, 'source_sha': args.source_sha,

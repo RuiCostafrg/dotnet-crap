@@ -1,12 +1,16 @@
 # Distribution design
 
-The primary installation channel is the .NET tool. GitHub binary archives,
+The primary installation channel is the .NET tool: package `dotnet-crap` 0.2.0
+is published on NuGet.org, pushed by `.github/workflows/publish-nuget.yml`
+through OIDC trusted publishing (see [NuGet publishing](NUGET_PUBLISHING.md)).
+Version 0.1.0 was never published to NuGet.org. GitHub binary archives,
 the shell installer, Homebrew formula generation and the composite GitHub
-Action remain supported distribution paths. The immutable GitHub release
-[v0.1.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
-already exists and must never be replaced or rebuilt as the same version.
-NuGet.org availability and successful live installation on each platform are
-separate claims requiring evidence.
+Action remain supported distribution paths. The immutable GitHub releases
+[v0.1.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0) and
+[v0.2.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.2.0)
+(Latest) exist and must never be replaced or rebuilt as the same version.
+Homebrew tap `RuiCostafrg/homebrew-tap` carries formula `dotnet-crap` at 0.2.0,
+synced through the tap's attested PR flow.
 
 npm distribution is retired. This repository no longer builds, installs,
 stages, publishes or verifies npm packages. Existing registry packages and
@@ -46,6 +50,7 @@ own selection.
 | `installation.yml` | `workflow_call` | Run the generated shell installer and formula against candidate archives through a temporary local tap. |
 | `github-action.yml` | `workflow_call` | Exercise the candidate Action with fresh NUnit/MSTest Coverlet coverage on Linux/macOS. |
 | `release.yml` | `v*` push, dry-run dispatch | Require qualified main CI, build and verify candidate assets, then request owner approval for GitHub publication. |
+| `publish-nuget.yml` | Dispatch on a `v*` tag after the GitHub release | Verify the immutable release `.nupkg`, then push it to NuGet.org with OIDC trusted publishing. |
 | `verify-release.yml` | dispatch or `workflow_call` | Authenticate immutable GitHub assets and install the released .NET tool on all five RIDs. |
 | `verify-published.yml` | dispatch | Call release verification, then exercise the real shell, public tap and Action. |
 
@@ -92,10 +97,9 @@ Release artifacts and verification evidence are retained for 90 days. Never
 substitute a rebuild for expired immutable bytes; inspect partial publication
 manually or use a new version.
 
-The standalone NuGet publishing workflow and its publication documentation are
-owned by a separate change, as are the next version and release notes. Integrate
-those reviewed changes before authorizing a new release. NuGet ownership and
-live installation still require their own evidence; a GitHub `.nupkg` does not
-prove NuGet.org publication. No tag, release, publication, merge, setting change,
-new secret or environment approval is authorized by this npm removal. Existing
-release and QA schedules remain disabled.
+NuGet.org publication is performed by `publish-nuget.yml`; operator preparation
+is documented in [NuGet publishing](NUGET_PUBLISHING.md). A GitHub `.nupkg` alone
+does not prove NuGet.org publication, so published checks must verify the
+registry package separately. Never substitute a rebuild for expired immutable
+bytes. Repository, registry or environment settings changes require owner
+approval. Existing release and QA schedules remain disabled.

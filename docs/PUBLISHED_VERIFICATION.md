@@ -29,7 +29,21 @@ The released `.nupkg` is installed from an isolated feed and cache on
 the installed native payload with the authenticated platform archive, then
 runs the .NET launcher through version, passing scan and failing gate checks.
 NuGet does not preserve Unix execute bits; the launcher makes its own private
-executable copy. This does not imply publication on NuGet.org.
+executable copy. This proves the release asset, not the package served by
+NuGet.org.
+
+## NuGet.org package
+
+The `nuget` job covers the same five RIDs. It downloads
+`https://api.nuget.org/v3-flatcontainer/dotnet-crap/<version>/dotnet-crap.<version>.nupkg`
+and compares it with the authenticated release package. NuGet.org adds a
+repository signature, so `.signature.p7s` is ignored except that it must exist
+in the NuGet.org copy; every other entry name and per-entry SHA-256 must be
+identical. The job then installs only from
+`https://api.nuget.org/v3/index.json` with an isolated package cache and runs
+the same version, passing-scan and failing-gate checks as the release-asset
+tool job. Enable it with `verify-nuget=true` after `publish-nuget.yml` succeeds;
+a skipped channel is not evidence that the published package works.
 
 After the tap formula merge, run all channels:
 
