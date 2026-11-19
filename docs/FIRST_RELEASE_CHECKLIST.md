@@ -1,5 +1,12 @@
 # First release follow-up
 
+> **Historical record (v0.1.0).** Do not follow this checklist for new releases.
+> npm distribution has since been retired and its packages deprecated, so every
+> npm step below (trusted publishers, staging approvals, registry installs) is
+> obsolete. Current procedures: [release integration](RELEASE_INTEGRATION.md),
+> [NuGet publishing](NUGET_PUBLISHING.md) and
+> [published verification](PUBLISHED_VERIFICATION.md).
+
 Status checked on 2026-11-12. Follow these steps in order. The owner subsequently
 authorized steps 1–3, including integration and the first release after reviewed
 checks pass. Required host review and account/2FA approvals remain in force;
