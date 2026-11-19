@@ -2,8 +2,11 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 import re
+import shlex
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -145,6 +148,17 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(summary["skipped_files"][0]["path"], "src/Bad.cs")
         self.assertIn("syntax error", summary["skipped_files"][0]["message"])
 
+    def test_threshold_count_and_gate(self):
+        summary = evaluate.summarize_report(self.report())
+        self.assertEqual(summary["threshold"], 10.0)
+        self.assertEqual(summary["crap_over_threshold"], 4)
+        self.assertEqual(summary["gate"], "fail")
+        report = self.report()
+        report.update(threshold=40.0, failed=False)
+        summary = evaluate.summarize_report(report)
+        self.assertEqual(summary["crap_over_threshold"], 2)
+        self.assertEqual(summary["gate"], "pass")
+
     def test_empty_report_does_not_divide_by_zero(self):
         summary = evaluate.summarize_report({"files_scanned": 0, "functions": []})
         self.assertEqual(summary["callables"], 0)
@@ -152,6 +166,110 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(summary["max_crap"], 0.0)
         self.assertEqual(summary["top_callables"], [])
         self.assertEqual(summary["skipped_files_count"], 0)
+
+
+class TailTests(unittest.TestCase):
+    def test_reads_only_the_last_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "log"
+            path.write_text("a" * 50 + "tail", encoding="utf-8")
+            self.assertEqual(evaluate.tail(path, 4), "tail")
+
+    def test_short_files_are_returned_whole(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "log"
+            path.write_text("short", encoding="utf-8")
+            self.assertEqual(evaluate.tail(path, 4000), "short")
+
+    def test_invalid_utf8_is_replaced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "log"
+            path.write_bytes(b"\xff\xfeok")
+            self.assertEqual(evaluate.tail(path, 2), "ok")
+
+    def test_missing_file_is_empty(self):
+        self.assertEqual(evaluate.tail(Path("/nonexistent/evaluate-projects.log")), "")
+
+
+class RunProcessTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "posix", "process groups are POSIX-only")
+    def test_timeout_kills_the_whole_process_group(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pgid_file = Path(tmp) / "pgid"
+            command = f"echo $$ > {shlex.quote(str(pgid_file))}; sleep 30 & sleep 30"
+            result = evaluate.run_process(
+                ["sh", "-c", command],
+                cwd=Path(tmp),
+                log_path=Path(tmp) / "child.log",
+                timeout=1,
+                env=evaluate.child_env(),
+            )
+            self.assertTrue(result["timed_out"])
+            self.assertIsNotNone(result["exit_code"])
+            pgid = int(pgid_file.read_text(encoding="utf-8").strip())
+            deadline = time.monotonic() + 10
+            while time.monotonic() < deadline:
+                try:
+                    os.killpg(pgid, 0)
+                except ProcessLookupError:
+                    break
+                time.sleep(0.05)
+            else:
+                self.fail("the child process group is still alive after the timeout")
+
+
+class CheckoutTests(unittest.TestCase):
+    def project(self, repository, commit):
+        return {
+            "name": "Demo",
+            "kind": "library",
+            "repository": repository,
+            "commit": commit,
+            "test": "tests/Demo.Tests/Demo.Tests.csproj",
+            "paths": ["src"],
+            "add_coverlet": [],
+            "expected_reports": 1,
+        }
+
+    def test_partial_checkout_is_removed_before_cloning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / "work"
+            repo = work / "Demo" / "repo"
+            repo.mkdir(parents=True)
+            (repo / "leftover.txt").write_text("stale", encoding="utf-8")
+            project = self.project("file:///nonexistent/evaluate-projects.git", "c" * 40)
+            with self.assertRaises(evaluate.EvaluationError):
+                evaluate.checkout(project, work, Path(tmp) / "out", evaluate.child_env(), [])
+            self.assertFalse((repo / "leftover.txt").exists())
+
+    def test_modified_checkout_is_recloned_at_the_pinned_commit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            (source / "file.txt").write_text("one", encoding="utf-8")
+
+            def git(*argv):
+                return evaluate.subprocess.run(
+                    ["git", "-C", str(source), *argv],
+                    check=True, capture_output=True, text=True,
+                ).stdout.strip()
+
+            git("init", "-q")
+            git("config", "user.email", "eval@example.invalid")
+            git("config", "user.name", "Evaluation")
+            git("add", "file.txt")
+            git("commit", "-q", "-m", "pinned")
+            commit = git("rev-parse", "HEAD")
+
+            work = Path(tmp) / "work"
+            project = self.project(source.as_uri(), commit)
+            out = Path(tmp) / "out"
+            repo = evaluate.checkout(project, work, out, evaluate.child_env(), [])
+            (repo / "file.txt").write_text("modified", encoding="utf-8")
+            (repo / "untracked.txt").write_text("scratch", encoding="utf-8")
+            repo = evaluate.checkout(project, work, out, evaluate.child_env(), [])
+            self.assertEqual((repo / "file.txt").read_text(encoding="utf-8"), "one")
+            self.assertFalse((repo / "untracked.txt").exists())
 
 
 class CommandTests(unittest.TestCase):
@@ -181,12 +299,18 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--coverage") + 1], "/tmp/c.json")
         self.assertEqual(argv[-2:], ["src", "lib"])
 
-    def test_child_environment_drops_tokens(self):
-        env = evaluate.child_env({"GH_TOKEN": "secret", "GITHUB_TOKEN": "secret", "PATH": "/bin"})
-        self.assertNotIn("GH_TOKEN", env)
-        self.assertNotIn("GITHUB_TOKEN", env)
-        self.assertEqual(env["PATH"], "/bin")
-        self.assertEqual(env["DOTNET_CLI_TELEMETRY_OPTOUT"], "1")
+    def test_child_environment_is_an_allowlist(self):
+        env = evaluate.child_env({
+            "GH_TOKEN": "x", "GITHUB_TOKEN": "x", "AWS_SECRET_ACCESS_KEY": "x",
+            "NUGET_API_KEY": "x", "DOTNET_TOKEN": "x", "NUGET_PASSWORD": "x",
+            "RANDOM_VAR": "x", "PATH": "/bin", "HOME": "/h", "CI": "true",
+            "DOTNET_ROOT": "/d", "NUGET_PACKAGES": "/n", "DOTNET_NOLOGO": "0",
+        })
+        self.assertEqual(env, {
+            "PATH": "/bin", "HOME": "/h", "CI": "true", "DOTNET_ROOT": "/d",
+            "NUGET_PACKAGES": "/n", "DOTNET_NOLOGO": "1",
+            "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+        })
 
 
 class TableTests(unittest.TestCase):
@@ -195,8 +319,8 @@ class TableTests(unittest.TestCase):
             "name": name, "kind": "library", "commit": "a" * 40,
             "files_scanned": 12, "callables": 34, "percent_with_coverage": 56.25,
             "max_crap": 72.5, "crap_over_30": 3, "skipped_files_count": 1,
-            "collect_seconds": 12.5, "collect_max_rss_kb": 204800,
-            "scan_seconds": 0.25, "scan_max_rss_kb": 51200,
+            "collect_seconds": 12.5, "collect_peak_rss_kb_largest_process": 204800,
+            "scan_seconds": 0.25, "scan_peak_rss_kb": 51200,
             "status": status, "error": error,
         }
 
@@ -213,11 +337,55 @@ class TableTests(unittest.TestCase):
 
     def test_missing_metrics_render_as_not_available(self):
         item = self.summary()
-        for key in ("files_scanned", "callables", "percent_with_coverage", "max_crap", "crap_over_30",
-                    "collect_seconds", "collect_max_rss_kb", "scan_seconds", "scan_max_rss_kb", "skipped_files_count"):
+        cells_by_column = {
+            "Files": "files_scanned", "Callables": "callables", "Covered %": "percent_with_coverage",
+            "Max CRAP": "max_crap", "CRAP > 30": "crap_over_30", "Collect s": "collect_seconds",
+            "Collect peak RSS (largest process, MiB)": "collect_peak_rss_kb_largest_process",
+            "Scan s": "scan_seconds", "Scan peak RSS (MiB)": "scan_peak_rss_kb",
+            "Skipped": "skipped_files_count",
+        }
+        for key in cells_by_column.values():
             item[key] = None
-        text = evaluate.render_table([item])
-        self.assertIn("| n/a |", text)
+        lines = evaluate.render_table([item]).splitlines()
+        header = [c.strip() for c in lines[0].strip("|").split(" | ")]
+        row = [c.strip() for c in lines[2].strip("|").split(" | ")]
+        self.assertEqual(len(header), len(row))
+        cells = dict(zip(header, row))
+        for column in cells_by_column:
+            self.assertEqual(cells[column], "n/a", column)
+        self.assertEqual(cells["Project"], "Demo")
+
+    def test_missing_summary_renders_a_missing_row(self):
+        lines = evaluate.render_table([self.summary("A")], expected=["A", "B"]).splitlines()
+        self.assertEqual(len(lines), 4)
+        self.assertIn("| B |", lines[3])
+        self.assertTrue(lines[3].rstrip().endswith("| missing |"))
+
+    def test_gate_column(self):
+        passing = self.summary("P"); passing.update(gate="pass")
+        failing = self.summary("F"); failing.update(gate="fail", crap_over_threshold=7)
+        text = evaluate.render_table([passing, failing])
+        self.assertIn("| pass |", text)
+        self.assertIn("| fail (7 over threshold) |", text)
+
+    def test_table_exit_code(self):
+        def run_table(summaries, expected):
+            with tempfile.TemporaryDirectory() as tmp:
+                for item in summaries:
+                    (Path(tmp) / f"{item['name']}.summary.json").write_text(json.dumps(item))
+                real = evaluate.load_projects
+                evaluate.load_projects = lambda *a, **k: [{"name": n} for n in expected]
+                try:
+                    with contextlib.redirect_stdout(io.StringIO()) as out:
+                        code = evaluate.main(["table", "--out", tmp])
+                finally:
+                    evaluate.load_projects = real
+            return code, out.getvalue()
+        self.assertEqual(run_table([self.summary("A")], ["A"])[0], 0)
+        code, text = run_table([self.summary("A")], ["A", "B"])
+        self.assertEqual(code, 1)
+        self.assertIn("| B |", text)
+        self.assertEqual(run_table([self.summary("A", "error", "boom")], ["A"])[0], 1)
 
     def test_load_summaries_skips_malformed_files(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -252,12 +420,15 @@ class FailureSummaryTests(unittest.TestCase):
             self.assertTrue((out / "Broken.report.json").is_file())
 
     def test_main_reports_failure_without_traceback(self):
-        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stderr(io.StringIO()):
+        stderr = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stderr(stderr):
             code = evaluate.main([
                 "run", "--project", "Broken", "--binary", str(Path(tmp) / "missing"),
                 "--work", str(Path(tmp) / "work"), "--out", str(Path(tmp) / "out"),
             ])
         self.assertEqual(code, 2)  # Broken is not in evaluation/projects.json
+        self.assertIn("unknown project", stderr.getvalue())
+        self.assertNotIn("Traceback", stderr.getvalue())
 
 
 if __name__ == "__main__":

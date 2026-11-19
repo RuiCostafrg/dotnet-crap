@@ -8,12 +8,14 @@ Usage:
 ``run`` checks out an exact commit, optionally adds ``coverlet.collector``, runs
 ``dotnet-crap collect`` (which runs ``dotnet test`` with the XPlat collector) and
 then scans the collected native coverage with ``--format json``.  Both steps run
-under GNU ``time -v`` so wall time and maximum RSS are recorded.  A failing test
-run or scan is reported in ``<out>/<name>.summary.json``; it is not a harness
-crash.  ``table`` renders every summary in a directory as Markdown.
+under GNU ``time -v`` so wall time and maximum RSS are recorded.  GNU ``time -v``
+reports the peak RSS of the largest single process it timed or waited for, not
+the sum of the whole process tree.  A failing test run or scan is reported in
+``<out>/<name>.summary.json``; it is not a harness crash.  ``table`` renders
+every summary in a directory as Markdown.
 
-Only the Python standard library is used.  GH_TOKEN and GITHUB_TOKEN are removed
-from every child environment.
+Only the Python standard library is used.  Child processes receive an allowlist
+of safe environment variables; credentials are never forwarded.
 """
 
 from __future__ import annotations
@@ -23,6 +25,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -38,6 +41,22 @@ SCAN_TIMEOUT = 300
 GIT_TIMEOUT = 600
 ADD_PACKAGE_TIMEOUT = 600
 TAIL_LIMIT = 4000
+# Matches the dotnet-crap --threshold default in src/main.rs.
+SCAN_THRESHOLD = 10.0
+ENV_ALLOWLIST = (
+    "PATH",
+    "HOME",
+    "USER",
+    "LANG",
+    "LC_ALL",
+    "TMPDIR",
+    "TEMP",
+    "TMP",
+    "CI",
+    "TERM",
+)
+ENV_PREFIXES = ("DOTNET_", "NUGET_")
+ENV_DENY_SUBSTRINGS = ("TOKEN", "SECRET", "PASSWORD", "KEY")
 
 _ELAPSED = re.compile(
     r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\):\s*(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)"
@@ -67,14 +86,17 @@ def find_project(name: str, path: Path = PROJECTS_FILE) -> dict:
 
 
 def child_env(base: dict | None = None) -> dict:
-    """Copy the environment for child processes and remove credentials."""
-    env = dict(os.environ if base is None else base)
-    for key in ("GH_TOKEN", "GITHUB_TOKEN"):
-        env.pop(key, None)
+    """Build a minimal, credential-free environment for child processes."""
+    source = os.environ if base is None else base
+    env: dict[str, str] = {}
+    for key, value in source.items():
+        name = key.upper()
+        if any(part in name for part in ENV_DENY_SUBSTRINGS):
+            continue
+        if name in ENV_ALLOWLIST or name.startswith(ENV_PREFIXES):
+            env[key] = value
     env["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1"
     env["DOTNET_NOLOGO"] = "1"
-    env["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1"
-    env["GIT_TERMINAL_PROMPT"] = "0"
     return env
 
 
@@ -95,12 +117,26 @@ def parse_time_v(text: str) -> tuple[float | None, int | None]:
 
 
 def tail(path: Path, limit: int = TAIL_LIMIT) -> str:
-    """Return the last ``limit`` characters of a log, treating it as data."""
+    """Return the last ``limit`` bytes of a log, treating it as data."""
     try:
-        text = path.read_text(encoding="utf-8", errors="replace")
+        with path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            size = handle.tell()
+            handle.seek(max(0, size - limit))
+            data = handle.read(limit)
     except OSError:
         return ""
-    return text[-limit:]
+    return data.decode("utf-8", errors="replace")
+
+
+def kill_process_group(proc: subprocess.Popen) -> None:
+    """Kill the timed process and every process in its group."""
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        proc.kill()
+    except OSError:
+        proc.kill()
 
 
 def run_process(
@@ -111,25 +147,27 @@ def run_process(
     timeout: int,
     env: dict,
 ) -> dict:
-    """Run a command with combined output captured to a log file."""
+    """Run a command in its own session with combined output captured to a log."""
     log_path.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     timed_out = False
     try:
         with log_path.open("wb") as log:
-            completed = subprocess.run(
+            proc = subprocess.Popen(
                 argv,
                 cwd=str(cwd),
                 stdin=subprocess.DEVNULL,
                 stdout=log,
                 stderr=subprocess.STDOUT,
                 env=env,
-                timeout=timeout,
+                start_new_session=True,
             )
-        code: int | None = completed.returncode
-    except subprocess.TimeoutExpired:
-        code = None
-        timed_out = True
+            try:
+                code: int | None = proc.wait(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                kill_process_group(proc)
+                code = proc.wait()
     except OSError as error:
         code = None
         log_path.write_text(f"harness: could not start {argv[0]}: {error}\n", encoding="utf-8")
@@ -174,21 +212,9 @@ def checkout(project: dict, work_dir: Path, out_dir: Path, env: dict, friction: 
     commit = project["commit"]
     repo = work_dir / name / "repo"
     log = out_dir / f"{name}.git.log"
-    if (repo / ".git").is_dir():
-        head = run_process(
-            ["git", "-C", str(repo), "rev-parse", "HEAD"],
-            cwd=repo,
-            log_path=log,
-            timeout=60,
-            env=env,
-        )
-        current = ""
-        try:
-            current = (out_dir / f"{name}.git.log").read_text(encoding="utf-8").strip()
-        except OSError:
-            pass
-        if head["exit_code"] == 0 and current == commit:
-            return repo
+    if repo.is_symlink():
+        repo.unlink()
+    elif repo.exists():
         shutil.rmtree(repo)
     repo.parent.mkdir(parents=True, exist_ok=True)
     repo.mkdir()
@@ -290,7 +316,7 @@ def scan_argv(project: dict, binary: str, repo: Path, coverage: Path, report: Pa
         str(report),
         "--skip-unparsed",
         "--threshold",
-        "10",
+        str(int(SCAN_THRESHOLD)) if SCAN_THRESHOLD.is_integer() else str(SCAN_THRESHOLD),
     ]
     argv += list(project["paths"])
     return argv
@@ -302,6 +328,8 @@ def summarize_report(report: dict) -> dict:
     callables = len(functions)
     covered = sum(1 for item in functions if item.get("coverage") is not None)
     craps = [float(item.get("crap", 0.0)) for item in functions]
+    threshold = float(report.get("threshold", SCAN_THRESHOLD))
+    over_threshold = sum(1 for value in craps if value > threshold)
     top = sorted(
         functions,
         key=lambda item: (-float(item.get("crap", 0.0)), item.get("file", ""), int(item.get("line", 0))),
@@ -314,6 +342,9 @@ def summarize_report(report: dict) -> dict:
         "percent_with_coverage": round(100.0 * covered / callables, 2) if callables else 0.0,
         "max_crap": round(max(craps), 3) if craps else 0.0,
         "crap_over_30": sum(1 for value in craps if value > 30.0),
+        "threshold": threshold,
+        "crap_over_threshold": over_threshold,
+        "gate": "fail" if report.get("failed") else "pass",
         "top_callables": [
             {
                 "name": item.get("name"),
@@ -353,16 +384,19 @@ def base_summary(project: dict) -> dict:
         "percent_with_coverage": None,
         "max_crap": None,
         "crap_over_30": None,
+        "threshold": SCAN_THRESHOLD,
+        "crap_over_threshold": None,
+        "gate": None,
         "top_callables": [],
         "skipped_files_count": None,
         "skipped_files": [],
         "coverage_complete": None,
         "report_failed": None,
         "collect_seconds": None,
-        "collect_max_rss_kb": None,
+        "collect_peak_rss_kb_largest_process": None,
         "collect_exit_code": None,
         "scan_seconds": None,
-        "scan_max_rss_kb": None,
+        "scan_peak_rss_kb": None,
         "scan_exit_code": None,
         "friction": [],
     }
@@ -374,10 +408,26 @@ def write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n", encoding="utf-8")
 
 
+def clear_outputs(out_dir: Path, name: str) -> None:
+    """Delete any previous report, summary, logs or time files for a project."""
+    stale = [
+        out_dir / f"{name}.summary.json",
+        out_dir / f"{name}.report.json",
+    ]
+    stale += sorted(out_dir.glob(f"{name}.*.log"))
+    stale += sorted(out_dir.glob(f"{name}.*.time"))
+    for path in stale:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def run_project(project: dict, binary: Path, work_dir: Path, out_dir: Path) -> dict:
     """Run the whole evaluation for one project and always return a summary."""
     out_dir.mkdir(parents=True, exist_ok=True)
     name = project["name"]
+    clear_outputs(out_dir, name)
     summary = base_summary(project)
     friction: list[str] = summary["friction"]
     env = child_env()
@@ -407,7 +457,7 @@ def run_project(project: dict, binary: Path, work_dir: Path, out_dir: Path) -> d
             friction=friction,
         )
         summary["collect_seconds"] = collect["seconds"]
-        summary["collect_max_rss_kb"] = rss
+        summary["collect_peak_rss_kb_largest_process"] = rss
         summary["collect_exit_code"] = collect["exit_code"]
         if collect["timed_out"]:
             raise EvaluationError(f"collect timed out after {COLLECT_TIMEOUT}s")
@@ -430,7 +480,7 @@ def run_project(project: dict, binary: Path, work_dir: Path, out_dir: Path) -> d
             friction=friction,
         )
         summary["scan_seconds"] = scan["seconds"]
-        summary["scan_max_rss_kb"] = rss
+        summary["scan_peak_rss_kb"] = rss
         summary["scan_exit_code"] = scan["exit_code"]
         if scan["timed_out"]:
             raise EvaluationError(f"scan timed out after {SCAN_TIMEOUT}s")
@@ -468,8 +518,8 @@ def _cell(value: object) -> str:
     return str(value).replace("\\", "\\\\").replace("|", "\\|").replace("\n", " ")
 
 
-def render_table(summaries: list[dict]) -> str:
-    """Render summaries as a Markdown table."""
+def render_table(summaries: list[dict], expected: list[str] | None = None) -> str:
+    """Render summaries as a Markdown table, including missing expected projects."""
     columns = [
         "Project",
         "Kind",
@@ -480,21 +530,39 @@ def render_table(summaries: list[dict]) -> str:
         "Max CRAP",
         "CRAP > 30",
         "Collect s",
-        "Collect RSS MB",
+        "Collect peak RSS (largest process, MiB)",
         "Scan s",
-        "Scan RSS MB",
+        "Scan peak RSS (MiB)",
         "Skipped",
+        "Gate",
         "Status",
     ]
+    present = {str(item.get("name")) for item in summaries}
+    entries = list(summaries)
+    for name in expected or []:
+        if name not in present:
+            entries.append({"name": name, "status": "missing"})
     lines = ["| " + " | ".join(columns) + " |", "|" + "|".join(["---"] * len(columns)) + "|"]
-    for item in sorted(summaries, key=lambda entry: str(entry.get("name", ""))):
-        status = "ok" if item.get("status") == "ok" else f"error: {item.get('error') or 'unknown'}"
-        rss_collect = item.get("collect_max_rss_kb")
-        rss_scan = item.get("scan_max_rss_kb")
+    for item in sorted(entries, key=lambda entry: str(entry.get("name", ""))):
+        status = item.get("status")
+        if status == "ok":
+            status_text = "ok"
+        elif status == "missing":
+            status_text = "missing"
+        else:
+            status_text = f"error: {item.get('error') or 'unknown'}"
+        rss_collect = item.get("collect_peak_rss_kb_largest_process")
+        rss_scan = item.get("scan_peak_rss_kb")
+        gate = item.get("gate")
+        if gate == "fail":
+            gate_text = f"fail ({item.get('crap_over_threshold')} over threshold)"
+        else:
+            gate_text = gate
+        commit = item.get("commit")
         row = [
             item.get("name"),
             item.get("kind"),
-            str(item.get("commit", ""))[:10],
+            str(commit)[:10] if commit else None,
             item.get("files_scanned"),
             item.get("callables"),
             f"{item['percent_with_coverage']:.1f}" if item.get("percent_with_coverage") is not None else None,
@@ -505,7 +573,8 @@ def render_table(summaries: list[dict]) -> str:
             f"{item['scan_seconds']:.1f}" if item.get("scan_seconds") is not None else None,
             f"{rss_scan / 1024:.1f}" if isinstance(rss_scan, int) else None,
             item.get("skipped_files_count"),
-            status,
+            gate_text,
+            status_text,
         ]
         lines.append("| " + " | ".join(_cell(cell) for cell in row) + " |")
     return "\n".join(lines)
@@ -554,10 +623,18 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         return 0
     summaries = load_summaries(args.out)
-    print(render_table(summaries))
+    try:
+        expected = [str(project.get("name")) for project in load_projects()]
+    except (EvaluationError, OSError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        expected = []
+    print(render_table(summaries, expected))
     if not summaries:
         print("\n_No summaries found._")
-    return 0
+    present = {str(item.get("name")) for item in summaries}
+    missing = [name for name in expected if name not in present]
+    failed = [item for item in summaries if item.get("status") == "error"]
+    return 1 if missing or failed else 0
 
 
 if __name__ == "__main__":
