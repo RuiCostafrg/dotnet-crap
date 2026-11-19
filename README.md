@@ -93,7 +93,7 @@ the trusted-publishing workflow; 0.1.0 was never published there. Pin an exact
 version in CI. See [distribution design](docs/DISTRIBUTION.md) and
 [NuGet publishing](docs/NUGET_PUBLISHING.md).
 
-npm distribution is retired; use the .NET tool or Homebrew instead.
+npm distribution is retired and its packages are deprecated on the registry; use the .NET tool or Homebrew instead.
 
 Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
 fully static musl builds that also run on Alpine). Windows is only bundled in
