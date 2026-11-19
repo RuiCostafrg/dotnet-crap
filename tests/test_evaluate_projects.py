@@ -338,7 +338,7 @@ class TableTests(unittest.TestCase):
     def test_missing_metrics_render_as_not_available(self):
         item = self.summary()
         cells_by_column = {
-            "Files": "files_scanned", "Callables": "callables", "Covered %": "percent_with_coverage",
+            "Files": "files_scanned", "Callables": "callables", "With coverage evidence %": "percent_with_coverage",
             "Max CRAP": "max_crap", "CRAP > 30": "crap_over_30", "Collect s": "collect_seconds",
             "Collect peak RSS (largest process, MiB)": "collect_peak_rss_kb_largest_process",
             "Scan s": "scan_seconds", "Scan peak RSS (MiB)": "scan_peak_rss_kb",

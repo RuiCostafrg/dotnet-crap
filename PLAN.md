@@ -319,9 +319,12 @@ or speedups from unrelated shared-runner timings.
 - [x] Stage NuGet.org releases for manual owner promotion with 2FA (#62). Takes
   effect from the first release tag containing it; then the trusted publishing
   policy moves to "Stage packages" only. See `docs/NUGET_PUBLISHING.md`.
-- [ ] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
+- [x] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
   web application and multi-project solution. Record coverage mapping limitations,
-  runtime/memory, scores and integration friction.
+  runtime/memory, scores and integration friction. See
+  [docs/EVALUATION.md](docs/EVALUATION.md): GuardClauses, CsvHelper, eShopOnWeb and
+  CleanArchitecture, reproducible with `evaluate.yml` (#64). Coverage-mapping fixes
+  found on the way: #65, #66.
 
 **Done when:** supported parity rows have automated evidence or explicit exclusions,
 and installation/publication claims reflect actual validated releases.

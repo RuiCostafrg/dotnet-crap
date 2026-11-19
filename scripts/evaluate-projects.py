@@ -547,7 +547,7 @@ def render_table(summaries: list[dict], expected: list[str] | None = None) -> st
         "Commit",
         "Files",
         "Callables",
-        "Covered %",
+        "With coverage evidence %",
         "Max CRAP",
         "CRAP > 30",
         "Collect s",
