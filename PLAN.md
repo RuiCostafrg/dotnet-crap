@@ -290,40 +290,44 @@ or speedups from unrelated shared-runner timings.
   Actions allowlist, secret scanning with push protection, Dependabot alerts,
   private vulnerability reporting and an owner-approved `release` environment.
   Windows CI runs but is not required. See `docs/SECURITY_PARITY.md`.
-- [ ] Integrate the reviewed publishing jobs from PR #16. Trusted publication
-  prerequisites and the owner-approved `release` environment are configured, and
-  `DOTNET_CRAP_PUBLISH=true`; this enables publication after the tag and approvals,
-  but does not prove that publication has happened.
-- [ ] Verify NuGet package-ID ownership, immutable assets, checksums/provenance,
-  and installed-tool behavior on all five supported release RIDs.
+- [x] Integrate the reviewed publishing jobs from PR #16. `.github/workflows/publish-nuget.yml`
+  publishes the .NET tool with OIDC trusted publishing; `dotnet-crap` 0.2.0 is
+  published on NuGet.org.
+- [x] Verify NuGet package-ID ownership, immutable assets, checksums/provenance,
+  and installed-tool behavior on all five supported release RIDs. Post-publish
+  verification on 2026-11-18 installed the release `.nupkg` on `linux-x64`,
+  `linux-arm64`, `osx-x64`, `osx-arm64` and `win-x64`.
 - [ ] Retain fresh-feed packing: reuse an existing package for retries, use a
   new stage for rebuilds, and never substitute normalized archive contents for
   exact published-byte identity.
-- [ ] Exercise the setup Action against an actual immutable release; add other
-  distribution channels only after the core release path is validated.
-- [ ] Distribution channels mirroring typescript-crap (see
-  [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)): cargo-dist 0.33.1 archives for
-  macOS and GNU/musl Linux, shell installer, Homebrew formula for
-  `RuiCostafrg/homebrew-tap`, npm main + four platform packages, and the
-  provenance-verifying GitHub Action. The upstream candidate workflow builds and
-  installs it through npm/pnpm/Yarn/Bun, the shell installer, a local Homebrew
-  tap and the Action against NUnit and MSTest projects with fresh Coverlet
-  Cobertura coverage on Ubuntu and macOS. Separate .NET installed-tool CI
-  exercises only `linux-x64`, `osx-arm64` and `win-x64`, although the package
-  supports five RIDs; `linux-arm64` and `osx-x64` still need live verification.
-  The publication prerequisites are in place (rulesets, `release` environment, npm placeholders
-  with stage-only trusted publishing, tap sync in homebrew-tap#18) and
-  `DOTNET_CRAP_PUBLISH` is set. Nothing has been published; the first tagged
-  release and its published-path verification remain. Candidate CI is green
-  at `018d2c006cc1527658715e7c450a5d56d37a3d39`; that is not live proof.
-- [ ] Automate NuGet.org publication of the .NET tool (trusted publishing) once
-  package-ID ownership is verified.
+- [x] Exercise the setup Action against actual immutable releases. For v0.2.0
+  the Action passed with NUnit, MSTest and xUnit projects on Ubuntu and macOS.
+- [x] Distribution channels (see [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)):
+  immutable GitHub releases [v0.1.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
+  (source `2565412e3d2326d79e98963ed0b8df7de3020659`) and
+  [v0.2.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.2.0)
+  (Latest, source `2267334808d014b76e363f5ceead63916f68ec11`) carry cargo-dist
+  archives for macOS and GNU/musl Linux, the shell installer, the Homebrew formula
+  and the `.nupkg`. NuGet.org has `dotnet-crap` 0.2.0. Homebrew tap
+  `RuiCostafrg/homebrew-tap` has formula `dotnet-crap` at 0.2.0, synced through
+  the tap's attested PR flow. Post-publish verification for v0.2.0 passed on
+  2026-11-18: shell installer on 4 targets, Homebrew on 3, and the Action on
+  Ubuntu and macOS. npm was retired instead of published.
+- [x] Add CI verification that installs from NuGet.org itself and compares
+  package contents with the attested release `.nupkg` (#60). The run for 0.2.0
+  passed on 2026-11-19 on all five RIDs, alongside every other channel.
+- [x] Stage NuGet.org releases for manual owner promotion with 2FA (#62). Takes
+  effect from the first release tag containing it; then the trusted publishing
+  policy moves to "Stage packages" only. See `docs/NUGET_PUBLISHING.md`.
 - [ ] Evaluate 3–5 independent C# projects at pinned revisions, including a library,
   web application and multi-project solution. Record coverage mapping limitations,
   runtime/memory, scores and integration friction.
 
 **Done when:** supported parity rows have automated evidence or explicit exclusions,
 and installation/publication claims reflect actual validated releases.
+
+The list below records the historical first-release execution order; it was
+completed for v0.1.0 and v0.2.0.
 
 First-release execution order (separate from the feature backlog numbering):
 

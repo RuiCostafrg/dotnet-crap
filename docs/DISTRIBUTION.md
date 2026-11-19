@@ -16,9 +16,10 @@ after promotion, `verify-published.yml` installs the package from NuGet.org on
 all five tool RIDs (see [published verification](PUBLISHED_VERIFICATION.md)).
 
 npm distribution is retired. This repository no longer builds, installs,
-stages, publishes or verifies npm packages. Existing registry packages and
-unapproved private 0.1.0 stages are left untouched; no stage approval or registry
-settings change is part of this transition. Historical release plans describe
+stages, publishes or verifies npm packages. The five existing registry packages
+(main and four platform packages, versions 0.0.0 and 0.1.0) were deprecated by the
+owner on 2026-11-19, so installs warn "Package no longer supported"; nothing new
+is published there. Historical release plans describe
 the previous channel set and are not instructions to approve those stages.
 
 ## Release assets (`release-assets` artifact)
