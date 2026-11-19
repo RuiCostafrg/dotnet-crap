@@ -56,6 +56,7 @@ jobs:
         with:
           user: ${{ vars.NUGET_USER }}
       - name: Stage the exact verified package on NuGet.org
+        id: stage
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
           VERSION: ${{ inputs.version }}
@@ -73,4 +74,16 @@ jobs:
             echo "- Staged on nuget.org; it is **not public and not restorable** yet."
             echo "- The owner must review and promote it on nuget.org, signed in with 2FA, before unpromoted staged content expires."
             echo "- After promotion, dispatch verify-published.yml for $VERSION."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Explain recovery when staging fails
+        if: failure() && steps.stage.outcome == 'failure'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          {
+            echo "### NuGet: staging dotnet-crap $VERSION failed"
+            echo "- NuGet may still have accepted the upload. Before any rerun, check the staged packages on nuget.org."
+            echo "- Not staged: fix the cause and rerun on the same tag."
+            echo "- Already staged: do not rerun. Review and promote it, then dispatch verify-published.yml for $VERSION."
+            echo "- See docs/NUGET_PUBLISHING.md, 'If the stage step fails'."
           } >> "$GITHUB_STEP_SUMMARY"

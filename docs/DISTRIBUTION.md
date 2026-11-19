@@ -7,9 +7,10 @@ Action remain supported distribution paths. The immutable GitHub release
 already exists and must never be replaced or rebuilt as the same version.
 The .NET tool is published on NuGet.org from 0.2.0 onward by
 `publish-nuget.yml` (see [NuGet publishing](NUGET_PUBLISHING.md)); `v0.1.0` is
-not on NuGet.org. That workflow now stages each release package privately on
-NuGet.org with `dotnet package stage push` (GA .NET SDK 11.0.100); the owner
-promotes it manually on the website with 2FA before it becomes public or
+not on NuGet.org. 0.2.0 was pushed directly by the workflow in its tag. Releases
+whose tag contains the current workflow are instead staged privately on NuGet.org
+with `dotnet package stage push` (GA .NET SDK 11.0.100); the owner promotes each
+one manually on the website with 2FA before it becomes public or
 restorable, and unpromoted staged content expires. After each release and only
 after promotion, `verify-published.yml` installs the package from NuGet.org on
 all five tool RIDs (see [published verification](PUBLISHED_VERIFICATION.md)).

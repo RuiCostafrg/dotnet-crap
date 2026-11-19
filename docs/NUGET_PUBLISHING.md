@@ -36,7 +36,11 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
    exactly `dotnet-crap`. Scope is currently "Push only new package versions";
    no unlist. Switch it to "Stage packages" only once a release tag containing
    the staging workflow exists: the workflow runs from the selected tag, so tags
-   `v0.2.0` and older still push directly.
+   `v0.2.0` and older still push directly. After the switch those older tags
+   **cannot** publish, by design: direct push is exactly what the policy removes.
+   The only such tag on NuGet.org, `v0.2.0`, is already published, and a rerun
+   would fail as a duplicate anyway. Never widen the policy back to Push to rerun
+   an old tag; release a new version instead.
 3. **Actions allowlist.** SHA enforcement stays on. Besides GitHub-owned Actions
    and the Rust installers, it allows exactly two `NuGet/login` pins, both the
    reviewed v1 code: `8d196754b4036150537f80ac539e15c2f1028841` (the commit, used
@@ -92,6 +96,21 @@ writes the staged version to the run summary. Run the `verify-published.yml`
 NuGet job only after promotion: until then the package is intentionally absent
 from the public flat container. Once this change is in a release tag, restrict
 the trusted publishing policy to the "Stage packages" scope.
+
+**If the stage step fails**, NuGet may still have accepted the upload (for
+example, the response was lost). NuGet offers no API to inspect staged packages,
+so before any rerun the owner checks the staged packages on NuGet.org:
+
+- Version **not staged**: fix the cause and rerun the workflow on the same tag.
+- Version **already staged**: do not rerun (a duplicate stage is expected to
+  fail). Review it on NuGet.org (package ID, version, validation status) and
+  promote it. The upload can only have come from this workflow's verified file,
+  because the trusted-publishing key is issued to this workflow on the release
+  tag after verification. `verify-published.yml` then proves that the promoted
+  package matches the authenticated release package entry by entry; if it does
+  not, unlist that version and release a new one.
+
+The workflow writes these instructions to the run summary when staging fails.
 
 Every registry conflict fails: **no `--skip-duplicate`**, including retries with
 identical bytes; stage behaviour for duplicate or conflicting content is
