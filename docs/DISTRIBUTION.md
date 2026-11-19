@@ -5,8 +5,11 @@ the shell installer, Homebrew formula generation and the composite GitHub
 Action remain supported distribution paths. The immutable GitHub release
 [v0.1.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
 already exists and must never be replaced or rebuilt as the same version.
-NuGet.org availability and successful live installation on each platform are
-separate claims requiring evidence.
+The .NET tool is published on NuGet.org from 0.2.0 onward by
+`publish-nuget.yml` (see [NuGet publishing](NUGET_PUBLISHING.md)); `v0.1.0` is
+not on NuGet.org. After each release, `verify-published.yml` installs the package
+from NuGet.org on all five tool RIDs (see
+[published verification](PUBLISHED_VERIFICATION.md)).
 
 npm distribution is retired. This repository no longer builds, installs,
 stages, publishes or verifies npm packages. Existing registry packages and
@@ -92,10 +95,9 @@ Release artifacts and verification evidence are retained for 90 days. Never
 substitute a rebuild for expired immutable bytes; inspect partial publication
 manually or use a new version.
 
-The standalone NuGet publishing workflow and its publication documentation are
-owned by a separate change, as are the next version and release notes. Integrate
-those reviewed changes before authorizing a new release. NuGet ownership and
-live installation still require their own evidence; a GitHub `.nupkg` does not
-prove NuGet.org publication. No tag, release, publication, merge, setting change,
-new secret or environment approval is authorized by this npm removal. Existing
+NuGet.org publication is a separate, owner-dispatched workflow on the release
+tag, gated by the `release` environment. A GitHub `.nupkg` alone does not prove
+NuGet.org publication; the NuGet job in `verify-published.yml` provides that
+evidence by comparing the registry package with the authenticated release
+package and installing it from NuGet.org only. Existing
 release and QA schedules remain disabled.

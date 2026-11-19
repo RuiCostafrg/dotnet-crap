@@ -29,15 +29,34 @@ The released `.nupkg` is installed from an isolated feed and cache on
 the installed native payload with the authenticated platform archive, then
 runs the .NET launcher through version, passing scan and failing gate checks.
 NuGet does not preserve Unix execute bits; the launcher makes its own private
-executable copy. This does not imply publication on NuGet.org.
+executable copy.
+
+The `nuget` channel verifies actual publication on nuget.org. It downloads
+`https://api.nuget.org/v3-flatcontainer/dotnet-crap/<version>/dotnet-crap.<version>.nupkg`,
+retrying for up to about ten minutes while nuget.org indexing catches up, and
+compares its ZIP entry names and entry bytes with the authenticated release
+`.nupkg`. Declared sizes are checked before decompression, so the registry copy
+may exceed the release package by at most 1 MiB. NuGet.org adds a
+repository signature, so the files differ in bytes: only `.signature.p7s` may be
+added, and it must not exist in the release asset. Any other missing, extra or
+changed entry fails. The published package is then installed with a
+`NuGet.Config` that clears every source and adds only
+`https://api.nuget.org/v3/index.json` (retried while the version propagates).
+Because the registry could answer the install differently from the earlier
+download, the package the install actually restored, and every file it extracted
+under `tools/`, are compared with the release package again before anything from
+it runs. It then receives the same payload, version and scan checks as the
+isolated-feed jobs.
 
 After the tap formula merge, run all channels:
 
 ```sh
 gh workflow run verify-published.yml --repo RuiCostafrg/dotnet-crap --ref main \
-  -f version=0.1.0 -f source-sha=<full-tagged-main-SHA> \
-  -F verify-homebrew=true
+  -f version=0.2.0 -f source-sha=<full-tagged-main-SHA> \
+  -F verify-homebrew=true -F verify-nuget=true
 ```
+
+`v0.1.0` was never published to NuGet.org; verify it with `-F verify-nuget=false`.
 
 The combined workflow includes release-asset authentication and all five tool
 RIDs, plus:
@@ -48,6 +67,9 @@ RIDs, plus:
   formula must equal the authenticated release formula before Homebrew runs it;
   the installed executable must match the archive. Linux ARM64 Homebrew is
   explicitly outside this matrix.
+- The package published on nuget.org for all five tool RIDs, compared entry by
+  entry with the authenticated release `.nupkg` and installed from a config that
+  clears all other sources.
 - The composite Action checked out at the validated release source SHA, using
   real `gh` downloads and provenance verification. NUnit, MSTest and xUnit run
   on Ubuntu/macOS, collecting fresh Coverlet Cobertura and checking both passing
@@ -56,8 +78,9 @@ RIDs, plus:
   Candidate CI separately exercises SARIF upload from an isolated main-only job.
 
 Before the formula is public, `verify-homebrew=false` allows partial verification.
-A skipped channel is not evidence that it works; full verification requires the
-tap check enabled.
+Before publication, `verify-nuget=false` skips the registry check; it is enabled
+by default. A skipped channel is not evidence that it works; full verification
+requires the tap check enabled and the package published.
 
 ## Evidence and recovery limits
 
