@@ -188,6 +188,7 @@ class PublishedInstall(unittest.TestCase):
                 self.assertNotIn('--add-source', command)
                 self.assertNotIn(str(work / 'feed'), config)
                 self.assertEqual(kwargs['env']['NUGET_PACKAGES'], str(work / 'cache'))
+                self.restore(work / 'tool', published)
                 native = work / 'tool/.store/dotnet-crap/0.1.0/tools/net10.0/any/native/linux-x64/dotnet-crap'
                 native.parent.mkdir(parents=True)
                 native.write_bytes(binary)
@@ -206,6 +207,86 @@ class PublishedInstall(unittest.TestCase):
                 patch.object(install, 'run', side_effect=fake) as run:
             install.nuget(self.args, work)
         self.assertEqual(len(run.call_args_list), 4)
+
+    def restore(self, destination, package):
+        """Lay out a package the way `dotnet tool install --tool-path` stores it."""
+        store = destination / '.store/dotnet-crap/0.1.0/dotnet-crap/0.1.0'
+        store.mkdir(parents=True, exist_ok=True)
+        (store / 'dotnet-crap.0.1.0.nupkg').write_bytes(Path(package).read_bytes())
+        with zipfile.ZipFile(package) as archive:
+            for name in archive.namelist():
+                if name.startswith('tools/'):
+                    (store / name).parent.mkdir(parents=True, exist_ok=True)
+                    (store / name).write_bytes(archive.read(name))
+        return store
+
+    def test_restored_package_and_extracted_files_must_match_the_release(self):
+        entries = {'dotnet-crap.nuspec': b'<package />', 'tools/net10.0/any/launcher.dll': b'launcher'}
+        release = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg', entries)
+        signed = self.package(self.root / 'signed.nupkg', dict(entries, **{'.signature.p7s': b'sig'}))
+        store = self.restore(self.root / 'tool', signed)
+        install.check_restored(self.args, self.root / 'tool')
+        (store / 'tools/net10.0/any/launcher.dll').write_bytes(b'swapped after the download check')
+        with self.assertRaisesRegex(ValueError, 'extracted tools/net10.0/any/launcher.dll differs'):
+            install.check_restored(self.args, self.root / 'tool')
+        other = self.package(self.root / 'other.nupkg', {'dotnet-crap.nuspec': b'<other />',
+                                                         'tools/net10.0/any/launcher.dll': b'launcher'})
+        self.restore(self.root / 'tool2', other)
+        with self.assertRaisesRegex(ValueError, 'bytes differ'):
+            install.check_restored(self.args, self.root / 'tool2')
+        with self.assertRaisesRegex(ValueError, 'restored package not found'):
+            install.check_restored(self.args, self.root / 'missing')
+        self.assertTrue(release.is_file())
+
+    def test_oversized_published_package_is_rejected_before_decompression(self):
+        release = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg', {'dotnet-crap.nuspec': b'<package />'})
+        with zipfile.ZipFile(self.root / 'bomb.nupkg', 'w', zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr('dotnet-crap.nuspec', b'<package />')
+            archive.writestr('.signature.p7s', b'\0' * (install.NUGET_SIGNATURE_LIMIT + 1))
+        with self.assertRaisesRegex(ValueError, 'uncompressed size exceeds'):
+            install.compare_packages(release, self.root / 'bomb.nupkg')
+
+    def test_download_retries_truncated_responses(self):
+        import http.client
+        calls = []
+
+        class Response(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+        def opener(url, timeout):
+            calls.append(url)
+            if len(calls) == 1:
+                raise http.client.IncompleteRead(b'partial', 10)
+            return Response(b'complete')
+
+        with patch.object(install.urllib.request, 'urlopen', side_effect=opener), \
+                patch.object(install.time, 'sleep') as sleep:
+            path = install.download('https://example.invalid/p.nupkg', self.root / 'p.nupkg', attempts=3, delay=0)
+        self.assertEqual(path.read_bytes(), b'complete')
+        self.assertEqual(len(calls), 2)
+        sleep.assert_called_once()
+
+    def test_registry_install_retries_while_the_version_propagates(self):
+        import subprocess
+        attempts = []
+
+        def fake(command, **kwargs):
+            if command[:3] == ['dotnet', 'tool', 'install']:
+                attempts.append(command)
+                if len(attempts) == 1:
+                    raise subprocess.CalledProcessError(1, command)
+                raise RuntimeError('stop after the retried install')
+            return ''
+
+        with patch.object(install, 'run', side_effect=fake), patch.object(install.time, 'sleep') as sleep:
+            with self.assertRaisesRegex(RuntimeError, 'stop after the retried install'):
+                install.tool(self.args, self.root, source=install.NUGET_ORG)
+        self.assertEqual(len(attempts), 2)
+        sleep.assert_called_once_with(install.NUGET_RETRY_SECONDS)
 
 
 if __name__ == '__main__':

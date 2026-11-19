@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise real public installers using authenticated release assets as the oracle."""
 import argparse
+import http.client
 import importlib.util
 import json
 import os
@@ -16,8 +17,11 @@ ROOT = Path(__file__).resolve().parents[1]
 NUGET_ORG = 'https://api.nuget.org/v3/index.json'
 NUGET_FLAT_CONTAINER = 'https://api.nuget.org/v3-flatcontainer'
 NUGET_SIGNATURE = '.signature.p7s'
-NUGET_ATTEMPTS = 6
-NUGET_RETRY_SECONDS = 15
+# NuGet.org can take several minutes to expose a new version everywhere.
+NUGET_ATTEMPTS = 20
+NUGET_RETRY_SECONDS = 30
+# Bound decompression: a package may add only a small repository signature.
+NUGET_SIGNATURE_LIMIT = 1 << 20
 
 
 def load(name):
@@ -97,20 +101,34 @@ def download(url, destination, *, attempts=NUGET_ATTEMPTS, delay=NUGET_RETRY_SEC
             with urllib.request.urlopen(url, timeout=120) as response, destination.open('wb') as stream:
                 shutil.copyfileobj(response, stream)
             return destination
-        except OSError as error:
+        except (OSError, http.client.HTTPException) as error:
             if attempt == attempts:
                 raise ValueError(f'cannot download {url}: {error}') from error
             time.sleep(delay)
 
 
-def zip_contents(path, *, signature):
-    """Return entry names and bytes; only the NuGet.org repository signature may appear late."""
+def zip_contents(path, *, signature, limit=None):
+    """Return entry names and bytes; only the NuGet.org repository signature may appear late.
+
+    With a limit, the declared uncompressed sizes are checked before anything is
+    decompressed, and reads stop at the declared size, so a crafted archive cannot
+    exhaust memory.
+    """
     try:
         with zipfile.ZipFile(path) as archive:
-            names = archive.namelist()
+            infos = archive.infolist()
+            names = [info.filename for info in infos]
             if len(names) != len(set(names)):
                 raise ValueError(f'{path}: duplicate ZIP entries')
-            contents = {name: archive.read(name) for name in names}
+            if limit is not None and sum(info.file_size for info in infos) > limit:
+                raise ValueError(f'{path}: uncompressed size exceeds the release package by too much')
+            contents = {}
+            for info in infos:
+                with archive.open(info) as entry:
+                    data = entry.read(info.file_size + 1)
+                if len(data) != info.file_size:
+                    raise ValueError(f'{path}: entry {info.filename} does not match its declared size')
+                contents[info.filename] = data
     except (OSError, zipfile.BadZipFile) as error:
         raise ValueError(f'{path}: not a readable NuGet package: {error}') from error
     if NUGET_SIGNATURE in contents:
@@ -123,7 +141,8 @@ def zip_contents(path, *, signature):
 def compare_packages(released, published):
     """NuGet.org adds a repository signature; compare ZIP entries instead of whole bytes."""
     expected = zip_contents(released, signature=False)
-    actual = zip_contents(published, signature=True)
+    limit = sum(len(data) for data in expected.values()) + NUGET_SIGNATURE_LIMIT
+    actual = zip_contents(published, signature=True, limit=limit)
     missing = sorted(set(expected) - set(actual))
     extra = sorted(set(actual) - set(expected))
     if missing or extra:
@@ -151,8 +170,21 @@ def tool(args, work, source=None):
     destination = work / 'tool'
     env = {key: value for key, value in os.environ.items() if key not in ('GH_TOKEN', 'GITHUB_TOKEN')}
     env['NUGET_PACKAGES'] = str(work / 'cache')
-    run(['dotnet', 'tool', 'install', 'dotnet-crap', '--tool-path', str(destination),
-         '--configfile', str(config), *add_source, '--version', args.version], env=env)
+    command = ['dotnet', 'tool', 'install', 'dotnet-crap', '--tool-path', str(destination),
+               '--configfile', str(config), *add_source, '--version', args.version]
+    # A registry may serve the package before its version metadata resolves.
+    attempts = 1 if source is None else NUGET_ATTEMPTS
+    for attempt in range(1, attempts + 1):
+        try:
+            run(command, env=env)
+            break
+        except subprocess.CalledProcessError:
+            if attempt == attempts:
+                raise
+            shutil.rmtree(destination, ignore_errors=True)
+            time.sleep(NUGET_RETRY_SECONDS)
+    if source is not None:
+        check_restored(args, destination)
     native_name = 'dotnet-crap.exe' if args.rid == 'win-x64' else 'dotnet-crap'
     copies = list(destination.rglob(f'native/{args.rid}/{native_name}'))
     if len(copies) != 1:
@@ -166,6 +198,29 @@ def tool(args, work, source=None):
         raise ValueError('installed .NET launcher reports wrong version')
     run([str(shim), '--root', str(args.fixture), '--threshold', '100', '--fail-on-empty'], env=env)
     run([str(shim), '--root', str(args.fixture), '--threshold', '0'], env=env, expected=1)
+
+
+def check_restored(args, destination):
+    """Compare what was actually restored with the release package before running it.
+
+    The registry may answer the install differently from an earlier download, so
+    the installed package and every extracted file are checked, not just the
+    native payload.
+    """
+    version = args.version.lower()
+    released = args.assets / f'dotnet-crap.{args.version}.nupkg'
+    store = destination / '.store' / 'dotnet-crap' / version / 'dotnet-crap' / version
+    restored = store / f'dotnet-crap.{version}.nupkg'
+    if not restored.is_file():
+        raise ValueError(f'restored package not found at {restored}')
+    compare_packages(released, restored)
+    with zipfile.ZipFile(released) as archive:
+        for info in archive.infolist():
+            if info.is_dir() or not info.filename.startswith('tools/'):
+                continue
+            extracted = store / info.filename
+            if not extracted.is_file() or extracted.read_bytes() != archive.read(info):
+                raise ValueError(f'extracted {info.filename} differs from the release package')
 
 
 def nuget(args, work):
