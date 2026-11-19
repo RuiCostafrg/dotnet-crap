@@ -124,18 +124,34 @@ class NugetPublisher(unittest.TestCase):
                          "github.ref_type == 'tag'", "vars.DOTNET_CRAP_NUGET_PUBLISH == 'true'",
                          'environment: release', 'persist-credentials: false'):
             self.assertIn(contract, workflow)
+        # Staging replaces direct push; the key must only come from the environment.
+        self.assertIn("dotnet-version: '11.0.100'", workflow)
+        self.assertIn('dotnet package stage push', workflow)
+        self.assertIn('--no-symbols', workflow)
+        self.assertNotIn('dotnet nuget push', workflow)
+        start = workflow.index('dotnet package stage push')
+        self.assertNotIn('--api-key', workflow[start:workflow.index('$GITHUB_STEP_SUMMARY')])
         self.assertLess(workflow.index('run: python3 scripts/verify-nuget-release.py'),
                         workflow.index('uses: NuGet/login@'))
         script = workflow.split('        run: |\n', 1)[1]
-        # The real push step must propagate a registry conflict, without skip flags.
+        # The real stage step must propagate any failure, without skip flags or inline keys.
         with tempfile.TemporaryDirectory() as directory:
             destination = Path(directory) / 'verified-nuget'
             destination.mkdir()
             package(destination)
-            mock = 'dotnet() { [[ "$*" != *--skip-duplicate* ]] || exit 98; return 23; }; export -f dotnet\n'
+            mock = ('dotnet() {\n'
+                    '  case "$*" in\n'
+                    '    "package stage push"*)\n'
+                    '      [[ "$*" != *--skip-duplicate* && "$*" != *--api-key* ]] || exit 98\n'
+                    '      return 23 ;;\n'
+                    '    *) exit 98 ;;\n'
+                    '  esac\n'
+                    '}\n'
+                    'export -f dotnet\n')
             result = subprocess.run(['bash', '-euo', 'pipefail', '-c', mock + script],
-                                    cwd=directory, env=dict(os.environ, VERSION=VERSION, NUGET_API_KEY='fake'),
-                                    capture_output=True, text=True)
+                                    cwd=directory, capture_output=True, text=True,
+                                    env=dict(os.environ, VERSION=VERSION, NUGET_API_KEY='fake',
+                                             GITHUB_STEP_SUMMARY=str(Path(directory) / 'summary.md')))
             self.assertEqual(result.returncode, 23, result.stderr)
 
 

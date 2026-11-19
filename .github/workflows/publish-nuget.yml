@@ -42,7 +42,8 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: '10.0.x'
+          # dotnet package stage push first ships in GA SDK 11.0.100.
+          dotnet-version: '11.0.100'
       - name: Verify released bytes and source before requesting NuGet credentials
         env:
           GH_TOKEN: ${{ github.token }}
@@ -54,15 +55,35 @@ jobs:
         id: login
         with:
           user: ${{ vars.NUGET_USER }}
-      - name: Push the exact verified package
+      - name: Stage the exact verified package on NuGet.org
+        id: stage
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
           VERSION: ${{ inputs.version }}
         # Deliberately no --skip-duplicate: any conflict fails, even on retry.
+        # Staged packages stay private until the owner promotes them on nuget.org.
         # Never normalize/rebuild an archive to explain a byte mismatch.
         run: |
           test -n "$NUGET_API_KEY"
           cd verified-nuget
           sha256sum --check --strict "dotnet-crap.$VERSION.nupkg.sha256"
-          dotnet nuget push "dotnet-crap.$VERSION.nupkg" \
-            --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+          dotnet package stage push "dotnet-crap.$VERSION.nupkg" \
+            --source https://api.nuget.org/v3/index.json --no-symbols
+          {
+            echo "### NuGet: dotnet-crap $VERSION staged, not published"
+            echo "- Staged on nuget.org; it is **not public and not restorable** yet."
+            echo "- The owner must review and promote it on nuget.org, signed in with 2FA, before unpromoted staged content expires."
+            echo "- After promotion, dispatch verify-published.yml for $VERSION."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Explain recovery when staging fails
+        if: failure() && steps.stage.outcome == 'failure'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          {
+            echo "### NuGet: staging dotnet-crap $VERSION failed"
+            echo "- NuGet may still have accepted the upload. Before any rerun, check the staged packages on nuget.org."
+            echo "- Not staged: fix the cause and rerun on the same tag."
+            echo "- Already staged: do not rerun. Review and promote it, then dispatch verify-published.yml for $VERSION."
+            echo "- See docs/NUGET_PUBLISHING.md, 'If the stage step fails'."
+          } >> "$GITHUB_STEP_SUMMARY"
