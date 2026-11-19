@@ -33,9 +33,10 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
    `DOTNET_CRAP_PUBLISH` flag does not. No persistent API-key secret exists.
 2. **Trusted publishing policy** on NuGet.org: owner `RuiCostafrg`, repository
    `dotnet-crap`, workflow `publish-nuget.yml`, environment `release`, package
-   exactly `dotnet-crap`. Scope is Push only; no unlist and no staging scope (the
-   workflow uses the normal push path). Now that the package exists, the policy
-   should allow only new versions of existing packages, not package creation.
+   exactly `dotnet-crap`. Scope is currently "Push only new package versions";
+   no unlist. Switch it to "Stage packages" only once a release tag containing
+   the staging workflow exists: the workflow runs from the selected tag, so tags
+   `v0.2.0` and older still push directly.
 3. **Actions allowlist.** SHA enforcement stays on. Besides GitHub-owned Actions
    and the Rust installers, it allows exactly two `NuGet/login` pins, both the
    reviewed v1 code: `8d196754b4036150537f80ac539e15c2f1028841` (the commit, used
@@ -72,30 +73,47 @@ tag, `immutable=true`, and no draft/prerelease. It downloads only the released
   `DotnetTool` package type. Source identity is enforced by the signed provenance,
   not inferred from unsigned nuspec metadata.
 
-Only then does `NuGet/login` exchange OIDC. The push rechecks the checksum and
-uses that exact file, with no pack, signing, modification, install or execution of
-package contents in the credential-bearing job. Permissions are contents/read,
-attestations/read and id-token/write; no GitHub write permission is granted.
+Only then does `NuGet/login` exchange OIDC. The stage step rechecks the checksum
+and uploads that exact file with `dotnet package stage push`, with no pack,
+signing, modification, install or execution of package contents in the
+credential-bearing job. The command requires GA .NET SDK 11.0.100 (pinned in the
+workflow); the API key comes from the `NUGET_API_KEY` environment variable, not
+the command line. Permissions are contents/read, attestations/read and
+id-token/write; no GitHub write permission is granted. Staging alone makes no
+version public or restorable by anyone.
+
+## Promoting a staged release
+
+Staging is only half of publishing. After a successful run, the owner signs in to
+NuGet.org with 2FA, reviews the staged package and version, and promotes it
+manually; the website is the only promotion path. Unpromoted staged content
+expires after a period NuGet does not document, so promote promptly. The workflow
+writes the staged version to the run summary. Run the `verify-published.yml`
+NuGet job only after promotion: until then the package is intentionally absent
+from the public flat container. Once this change is in a release tag, restrict
+the trusted publishing policy to the "Stage packages" scope.
 
 Every registry conflict fails: **no `--skip-duplicate`**, including retries with
-identical bytes. Thus a different archive can never be silently accepted as a
-successful publication. NuGet repository signing can change the downloaded
-registry archive; do not normalize ZIPs or treat that difference as proof of exact
-byte identity. On conflict, stop and investigate manually. Do not delete/rebuild
-or overwrite a version. Network, authentication and missing-attestation failures
-also stop before push. The old `scripts/publish-nuget.sh` is not used by this
-workflow and retains its historical behavior for its existing consumers.
+identical bytes; stage behaviour for duplicate or conflicting content is
+undocumented, and the step fails on any non-zero exit. Thus a different archive
+can never be silently accepted as a successful publication. NuGet repository
+signing can change the downloaded registry archive; do not normalize ZIPs or
+treat that difference as proof of exact byte identity. On conflict, stop and
+investigate manually. Do not delete/rebuild or overwrite a version. Network,
+authentication and missing-attestation failures also stop before staging. The old
+`scripts/publish-nuget.sh` is not used by this workflow and retains its historical
+behavior for its existing consumers.
 
 ## Validation
 
 Run `python3 -m unittest discover -s tests -p 'test_nuget_publisher.py'` and
 `actionlint .github/workflows/publish-nuget.yml`. Offline contracts exercise source,
 release and package rejection, simulated cryptographic verification failures,
-and actual push-step conflict propagation. These do not prove live OIDC exchange,
-ID ownership, NuGet acceptance or cross-platform installation. Existing release
-packaging tests install the package before release; this publisher never rebuilds
-it. After publication, `verify-published.yml` installs the package from NuGet.org
-itself (see `docs/PUBLISHED_VERIFICATION.md`).
+and actual stage-step conflict propagation. These do not prove live OIDC exchange,
+ID ownership, NuGet acceptance, promotion or cross-platform installation. Existing
+release packaging tests install the package before release; this publisher never
+rebuilds it. After promotion, `verify-published.yml` installs the package from
+NuGet.org itself (see `docs/PUBLISHED_VERIFICATION.md`).
 
 First live run (2026-11-19): run 44478346577 passed every step (release and
 provenance verification, OIDC exchange, push). NuGet.org then served `0.2.0` in its
