@@ -85,9 +85,9 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
 ## Installation
 
-> The immutable GitHub release **v0.1.0** exists. NuGet.org availability and
-> live installation support for each channel require separate verification;
-> candidate CI alone does not prove them. Pin an exact version in CI. See
+> The current release is **v0.2.0** (immutable GitHub release). Its NuGet.org,
+> Homebrew, shell-installer and GitHub Action channels were verified after
+> publication. Pin an exact version in CI. See
 > [distribution design](docs/DISTRIBUTION.md).
 > npm distribution has been retired; existing private stages are not approved.
 
@@ -95,20 +95,25 @@ Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
 fully static musl builds that also run on Alpine). Windows is only bundled in
 the .NET tool for now.
 
-**.NET tool** (primary channel; requires a .NET 10 or .NET 11 runtime):
-
-Download `dotnet-crap.0.1.0.nupkg` from the immutable
-[v0.1.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
-into a local directory and authenticate its provenance before installing:
+**.NET tool** (primary channel; requires a .NET 10 or .NET 11 runtime), from
+[NuGet.org](https://www.nuget.org/packages/dotnet-crap):
 
 ```sh
-gh attestation verify ./download/dotnet-crap.0.1.0.nupkg --repo RuiCostafrg/dotnet-crap
-dotnet tool install --global dotnet-crap --version 0.1.0 --add-source ./download
+dotnet tool install --global dotnet-crap --version 0.2.0
 ```
 
-This uses the release package as a local feed and does not claim NuGet.org
-availability. A standalone NuGet publisher is a separate integration followup.
-See [packaging](packaging/README.md) for local package creation.
+To install the exact bytes built by the release workflow instead, download
+`dotnet-crap.0.2.0.nupkg` from the
+[v0.2.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.2.0),
+authenticate its provenance and use it as a local feed:
+
+```sh
+gh attestation verify ./download/dotnet-crap.0.2.0.nupkg --repo RuiCostafrg/dotnet-crap
+dotnet tool install --global dotnet-crap --version 0.2.0 --add-source ./download
+```
+
+See [NuGet publishing](docs/NUGET_PUBLISHING.md) and
+[packaging](packaging/README.md) for local package creation.
 
 **Homebrew** (macOS and Linux):
 
@@ -120,7 +125,7 @@ brew install RuiCostafrg/tap/dotnet-crap
 
 ```sh
 curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.1.0/dotnet-crap-installer.sh | sh
+  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.0/dotnet-crap-installer.sh | sh
 ```
 
 Or download `dotnet-crap-<target>.tar.xz` and its `.sha256` from
@@ -132,9 +137,9 @@ the build provenance with
 provenance and SHA-256, then optionally scans and uploads SARIF):
 
 ```yaml
-- uses: RuiCostafrg/dotnet-crap@<full commit SHA> # v0.1.0
+- uses: RuiCostafrg/dotnet-crap@<full commit SHA> # v0.2.0
   with:
-    version: 0.1.0
+    version: 0.2.0
     scan: true
     sarif: true
     upload-sarif: true # needs `security-events: write`

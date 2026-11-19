@@ -1,10 +1,11 @@
-# NuGet.org publisher preparation
+# NuGet.org publishing
 
-This is a reviewable proposal, not evidence of NuGet publication or package ID
-ownership. No account, repository setting, secret, environment approval, tag or
-release is created by this change. The immutable GitHub release `v0.1.0` is
-explicitly excluded. This publisher does not change Cargo versions; version bumps
-and releases require separate authorization. Old schedules remain disabled.
+`dotnet-crap` is published on NuGet.org. Version 0.2.0 was the first, pushed
+2026-11-19 by `publish-nuget.yml` run 44478346577 from tag `v0.2.0` (source
+`2267334808d014b76e363f5ceead63916f68ec11`) after owner approval of the `release`
+environment. The immutable GitHub release `v0.1.0` is explicitly excluded and is
+not on NuGet.org. This publisher does not change Cargo versions; version bumps
+and releases still require separate authorization.
 
 ## Supported authentication and first package
 
@@ -25,34 +26,30 @@ neither reserves the ID nor proves ownership; unlisted/reserved/conflicting IDs
 may still block publication. For an existing ID, obtain confirmed ownership or
 accepted co-ownership before continuing. Do not upload a placeholder version.
 
-## Owner configuration still necessary — do not apply as part of this PR
+## Current configuration
 
-1. Confirm the NuGet account/profile name and intended package owner. Organization
-   membership must be active. Set the non-secret `NUGET_USER` Actions variable
-   to the login profile name (not an email); no persistent API-key secret is used.
-2. Create a NuGet trusted publishing policy for repository owner `RuiCostafrg`,
-   repository `dotnet-crap`, workflow filename `publish-nuget.yml`, environment
-   `release`. Restrict the glob to **exactly `dotnet-crap`**. Permit creation of
-   a new package only if this is the first package; otherwise permit new versions
-   for the verified owner. Review policy activation/expiry warnings in NuGet's UI.
-3. The documented repository Actions allowlist currently allows GitHub-owned
-   Actions and selected Rust installers. Propose adding **only**
-   `NuGet/login@8d196754b4036150537f80ac539e15c2f1028841` (the commit behind the reviewed v1 tag, Node 24),
-   if it is not already allowed. Keep SHA enforcement and all existing restrictions.
-   This workflow cannot run until that action is allowed; no settings are changed here.
-4. Keep the existing `release` environment: owner reviewer `RuiCostafrg`, no admin
-   bypass, only `v*` tags. No new environment or branch exception is necessary.
-   Independently confirm those protections and immutable releases remain enabled.
-5. After separate authorization, merge this workflow, make a future version/release
-   whose tag includes it, then set the **separate repository variable** `DOTNET_CRAP_NUGET_PUBLISH=true`.
-   The existing `DOTNET_CRAP_PUBLISH` flag does not enable this publisher. Leave
-   the new variable absent/false until explicitly authorized. Nothing triggers
-   automatically on push, release, schedule or another workflow.
+1. **Actions variables.** `NUGET_USER` holds the owner's NuGet profile name (not an
+   email). `DOTNET_CRAP_NUGET_PUBLISH=true` enables the publisher; the separate
+   `DOTNET_CRAP_PUBLISH` flag does not. No persistent API-key secret exists.
+2. **Trusted publishing policy** on NuGet.org: owner `RuiCostafrg`, repository
+   `dotnet-crap`, workflow `publish-nuget.yml`, environment `release`, package
+   exactly `dotnet-crap`. Scope is Push only; no unlist and no staging scope (the
+   workflow uses the normal push path). Now that the package exists, the policy
+   should allow only new versions of existing packages, not package creation.
+3. **Actions allowlist.** SHA enforcement stays on. Besides GitHub-owned Actions
+   and the Rust installers, it allows exactly two `NuGet/login` pins, both the
+   reviewed v1 code: `8d196754b4036150537f80ac539e15c2f1028841` (the commit, used
+   by `main` since #58) and `ebc737b6fc418a6ca0073cf116ec8dc156d8b81e` (the v1
+   annotated tag object, still referenced by the workflow inside tag `v0.2.0`).
+   Remove the tag-object pin once no release tag that may be republished uses it.
+4. **`release` environment.** Owner reviewer `RuiCostafrg`, no admin bypass, only
+   `v*` tags. Confirm those protections and immutable releases remain enabled.
+5. Nothing triggers automatically on push, release, schedule or another workflow.
 
-## Authorized execution contract (future use only)
+## Publishing a release
 
 Dispatch `publish-nuget.yml` **on the selected immutable release tag**, not `main`.
-For example, for a separately approved `v0.2.0`, choose that tag in the Actions
+For example, for `v0.2.0`, choose that tag in the Actions
 UI and supply `version=0.2.0` and the full lowercase 40-character source SHA.
 Use the peeled commit SHA (the commits API), not an annotated tag object SHA.
 The tag must contain this workflow and verifier. Dispatching on `main` is skipped;
@@ -97,7 +94,13 @@ release and package rejection, simulated cryptographic verification failures,
 and actual push-step conflict propagation. These do not prove live OIDC exchange,
 ID ownership, NuGet acceptance or cross-platform installation. Existing release
 packaging tests install the package before release; this publisher never rebuilds
-it. Owner setup and the first authorized live run remain outstanding.
+it. After publication, `verify-published.yml` installs the package from NuGet.org
+itself (see `docs/PUBLISHED_VERIFICATION.md`).
+
+First live run (2026-11-19): run 44478346577 passed every step (release and
+provenance verification, OIDC exchange, push). NuGet.org then served `0.2.0` in its
+flat container, and `dotnet tool install dotnet-crap --version 0.2.0` from
+NuGet.org on the ARM64 Termux host ran and reported `dotnet-crap 0.2.0`.
 
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
