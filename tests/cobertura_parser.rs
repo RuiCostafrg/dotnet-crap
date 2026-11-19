@@ -290,6 +290,75 @@ fn absolute_files_outside_the_root_are_ignored() {
 }
 
 #[test]
+/// Coverlet names the test SDK's generated program through a `<source>` prefix
+/// in the NuGet package cache and a relative filename (seen in eShopOnWeb). The
+/// file exists outside the root, so it is ignored and in-root evidence is kept.
+fn prefixed_files_outside_the_root_are_ignored() {
+    let cache = tempfile::tempdir().unwrap();
+    fs::write(
+        cache.path().join("Microsoft.NET.Test.Sdk.Program.cs"),
+        "a\nb\n",
+    )
+    .unwrap();
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    let prefixes = [
+        format!("{}/", fixture.root().display()),
+        format!("{}/", cache.path().display()),
+    ];
+    fixture.report(&document(
+        &prefixes,
+        &[
+            class("Microsoft.NET.Test.Sdk.Program.cs", &[(1, 1)]),
+            class("A.cs", &[(1, 4)]),
+        ],
+    ));
+
+    let parsed = fixture.parse().unwrap();
+    assert_eq!(parsed.len(), 1, "{parsed:?}");
+    assert_eq!(parsed.get("A.cs").unwrap(), &BTreeMap::from([(1, 4)]));
+}
+
+#[test]
+/// When one prefix resolves inside the root and another to a real file outside
+/// it, the in-root file owns the evidence; the outside copy is not ambiguity.
+fn in_root_resolution_wins_over_an_outside_file() {
+    let outside = tempfile::tempdir().unwrap();
+    fs::write(outside.path().join("A.cs"), "a\nb\n").unwrap();
+    let mut fixture = Fixture::new();
+    fixture.source("A.cs", "a\nb\n");
+    let prefixes = [
+        format!("{}/", outside.path().display()),
+        format!("{}/", fixture.root().display()),
+    ];
+    fixture.report(&document(&prefixes, &[class("A.cs", &[(2, 5)])]));
+
+    let parsed = fixture.parse().unwrap();
+    assert_eq!(parsed.get("A.cs").unwrap(), &BTreeMap::from([(2, 5)]));
+}
+
+#[test]
+/// A selected source that is missing on disk does not win over a real file of the
+/// same relative name outside the root: the evidence most likely describes the
+/// outside file, so the filename is ambiguous rather than attributed.
+fn missing_selected_source_next_to_an_outside_file_is_ambiguous() {
+    let outside = tempfile::tempdir().unwrap();
+    fs::write(outside.path().join("A.cs"), "a\nb\n").unwrap();
+    let mut fixture = Fixture::new();
+    fixture
+        .sources
+        .insert("A.cs".to_owned(), "a\nb\n".to_owned());
+    let prefixes = [
+        format!("{}/", outside.path().display()),
+        format!("{}/", fixture.root().display()),
+    ];
+    fixture.report(&document(&prefixes, &[class("A.cs", &[(2, 5)])]));
+
+    let error = format!("{:#}", fixture.parse().unwrap_err());
+    assert!(error.contains("missing selected source"), "{error}");
+}
+
+#[test]
 /// Only existing files are ignored: an absolute directory outside the root is
 /// still not a usable source path.
 fn absolute_directories_outside_the_root_are_rejected() {
