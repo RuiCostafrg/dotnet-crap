@@ -39,9 +39,13 @@ pub type LineEvidence = BTreeMap<String, BTreeMap<u32, u64>>;
 /// Each package requires a `classes` container, which may be empty.
 ///
 /// Reports may mention other real files inside `root`; their evidence is
-/// ignored. Any path that does not resolve exactly, escapes the root, is a
-/// foreign Windows root or any UNC root, or is an unmapped SourceLink/deterministic path is an
-/// error. At least one report is required.
+/// ignored. An absolute path naming an existing file outside `root` (such as
+/// Microsoft.NET.Test.Sdk's generated program in the NuGet cache) is ignored
+/// the same way, because it can never be a selected source. Any other path that
+/// does not resolve exactly or escapes the root (a directory, a missing file, or a
+/// relative path escaping through a source prefix), is a foreign Windows root or
+/// any UNC root, or is an unmapped SourceLink/deterministic path is an error. At
+/// least one report is required.
 pub fn parse_reports(
     root: &Path,
     sources: &BTreeMap<String, String>,
