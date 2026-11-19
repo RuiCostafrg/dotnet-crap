@@ -6,7 +6,10 @@
 //! instrumentation cannot inflate a score or overflow while merging.
 //!
 //! Paths must resolve exactly to a selected root-relative source or to a real
-//! unselected file contained by the canonical scan root. Source prefixes from
+//! unselected file contained by the canonical scan root. A path that resolves
+//! only to an existing file outside the root (such as the test SDK's generated
+//! program in the NuGet cache) is ignored, because it can never be a selected
+//! source. Source prefixes from
 //! `<sources>` are tried literally; basename/suffix guessing, SourceLink URLs
 //! and deterministic `/_/` mappings are rejected rather than reinterpreted.
 
@@ -480,6 +483,15 @@ fn resolve_filename(
         fail!(
             Cobertura,
             "ambiguous Cobertura filename {filename:?} resolves to multiple files"
+        );
+    }
+    // An in-root resolution wins over an outside file only when it is a real file.
+    // A missing selected source next to a real outside file is ambiguous: the
+    // evidence most likely describes the outside file, so it is never attributed.
+    if outside && candidates.iter().any(|candidate| !candidate.is_file()) {
+        fail!(
+            Cobertura,
+            "ambiguous Cobertura filename {filename:?} resolves to a file outside the root and to a missing selected source"
         );
     }
     let Some(candidate) = candidates.into_iter().next() else {

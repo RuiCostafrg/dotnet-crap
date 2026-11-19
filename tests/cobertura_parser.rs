@@ -338,6 +338,27 @@ fn in_root_resolution_wins_over_an_outside_file() {
 }
 
 #[test]
+/// A selected source that is missing on disk does not win over a real file of the
+/// same relative name outside the root: the evidence most likely describes the
+/// outside file, so the filename is ambiguous rather than attributed.
+fn missing_selected_source_next_to_an_outside_file_is_ambiguous() {
+    let outside = tempfile::tempdir().unwrap();
+    fs::write(outside.path().join("A.cs"), "a\nb\n").unwrap();
+    let mut fixture = Fixture::new();
+    fixture
+        .sources
+        .insert("A.cs".to_owned(), "a\nb\n".to_owned());
+    let prefixes = [
+        format!("{}/", outside.path().display()),
+        format!("{}/", fixture.root().display()),
+    ];
+    fixture.report(&document(&prefixes, &[class("A.cs", &[(2, 5)])]));
+
+    let error = format!("{:#}", fixture.parse().unwrap_err());
+    assert!(error.contains("missing selected source"), "{error}");
+}
+
+#[test]
 /// Only existing files are ignored: an absolute directory outside the root is
 /// still not a usable source path.
 fn absolute_directories_outside_the_root_are_rejected() {
