@@ -1,0 +1,93 @@
+[
+  {
+    "name": "GuardClauses",
+    "kind": "library",
+    "repository": "https://github.com/ardalis/GuardClauses",
+    "commit": "514f157e91f55694742487d19e1f62f07bbd0657",
+    "test": "test/GuardClauses.UnitTests/GuardClauses.UnitTests.csproj",
+    "test_args": ["--framework", "net10.0"],
+    "paths": ["src"],
+    "add_coverlet": [],
+    "expected_reports": 1,
+    "excluded": [],
+    "sdk": "Test project multi-targets net11.0;net10.0. The harness pins net10.0 so exactly one Cobertura report is produced; the .NET 11 SDK is installed to evaluate the full target list during restore.",
+    "notes": "Single test project. coverlet.collector 10.0.1 is already pinned by the repository; altcover and coverlet.msbuild are also referenced but are not used by this harness."
+  },
+  {
+    "name": "CsvHelper",
+    "kind": "library",
+    "repository": "https://github.com/JoshClose/CsvHelper",
+    "commit": "b4151b6dbafc90de35a3016ba96218ecc4e6f88c",
+    "test": "tests/CsvHelper.Tests/CsvHelper.Tests.csproj",
+    "test_args": ["--framework", "net10.0"],
+    "paths": ["src"],
+    "add_coverlet": [],
+    "expected_reports": 1,
+    "excluded": [
+      {
+        "project": "tests/CsvHelper.Linq.Tests/CsvHelper.Linq.Tests.csproj",
+        "reason": "Not run: a single collect invocation runs one test project. The Linq test project is a separate assembly; CsvHelper.Linq source is still scanned, with absent coverage where only these tests would supply it."
+      },
+      {
+        "project": "tests/CsvHelper.Tests/CsvHelper.Tests.csproj (net8.0, net48)",
+        "reason": "Only net10.0 is run. net48 cannot build on Linux and net8.0 would add a second Cobertura report per project."
+      }
+    ],
+    "sdk": "Test project targets net10.0;net8.0;net48. net10.0 is selected explicitly.",
+    "notes": "coverlet.collector 6.0.4 is already pinned. tests/CsvHelper.QuickTester is a console tool, not a test project. The Linq tests use EF Core SQLite in-process, but they are outside this single-project run."
+  },
+  {
+    "name": "eShopOnWeb",
+    "kind": "web",
+    "repository": "https://github.com/dotnet-architecture/eShopOnWeb",
+    "commit": "4da8212117e87d808d4bbc7da6286fd2147ce606",
+    "test": "tests/UnitTests/UnitTests.csproj",
+    "test_args": [],
+    "paths": ["src"],
+    "add_coverlet": ["tests/UnitTests/UnitTests.csproj"],
+    "expected_reports": 1,
+    "excluded": [
+      {
+        "project": "tests/IntegrationTests/IntegrationTests.csproj",
+        "reason": "Not run in this single-project harness. Uses EF Core InMemory, so no database server or Docker is required."
+      },
+      {
+        "project": "tests/FunctionalTests/FunctionalTests.csproj",
+        "reason": "Not run: WebApplicationFactory smoke tests are slower and more environment-sensitive than the unit suite; they use EF Core InMemory and no external services."
+      },
+      {
+        "project": "tests/PublicApiIntegrationTests/PublicApiIntegrationTests.csproj",
+        "reason": "Not run: separate MSTest project. Its appsettings.test.json selects the in-memory database, so no external service is required."
+      }
+    ],
+    "sdk": "net8.0 (from Directory.Packages.props). Requires the .NET 8 runtime for tests. The repository is archived; no newer commit is expected.",
+    "notes": "Multi-project ASP.NET Core application. tests/UnitTests lacks coverlet.collector; the harness adds 10.1.1 through central package management. Only UnitTests supplies coverage, so Infrastructure, PublicApi and BlazorAdmin sources are scanned with absent coverage. The other test projects (IntegrationTests, FunctionalTests, PublicApiIntegrationTests) do not need Docker, a database server or network services; they are excluded only because this harness runs one test project per collection (see excluded)."
+  },
+  {
+    "name": "CleanArchitecture",
+    "kind": "solution",
+    "repository": "https://github.com/ardalis/CleanArchitecture",
+    "commit": "ecf2f4df89199e5d9e101484c990a6652bcf9065",
+    "test": "tests/Clean.Architecture.UnitTests/Clean.Architecture.UnitTests.csproj",
+    "test_args": [],
+    "paths": ["src"],
+    "add_coverlet": [],
+    "expected_reports": 1,
+    "excluded": [
+      {
+        "project": "tests/Clean.Architecture.IntegrationTests/Clean.Architecture.IntegrationTests.csproj",
+        "reason": "Needs Docker: Testcontainers.MsSql starts a SQL Server container."
+      },
+      {
+        "project": "tests/Clean.Architecture.FunctionalTests/Clean.Architecture.FunctionalTests.csproj",
+        "reason": "Needs Docker: Testcontainers.MsSql starts a SQL Server container for the WebApplicationFactory fixtures."
+      },
+      {
+        "project": "tests/Clean.Architecture.AspireTests/Clean.Architecture.AspireTests.csproj",
+        "reason": "Needs Docker and the .NET 11 Aspire toolchain: the Aspire host starts a SQL Server container."
+      }
+    ],
+    "sdk": "net11.0 (from Directory.Build.props). Requires the .NET 11 SDK and runtime; there is no net8.0/net9.0/net10.0 target to fall back to.",
+    "notes": "The root Clean.Architecture.slnx contains the Docker-dependent test projects, so the harness passes the UnitTests project directly instead of the solution. IntegrationTests, FunctionalTests and AspireTests require Docker/Testcontainers (MsSql) and are excluded. coverlet.collector 10.1.0 is already pinned centrally. MinimalClean/ and sample/ are template trees and are not scanned."
+  }
+]
