@@ -1,0 +1,100 @@
+name: Evaluate real projects
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - evaluation/**
+      - scripts/evaluate-projects.py
+      - .github/workflows/evaluate.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - name: Build the release binary once
+        run: cargo build --locked --release
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dotnet-crap-linux-x86_64
+          path: target/release/dotnet-crap
+          if-no-files-found: error
+
+  evaluate:
+    needs: build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - GuardClauses
+          - CsvHelper
+          - eShopOnWeb
+          - CleanArchitecture
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+            11.0.x
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dotnet-crap-linux-x86_64
+          path: bin
+      - name: Make the scanner executable
+        run: chmod +x bin/dotnet-crap
+      - name: Evaluate ${{ matrix.project }}
+        run: |
+          python3 scripts/evaluate-projects.py run \
+            --project "${{ matrix.project }}" \
+            --binary "$PWD/bin/dotnet-crap" \
+            --work "$RUNNER_TEMP/evaluation-work" \
+            --out "$RUNNER_TEMP/evaluation-out"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: evaluation-${{ matrix.project }}
+          path: ${{ runner.temp }}/evaluation-out
+          if-no-files-found: warn
+          retention-days: 30
+
+  report:
+    needs: evaluate
+    if: always()
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: evaluation-*
+          path: evaluation-out
+          merge-multiple: true
+      - name: Write the summary table
+        run: |
+          set -o pipefail
+          python3 scripts/evaluate-projects.py table --out evaluation-out | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: evaluation-report
+          path: evaluation-out
+          if-no-files-found: warn
+          retention-days: 30
