@@ -326,8 +326,10 @@ or speedups from unrelated shared-runner timings.
 **Done when:** supported parity rows have automated evidence or explicit exclusions,
 and installation/publication claims reflect actual validated releases.
 
-The list below records the historical first-release execution order; it was
-completed for v0.1.0 and v0.2.0.
+The list below is the historical first-release plan, kept for the record. v0.1.0
+followed it, including npm staging. npm was then retired, so v0.2.0 ran the
+GitHub release, Homebrew sync, NuGet.org publication and published-path checks
+only; the npm steps did not run and must not be repeated.
 
 First-release execution order (separate from the feature backlog numbering):
 
