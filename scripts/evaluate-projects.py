@@ -511,6 +511,27 @@ def run_project(project: dict, binary: Path, work_dir: Path, out_dir: Path) -> d
     return summary
 
 
+ERROR_CELL_LIMIT = 300
+
+
+def error_line(error: object) -> str:
+    """The most informative line of an error for a table cell.
+
+    Collect errors embed the tail of the test log; the final ``error:`` line
+    (or else the last non-empty line) says what failed. The full text stays in
+    the summary JSON and logs.
+    """
+    lines = [line.strip() for line in str(error or "unknown").splitlines() if line.strip()]
+    if not lines:
+        return "unknown"
+    errors = [line for line in lines if line.startswith("error:")]
+    line = (errors or lines)[-1]
+    line = line.removeprefix("error:").strip() or line
+    if len(line) > ERROR_CELL_LIMIT:
+        line = line[:ERROR_CELL_LIMIT] + "…"
+    return line
+
+
 def _cell(value: object) -> str:
     """Render one Markdown table cell."""
     if value is None:
@@ -550,7 +571,7 @@ def render_table(summaries: list[dict], expected: list[str] | None = None) -> st
         elif status == "missing":
             status_text = "missing"
         else:
-            status_text = f"error: {item.get('error') or 'unknown'}"
+            status_text = f"error: {error_line(item.get('error'))}"
         rss_collect = item.get("collect_peak_rss_kb_largest_process")
         rss_scan = item.get("scan_peak_rss_kb")
         gate = item.get("gate")

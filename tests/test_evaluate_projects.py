@@ -431,5 +431,21 @@ class FailureSummaryTests(unittest.TestCase):
         self.assertNotIn("Traceback", stderr.getvalue())
 
 
+
+class ErrorLineTests(unittest.TestCase):
+    def test_final_error_line_is_kept_from_a_log_tail(self):
+        error = ("collect failed with exit 2: Passed!  - Failed: 0, Passed: 44\n"
+                 "Attachments:\n  /tmp/x/coverage.cobertura.xml\n"
+                 "error: invalid Cobertura report /tmp/x/coverage.cobertura.xml: outside the root\n")
+        self.assertEqual(evaluate.error_line(error),
+                         "invalid Cobertura report /tmp/x/coverage.cobertura.xml: outside the root")
+
+    def test_last_line_without_error_prefix_and_truncation(self):
+        self.assertEqual(evaluate.error_line("first\n\nlast line\n"), "last line")
+        self.assertEqual(evaluate.error_line(None), "unknown")
+        long = evaluate.error_line("x" * 1000)
+        self.assertEqual(len(long), evaluate.ERROR_CELL_LIMIT + 1)
+        self.assertTrue(long.endswith("…"))
+
 if __name__ == "__main__":
     unittest.main()
