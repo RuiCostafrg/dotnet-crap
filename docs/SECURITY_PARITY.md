@@ -73,9 +73,9 @@ branches to be up to date with `main` before merging.
 - **No `reviewers:` key in `dependabot.yml`.** GitHub deprecated that option in favour
   of CODEOWNERS, which now assigns RuiCostafrg.
 - **The `release` environment gates publication.** In `release.yml`, only the
-  `publish` (GitHub release with attestations) and `publish-npm` (staged npm trusted
-  publishing) jobs use it. Both also require the `DOTNET_CRAP_PUBLISH` variable;
-  see [DISTRIBUTION.md](DISTRIBUTION.md).
+  `publish` job (GitHub release with attestations) uses it, and it also requires
+  the `DOTNET_CRAP_PUBLISH` variable. `publish-nuget.yml` uses it for NuGet.org
+  staging. npm publication was removed; see [DISTRIBUTION.md](DISTRIBUTION.md).
 
 ## What these protections do not cover
 
