@@ -122,5 +122,91 @@ class PublishedInstall(unittest.TestCase):
         self.assertEqual(len(run.call_args_list), 4)
 
 
+    def package(self, path, entries):
+        with zipfile.ZipFile(path, 'w') as archive:
+            for name, data in entries.items():
+                archive.writestr(name, data)
+        return path
+
+    def test_nuget_accepts_repository_signature_only_on_the_published_package(self):
+        release = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg',
+                               {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': b'payload'})
+        published = self.package(self.root / 'published.nupkg',
+                                 {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': b'payload',
+                                  '.signature.p7s': b'repository signature'})
+        install.compare_packages(release, published)
+
+    def test_nuget_signed_release_asset_is_rejected(self):
+        signed = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg',
+                              {'dotnet-crap.nuspec': b'<package />', '.signature.p7s': b'signature'})
+        published = self.package(self.root / 'published.nupkg',
+                                 {'dotnet-crap.nuspec': b'<package />', '.signature.p7s': b'signature'})
+        with self.assertRaisesRegex(ValueError, r'unexpected \.signature\.p7s'):
+            install.compare_packages(signed, published)
+
+    def test_nuget_changed_entry_fails(self):
+        release = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg',
+                               {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': b'payload'})
+        published = self.package(self.root / 'published.nupkg',
+                                 {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': b'changed'})
+        with self.assertRaisesRegex(ValueError, 'bytes differ'):
+            install.compare_packages(release, published)
+
+    def test_nuget_extra_or_missing_entry_fails(self):
+        entries = {'dotnet-crap.nuspec': b'<package />'}
+        for change, contents in (('extra', dict(entries, **{'lib/extra.dll': b'extra'})),
+                                 ('missing', {})):
+            with self.subTest(change=change):
+                release = self.package(self.assets / 'dotnet-crap.0.1.0.nupkg', entries)
+                published = self.package(self.root / f'{change}.nupkg', contents)
+                with self.assertRaisesRegex(ValueError, 'ZIP entries differ'):
+                    install.compare_packages(release, published)
+
+    def test_nuget_installs_only_from_nuget_org_and_runs_tool_checks(self):
+        binary = self.archive()
+        self.package(self.assets / 'dotnet-crap.0.1.0.nupkg',
+                     {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': binary})
+        published = self.package(self.root / 'published.nupkg',
+                                 {'dotnet-crap.nuspec': b'<package />', 'tools/native/dotnet-crap': binary,
+                                  '.signature.p7s': b'repository signature'})
+        work = self.root / 'work'
+        work.mkdir()
+        original_run = install.run
+
+        def fake_download(url, destination, **kwargs):
+            self.assertTrue(url.startswith('https://api.nuget.org/v3-flatcontainer/dotnet-crap/0.1.0/'))
+            self.assertTrue(url.endswith('/dotnet-crap.0.1.0.nupkg'))
+            destination.write_bytes(published.read_bytes())
+            return destination
+
+        def fake(command, **kwargs):
+            if command[:3] == ['dotnet', 'tool', 'install']:
+                config = (work / 'NuGet.Config').read_text()
+                self.assertIn('<clear />', config)
+                self.assertEqual(config.count('<add '), 1)
+                self.assertIn('https://api.nuget.org/v3/index.json', config)
+                self.assertNotIn('--add-source', command)
+                self.assertNotIn(str(work / 'feed'), config)
+                self.assertEqual(kwargs['env']['NUGET_PACKAGES'], str(work / 'cache'))
+                native = work / 'tool/.store/dotnet-crap/0.1.0/tools/net10.0/any/native/linux-x64/dotnet-crap'
+                native.parent.mkdir(parents=True)
+                native.write_bytes(binary)
+                shim = work / 'tool/dotnet-crap'
+                shim.write_text('#!/bin/sh\n'
+                                'if [ "$1" = --version ]; then echo "dotnet-crap 0.1.0"; exit 0; fi\n'
+                                'while [ "$#" -gt 0 ]; do\n'
+                                '  if [ "$1" = --threshold ] && [ "$2" = 0 ]; then exit 1; fi\n'
+                                '  shift\n'
+                                'done\n')
+                shim.chmod(0o755)
+                return ''
+            return original_run(command, **kwargs)
+
+        with patch.object(install, 'download', side_effect=fake_download), \
+                patch.object(install, 'run', side_effect=fake) as run:
+            install.nuget(self.args, work)
+        self.assertEqual(len(run.call_args_list), 4)
+
+
 if __name__ == '__main__':
     unittest.main()

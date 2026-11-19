@@ -29,7 +29,18 @@ The released `.nupkg` is installed from an isolated feed and cache on
 the installed native payload with the authenticated platform archive, then
 runs the .NET launcher through version, passing scan and failing gate checks.
 NuGet does not preserve Unix execute bits; the launcher makes its own private
-executable copy. This does not imply publication on NuGet.org.
+executable copy.
+
+The `nuget` channel verifies actual publication on nuget.org. It downloads
+`https://api.nuget.org/v3-flatcontainer/dotnet-crap/<version>/dotnet-crap.<version>.nupkg`,
+retrying while nuget.org indexing catches up, and compares its ZIP entry names
+and entry bytes with the authenticated release `.nupkg`. NuGet.org adds a
+repository signature, so the files differ in bytes: only `.signature.p7s` may be
+added, and it must not exist in the release asset. Any other missing, extra or
+changed entry fails. The published package is then installed with a
+`NuGet.Config` that clears every source and adds only
+`https://api.nuget.org/v3/index.json`, and receives the same payload, version
+and scan checks as the isolated-feed jobs.
 
 After the tap formula merge, run all channels:
 
@@ -48,6 +59,9 @@ RIDs, plus:
   formula must equal the authenticated release formula before Homebrew runs it;
   the installed executable must match the archive. Linux ARM64 Homebrew is
   explicitly outside this matrix.
+- The package published on nuget.org for all five tool RIDs, compared entry by
+  entry with the authenticated release `.nupkg` and installed from a config that
+  clears all other sources.
 - The composite Action checked out at the validated release source SHA, using
   real `gh` downloads and provenance verification. NUnit, MSTest and xUnit run
   on Ubuntu/macOS, collecting fresh Coverlet Cobertura and checking both passing
@@ -56,8 +70,9 @@ RIDs, plus:
   Candidate CI separately exercises SARIF upload from an isolated main-only job.
 
 Before the formula is public, `verify-homebrew=false` allows partial verification.
-A skipped channel is not evidence that it works; full verification requires the
-tap check enabled.
+Before publication, `verify-nuget=false` skips the registry check; it is enabled
+by default. A skipped channel is not evidence that it works; full verification
+requires the tap check enabled and the package published.
 
 ## Evidence and recovery limits
 

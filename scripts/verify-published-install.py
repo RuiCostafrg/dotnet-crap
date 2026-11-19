@@ -8,8 +8,16 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
+import urllib.request
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+NUGET_ORG = 'https://api.nuget.org/v3/index.json'
+NUGET_FLAT_CONTAINER = 'https://api.nuget.org/v3-flatcontainer'
+NUGET_SIGNATURE = '.signature.p7s'
+NUGET_ATTEMPTS = 6
+NUGET_RETRY_SECONDS = 15
 
 
 def load(name):
@@ -81,17 +89,70 @@ def homebrew(args):
     check_binary(prefix / 'bin/dotnet-crap', args.assets, [args.target], args.version, args.fixture)
 
 
-def tool(args, work):
-    feed = work / 'feed'
-    feed.mkdir()
-    shutil.copyfile(args.assets / f'dotnet-crap.{args.version}.nupkg', feed / f'dotnet-crap.{args.version}.nupkg')
+def download(url, destination, *, attempts=NUGET_ATTEMPTS, delay=NUGET_RETRY_SECONDS):
+    """Fetch one file, retrying because nuget.org indexing lags behind the release."""
+    destination = Path(destination)
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as response, destination.open('wb') as stream:
+                shutil.copyfileobj(response, stream)
+            return destination
+        except OSError as error:
+            if attempt == attempts:
+                raise ValueError(f'cannot download {url}: {error}') from error
+            time.sleep(delay)
+
+
+def zip_contents(path, *, signature):
+    """Return entry names and bytes; only the NuGet.org repository signature may appear late."""
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+            if len(names) != len(set(names)):
+                raise ValueError(f'{path}: duplicate ZIP entries')
+            contents = {name: archive.read(name) for name in names}
+    except (OSError, zipfile.BadZipFile) as error:
+        raise ValueError(f'{path}: not a readable NuGet package: {error}') from error
+    if NUGET_SIGNATURE in contents:
+        if not signature:
+            raise ValueError(f'{path}: unexpected {NUGET_SIGNATURE} in the release asset')
+        del contents[NUGET_SIGNATURE]
+    return contents
+
+
+def compare_packages(released, published):
+    """NuGet.org adds a repository signature; compare ZIP entries instead of whole bytes."""
+    expected = zip_contents(released, signature=False)
+    actual = zip_contents(published, signature=True)
+    missing = sorted(set(expected) - set(actual))
+    extra = sorted(set(actual) - set(expected))
+    if missing or extra:
+        raise ValueError(f'{Path(published).name}: ZIP entries differ from the release asset; '
+                         f'missing {missing}; unexpected {extra}')
+    changed = sorted(name for name in expected if expected[name] != actual[name])
+    if changed:
+        raise ValueError(f'{Path(published).name}: ZIP entry bytes differ from the release asset: {changed}')
+
+
+def tool(args, work, source=None):
+    """Install the released package from an isolated local feed, or from one given source URL."""
+    if source is None:
+        feed = work / 'feed'
+        feed.mkdir()
+        shutil.copyfile(args.assets / f'dotnet-crap.{args.version}.nupkg',
+                        feed / f'dotnet-crap.{args.version}.nupkg')
+        package_sources = ''
+        add_source = ['--add-source', str(feed)]
+    else:
+        package_sources = f'<add key="nuget.org" value="{source}" />'
+        add_source = []
     config = work / 'NuGet.Config'
-    config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+    config.write_text(f'<configuration><packageSources><clear />{package_sources}</packageSources></configuration>')
     destination = work / 'tool'
     env = {key: value for key, value in os.environ.items() if key not in ('GH_TOKEN', 'GITHUB_TOKEN')}
     env['NUGET_PACKAGES'] = str(work / 'cache')
     run(['dotnet', 'tool', 'install', 'dotnet-crap', '--tool-path', str(destination),
-         '--configfile', str(config), '--add-source', str(feed), '--version', args.version], env=env)
+         '--configfile', str(config), *add_source, '--version', args.version], env=env)
     native_name = 'dotnet-crap.exe' if args.rid == 'win-x64' else 'dotnet-crap'
     copies = list(destination.rglob(f'native/{args.rid}/{native_name}'))
     if len(copies) != 1:
@@ -107,9 +168,18 @@ def tool(args, work):
     run([str(shim), '--root', str(args.fixture), '--threshold', '0'], env=env, expected=1)
 
 
+def nuget(args, work):
+    # The flat-container path segment and file name use the lowercase version.
+    version = args.version.lower()
+    package = work / f'dotnet-crap.{version}.nupkg'
+    download(f'{NUGET_FLAT_CONTAINER}/dotnet-crap/{version}/dotnet-crap.{version}.nupkg', package)
+    compare_packages(args.assets / f'dotnet-crap.{args.version}.nupkg', package)
+    tool(args, work, source=NUGET_ORG)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('channel', choices=('shell', 'homebrew', 'tool'))
+    parser.add_argument('channel', choices=('shell', 'homebrew', 'tool', 'nuget'))
     parser.add_argument('--assets', required=True, type=Path)
     parser.add_argument('--version', required=True)
     parser.add_argument('--source-sha', required=True)
@@ -123,6 +193,8 @@ def main():
         parser.error('--target is required for this channel')
     if args.channel == 'tool' and not args.rid:
         parser.error('--rid is required for tool installation')
+    if args.channel == 'nuget' and not args.rid:
+        parser.error('--rid is required for nuget installation')
     for name in ('GH_TOKEN', 'GITHUB_TOKEN'):
         os.environ.pop(name, None)
     with tempfile.TemporaryDirectory(prefix='published-install-') as temporary:
@@ -131,6 +203,8 @@ def main():
             shell(args, work)
         elif args.channel == 'homebrew':
             homebrew(args)
+        elif args.channel == 'nuget':
+            nuget(args, work)
         else:
             tool(args, work)
     print(json.dumps({'channel': args.channel, 'version': args.version, 'source_sha': args.source_sha,

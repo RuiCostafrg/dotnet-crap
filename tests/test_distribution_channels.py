@@ -72,7 +72,7 @@ class DistributionChannels(unittest.TestCase):
                         'scripts/pack-dotnet-tool.sh', 'dotnet tool install', 'dist build'):
             self.assertIn(command, build)
         published = workflow('verify-published.yml')
-        for job in ('shell', 'homebrew', 'action'):
+        for job in ('shell', 'homebrew', 'nuget', 'action'):
             self.assertRegex(published, rf'(?m)^  {job}:$')
         self.assertIn('uses: ./.github/workflows/verify-release.yml', published)
         for rid in ('linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64', 'win-x64'):
