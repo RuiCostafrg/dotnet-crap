@@ -117,7 +117,9 @@ whole scan fails. The constructs:
 
 So upgrading to tree-sitter-c-sharp 0.24.0, released 2026-11-18, would recover
 only one file. The ref-return assignment is a grammar gap in both versions and
-needs an upstream fix.
+needs an upstream fix: `lvalue_expression` does not include
+`invocation_expression`, so no call can be an assignment target. Reported as
+[tree-sitter-c-sharp#484](https://github.com/tree-sitter/tree-sitter-c-sharp/issues/484).
 
 0.24.0 also changes some parse shapes, so some scores would change after an
 upgrade. For example, `(x) && y` now parses as a binary expression instead of a

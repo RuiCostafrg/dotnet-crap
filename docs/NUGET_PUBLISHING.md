@@ -33,11 +33,11 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
    `DOTNET_CRAP_PUBLISH` flag does not. No persistent API-key secret exists.
 2. **Trusted publishing policy** on NuGet.org: owner `RuiCostafrg`, repository
    `dotnet-crap`, workflow `publish-nuget.yml`, environment `release`, package
-   exactly `dotnet-crap`. Scope is currently "Push only new package versions";
-   no unlist. Switch it to "Stage packages" only once a release tag containing
-   the staging workflow exists: the workflow runs from the selected tag, so tags
-   `v0.2.0` and older still push directly. After the switch those older tags
-   **cannot** publish, by design: direct push is exactly what the policy removes.
+   exactly `dotnet-crap`. Scope is "Stage packages" only (switched on
+   2026-11-20, before `v0.2.1`, the first tag containing the staging workflow);
+   no push, no unlist. The workflow runs from the selected tag, so tags `v0.2.0`
+   and older, which push directly, **cannot** publish, by design: direct push is
+   exactly what the policy removes.
    The only such tag on NuGet.org, `v0.2.0`, is already published, and a rerun
    would fail as a duplicate anyway. Never widen the policy back to Push to rerun
    an old tag; release a new version instead.
@@ -94,8 +94,7 @@ manually; the website is the only promotion path. Unpromoted staged content
 expires after a period NuGet does not document, so promote promptly. The workflow
 writes the staged version to the run summary. Run the `verify-published.yml`
 NuGet job only after promotion: until then the package is intentionally absent
-from the public flat container. Once this change is in a release tag, restrict
-the trusted publishing policy to the "Stage packages" scope.
+from the public flat container.
 
 **If the stage step fails**, NuGet may still have accepted the upload (for
 example, the response was lost). NuGet offers no API to inspect staged packages,
