@@ -2,7 +2,7 @@
 
 This document describes the callable forms scored by `dotnet-crap` and their
 limits. It covers syntax as written by the Tree-sitter C# grammar (`tree-sitter-c-sharp`
-0.23.x). It is not Roslyn semantics: overloads, generic constraints, and
+0.24.x). It is not Roslyn semantics: overloads, generic constraints, and
 conversions are not resolved. Conditional-compilation symbols are applied only
 to files that do not parse as written ([conditional compilation](PREPROCESSOR.md)).
 

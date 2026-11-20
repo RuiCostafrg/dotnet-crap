@@ -29,6 +29,8 @@ mod analysis;
 mod evidence;
 /// Deterministic ordered worker pool for per-file work.
 mod par;
+/// Directives the grammar accepts in positions the 0.23.5 grammar rejected.
+mod placement;
 /// Conditional-compilation fallback for sources that do not parse as written.
 mod preprocess;
 /// Report model and text rendering.
@@ -367,11 +369,16 @@ impl FileContext<'_> {
         #[cfg(test)]
         work::count(work::Unit::Parse);
         // Files that parse as written are scored from their own text. Only a
-        // failed parse pays for conditional-compilation resolution and a
-        // second parse; the resolved text keeps every byte offset and line.
-        // While resolving, the decoded and resolved texts are both held, so a
-        // fallback file briefly uses twice its text against one admission.
-        let (source, tree) = if tree.root_node().has_error() {
+        // file whose parse failed, or whose tree holds a conditional directive
+        // in a position the 0.23.5 grammar rejected (an `#if` that splits a
+        // declaration, which grammar 0.24.x accepts as a body-less method),
+        // pays for conditional-compilation resolution and a second parse; the
+        // resolved text keeps every byte offset and line. While resolving, the
+        // decoded and resolved texts are both held, so a fallback file briefly
+        // uses twice its text against one admission.
+        let (source, tree) = if tree.root_node().has_error()
+            || placement::misplaced_directive(tree.root_node(), &source)
+        {
             drop(tree);
             match self.reparse_resolved(parser, &source) {
                 Some(resolved) => {
