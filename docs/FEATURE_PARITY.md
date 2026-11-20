@@ -72,8 +72,8 @@ aliases, including generated/unselected source hardlinks.
 [Coverlet collection](COVERLET.md) with native v1 line evidence; source-qualified
 validation is recorded in [the evidence report](../reports/fresh-coverlet/README.md). This does not complete the broader
 SDK/runner matrix below. The expanded pinned .NET 10 fixtures cover xUnit,
-MSTest and NUnit under VSTest; combined validation passed. .NET 8
-and MTP collection are not certified by these runs.
+MSTest and NUnit under VSTest; combined validation passed. Supported runtimes
+are .NET 10 and .NET 11 only; MTP collection is not certified by these runs.
 
 1. Add a Rust `collect` command that snapshots selected source bytes **before**
    executing a trusted test command, then verifies them after completion.
