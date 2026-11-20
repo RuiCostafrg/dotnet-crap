@@ -138,6 +138,13 @@ provenance verification, OIDC exchange, push). NuGet.org then served `0.2.0` in 
 flat container, and `dotnet tool install dotnet-crap --version 0.2.0` from
 NuGet.org on the ARM64 Termux host ran and reported `dotnet-crap 0.2.0`.
 
+Version 0.2.1 was the first staged release: `publish-nuget.yml` run
+[44714375635](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44714375635)
+staged it on 2026-11-20 under the "Stage packages" policy, the owner promoted it
+on NuGet.org, and `verify-published.yml` run
+[44728168904](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44728168904)
+verified every channel, including the NuGet.org package on all five tool RIDs.
+
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
 `v0.1.0` package was downloaded read-only, release-asset and build-provenance
