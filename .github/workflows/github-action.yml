@@ -64,7 +64,7 @@ jobs:
           path: ${{ runner.temp }}/release-assets
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: 10.0.109
+          dotnet-version: 10.0.404
       - name: Put a fake gh first on PATH
         # Serves `gh release download` from the downloaded candidate assets and
         # answers `gh attestation verify` successfully only for the exact

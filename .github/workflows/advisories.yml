@@ -19,8 +19,8 @@ jobs:
           # Always audit the default branch, even for a dispatch from another ref.
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-      - run: cargo install cargo-audit --version 0.22.2 --locked
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+      - run: cargo install cargo-audit --version 0.23.0 --locked
       - run: cargo audit --deny warnings
   nuget-audit:
     if: >-

@@ -27,7 +27,7 @@ the previous channel set and are not instructions to approve those stages.
 
 ## Release assets (`release-assets` artifact)
 
-cargo-dist 0.33.1 (`dist-workspace.toml`, installed by the checksum-pinned
+cargo-dist 0.34.0 (`dist-workspace.toml`, installed by the checksum-pinned
 `scripts/install-dist.py`) builds and assembles one flat directory:
 
 | File | Notes |
