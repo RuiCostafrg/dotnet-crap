@@ -1,7 +1,7 @@
 # Conditional compilation fallback
 
 `dotnet-crap` reads C# as written, with the Tree-sitter C# grammar
-(`tree-sitter-c-sharp` 0.23.x). The grammar accepts preprocessor directives
+(`tree-sitter-c-sharp` 0.24.x). The grammar accepts preprocessor directives
 only around whole members or statements, so some valid C# fails to parse:
 
 1. An `#if` that splits a declaration or statement, such as a method header
@@ -10,15 +10,25 @@ only around whole members or statements, so some valid C# fails to parse:
    `#pragma warning restore 618`.
 3. File-based app directives: `#:sdk`, `#:package`, `#:property`.
 
+Grammar 0.24 additionally *accepts* some of the placements in 1, but builds a
+tree that is not what the compiler compiles: for the example above it produces
+a method with no body, the `#if` block holding the body. The scanner does not
+score that shape. A file counts as not parsing as written when its tree has
+errors **or** holds a conditional directive (`#if` with its `#elif` and
+`#else`) in a position the 0.23.5 grammar rejected; see
+[Directive placement](#directive-placement).
+
 ## What the scanner does
 
-Every file is parsed as written first. A file that parses is scored from its
+Every file is parsed as written first. A file that parses, and whose `#if`
+groups all sit in positions the 0.23.5 grammar accepted, is scored from its
 own text exactly as before: `--define` has no effect on it, both branches of
 its `#if` groups are scored, and its report, hash, scores and line numbers do
 not depend on this fallback.
 
-Only when that parse has errors, the scanner resolves conditional compilation
-and parses again. The rule is that the resolved text must be what the C#
+Only when that parse has errors, or its tree holds a conditional directive in a
+position 0.23.5 rejected, the scanner resolves conditional compilation and
+parses again. The rule is that the resolved text must be what the C#
 compiler would compile; whenever the fallback cannot be sure of that, it
 declines and the original error is reported.
 
@@ -94,6 +104,31 @@ rejected with exit 2. The library takes the same list as `ScanOptions::defines` 
 
 Symbols are not read from project files. Choose the set that matches the build
 you want to score; a file's `#if` groups that parse as written are not affected.
+
+## Directive placement
+
+The tree is walked once, and only when the source contains a `#` byte. Every
+`#if` (and its `#elif`/`#else`) is checked against a table of the places
+grammar 0.23.5 allowed it, so a file whose `#if` groups surround whole
+members, statements or expressions is still scored as written, both branches
+included. The table lives in `src/placement.rs`; it was derived mechanically
+from 0.23.5's `node-types.json` (supertypes expanded) and checked against
+0.24.0, whose extra placements are the ones that trigger the fallback:
+
+- `#if` directly inside a method, constructor, destructor, operator,
+  conversion operator, accessor or local function (a header followed by a body
+  that differs per branch), inside a collection expression, or as an `else`
+  branch inside an `if` statement's conditional;
+- a conditional block that directly holds a `,` or `;` (`{ 1, #if X 2, 3, #endif }`,
+  `c ? a : #if X b; #else d; #endif`), or that sits between initializer
+  elements without commas around it;
+- `#region`, `#pragma`, `#nullable`, `#line`, `#define`, `#undef`, `#error`
+  and `#warning` are accepted anywhere by both grammars and never trigger it.
+
+A conditional nested in another conditional follows its enclosing one. The
+check is deliberately conservative: an unrecognised placement costs a second
+parse, never a differently shaped score. A tree of the resolved text needs no
+such check, because the fallback blanks every directive line it reads as code.
 
 ## Limits
 

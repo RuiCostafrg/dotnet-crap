@@ -1,15 +1,19 @@
 //! Conditional-compilation fallback for sources that do not parse as written.
 //!
-//! The C# grammar accepts preprocessor directives only around whole members or
-//! statements, and rejects some valid placements (an `#if` that splits a
-//! declaration, a directive on the last line without a line break, file-based
-//! app `#:` lines). For a file whose tree has errors, [`resolve`] produces a
-//! same-length text in which every directive line and every inactive
-//! conditional branch is replaced by ASCII spaces. Every `\n` and `\r` is kept
-//! and every other byte of a blanked line becomes one space, so byte offsets,
-//! line numbers and columns of the kept text are unchanged, and the result is
-//! valid UTF-8 because whole lines are replaced. Files that parse as written
-//! never reach this module.
+//! The C# grammar (tree-sitter-c-sharp 0.24.x) accepts preprocessor directives
+//! only around whole members or statements, and rejects some valid placements
+//! (an `#if` that splits a declaration, a directive on the last line without a
+//! line break, file-based app `#:` lines). It also accepts some placements it
+//! builds a wrong shape for: 0.24 parses an `#if` that splits a method header
+//! from its body as a method without a body. A file "does not parse as written"
+//! when its tree has errors or holds a conditional directive in a position the
+//! 0.23.5 grammar rejected (see `placement`). For such a file [`resolve`]
+//! produces a same-length text in which every directive line and every
+//! inactive conditional branch is replaced by ASCII spaces. Every `\n` and
+//! `\r` is kept and every other byte of a blanked line becomes one space, so
+//! byte offsets, line numbers and columns of the kept text are unchanged, and
+//! the result is valid UTF-8 because whole lines are replaced. Files that
+//! parse as written never reach this module.
 //!
 //! The rule throughout: the resolved text must be what the C# compiler would
 //! compile, or the fallback declines and the caller reports the original
