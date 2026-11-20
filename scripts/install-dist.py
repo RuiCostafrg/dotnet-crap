@@ -9,13 +9,13 @@ import tarfile
 import urllib.request
 import zipfile
 
-VERSION = "0.33.1"
+VERSION = "0.34.0"
 ARCHIVES = {
-    "aarch64-apple-darwin": ("tar.xz", "b8bf041a38e9e54ecf41eee2574ca6644043796620bb0ee8340e9c0acbaaae8f"),
-    "x86_64-apple-darwin": ("tar.xz", "e9dc303035fbb2f44295948e0a076f1d1d218a0328e9b84e16955863bba92bf4"),
-    "aarch64-unknown-linux-gnu": ("tar.xz", "e883f4c6c17f2458d6ced950d978c04b45423ed3a5fdbebcb8f8de568389e1c1"),
-    "x86_64-unknown-linux-gnu": ("tar.xz", "da68e159d5fed1ee61b00284da444e719927dbd0b7d0e2c34e57a04414453cf9"),
-    "x86_64-pc-windows-msvc": ("zip", "79dfcce84e6a8e69210f11fc23d445c3aac7af6a29e0e981867f053c0a869316"),
+    "aarch64-apple-darwin": ("tar.xz", "d1eec30e63eed23e5a5bd48fe96eae314799811bffca254ec1d2264638ba1890"),
+    "x86_64-apple-darwin": ("tar.xz", "6aa89bb1e7c18f51ae8b148ce2fc6ab00ac46ed8173d4f2ed9afa12101218773"),
+    "aarch64-unknown-linux-gnu": ("tar.xz", "58efb33edf01342875bfd0c3ce2befa9d73075579ca1b3e5dd75b98c88f92e83"),
+    "x86_64-unknown-linux-gnu": ("tar.xz", "7fee44ff3ff71ed0064b32d4ec62fee6b58bd37c5887b12a86aedddc5af0c7b5"),
+    "x86_64-pc-windows-msvc": ("zip", "7bb53fbc998321f77a3bbb044084a52747c8ed041cf6d6a604802aa57b9c80c6"),
 }
 
 def install(target, directory):

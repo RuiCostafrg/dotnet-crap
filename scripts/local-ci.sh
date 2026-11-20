@@ -63,7 +63,7 @@ stage_lint() {
 stage_security() {
   require cargo ""
   if ! command -v cargo-audit >/dev/null 2>&1; then
-    _fail "cargo-audit missing — cargo install cargo-audit --version 0.22.2 --locked"
+    _fail "cargo-audit missing — cargo install cargo-audit --version 0.23.0 --locked"
   fi
   cargo audit --deny warnings
 }

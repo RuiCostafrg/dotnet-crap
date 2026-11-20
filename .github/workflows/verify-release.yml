@@ -76,7 +76,7 @@ jobs:
           path: authenticated-assets
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: 10.0.109
+          dotnet-version: 10.0.404
       - name: Install the exact released package from an isolated feed and scan
         shell: bash
         env:

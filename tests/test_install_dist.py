@@ -48,7 +48,7 @@ def tarball(member_name, data, kind=tarfile.REGTYPE):
 class InstallDistTests(unittest.TestCase):
     def test_archive_table_is_pinned_and_well_formed(self):
         """Every supported host maps to one extension and a 64-digit SHA-256."""
-        self.assertEqual(install_dist.VERSION, "0.33.1")
+        self.assertEqual(install_dist.VERSION, "0.34.0")
         self.assertEqual(set(install_dist.ARCHIVES), set(TARGETS))
         for target, extension in TARGETS.items():
             with self.subTest(target=target):
@@ -93,7 +93,7 @@ class InstallDistTests(unittest.TestCase):
                 self.assertEqual(executable.stat().st_mode & 0o111, 0o111)
         self.assertEqual(urlopen.call_args.args[0],
                          "https://github.com/axodotdev/cargo-dist/releases/download/"
-                         "v0.33.1/cargo-dist-test-host.tar.xz")
+                         "v0.34.0/cargo-dist-test-host.tar.xz")
 
 
 if __name__ == "__main__":
