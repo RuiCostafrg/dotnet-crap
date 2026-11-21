@@ -89,7 +89,7 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 > Homebrew, shell-installer and GitHub Action channels were verified after
 > publication. Pin an exact version in CI. See
 > [distribution design](docs/DISTRIBUTION.md).
-> npm distribution is retired and its packages are deprecated on the registry; use the .NET tool or Homebrew instead.
+> npm distribution is retired and its packages were removed from the registry; use the .NET tool or Homebrew instead.
 
 Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
 fully static musl builds that also run on Alpine). Windows is only bundled in
