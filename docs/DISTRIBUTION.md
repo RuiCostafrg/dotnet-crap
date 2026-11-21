@@ -21,8 +21,9 @@ stages, publishes or verifies npm packages. The five existing registry packages
 `dotnet-crap-darwin-x64`, `dotnet-crap-darwin-arm64`) were deprecated by the owner
 on 2026-11-19. Every published version (`0.0.0-stage`, `0.0.0` and `0.1.0`) of all
 five carries the deprecation flag, checked against the registry metadata on
-2026-11-19, so installs warn "Package no longer supported"; nothing new is
-published there. Historical release plans describe
+2026-11-19. On 2026-11-21 the owner unpublished every version of all five;
+the registry metadata now lists them as unpublished, so nothing installs from
+npm and nothing new is published there. Historical release plans describe
 the previous channel set and are not instructions to approve those stages.
 
 ## Release assets (`release-assets` artifact)
