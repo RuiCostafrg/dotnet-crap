@@ -234,6 +234,9 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         jobs: None,
         defines: Vec::new(),
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
         output: native.clone(),
         expected_reports: 4,
         command: [

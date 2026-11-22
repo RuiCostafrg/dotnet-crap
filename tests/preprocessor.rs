@@ -296,6 +296,9 @@ fn root_and_path_errors_come_before_symbol_errors() {
         jobs: None,
         defines: vec!["1X".to_owned()],
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
     })
     .unwrap_err();
     assert_eq!(error.to_string(), "invalid root");
@@ -346,6 +349,9 @@ fn collect_snapshots_files_that_need_the_fallback() {
         jobs: None,
         defines: vec!["1X".to_owned()],
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
     };
     // An invalid symbol is rejected before the test command runs: the
     // command would create the marker.
