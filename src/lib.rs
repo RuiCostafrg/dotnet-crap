@@ -74,6 +74,16 @@ pub struct ScanOptions {
     /// decoding, resource limits) still fail the scan. Defaults to `false`,
     /// which fails on the first syntax error as before.
     pub skip_unparsed: bool,
+    /// Honor `.gitignore` and `.ignore` files at the root and below while
+    /// walking directories. Files named explicitly in `paths` are still
+    /// selected. Defaults to `true`; `false` disables ignore files entirely.
+    pub respect_ignore_files: bool,
+    /// Gitignore-style patterns relative to the root. When non-empty, a
+    /// selected file must match at least one. Applies to explicit files too.
+    pub include: Vec<String>,
+    /// Gitignore-style patterns relative to the root; a selected file matching
+    /// any of them is dropped. Applies to explicit files too.
+    pub exclude: Vec<String>,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -87,6 +97,9 @@ impl Default for ScanOptions {
             jobs: None,
             defines: Vec::new(),
             skip_unparsed: false,
+            respect_ignore_files: true,
+            include: Vec::new(),
+            exclude: Vec::new(),
         }
     }
 }
@@ -174,9 +187,10 @@ pub(crate) use source::decode_source;
 pub mod cobertura;
 /// Explicit trusted-process collection, separate from pure scanning.
 pub mod collector;
+/// Safe publication of rendered scan reports.
+pub mod config;
 /// Typed library errors.
 pub mod error;
-/// Safe publication of rendered scan reports.
 pub mod output;
 mod sarif;
 pub use error::{Error, ErrorKind, Result};
@@ -238,7 +252,17 @@ fn scan_impl(
     if let Some(c) = &coverage {
         evidence::validate(c)?;
     }
-    let files: Vec<PathBuf> = selection::select(&root, &args.paths)?.into_iter().collect();
+    let files: Vec<PathBuf> = selection::select(
+        &root,
+        &args.paths,
+        &selection::Filters {
+            respect_ignore_files: args.respect_ignore_files,
+            include: &args.include,
+            exclude: &args.exclude,
+        },
+    )?
+    .into_iter()
+    .collect();
     // Checked after the root, coverage and paths, so those errors keep their
     // precedence over a symbol that only matters to the fallback.
     if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {

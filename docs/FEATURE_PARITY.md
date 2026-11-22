@@ -12,7 +12,7 @@ are replaced by .NET workflows rather than ported literally.
 | Rust Tree-sitter scanner | C# Tree-sitter scanner | Implemented for the callable subset below |
 | CC and CRAP, strict threshold, 0/1/2 exits | Same formula and gate conventions | Implemented |
 | Root and multiple path selection | `.cs` files, deduplication, root containment | Implemented; bin/obj/.git and generated suffixes excluded |
-| Ignore rules, config include/exclude | `.gitignore`, `.ignore`, `dotnet-crap.json` | Phase 3 |
+| Ignore rules, config include/exclude | `.gitignore`, `.ignore`, `dotnet-crap.json` | Implemented; see [CONFIG.md](CONFIG.md) |
 | Source-hashed native coverage | Version 1 path/hash/line map | Implemented; reduced completeness contract below |
 | Fresh V8/Istanbul/LCOV collectors | Fresh Coverlet and Microsoft coverage collection | Coverlet/VSTest implemented in PR #15; Microsoft/MTP adapters remain planned |
 | Every executable statement-start line | C# sequence points with callable ownership | Phase 2; current denominator is supplied points |
