@@ -44,12 +44,15 @@ fn stdout_json(output: &Output) -> Value {
     })
 }
 
-/// Copy the accuracy fixture into a fresh temp directory.
+/// Copy the accuracy fixture's files (not build output such as `bin/` and `obj/`,
+/// which CI creates by building it) into a fresh temp directory.
 fn accuracy_copy() -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     for entry in fs::read_dir(manifest().join("tests/fixtures/accuracy")).unwrap() {
         let entry = entry.unwrap();
-        fs::copy(entry.path(), dir.path().join(entry.file_name())).unwrap();
+        if entry.file_type().unwrap().is_file() {
+            fs::copy(entry.path(), dir.path().join(entry.file_name())).unwrap();
+        }
     }
     dir
 }
