@@ -696,8 +696,11 @@ fn alpha_fixture() -> Fixture {
 }
 
 /// `@ROOT@` replaced by `root`'s path, as a report written on that machine.
+/// Real Windows reports use `C:\…`, never the `\\?\` verbatim form that
+/// `canonicalize` returns there.
 fn at_root(report: &str, root: &Path) -> String {
-    report.replace("@ROOT@", root.to_str().unwrap())
+    let root = root.to_str().unwrap();
+    report.replace("@ROOT@", root.strip_prefix(r"\\?\").unwrap_or(root))
 }
 
 /// Hit counts the Alpha tests produce: `Choose(1)` skips line 9, `Uncovered` never runs.
