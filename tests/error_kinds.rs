@@ -44,6 +44,9 @@ fn collect_options(
         jobs: None,
         defines: Vec::new(),
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
     }
 }
 

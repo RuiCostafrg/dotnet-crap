@@ -354,3 +354,182 @@ fn jobs_rejects_zero_and_never_changes_output() {
         );
     }
 }
+
+const COMPLEX: &str =
+    "class C {\n int F(int x) {\n if (x > 0 && x < 2) return 1;\n return 0;\n }\n}\n";
+
+fn config_dir(config: &str) -> tempfile::TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("a.cs"), COMPLEX).unwrap();
+    fs::write(dir.path().join("dotnet-crap.json"), config).unwrap();
+    dir
+}
+
+#[test]
+fn config_threshold_is_applied_and_cli_overrides_it() {
+    // The only function scores 12 uncovered.
+    let dir = config_dir(r#"{"version":1,"threshold":20}"#);
+    assert_eq!(run(dir.path(), &[]).status.code(), Some(0));
+    assert_eq!(
+        run(dir.path(), &["--threshold", "5"]).status.code(),
+        Some(1)
+    );
+    let dir = config_dir(r#"{"version":1,"threshold":5}"#);
+    assert_eq!(run(dir.path(), &[]).status.code(), Some(1));
+    assert_eq!(
+        run(dir.path(), &["--threshold", "20"]).status.code(),
+        Some(0)
+    );
+}
+
+#[test]
+fn boolean_cli_flags_override_config_both_ways() {
+    let dir = config_dir(r#"{"version":1,"threshold":100,"require_coverage":true}"#);
+    assert_eq!(run(dir.path(), &[]).status.code(), Some(1));
+    assert_eq!(
+        run(dir.path(), &["--no-require-coverage"]).status.code(),
+        Some(0)
+    );
+    // The last of a flag and its negation wins.
+    assert_eq!(
+        run(dir.path(), &["--no-require-coverage", "--require-coverage"])
+            .status
+            .code(),
+        Some(1)
+    );
+    let dir = config_dir(r#"{"version":1,"threshold":100}"#);
+    assert_eq!(
+        run(dir.path(), &["--require-coverage"]).status.code(),
+        Some(1)
+    );
+    let empty = tempfile::tempdir().unwrap();
+    fs::write(
+        empty.path().join("dotnet-crap.json"),
+        r#"{"version":1,"fail_on_empty":true}"#,
+    )
+    .unwrap();
+    assert_eq!(run(empty.path(), &[]).status.code(), Some(1));
+    assert_eq!(
+        run(empty.path(), &["--no-fail-on-empty"]).status.code(),
+        Some(0)
+    );
+}
+
+#[test]
+fn config_skip_unparsed_is_overridden_by_no_skip_unparsed() {
+    let dir = config_dir(r#"{"version":1,"skip_unparsed":true}"#);
+    fs::write(dir.path().join("Bad.cs"), "class Bad { void M( }\n").unwrap();
+    assert_eq!(
+        run(dir.path(), &["--threshold", "100"]).status.code(),
+        Some(0)
+    );
+    assert_eq!(
+        run(dir.path(), &["--threshold", "100", "--no-skip-unparsed"])
+            .status
+            .code(),
+        Some(2)
+    );
+}
+
+#[test]
+fn config_include_exclude_and_cli_replacement() {
+    let dir = tempfile::tempdir().unwrap();
+    for name in ["src/a.cs", "tests/b.cs"] {
+        let path = dir.path().join(name);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, COMPLEX).unwrap();
+    }
+    fs::write(
+        dir.path().join("dotnet-crap.json"),
+        r#"{"version":1,"threshold":100,"exclude":["tests/**"]}"#,
+    )
+    .unwrap();
+    let files = |args: &[&str]| -> Vec<String> {
+        let out = run(
+            dir.path(),
+            &[args, &["--threshold", "100", "--format", "json"]].concat(),
+        );
+        assert_eq!(out.status.code(), Some(0));
+        let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        report["functions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f["file"].as_str().unwrap().to_owned())
+            .collect()
+    };
+    assert_eq!(files(&[]), ["src/a.cs"]);
+    // A CLI list replaces the config list instead of adding to it.
+    assert_eq!(files(&["--exclude", "src/**"]), ["tests/b.cs"]);
+    assert_eq!(files(&["--no-config"]), ["src/a.cs", "tests/b.cs"]);
+    assert_eq!(files(&["--include", "src/**", "--no-config"]), ["src/a.cs"]);
+}
+
+#[test]
+fn no_ignore_and_gitignore_are_honored() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("a.cs"), COMPLEX).unwrap();
+    fs::write(dir.path().join("b.cs"), COMPLEX).unwrap();
+    fs::write(dir.path().join(".gitignore"), "b.cs\n").unwrap();
+    let count = |args: &[&str]| {
+        let out = run(
+            dir.path(),
+            &[args, &["--threshold", "100", "--format", "json"]].concat(),
+        );
+        let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        report["functions"].as_array().unwrap().len()
+    };
+    assert_eq!(count(&[]), 1);
+    assert_eq!(count(&["--no-ignore"]), 2);
+    fs::write(
+        dir.path().join("dotnet-crap.json"),
+        r#"{"version":1,"respect_ignore_files":false}"#,
+    )
+    .unwrap();
+    assert_eq!(count(&[]), 2);
+}
+
+#[test]
+fn no_config_ignores_an_invalid_discovered_file() {
+    let dir = config_dir("{ not json");
+    assert_eq!(run(dir.path(), &[]).status.code(), Some(2));
+    assert_eq!(run(dir.path(), &["--no-config"]).status.code(), Some(1));
+}
+
+#[test]
+fn explicit_config_errors_exit_two_and_name_the_file() {
+    let dir = config_dir(r#"{"version":1}"#);
+    let output = run(dir.path(), &["--config", "missing.json"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("missing.json"));
+    let bad = dir.path().join("bad.json");
+    fs::write(&bad, r#"{"version":3}"#).unwrap();
+    let output = run(dir.path(), &["--config", bad.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("bad.json"));
+    let discovered = config_dir(r#"{"version":1,"oops":true}"#);
+    let output = run(discovered.path(), &[]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("dotnet-crap.json"));
+}
+
+#[test]
+fn explicit_config_is_used_over_the_root_file() {
+    let dir = config_dir(r#"{"version":1,"threshold":1}"#);
+    let other = dir.path().join("other.json");
+    fs::write(&other, r#"{"version":1,"threshold":50}"#).unwrap();
+    assert_eq!(
+        run(dir.path(), &["--config", other.to_str().unwrap()])
+            .status
+            .code(),
+        Some(0)
+    );
+}
+
+#[test]
+fn config_and_no_config_conflict() {
+    let dir = config_dir(r#"{"version":1}"#);
+    let output = run(dir.path(), &["--config", "x.json", "--no-config"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("cannot be used with"));
+}

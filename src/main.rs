@@ -1,6 +1,38 @@
 use anyhow::Result;
 use clap::Parser;
+use dotnet_crap::config::{self, Overrides};
 use std::{io::Write, num::NonZeroUsize, path::PathBuf};
+
+/// Config-file and file-selection options shared by scan and `collect`.
+#[derive(clap::Args)]
+struct SelectionArgs {
+    /// Read this `dotnet-crap.json` instead of discovering one in the root
+    #[arg(long, value_name = "PATH", conflicts_with = "no_config")]
+    config: Option<PathBuf>,
+    /// Do not read any `dotnet-crap.json`
+    #[arg(long)]
+    no_config: bool,
+    /// Do not honor `.gitignore` and `.ignore` files
+    #[arg(long)]
+    no_ignore: bool,
+    /// Keep only files matching this root-relative glob (repeatable)
+    #[arg(long, value_name = "GLOB")]
+    include: Vec<String>,
+    /// Drop files matching this root-relative glob (repeatable)
+    #[arg(long, value_name = "GLOB")]
+    exclude: Vec<String>,
+}
+
+/// Turn a flag and its `--no-` counterpart into an optional explicit value.
+fn flag(on: bool, off: bool) -> Option<bool> {
+    if on {
+        Some(true)
+    } else if off {
+        Some(false)
+    } else {
+        None
+    }
+}
 
 #[derive(Parser)]
 #[command(
@@ -11,18 +43,25 @@ use std::{io::Write, num::NonZeroUsize, path::PathBuf};
 struct Args {
     #[arg(long, default_value = ".")]
     root: PathBuf,
-    #[arg(long, default_value_t = 10.0)]
-    threshold: f64,
+    /// Score threshold [default: 10, or the config value]
+    #[arg(long)]
+    threshold: Option<f64>,
     #[arg(long, default_value = "text", value_parser = ["text", "json", "sarif"])]
     format: String,
     #[arg(long)]
     output: Option<PathBuf>,
     #[arg(long)]
     coverage: Option<PathBuf>,
-    #[arg(long)]
+    #[arg(long, overrides_with = "no_require_coverage")]
     require_coverage: bool,
-    #[arg(long)]
+    /// Override a config `require_coverage: true`
+    #[arg(long, overrides_with = "require_coverage")]
+    no_require_coverage: bool,
+    #[arg(long, overrides_with = "no_fail_on_empty")]
     fail_on_empty: bool,
+    /// Override a config `fail_on_empty: true`
+    #[arg(long, overrides_with = "fail_on_empty")]
+    no_fail_on_empty: bool,
     /// Worker threads for scanning [default: available parallelism]
     #[arg(long, value_name = "N", value_parser = parse_jobs)]
     jobs: Option<NonZeroUsize>,
@@ -31,8 +70,13 @@ struct Args {
     #[arg(long = "define", value_name = "SYMBOL")]
     defines: Vec<String>,
     /// Skip files that still do not parse instead of failing the scan
-    #[arg(long)]
+    #[arg(long, overrides_with = "no_skip_unparsed")]
     skip_unparsed: bool,
+    /// Override a config `skip_unparsed: true`
+    #[arg(long, overrides_with = "skip_unparsed")]
+    no_skip_unparsed: bool,
+    #[command(flatten)]
+    selection: SelectionArgs,
     paths: Vec<PathBuf>,
 }
 
@@ -71,8 +115,13 @@ struct CollectArgs {
     #[arg(long = "define", value_name = "SYMBOL")]
     defines: Vec<String>,
     /// Skip files that still do not parse instead of failing the collection
-    #[arg(long)]
+    #[arg(long, overrides_with = "no_skip_unparsed")]
     skip_unparsed: bool,
+    /// Override a config `skip_unparsed: true`
+    #[arg(long, overrides_with = "skip_unparsed")]
+    no_skip_unparsed: bool,
+    #[command(flatten)]
+    selection: SelectionArgs,
 }
 
 /// Split `--define` values on `,` and `;`, as MSBuild `DefineConstants` lists
@@ -93,6 +142,22 @@ fn execute() -> Result<bool> {
                 .take(1)
                 .chain(std::env::args_os().skip(2)),
         );
+        let loaded = config::discover(
+            &args.root,
+            args.selection.config.as_deref(),
+            args.selection.no_config,
+        )?;
+        let resolved = config::resolve(
+            loaded.as_ref(),
+            &Overrides {
+                skip_unparsed: flag(args.skip_unparsed, args.no_skip_unparsed),
+                respect_ignore_files: args.selection.no_ignore.then_some(false),
+                include: args.selection.include,
+                exclude: args.selection.exclude,
+                defines: split_defines(args.defines),
+                ..Overrides::default()
+            },
+        );
         dotnet_crap::collector::collect(&dotnet_crap::collector::CollectOptions {
             root: args.root,
             paths: args.paths,
@@ -101,8 +166,11 @@ fn execute() -> Result<bool> {
             expected_reports: args.expected_reports,
             timeout: std::time::Duration::from_secs(args.timeout_seconds),
             jobs: args.jobs,
-            defines: split_defines(args.defines),
-            skip_unparsed: args.skip_unparsed,
+            defines: resolved.defines,
+            skip_unparsed: resolved.skip_unparsed,
+            respect_ignore_files: resolved.respect_ignore_files,
+            include: resolved.include,
+            exclude: resolved.exclude,
         })?;
         Ok(false)
     } else {
@@ -112,16 +180,37 @@ fn execute() -> Result<bool> {
 
 /// Adapt scan results to CLI output while rejecting input aliases and staging writes.
 fn run(args: Args) -> Result<bool> {
+    let loaded = config::discover(
+        &args.root,
+        args.selection.config.as_deref(),
+        args.selection.no_config,
+    )?;
+    let resolved = config::resolve(
+        loaded.as_ref(),
+        &Overrides {
+            threshold: args.threshold,
+            require_coverage: flag(args.require_coverage, args.no_require_coverage),
+            fail_on_empty: flag(args.fail_on_empty, args.no_fail_on_empty),
+            skip_unparsed: flag(args.skip_unparsed, args.no_skip_unparsed),
+            respect_ignore_files: args.selection.no_ignore.then_some(false),
+            include: args.selection.include,
+            exclude: args.selection.exclude,
+            defines: split_defines(args.defines),
+        },
+    );
     let result = scan(&ScanOptions {
         root: args.root,
-        threshold: args.threshold,
+        threshold: resolved.threshold,
         coverage: args.coverage,
-        require_coverage: args.require_coverage,
-        fail_on_empty: args.fail_on_empty,
+        require_coverage: resolved.require_coverage,
+        fail_on_empty: resolved.fail_on_empty,
         paths: args.paths,
         jobs: args.jobs,
-        defines: split_defines(args.defines),
-        skip_unparsed: args.skip_unparsed,
+        defines: resolved.defines,
+        skip_unparsed: resolved.skip_unparsed,
+        respect_ignore_files: resolved.respect_ignore_files,
+        include: resolved.include,
+        exclude: resolved.exclude,
     })?;
     let format = match args.format.as_str() {
         "json" => ReportFormat::Json,

@@ -55,6 +55,13 @@ unreadable or non-UTF-8 sources, still fail. Off by default.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
+## Configuration
+
+Scans honor `.gitignore` and `.ignore` files and an optional versioned
+`dotnet-crap.json` with `include`/`exclude` globs; explicit command-line flags
+override the file (`--config`, `--no-config`, `--no-ignore`, `--include`,
+`--exclude`). See [configuration](docs/CONFIG.md).
+
 ## Rust library
 
 The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
