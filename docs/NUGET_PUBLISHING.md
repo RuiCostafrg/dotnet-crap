@@ -145,6 +145,13 @@ on NuGet.org, and `verify-published.yml` run
 [44728168904](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44728168904)
 verified every channel, including the NuGet.org package on all five tool RIDs.
 
+Version 0.2.2 followed the same path: `publish-nuget.yml` run
+[44885833338](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44885833338)
+staged it on 2026-11-21, the owner promoted it on NuGet.org, and
+`verify-published.yml` run
+[45052566475](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45052566475)
+passed all 24 jobs. It is the first package to declare its MIT license.
+
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
 `v0.1.0` package was downloaded read-only, release-asset and build-provenance
