@@ -672,3 +672,126 @@ fn source_prefix_edge_whitespace_is_not_trimmed_into_another_source() {
     let evidence = fixture.parse().unwrap();
     assert_eq!(evidence.keys().collect::<Vec<_>>(), vec![" alpha/A.cs"]);
 }
+
+/// Real report from `Microsoft.Testing.Extensions.CodeCoverage` 18.12.0 on the
+/// Alpha fixture: absolute `filename`s, no `<sources>`, line records repeated
+/// under `<methods>` and `<lines>`. `@ROOT@` replaces the machine's fixture root.
+const MICROSOFT_REPORT: &str = include_str!(
+    "fixtures/coverlet/Mtp.CodeCoverage.Tests/evidence/mtp-code-coverage.cobertura.xml"
+);
+/// Real report from `coverlet.MTP` 10.1.1 on the same fixture: relative
+/// `filename`s under a `<sources>` prefix, as the VSTest collector writes.
+const COVERLET_MTP_REPORT: &str = include_str!(
+    "fixtures/coverlet/Mtp.Coverlet.Tests/evidence/mtp-coverlet.coverage.cobertura.xml"
+);
+const GAUGE_FIRST: &str = include_str!("fixtures/coverlet/Alpha.Library/Gauge.First.cs");
+const GAUGE_SECOND: &str = include_str!("fixtures/coverlet/Alpha.Library/Gauge.Second.cs");
+
+/// The Alpha library under `Alpha.Library` in a fresh root.
+fn alpha_fixture() -> Fixture {
+    let mut fixture = Fixture::new();
+    fixture.source("Alpha.Library/Gauge.First.cs", GAUGE_FIRST);
+    fixture.source("Alpha.Library/Gauge.Second.cs", GAUGE_SECOND);
+    fixture
+}
+
+/// `@ROOT@` replaced by `root`'s path, as a report written on that machine.
+fn at_root(report: &str, root: &Path) -> String {
+    report.replace("@ROOT@", root.to_str().unwrap())
+}
+
+/// Hit counts the Alpha tests produce: `Choose(1)` skips line 9, `Uncovered` never runs.
+fn microsoft_expected() -> LineEvidence {
+    LineEvidence::from([
+        (
+            "Alpha.Library/Gauge.First.cs".to_owned(),
+            BTreeMap::from([
+                (6, 1),
+                (7, 1),
+                (8, 1),
+                (9, 0),
+                (10, 1),
+                (13, 1),
+                (14, 1),
+                (15, 1),
+                (16, 1),
+                (17, 1),
+            ]),
+        ),
+        (
+            "Alpha.Library/Gauge.Second.cs".to_owned(),
+            BTreeMap::from([(5, 0)]),
+        ),
+    ])
+}
+
+#[test]
+/// Absolute filenames inside the root map to the selected sources with no `<sources>`,
+/// and the method-level copies of each line do not change the evidence.
+fn microsoft_code_coverage_report_maps_absolute_filenames_without_sources() {
+    let mut fixture = alpha_fixture();
+    let xml = at_root(MICROSOFT_REPORT, &fixture.root().canonicalize().unwrap());
+    assert!(!xml.contains("<sources"));
+    fixture.report(&xml);
+    assert_eq!(fixture.parse().unwrap(), microsoft_expected());
+}
+
+#[test]
+/// An empty or unrelated `<sources>` neither maps nor blocks absolute filenames.
+fn microsoft_report_ignores_empty_and_unrelated_sources() {
+    for sources in [
+        "<sources />",
+        "<sources><source>@ROOT@/elsewhere/</source></sources>",
+    ] {
+        let mut fixture = alpha_fixture();
+        fixture.unselected("elsewhere/Other.cs", "class Other {}\n");
+        let root = fixture.root().canonicalize().unwrap();
+        let xml = at_root(MICROSOFT_REPORT, &root).replacen(
+            "<packages>",
+            &format!("{}<packages>", at_root(sources, &root)),
+            1,
+        );
+        fixture.report(&xml);
+        assert_eq!(fixture.parse().unwrap(), microsoft_expected(), "{sources}");
+    }
+}
+
+#[test]
+/// A report written for another checkout whose files exist outside the root is
+/// ignored like any unselected file; a missing file outside the root still fails.
+fn microsoft_report_outside_the_root_keeps_the_safety_rules() {
+    let mut fixture = alpha_fixture();
+    let other = tempfile::tempdir().unwrap();
+    let outside = other.path().canonicalize().unwrap();
+    for name in ["Gauge.First.cs", "Gauge.Second.cs"] {
+        fs::create_dir_all(outside.join("Alpha.Library")).unwrap();
+        fs::write(outside.join("Alpha.Library").join(name), "class X {}\n").unwrap();
+    }
+    fixture.report(&at_root(MICROSOFT_REPORT, &outside));
+    assert!(fixture.parse().unwrap().is_empty());
+
+    fs::remove_file(outside.join("Alpha.Library/Gauge.Second.cs")).unwrap();
+    let error = fixture.parse().unwrap_err();
+    assert!(
+        format!("{error:#}").contains("does not resolve to a root-contained file"),
+        "{error:#}"
+    );
+}
+
+#[test]
+/// Coverlet on Microsoft Testing Platform writes the VSTest collector's dialect:
+/// a source prefix and root-relative filenames.
+fn coverlet_mtp_report_maps_filenames_through_the_source_prefix() {
+    let mut fixture = alpha_fixture();
+    let xml = at_root(COVERLET_MTP_REPORT, &fixture.root().canonicalize().unwrap());
+    fixture.report(&xml);
+    let mut expected = microsoft_expected();
+    // Coverlet counts the two `Full` calls, where Microsoft's tool reports 1.
+    for line in [13, 14, 17] {
+        expected
+            .get_mut("Alpha.Library/Gauge.First.cs")
+            .unwrap()
+            .insert(line, 2);
+    }
+    assert_eq!(fixture.parse().unwrap(), expected);
+}
