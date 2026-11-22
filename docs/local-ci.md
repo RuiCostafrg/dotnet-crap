@@ -30,6 +30,11 @@ Push your commits first: `gh signoff` only attests pushed work. When everything 
 green you get `signoff/tests`, `signoff/lint`, `signoff/security` statuses on HEAD;
 a failing stage posts a red status automatically (`gh signoff fail`).
 
+The runner and checksum are vendored from verified-release-kit. The checks
+for this repository live in `scripts/local-ci.stages.sh`. Signoff requires
+a clean checkout and uses the exact commit tested. Use `--no-signoff`
+to run the checks on local edits.
+
 ## Optional: make sign-off a merge requirement
 
 ```bash
