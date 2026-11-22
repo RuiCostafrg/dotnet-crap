@@ -48,6 +48,12 @@ pub struct CollectOptions {
     /// `ScanOptions::skip_unparsed`. Their coverage entries are imported like
     /// those of a selected file with no callables, and the command still runs.
     pub skip_unparsed: bool,
+    /// Honor `.gitignore` and `.ignore` files, as `ScanOptions::respect_ignore_files`.
+    pub respect_ignore_files: bool,
+    /// Include globs, as `ScanOptions::include`.
+    pub include: Vec<String>,
+    /// Exclude globs, as `ScanOptions::exclude`.
+    pub exclude: Vec<String>,
 }
 
 /// Snapshot selected bytes, run trusted tests in the canonical source root, then
@@ -62,6 +68,9 @@ pub fn collect(options: &CollectOptions) -> Result<()> {
         jobs: options.jobs,
         defines: options.defines.clone(),
         skip_unparsed: options.skip_unparsed,
+        respect_ignore_files: options.respect_ignore_files,
+        include: options.include.clone(),
+        exclude: options.exclude.clone(),
         ..Default::default()
     };
     // The scan hashes, parses and verifies each selected file once; its line
@@ -344,6 +353,9 @@ mod deadline_tests {
             jobs: None,
             defines: Vec::new(),
             skip_unparsed: false,
+            respect_ignore_files: true,
+            include: Vec::new(),
+            exclude: Vec::new(),
         }
     }
 
@@ -657,6 +669,9 @@ p=pathlib.Path(sys.argv[1])/'run'; p.mkdir()
             jobs: None,
             defines: Vec::new(),
             skip_unparsed: false,
+            respect_ignore_files: true,
+            include: Vec::new(),
+            exclude: Vec::new(),
         };
         crate::work::take();
         collect(&options).unwrap();

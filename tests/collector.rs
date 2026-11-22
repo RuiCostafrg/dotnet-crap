@@ -20,6 +20,9 @@ fn fixture(script: &str) -> (tempfile::TempDir, CollectOptions) {
         jobs: None,
         defines: Vec::new(),
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
         output: dir.path().join("native.json"),
         expected_reports: 1,
         command: ["python3", "-c", script, "{results}"]
@@ -448,6 +451,9 @@ p=pathlib.Path(sys.argv[1]); assert p.is_dir() and not list(p.iterdir())
         jobs: None,
         defines: Vec::new(),
         skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
     };
     let error = collect(&options).unwrap_err();
     assert_eq!(error.kind(), dotnet_crap::ErrorKind::Syntax);
@@ -516,4 +522,28 @@ fn cli_collect_jobs_keeps_evidence_identical_and_rejects_zero() {
     assert!(String::from_utf8_lossy(&zero.stderr).contains("is not a positive integer"));
     assert!(!none.exists());
     assert!(!options.output.exists());
+}
+
+#[test]
+/// `exclude` and ignore files remove a file from collection: a syntax-broken
+/// source that would fail the snapshot is never selected, so the run succeeds.
+fn collect_honors_exclude_and_ignore_files() {
+    let (dir, mut options) = fixture(REPORT);
+    fs::write(dir.path().join("Bad.cs"), "class Bad { void M( }\n").unwrap();
+    assert_eq!(
+        collect(&options).unwrap_err().kind(),
+        dotnet_crap::ErrorKind::Syntax
+    );
+    options.exclude = vec!["Bad.cs".to_owned()];
+    collect(&options).unwrap();
+    fs::remove_file(&options.output).unwrap();
+    options.exclude = Vec::new();
+    fs::write(dir.path().join(".gitignore"), "Bad.cs\n").unwrap();
+    collect(&options).unwrap();
+    fs::remove_file(&options.output).unwrap();
+    options.respect_ignore_files = false;
+    assert_eq!(
+        collect(&options).unwrap_err().kind(),
+        dotnet_crap::ErrorKind::Syntax
+    );
 }
