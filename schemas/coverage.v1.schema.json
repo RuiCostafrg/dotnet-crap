@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/RuiCostafrg/dotnet-crap/main/schemas/coverage.v1.schema.json",
+  "title": "dotnet-crap native coverage v1",
+  "description": "Input of '--coverage'. Unknown fields are rejected. Duplicate map keys are also rejected by the reader but cannot be expressed in JSON Schema. Binding to source bytes (hash match, lines within the file) is checked at scan time.",
+  "type": "object",
+  "properties": {
+    "version": { "const": 1 },
+    "files": {
+      "type": "object",
+      "description": "Per-file line hits keyed by normalized slash-separated path relative to --root.",
+      "propertyNames": {
+        "pattern": "^[^\\\\:/]+(/[^\\\\:/]+)*$",
+        "not": { "pattern": "(^|/)\\.{1,2}(/|$)" }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$",
+            "description": "SHA-256 of the exact source bytes, 64 hexadecimal characters."
+          },
+          "lines": {
+            "type": "object",
+            "description": "Hit counts keyed by canonical positive one-based line number; zero-hit executable points must be included.",
+            "propertyNames": { "pattern": "^[1-9][0-9]*$" },
+            "additionalProperties": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "required": ["sha256", "lines"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["version", "files"],
+  "additionalProperties": false
+}

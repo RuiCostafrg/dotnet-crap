@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/RuiCostafrg/dotnet-crap/main/schemas/report.v1.schema.json",
+  "title": "dotnet-crap JSON report v1",
+  "description": "Output of 'dotnet-crap --format json'. Consumers must ignore unknown fields: minor releases may add fields, but never remove, rename or retype one.",
+  "type": "object",
+  "properties": {
+    "version": { "const": 1, "description": "Report format version." },
+    "threshold": { "type": "number", "description": "Score threshold used for the policy; equality passes." },
+    "files_scanned": { "type": "integer", "minimum": 0, "description": "Number of selected source files." },
+    "skipped_files": {
+      "type": "array",
+      "description": "Selected sources skipped because they did not parse (--skip-unparsed). Absent when none were skipped.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "description": "Root-relative source path." },
+          "message": { "type": "string", "description": "Syntax error message that would have failed the scan." }
+        },
+        "required": ["path", "message"],
+        "additionalProperties": true
+      }
+    },
+    "coverage_complete": { "type": "boolean", "description": "Whether every callable has coverage evidence." },
+    "functions": {
+      "type": "array",
+      "description": "Callables in deterministic scan order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string", "description": "Root-relative source path." },
+          "name": { "type": "string", "description": "Display name derived from the callable syntax." },
+          "kind": { "type": "string", "description": "Syntax node kind." },
+          "line": { "type": "integer", "minimum": 1, "description": "One-based starting line." },
+          "column": { "type": "integer", "minimum": 1, "description": "One-based starting byte column." },
+          "end_line": { "type": "integer", "minimum": 1, "description": "One-based ending line." },
+          "complexity": { "type": "integer", "minimum": 1, "description": "Cyclomatic complexity." },
+          "coverage": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Fraction of supplied coverage points hit; null without coverage evidence. Always present."
+          },
+          "crap": { "type": "number", "minimum": 0, "description": "CRAP score." },
+          "scope": { "type": "string", "description": "Enclosing namespaces, types and callables, joined with '.'." },
+          "signature": { "type": "string", "description": "Name plus parameter types, such as Parse(string,int)." },
+          "baseline": {
+            "enum": ["new", "worse", "unchanged", "improved"],
+            "description": "Baseline outcome of a failing callable. Absent without a baseline and for passing callables."
+          }
+        },
+        "required": ["file", "name", "kind", "line", "column", "end_line", "complexity", "coverage", "crap", "scope", "signature"],
+        "additionalProperties": true
+      }
+    },
+    "failed": { "type": "boolean", "description": "Whether any configured policy failed." },
+    "baseline": {
+      "type": "object",
+      "description": "Baseline comparison counts. Absent unless a baseline was used.",
+      "properties": {
+        "new": { "type": "integer", "minimum": 0 },
+        "worse": { "type": "integer", "minimum": 0 },
+        "unchanged": { "type": "integer", "minimum": 0 },
+        "improved": { "type": "integer", "minimum": 0 },
+        "resolved": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["new", "worse", "unchanged", "improved", "resolved"],
+      "additionalProperties": true
+    }
+  },
+  "required": ["version", "threshold", "files_scanned", "coverage_complete", "functions", "failed"],
+  "additionalProperties": true
+}

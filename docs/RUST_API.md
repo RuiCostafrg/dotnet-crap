@@ -5,7 +5,8 @@ The `dotnet_crap` library is the scanning and rendering core behind the
 reports without starting the CLI process. The source crate is version 0.2.0
 (unreleased) and this repository has no crates.io publishing workflow, so consume
 it from a local path or a git revision. No semantic-versioning guarantee is made
-for this surface yet.
+for this surface yet: it is outside the 1.x stability guarantee in the
+[compatibility policy](COMPATIBILITY.md).
 
 The documented surface is:
 

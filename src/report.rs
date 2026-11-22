@@ -89,6 +89,8 @@ pub struct SkippedFile {
 /// Ordered scan results and the resulting policy decision.
 #[derive(Debug, Serialize)]
 pub struct Report {
+    /// JSON report format version; always 1 in this release line.
+    pub version: u32,
     /// Score threshold used for the policy; equality passes.
     pub threshold: f64,
     /// Number of selected source files.

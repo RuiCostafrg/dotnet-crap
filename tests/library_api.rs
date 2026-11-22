@@ -252,7 +252,7 @@ fn serialization_and_captured_policy_keep_the_existing_contract() {
     assert_eq!(
         result.render(ReportFormat::Json).unwrap(),
         concat!(
-            "{\n  \"threshold\": 1.0,\n  \"files_scanned\": 1,\n",
+            "{\n  \"version\": 1,\n  \"threshold\": 1.0,\n  \"files_scanned\": 1,\n",
             "  \"coverage_complete\": false,\n  \"functions\": [\n    {\n",
             "      \"file\": \"a.cs\",\n      \"name\": \"F\",\n",
             "      \"kind\": \"method_declaration\",\n      \"line\": 1,\n",

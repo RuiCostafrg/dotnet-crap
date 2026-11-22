@@ -22,7 +22,7 @@ are replaced by .NET workflows rather than ported literally.
 | Text and JSON reports | Same output roles | Implemented, initial report shape only |
 | XML, HTML, SARIF, filters/sorting/top | C# reports and stable diagnostic IDs | SARIF implemented; XML/HTML/display options remain Phase 5 |
 | Public Rust API and streaming rendering | `dotnet_crap` library and thin CLI | Scan/typed reports/string rendering implemented; streaming deferred |
-| Versioned JSON Schemas and compatibility policy | Coverage/config/baseline/report schemas | Phase 6 |
+| Versioned JSON Schemas and compatibility policy | Coverage/config/baseline/report schemas | Implemented; see [COMPATIBILITY.md](COMPATIBILITY.md) |
 | Native archives and checksums | Linux/macOS x64 + ARM64, Windows x64 | Release workflow included; release-time validation pending |
 | npm distribution | .NET global/local tool NuGet package | Launcher and local install smoke included |
 | Setup GitHub Action | Pinned native release download and checksum | Included; published-release adoption pending |

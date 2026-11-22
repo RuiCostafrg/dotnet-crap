@@ -29,3 +29,6 @@ unsafe_code = "forbid"
 [profile.dist]
 inherits = "release"
 lto = "thin"
+
+[dev-dependencies]
+jsonschema = { version = "0.63", default-features = false }

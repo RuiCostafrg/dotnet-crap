@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/RuiCostafrg/dotnet-crap/main/schemas/config.v1.schema.json",
+  "title": "dotnet-crap.json v1",
+  "description": "Project configuration read from <root>/dotnet-crap.json or --config. Unknown keys are rejected; a null value is the same as an absent key.",
+  "type": "object",
+  "properties": {
+    "version": { "const": 1, "description": "Must be 1." },
+    "threshold": { "type": ["number", "null"], "minimum": 0, "description": "Scores strictly above this fail. Finite and nonnegative." },
+    "include": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Keep only files matching one of these root-relative globs." },
+    "exclude": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Drop files matching any of these root-relative globs." },
+    "respect_ignore_files": { "type": ["boolean", "null"], "description": "Honor .gitignore and .ignore files." },
+    "require_coverage": { "type": ["boolean", "null"], "description": "As --require-coverage." },
+    "fail_on_empty": { "type": ["boolean", "null"], "description": "As --fail-on-empty." },
+    "skip_unparsed": { "type": ["boolean", "null"], "description": "As --skip-unparsed." },
+    "defines": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Conditional compilation symbols, as --define." },
+    "baseline": { "type": ["string", "null"], "description": "Baseline file, relative to the config file's directory." }
+  },
+  "required": ["version"],
+  "additionalProperties": false
+}
