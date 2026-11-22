@@ -15,7 +15,8 @@
   "require_coverage": false,
   "fail_on_empty": false,
   "skip_unparsed": false,
-  "defines": ["NET10_0"]
+  "defines": ["NET10_0"],
+  "baseline": "dotnet-crap-baseline.json"
 }
 ```
 
@@ -30,10 +31,13 @@
 | `fail_on_empty` | boolean | As `--fail-on-empty`. |
 | `skip_unparsed` | boolean | As `--skip-unparsed`. |
 | `defines` | string list | As `--define`. |
+| `baseline` | string | Baseline file to compare with, relative to the config file's directory. See [BASELINES.md](BASELINES.md). |
 
 Unknown fields are rejected. A missing, unreadable or invalid file exits with
 code 2 and names the file in the error. `collect` reads the same file and uses
 `include`, `exclude`, `respect_ignore_files`, `skip_unparsed` and `defines`.
+`--write-baseline` ignores a configured `baseline`, so the file can be refreshed
+with `--overwrite-baseline`.
 
 ## Discovery
 
@@ -53,6 +57,7 @@ Explicit command line, then config file, then built-in default.
 | skip unparsed | `--skip-unparsed` / `--no-skip-unparsed` | `skip_unparsed` | off |
 | ignore files | `--no-ignore` | `respect_ignore_files` | on |
 | include / exclude / defines | `--include` / `--exclude` / `--define` | lists | empty |
+| baseline | `--baseline PATH` / `--no-baseline` | `baseline` | none |
 
 For each boolean pair the last flag on the command line wins. A list given on
 the command line **replaces** the config list; it is not merged.

@@ -2,7 +2,8 @@
 
 use crate::error::{fail, ErrorKind, OptionExt, Result};
 use crate::Item;
-use std::num::NonZeroU16;
+use sha2::{Digest, Sha256};
+use std::{collections::HashMap, num::NonZeroU16};
 use tree_sitter::{Language, Node, TreeCursor};
 
 /// Recognize implemented callable bodies, leaving explicit property/indexer accessors separate.
@@ -108,6 +109,229 @@ fn callable_name(n: Node<'_>, source: &str) -> String {
             .and_then(|x| x.utf8_text(source.as_bytes()).ok())
             .unwrap_or(n.kind())
             .to_owned(),
+    }
+}
+/// Most enclosing scope segments kept in an item's `scope`, innermost last. It
+/// bounds the text per callable: a method holding thousands of nested lambdas
+/// would otherwise give each one a scope as long as its nesting depth.
+const MAX_SCOPE_SEGMENTS: usize = 64;
+
+/// Role of a syntax node as an enclosing scope of the callables inside it.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum ScopeKind {
+    None,
+    /// Block `namespace N { }`: encloses its body.
+    Namespace,
+    /// `namespace N;`: applies to the declarations after it in its parent.
+    FileScoped,
+    /// Class, struct, record, interface, enum or extension block.
+    Type,
+    /// Property, indexer or event, whose accessors are callables.
+    Member,
+}
+
+/// Scope role of a node kind name.
+fn scope_kind(name: &str) -> ScopeKind {
+    match name {
+        "namespace_declaration" => ScopeKind::Namespace,
+        "file_scoped_namespace_declaration" => ScopeKind::FileScoped,
+        "class_declaration"
+        | "struct_declaration"
+        | "record_declaration"
+        | "interface_declaration"
+        | "enum_declaration"
+        | "extension_declaration" => ScopeKind::Type,
+        "property_declaration" | "indexer_declaration" | "event_declaration" => ScopeKind::Member,
+        _ => ScopeKind::None,
+    }
+}
+
+/// One enclosing scope while a traversal is below it.
+struct Scope {
+    /// Depth at which a traversal drops this scope again.
+    depth: usize,
+    segment: String,
+}
+
+/// A type's name with its generic arity, as in ``Foo`2``. An extension block has no name.
+fn type_segment(n: Node<'_>, source: &str) -> String {
+    let name = n
+        .child_by_field_name("name")
+        .map_or_else(|| "extension".to_owned(), |x| normalized_text(x, source));
+    let mut c = n.walk();
+    let arity = n
+        .children(&mut c)
+        .find(|child| child.kind() == "type_parameter_list")
+        .map_or(0, |list| {
+            let mut c = list.walk();
+            let count = list
+                .named_children(&mut c)
+                .filter(|p| p.kind() == "type_parameter")
+                .count();
+            count
+        });
+    if arity == 0 {
+        name
+    } else {
+        format!("{name}`{arity}")
+    }
+}
+
+/// The scope a node opens for what is inside it. `known_name` is the display
+/// name when the node is a callable, whose nested callables it encloses.
+fn scope_for(
+    kind: ScopeKind,
+    known_name: Option<&str>,
+    n: Node<'_>,
+    source: &str,
+) -> Option<String> {
+    match kind {
+        ScopeKind::None => known_name.map(str::to_owned),
+        ScopeKind::Namespace | ScopeKind::FileScoped => n
+            .child_by_field_name("name")
+            .map(|x| normalized_text(x, source)),
+        ScopeKind::Type => Some(type_segment(n, source)),
+        ScopeKind::Member => {
+            Some(known_name.map_or_else(|| callable_name(n, source), str::to_owned))
+        }
+    }
+}
+
+/// Join the innermost [`MAX_SCOPE_SEGMENTS`] scopes with `.`.
+fn join_scopes(scopes: &[Scope]) -> String {
+    scopes[scopes.len().saturating_sub(MAX_SCOPE_SEGMENTS)..]
+        .iter()
+        .map(|s| s.segment.as_str())
+        .collect::<Vec<_>>()
+        .join(".")
+}
+
+/// Open the scope of `n`, if it has one, at `depth`; `known_name` is as for
+/// [`scope_for`]. A file-scoped namespace
+/// is a sibling of the declarations it covers, so it lasts until its parent, at
+/// `depth - 1`, ends; a walk that starts at such a node has no parent to bound it.
+fn open_scope(
+    scopes: &mut Vec<Scope>,
+    kind: ScopeKind,
+    known_name: Option<&str>,
+    n: Node<'_>,
+    source: &str,
+    depth: usize,
+) {
+    let depth = if kind == ScopeKind::FileScoped {
+        match depth.checked_sub(1) {
+            Some(parent) => parent,
+            None => return,
+        }
+    } else {
+        depth
+    };
+    if let Some(segment) = scope_for(kind, known_name, n, source) {
+        scopes.push(Scope { depth, segment });
+    }
+}
+
+/// Name plus parameter types, as `Parse(string,int)`. Operator, conversion and
+/// indexer names already spell their parameter types, and properties have none.
+fn signature(n: Node<'_>, name: &str, source: &str) -> String {
+    match n.kind() {
+        "operator_declaration"
+        | "conversion_operator_declaration"
+        | "indexer_declaration"
+        | "property_declaration" => name.to_owned(),
+        _ => format!(
+            "{name}({})",
+            parameter_types(n.child_by_field_name("parameters"), source)
+        ),
+    }
+}
+
+/// Hash a callable's leaf tokens in order, skipping comments, with single spaces
+/// between tokens, so whitespace and comments do not matter and any token does.
+///
+/// The callable's own name, when an identifier, is left out so that renaming it
+/// alone keeps the fingerprint; the baseline matcher relies on that to follow a
+/// renamed callable. Operators, accessors and other callables whose name is not
+/// an identifier keep it.
+///
+/// A directly nested callable contributes its own fingerprint as one token in
+/// place of its tokens. Every token is then read and hashed once, by its innermost
+/// callable, where hashing each callable's whole subtree would repeat the work
+/// for every level of nesting. `nested` maps callable node ids to indices of
+/// `items`, whose fingerprints must already be set for nested callables.
+fn fingerprint(
+    root: Node<'_>,
+    source: &str,
+    nested: &HashMap<usize, usize>,
+    items: &[Item],
+) -> String {
+    let mut hasher = Sha256::new();
+    let mut first = true;
+    let mut token = |text: &[u8]| {
+        if !first {
+            hasher.update(b" ");
+        }
+        first = false;
+        hasher.update(text);
+    };
+    let own_name = root
+        .child_by_field_name("name")
+        .filter(|name| name.kind() == "identifier")
+        .map(|name| name.id());
+    let mut cursor = root.walk();
+    'walk: loop {
+        let node = cursor.node();
+        let mut descend = true;
+        if node.kind() == "comment" || Some(node.id()) == own_name {
+            descend = false;
+        } else if let Some(&i) = nested.get(&node.id()).filter(|_| node.id() != root.id()) {
+            token(items[i].fingerprint.as_bytes());
+            descend = false;
+        } else if node.child_count() == 0 {
+            token(&source.as_bytes()[node.byte_range()]);
+        }
+        if descend && cursor.goto_first_child() {
+            continue;
+        }
+        loop {
+            if cursor.goto_next_sibling() {
+                continue 'walk;
+            }
+            if !cursor.goto_parent() {
+                break 'walk;
+            }
+        }
+    }
+    hex::encode(hasher.finalize())
+}
+
+/// Finish the identity of a file's callables, given their nodes in item order:
+/// fingerprints, innermost first, and occurrence numbers in scan order.
+fn seal(nodes: &[Node<'_>], items: &mut [Item], source: &str) {
+    debug_assert_eq!(nodes.len(), items.len());
+    let nested: HashMap<usize, usize> =
+        nodes.iter().enumerate().map(|(i, n)| (n.id(), i)).collect();
+    // A nested callable follows its enclosing callable in pre-order, so walking
+    // backwards finishes it first.
+    for i in (0..nodes.len()).rev() {
+        let digest = fingerprint(nodes[i], source, &nested, items);
+        items[i].fingerprint = digest;
+    }
+    let occurrences: Vec<usize> = {
+        let mut seen: HashMap<(&str, &str, &str), usize> = HashMap::new();
+        items
+            .iter()
+            .map(|item| {
+                let count = seen
+                    .entry((&item.kind, &item.scope, &item.signature))
+                    .or_insert(0);
+                *count += 1;
+                *count - 1
+            })
+            .collect()
+    };
+    for (item, occurrence) in items.iter_mut().zip(occurrences) {
+        item.occurrence = occurrence;
     }
 }
 /// Return this node's direct contribution under the documented complexity convention.
@@ -333,6 +557,8 @@ pub(crate) struct KindTable {
     /// Role of every kind id, filled by name, so aliases and named/anonymous
     /// kinds that share a name classify exactly as the string comparisons do.
     classes: Box<[Class]>,
+    /// Scope role of every kind id, as [`scope_kind`] gives by name.
+    scopes: Box<[ScopeKind]>,
     body: Option<NonZeroU16>,
     value: Option<NonZeroU16>,
     operator: Option<NonZeroU16>,
@@ -353,8 +579,17 @@ impl KindTable {
                     .map_or(Class::Other, |&(_, class)| class)
             })
             .collect();
+        let scopes = (0..language.node_kind_count())
+            .map(|id| {
+                u16::try_from(id)
+                    .ok()
+                    .and_then(|id| language.node_kind_for_id(id))
+                    .map_or(ScopeKind::None, scope_kind)
+            })
+            .collect();
         Self {
             classes,
+            scopes,
             body: language.field_id_for_name("body"),
             value: language.field_id_for_name("value"),
             operator: language.field_id_for_name("operator"),
@@ -368,6 +603,14 @@ impl KindTable {
             .get(usize::from(n.kind_id()))
             .copied()
             .unwrap_or(Class::Other)
+    }
+
+    /// Scope role of a node, as [`scope_kind`] gives for its kind name.
+    fn scope(&self, n: Node<'_>) -> ScopeKind {
+        self.scopes
+            .get(usize::from(n.kind_id()))
+            .copied()
+            .unwrap_or(ScopeKind::None)
     }
 
     /// Same result as [`callable`].
@@ -448,7 +691,9 @@ pub(crate) fn collect(
 ) -> Result<Traversal> {
     let len = out.len();
     let budgets = (traversal_budget, callable_budget);
-    if single_pass(kinds, n, source, file, cov, out, budgets).is_ok() {
+    let mut nodes = Vec::new();
+    if single_pass(kinds, n, source, file, cov, out, &mut nodes, budgets).is_ok() {
+        seal(&nodes, &mut out[len..], source);
         return Ok(Traversal::SinglePass);
     }
     out.truncate(len);
@@ -502,13 +747,15 @@ impl Open {
 /// also counts against its parent, which excludes its lines. Items are reserved in
 /// pre-order when a callable opens and filled in when its subtree closes, which is
 /// the reference's output order.
-fn single_pass(
+#[allow(clippy::too_many_arguments)]
+fn single_pass<'t>(
     kinds: &KindTable,
-    root: Node<'_>,
+    root: Node<'t>,
     source: &str,
     file: &str,
     cov: Option<&CoverageIndex>,
     out: &mut Vec<Item>,
+    nodes: &mut Vec<Node<'t>>,
     (traversal_budget, callable_budget): (usize, usize),
 ) -> std::result::Result<(), Exceeded> {
     // The cursor is rooted at `root`: it never moves to root's siblings or parent,
@@ -517,6 +764,7 @@ fn single_pass(
     let mut cursor = root.walk();
     let mut scratch = root.walk();
     let mut open: Vec<Open> = Vec::new();
+    let mut scopes: Vec<Scope> = Vec::new();
     let mut visited = 0usize;
     let mut depth = 0usize;
     // Id of the most recent directive condition, which the walk never enters.
@@ -545,9 +793,9 @@ fn single_pass(
                 .checked_add(kinds.decision(node, &mut scratch))
                 .ok_or(Exceeded)?;
             let start = node.start_position();
+            let name = callable_name(node, source);
             out.push(Item {
                 file: file.to_owned(),
-                name: callable_name(node, source),
                 kind: node.kind().to_owned(),
                 line: start.row + 1,
                 column: start.column + 1,
@@ -555,7 +803,15 @@ fn single_pass(
                 complexity: 0,
                 coverage: None,
                 crap: 0.0,
+                scope: join_scopes(&scopes),
+                signature: signature(node, &name, source),
+                baseline: None,
+                fingerprint: String::new(),
+                occurrence: 0,
+                baseline_crap: None,
+                name,
             });
+            nodes.push(node);
             open.push(Open {
                 item: out.len() - 1,
                 depth,
@@ -563,6 +819,11 @@ fn single_pass(
                 scored,
                 excluded: Vec::new(),
             });
+        }
+        let scope = kinds.scope(node);
+        if is_callable || scope != ScopeKind::None {
+            let known = is_callable.then(|| out[out.len() - 1].name.as_str());
+            open_scope(&mut scopes, scope, known, node, source, depth);
         }
         // Descend to the first named child; anonymous tokens are skipped, never entered.
         // A directive condition is compile-time only, so its subtree is skipped
@@ -585,6 +846,7 @@ fn single_pass(
             if let Some(callable) = open.pop_if(|callable| callable.depth == depth) {
                 callable.finish(cov, out);
             }
+            while scopes.pop_if(|scope| scope.depth == depth).is_some() {}
             if cursor.goto_next_sibling() && seek_scored(&mut cursor, skip) {
                 continue 'visit;
             }
@@ -639,20 +901,27 @@ fn collect_reference(
     traversal_budget: usize,
     callable_budget: usize,
 ) -> Result<()> {
-    let mut nodes = vec![n];
+    let len = out.len();
+    let mut pending = vec![(n, 0usize)];
+    let mut callables = Vec::new();
+    let mut scopes: Vec<Scope> = Vec::new();
     let mut visited = 0usize;
-    while let Some(n) = nodes.pop() {
+    while let Some((n, depth)) = pending.pop() {
         visited += 1;
         if visited > traversal_budget {
             fail!(ResourceLimit, "syntax tree resource limit exceeded");
         }
+        // Pre-order: whatever is at or below this depth belongs to an earlier node.
+        while scopes.pop_if(|scope| scope.depth >= depth).is_some() {}
         let mut cursor = n.walk();
         let children: Vec<_> = n
             .named_children(&mut cursor)
             .filter(|&child| !is_directive_condition(n, child))
             .collect();
-        nodes.extend(children.into_iter().rev());
+        pending.extend(children.into_iter().rev().map(|child| (child, depth + 1)));
+        let kind = scope_kind(n.kind());
         if !callable(n) {
+            open_scope(&mut scopes, kind, None, n, source, depth);
             continue;
         }
         let mut complexity = 1u32;
@@ -685,9 +954,9 @@ fn collect_reference(
         let end = n.end_position().row + 1;
         let coverage = cov.and_then(|c| span_coverage(c, start, end, &ranges));
         let missed = 1.0 - coverage.unwrap_or(0.0);
+        let name = callable_name(n, source);
         out.push(Item {
             file: file.to_owned(),
-            name: callable_name(n, source),
             kind: n.kind().to_owned(),
             line: n.start_position().row + 1,
             column: n.start_position().column + 1,
@@ -695,8 +964,18 @@ fn collect_reference(
             complexity,
             coverage,
             crap: f64::from(complexity).powi(2) * missed.powi(3) + f64::from(complexity),
+            scope: join_scopes(&scopes),
+            signature: signature(n, &name, source),
+            baseline: None,
+            fingerprint: String::new(),
+            occurrence: 0,
+            baseline_crap: None,
+            name: name.clone(),
         });
+        callables.push(n);
+        open_scope(&mut scopes, kind, Some(&name), n, source, depth);
     }
+    seal(&callables, &mut out[len..], source);
     Ok(())
 }
 #[cfg(test)]
@@ -739,6 +1018,331 @@ mod tests {
             scoring,
         )?;
         Ok(items)
+    }
+
+    fn items_of(source: &str) -> Vec<Item> {
+        collect_with_limits(source, 1_000_000, 1_000_000).unwrap()
+    }
+
+    /// `(scope, signature)` of every callable in source order.
+    fn identities(source: &str) -> Vec<(String, String)> {
+        items_of(source)
+            .into_iter()
+            .map(|item| (item.scope, item.signature))
+            .collect()
+    }
+
+    fn pairs(expected: &[(&str, &str)]) -> Vec<(String, String)> {
+        expected
+            .iter()
+            .map(|&(scope, signature)| (scope.to_owned(), signature.to_owned()))
+            .collect()
+    }
+
+    /// Every kind [`scope_kind`] names, nested namespaces, generic and non-generic
+    /// types, members with accessors and nested callables.
+    const SCOPES: &str = r#"
+namespace Outer.Inner {
+    class A<T, U> {
+        void M(int x) { int Local() { return 1; } System.Action a = () => { }; }
+        class B { void N() { } }
+        int P { get { return 1; } set { } }
+        int Q => 1;
+        int this[int i] { get => i; }
+        event System.Action E { add { } remove { } }
+    }
+    record R(int X) { void RM() { } }
+    record struct RS(int X) { void RSM() { } }
+    interface I<T> { void D() { } }
+    struct S { S(int a) { } }
+    enum En { One }
+}
+namespace Second { class Y { void G() { } } }
+"#;
+
+    #[test]
+    /// Scope joins namespaces, types with generic arity, accessor-bearing members
+    /// and enclosing callables, and each scope ends with the node that opened it.
+    fn scope_chains_namespaces_types_members_and_enclosing_callables() {
+        assert_eq!(
+            identities(SCOPES),
+            pairs(&[
+                ("Outer.Inner.A`2", "M(int)"),
+                ("Outer.Inner.A`2.M", "Local()"),
+                ("Outer.Inner.A`2.M", "lambda_expression()"),
+                ("Outer.Inner.A`2.B", "N()"),
+                ("Outer.Inner.A`2.P", "get()"),
+                ("Outer.Inner.A`2.P", "set()"),
+                ("Outer.Inner.A`2", "Q"),
+                ("Outer.Inner.A`2.this[int]", "get()"),
+                ("Outer.Inner.A`2.E", "add()"),
+                ("Outer.Inner.A`2.E", "remove()"),
+                ("Outer.Inner.R", "RM()"),
+                ("Outer.Inner.RS", "RSM()"),
+                ("Outer.Inner.I`1", "D()"),
+                ("Outer.Inner.S", "S(int)"),
+                ("Second.Y", "G()"),
+            ])
+        );
+    }
+
+    #[test]
+    /// A file-scoped namespace covers the declarations after it, an extension
+    /// block is a type without a name, and the top level has an empty scope.
+    fn file_scoped_namespaces_and_extension_blocks_open_scopes() {
+        let source = "using System;\nnamespace Ns.Deep;\nclass C { void F() { } }\nclass D<T> { void G() { } }\nstatic class X { extension<T>(T t) { void H() { } } }\n";
+        assert_eq!(
+            identities(source),
+            pairs(&[
+                ("Ns.Deep.C", "F()"),
+                ("Ns.Deep.D`1", "G()"),
+                ("Ns.Deep.X.extension`1", "H()"),
+            ])
+        );
+        assert_eq!(
+            identities("class C { void F() { } }"),
+            pairs(&[("C", "F()")])
+        );
+    }
+
+    #[test]
+    /// Only the innermost segments are kept, so deep nesting cannot grow scopes without bound.
+    fn scope_keeps_only_the_innermost_segments() {
+        let depth = MAX_SCOPE_SEGMENTS + 6;
+        let mut source = String::new();
+        for i in 0..depth {
+            source.push_str(&format!("class C{i} {{ "));
+        }
+        source.push_str("void F() { }");
+        source.push_str(&" }".repeat(depth));
+        let items = items_of(&source);
+        let segments: Vec<&str> = items[0].scope.split('.').collect();
+        assert_eq!(segments.len(), MAX_SCOPE_SEGMENTS);
+        assert_eq!(segments[0], "C6");
+        assert_eq!(segments[MAX_SCOPE_SEGMENTS - 1], format!("C{}", depth - 1));
+    }
+
+    #[test]
+    /// Signatures spell the parameter types, so overloads differ, and use the
+    /// callable's display name for lambdas, operators, indexers and destructors.
+    fn signatures_name_parameter_types() {
+        let source = r#"
+class C<T> {
+    C(int a) { }
+    ~C() { }
+    string Parse(string s, int n) { return s; }
+    void Parse(int n) { }
+    void Many(List<int> xs, Dictionary<string, int[]> map, params string[] rest, ref int r, out int o, T t) { o = 1; }
+    public static C<T> operator +(C<T> a, C<T> b) => a;
+    public static explicit operator int(C<T> c) { return 0; }
+    int this[int i, string s] => i;
+    int P => 1;
+    void L() {
+        System.Action<int> a = (int x) => { };
+        System.Func<int, int> b = x => x;
+        System.Action c = delegate (string s) { };
+        System.Action d = delegate { };
+    }
+}"#;
+        let signatures: Vec<String> = items_of(source)
+            .into_iter()
+            .map(|item| item.signature)
+            .collect();
+        assert_eq!(
+            signatures,
+            [
+                "C(int)",
+                "~C()",
+                "Parse(string,int)",
+                "Parse(int)",
+                "Many(List<int>,Dictionary<string, int[]>,string[],int,int,T)",
+                "operator +(C<T>,C<T>)",
+                "explicit operator int(C<T>)",
+                "this[int,string]",
+                "P",
+                "L()",
+                "lambda_expression(int)",
+                "lambda_expression()",
+                "anonymous_method_expression(string)",
+                "anonymous_method_expression()",
+            ]
+        );
+    }
+
+    #[test]
+    /// Callables of the same file with one kind, scope and signature count up in scan order.
+    fn occurrences_count_identical_identities_per_file() {
+        let source = "class C { void F() { } void F() { } void G() { } void F() { } }";
+        let occurrences: Vec<(String, usize)> = items_of(source)
+            .into_iter()
+            .map(|item| (item.signature, item.occurrence))
+            .collect();
+        assert_eq!(
+            occurrences,
+            [
+                ("F()".to_owned(), 0),
+                ("F()".to_owned(), 1),
+                ("G()".to_owned(), 0),
+                ("F()".to_owned(), 2)
+            ]
+        );
+        // A different kind or scope starts its own count.
+        let source = "class C { void F() { void F() { } } class D { void F() { } } }";
+        let occurrences: Vec<usize> = items_of(source).iter().map(|i| i.occurrence).collect();
+        assert_eq!(occurrences, [0, 0, 0]);
+    }
+
+    fn fingerprints(source: &str) -> Vec<String> {
+        items_of(source)
+            .into_iter()
+            .map(|i| i.fingerprint)
+            .collect()
+    }
+
+    #[test]
+    /// Whitespace and comments never change a fingerprint; any token does; the
+    /// callable's own name is not part of it.
+    fn fingerprints_ignore_whitespace_comments_and_the_own_name_but_not_tokens() {
+        let base = "class C { int F(int x) { if (x > 1) { return x + 1; } return 0; } }";
+        let reformatted = "class C {\n  // about F\n  int F ( int x )\n  {\n    /* c */ if (x>1)\n    { return x+1; } // tail\n    return 0;\n  }\n}";
+        let reference = fingerprints(base);
+        assert_eq!(reference.len(), 1);
+        assert_eq!(reference[0].len(), 64);
+        assert!(reference[0].bytes().all(|b| b.is_ascii_hexdigit()));
+        assert_eq!(fingerprints(reformatted), reference);
+        // The callable's own name is not hashed; a literal, an operator, a
+        // parameter, a keyword or the return type are.
+        assert_eq!(fingerprints(&base.replace(" F(", " Renamed(")), reference);
+        for edited in [
+            base.replace("x + 1", "x + 2"),
+            base.replace("x > 1", "x < 1"),
+            base.replace("int x", "int y").replace("x", "y"),
+            base.replace("return 0", "return 1"),
+            base.replace("int F", "long F"),
+            base.replace("{ return x + 1; }", "{ return x + 1; } else { }"),
+        ] {
+            assert_ne!(fingerprints(&edited), reference, "{edited}");
+        }
+        // The hash is over leaf tokens separated by single spaces.
+        let tokens = "int ( int x ) { if ( x > 1 ) { return x + 1 ; } return 0 ; }";
+        let expected = hex::encode(Sha256::digest(tokens.as_bytes()));
+        assert_eq!(reference[0], expected);
+    }
+
+    #[test]
+    /// A callable that is not identified by an identifier keeps its name token.
+    fn fingerprints_keep_names_that_are_not_identifiers() {
+        let source = "class C { int P { get { return 1; } set { return 1; } } public static C operator +(C a, C b) => a; public static C operator -(C a, C b) => a; }";
+        let f = fingerprints(source);
+        assert_ne!(f[0], f[1], "get and set");
+        assert_ne!(f[2], f[3], "operators");
+    }
+
+    #[test]
+    /// A nested callable's tokens count for its enclosing callable, without being rehashed.
+    fn fingerprints_cover_nested_callables() {
+        let base = "class C { void F() { System.Func<int> g = () => { return 1; }; int L() { return 2; } } }";
+        let reference = fingerprints(base);
+        assert_eq!(reference.len(), 3);
+        assert_eq!(
+            fingerprints(&base.replace("{ return 1; }", "{\n // c\n return  1 ; }")),
+            reference
+        );
+        for edited in [
+            base.replace("return 1", "return 3"),
+            base.replace("return 2", "return 3"),
+        ] {
+            let changed = fingerprints(&edited);
+            assert_ne!(changed[0], reference[0], "outer: {edited}");
+        }
+        // Only the lambda changed, so only it and its enclosing callable differ.
+        let changed = fingerprints(&base.replace("return 1", "return 3"));
+        assert_ne!(changed[1], reference[1]);
+        assert_eq!(changed[2], reference[2]);
+        // Nesting depth does not multiply work: a deep chain finishes at once.
+        let mut deep = String::from("class C { void F() { ");
+        deep.push_str(&"System.Action a = () => { ".repeat(200));
+        deep.push_str(&"};".repeat(200));
+        deep.push_str(" } }");
+        assert_eq!(fingerprints(&deep).len(), 201);
+    }
+
+    #[test]
+    /// Distinct callables with equal tokens hash alike, wherever they are.
+    fn equal_bodies_have_equal_fingerprints() {
+        let f = fingerprints(
+            "class A { int F() { return 1; } } namespace N { class B { int G() { return 1; } } }",
+        );
+        assert_eq!(f[0], f[1]);
+    }
+
+    #[test]
+    /// The scope table agrees with the kind names it is built from, and every
+    /// scope kind occurs in the scope source and exists in the grammar.
+    fn scope_table_matches_names_on_the_corpus() {
+        let language = csharp();
+        let kinds = KindTable::new(&language);
+        for (name, source) in corpus() {
+            let tree = parse(&source);
+            for node in named_nodes(tree.root_node()) {
+                assert_eq!(
+                    kinds.scope(node),
+                    scope_kind(node.kind()),
+                    "{} in {name}",
+                    node.kind()
+                );
+            }
+        }
+        let tree = parse(SCOPES);
+        let seen: std::collections::BTreeSet<&str> = named_nodes(tree.root_node())
+            .iter()
+            .map(|n| n.kind())
+            .collect();
+        let names = [
+            ("namespace_declaration", ScopeKind::Namespace),
+            ("class_declaration", ScopeKind::Type),
+            ("struct_declaration", ScopeKind::Type),
+            ("record_declaration", ScopeKind::Type),
+            ("interface_declaration", ScopeKind::Type),
+            ("enum_declaration", ScopeKind::Type),
+            ("property_declaration", ScopeKind::Member),
+            ("indexer_declaration", ScopeKind::Member),
+            ("event_declaration", ScopeKind::Member),
+        ];
+        for (name, kind) in names {
+            assert!(seen.contains(name), "{name} does not occur in SCOPES");
+            assert_eq!(scope_kind(name), kind);
+            assert_ne!(language.id_for_node_kind(name, true), 0, "{name}");
+        }
+        assert_eq!(scope_kind("identifier"), ScopeKind::None);
+        let file_scoped = "file_scoped_namespace_declaration";
+        assert_eq!(scope_kind(file_scoped), ScopeKind::FileScoped);
+        assert_ne!(language.id_for_node_kind(file_scoped, true), 0);
+        let extension = "extension_declaration";
+        assert_eq!(scope_kind(extension), ScopeKind::Type);
+        assert_ne!(language.id_for_node_kind(extension, true), 0);
+    }
+
+    #[test]
+    /// Started at a file-scoped namespace, a walk has no parent to bound the scope.
+    fn a_walk_rooted_at_a_file_scoped_namespace_opens_no_scope() {
+        let source = "namespace N;\nclass C { void F() { } }";
+        let tree = parse(source);
+        let namespace = tree.root_node().named_child(0).unwrap();
+        assert_eq!(namespace.kind(), "file_scoped_namespace_declaration");
+        let mut items = Vec::new();
+        collect(
+            &KindTable::new(&csharp()),
+            namespace,
+            source,
+            "C.cs",
+            None,
+            &mut items,
+            1000,
+            1000,
+        )
+        .unwrap();
+        assert!(items.is_empty());
     }
 
     #[test]
@@ -1217,6 +1821,11 @@ class C<T> {
             .map(|p| (p.display().to_string(), std::fs::read_to_string(p).unwrap()))
             .collect();
         sources.push(("<edge>".into(), EDGE.into()));
+        sources.push(("<scopes>".into(), SCOPES.into()));
+        sources.push((
+            "<file-scoped>".into(),
+            "namespace A.B;\nclass C<T> { void F() { } }\nclass D { int P { get { return 1; } } }\n".into(),
+        ));
         sources.extend(
             SMALL
                 .iter()
@@ -1259,6 +1868,12 @@ class C<T> {
             complexity: 1,
             coverage: None,
             crap: 1.0,
+            scope: String::new(),
+            signature: "Earlier()".into(),
+            baseline: None,
+            fingerprint: String::new(),
+            occurrence: 0,
+            baseline_crap: None,
         }
     }
 

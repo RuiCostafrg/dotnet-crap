@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
+use dotnet_crap::baseline;
 use dotnet_crap::config::{self, Overrides};
 use std::{io::Write, num::NonZeroUsize, path::PathBuf};
 
@@ -75,6 +76,24 @@ struct Args {
     /// Override a config `skip_unparsed: true`
     #[arg(long, overrides_with = "skip_unparsed")]
     no_skip_unparsed: bool,
+    /// Compare with this baseline: only new or worse violations fail
+    /// [default: the config `baseline`]
+    #[arg(long, value_name = "PATH", conflicts_with_all = ["no_baseline", "write_baseline"])]
+    baseline: Option<PathBuf>,
+    /// Ignore a baseline set in the config
+    #[arg(long)]
+    no_baseline: bool,
+    /// Write the current violations to PATH as a baseline; exits 0 unless
+    /// `--require-coverage` or `--fail-on-empty` fails
+    #[arg(long, value_name = "PATH")]
+    write_baseline: Option<PathBuf>,
+    /// Replace an existing `--write-baseline` file
+    #[arg(long, requires = "write_baseline")]
+    overwrite_baseline: bool,
+    /// Match baseline entries of file OLD against file NEW (root-relative;
+    /// repeatable)
+    #[arg(long = "baseline-move", value_name = "OLD=NEW", value_parser = baseline::parse_move)]
+    baseline_moves: Vec<(String, String)>,
     #[command(flatten)]
     selection: SelectionArgs,
     paths: Vec<PathBuf>,
@@ -196,9 +215,22 @@ fn run(args: Args) -> Result<bool> {
             include: args.selection.include,
             exclude: args.selection.exclude,
             defines: split_defines(args.defines),
+            baseline: args.baseline,
+            no_baseline: args.no_baseline,
         },
     );
-    let result = scan(&ScanOptions {
+    // Writing a baseline replaces comparing with one, even a configured one.
+    let baseline = if args.write_baseline.is_some() {
+        None
+    } else {
+        resolved.baseline
+    };
+    if let (Some(output), Some(written)) = (&args.output, &args.write_baseline) {
+        if dotnet_crap::output::same_destination(output, written)? {
+            anyhow::bail!("--output and --write-baseline name the same file");
+        }
+    }
+    let mut result = scan(&ScanOptions {
         root: args.root,
         threshold: resolved.threshold,
         coverage: args.coverage,
@@ -211,7 +243,12 @@ fn run(args: Args) -> Result<bool> {
         respect_ignore_files: resolved.respect_ignore_files,
         include: resolved.include,
         exclude: resolved.exclude,
+        baseline,
+        baseline_moves: args.baseline_moves,
     })?;
+    if args.write_baseline.is_some() {
+        result.accept_scores();
+    }
     let format = match args.format.as_str() {
         "json" => ReportFormat::Json,
         "sarif" => ReportFormat::Sarif,
@@ -223,6 +260,13 @@ fn run(args: Args) -> Result<bool> {
         dotnet_crap::output::write_report(&result, &output, &path)?;
     } else {
         std::io::stdout().lock().write_all(output.as_bytes())?;
+    }
+    if let Some(path) = args.write_baseline {
+        let entries = result.write_baseline(&path, args.overwrite_baseline)?;
+        eprintln!(
+            "wrote baseline with {entries} entries to {}",
+            path.display()
+        );
     }
     Ok(result.report().failed)
 }
