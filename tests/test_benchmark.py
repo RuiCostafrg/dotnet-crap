@@ -299,6 +299,31 @@ class CpuTimeTests(unittest.TestCase):
         self.assertGreater(benchmark.run_measured(command, 30).cpu_ms, 150)
 
 
+class AddedFieldsTests(unittest.TestCase):
+    def test_extends_drops_only_keys_the_baseline_lacks(self):
+        base = {"a": 1, "items": [{"x": 1.5, "ok": True}]}
+        self.assertTrue(benchmark.extends(base, base))
+        self.assertTrue(benchmark.extends({"a": 1, "new": 0, "items": [{"x": 1.5, "ok": True, "y": 2}]}, base))
+        self.assertFalse(benchmark.extends({"items": [{"x": 1.5, "ok": True}]}, base))
+        self.assertFalse(benchmark.extends({"a": 2, "items": [{"x": 1.5, "ok": True}]}, base))
+        self.assertFalse(benchmark.extends({"a": 1, "items": []}, base))
+        self.assertFalse(benchmark.extends({"a": 1, "items": [{"x": 1.5, "ok": 1}]}, base))
+        self.assertFalse(benchmark.extends({"a": True, "items": [{"x": 1.5, "ok": True}]}, base))
+        self.assertFalse(benchmark.extends([1], {"a": 1}))
+        self.assertFalse(benchmark.extends({"a": 1}, [1]))
+
+    def test_adds_fields_compares_scan_outcomes_only(self):
+        self.assertTrue(benchmark.adds_fields('{"a":1,"b":2}', '{"a":1}'))
+        self.assertFalse(benchmark.adds_fields('{"a":2}', '{"a":1}'))
+        self.assertFalse(benchmark.adds_fields("not json", '{"a":1}'))
+        self.assertTrue(benchmark.adds_fields(b'{"a":1,"b":2}', b'{"a":1}'))
+        self.assertFalse(benchmark.adds_fields(b'{"a":2}', b'{"a":1}'))
+        self.assertTrue(benchmark.adds_fields((0, b'{"a":1,"b":2}', b""), (0, b'{"a":1}', b"")))
+        self.assertFalse(benchmark.adds_fields((0, '{"a":1,"b":2}', "w"), (0, '{"a":1}', "")))
+        self.assertFalse(benchmark.adds_fields((2, "", "e1"), (2, "", "e2")))
+        self.assertFalse(benchmark.adds_fields((1, '{"a":1,"b":2}', ""), (0, '{"a":1}', "")))
+
+
 class CandidateArgsTests(unittest.TestCase):
     def parse(self, *argv):
         with __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
@@ -431,14 +456,50 @@ class FakeBinaryTests(unittest.TestCase):
                 counts = {name: sum(1 for r in rounds if r[place] == name) for name in ("base", "1", "2")}
                 self.assertEqual(counts, {"base": 2, "1": 2, "2": 2}, place)
 
-    def test_a_set_that_changes_the_output_is_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            body = f"cat '{tmp}/report.json'\ncase \"$*\" in *--changes-output*) echo ' ' ;; esac"
-            fake, _ = fake_binary(tmp, small_files_report(), body)
-            with self.assertRaisesRegex(ValueError, "not byte-identical"), tempfile.TemporaryDirectory() as out:
-                benchmark.main(["--binary", str(fake), "--baseline", str(fake), "--files", "1", "--warmup", "0",
-                                "--runs", "6", "--candidate-args=--jobs 1", "--candidate-args=--changes-output",
-                                "--output", str(Path(out) / "m.json")])
+    @staticmethod
+    def variant_binary(tmp, edit):
+        """A fake whose ``--variant`` set prints ``edit(report)`` instead of the report."""
+        report = small_files_report()
+        changed = edit(json.loads(json.dumps(report)))
+        (Path(tmp) / "variant.json").write_text(json.dumps(changed))
+        body = (f"case \"$*\" in *--variant*) cat '{tmp}/variant.json' ;; "
+                f"*) cat '{tmp}/report.json' ;; esac")
+        return fake_binary(tmp, report, body)
+
+    def test_a_set_that_only_adds_report_fields_is_accepted_and_recorded(self):
+        def add(report):
+            report["version"] = 1
+            for item in report["functions"]:
+                item["scope"] = "N.C"
+            return report
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as out:
+            fake, _ = self.variant_binary(tmp, add)
+            output = Path(out) / "m.json"
+            benchmark.main(["--binary", str(fake), "--baseline", str(fake), "--files", "1", "--warmup", "0",
+                            "--runs", "6", "--candidate-args=--jobs 1", "--candidate-args=--variant",
+                            "--output", str(output)])
+            first, second = json.loads(output.read_text())["candidates"]
+            self.assertTrue(first["outputs_byte_identical"])
+            self.assertNotIn("outputs_add_fields", first)
+            self.assertFalse(second["outputs_byte_identical"])
+            self.assertTrue(second["outputs_add_fields"])
+
+    def test_a_set_that_changes_or_drops_a_report_value_is_rejected(self):
+        def change(report):
+            report["threshold"] = 1e11  # not checked against the corpus
+            return report
+
+        def drop(report):
+            del report["threshold"]
+            return report
+        for edit in (change, drop):
+            with self.subTest(edit=edit.__name__), tempfile.TemporaryDirectory() as tmp, \
+                    tempfile.TemporaryDirectory() as out:
+                fake, _ = self.variant_binary(tmp, edit)
+                with self.assertRaisesRegex(ValueError, "not byte-identical"):
+                    benchmark.main(["--binary", str(fake), "--baseline", str(fake), "--files", "1",
+                                    "--warmup", "0", "--runs", "6", "--candidate-args=--jobs 1",
+                                    "--candidate-args=--variant", "--output", str(Path(out) / "m.json")])
 
     def test_single_set_keeps_alternating_order_and_needs_no_baseline(self):
         with tempfile.TemporaryDirectory() as tmp:

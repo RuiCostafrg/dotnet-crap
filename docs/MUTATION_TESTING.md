@@ -6,7 +6,7 @@ Install cargo-mutants 27.1.0 (`cargo install cargo-mutants --version 27.1.0 --lo
 
 The mutation workflow (.github/workflows/mutation.yml) splits the inventory across a
 matrix of shard jobs instead of one 90 minute job. The shard count is the single
-matrix constant in that workflow (currently 4); each `mutation-shard` job runs
+matrix constant in that workflow (currently 8); each `mutation-shard` job runs
 `python3 scripts/mutation-gate.py --shard k/N` (cargo-mutants' `--shard k/n`, so
 with the default slice sharding each shard owns one consecutive range of the
 inventory) with the same two workers and timeouts as before, and validates that
