@@ -391,6 +391,7 @@ fn scan_impl(
             .collect();
     }
     let mut report = Report {
+        version: 1,
         threshold: args.threshold,
         files_scanned: files.len(),
         skipped,

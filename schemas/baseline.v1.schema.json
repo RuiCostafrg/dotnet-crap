@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/RuiCostafrg/dotnet-crap/main/schemas/baseline.v1.schema.json",
+  "title": "dotnet-crap baseline v1",
+  "description": "Regression baseline written by --write-baseline and read by --baseline. Unknown fields are rejected.",
+  "type": "object",
+  "properties": {
+    "version": { "const": 1, "description": "Must be 1." },
+    "threshold": { "type": "number", "description": "The threshold in force when the baseline was written; it must match the scan's threshold." },
+    "entries": {
+      "type": "array",
+      "description": "Callables that exceeded the threshold, ordered by file, line, then signature.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string", "description": "Root-relative source path with '/' separators." },
+          "kind": { "type": "string", "description": "Syntax node kind." },
+          "scope": { "type": "string", "description": "Enclosing namespaces, types and callables, joined with '.'." },
+          "signature": { "type": "string", "description": "Name plus parameter types." },
+          "occurrence": { "type": "integer", "minimum": 0, "description": "Index among same-file callables with the same kind, scope and signature." },
+          "fingerprint": { "type": "string", "description": "Hex SHA-256 over the callable's leaf tokens." },
+          "line": { "type": "integer", "minimum": 0, "description": "One-based starting line when written; informational." },
+          "complexity": { "type": "integer", "minimum": 0, "maximum": 4294967295, "description": "Cyclomatic complexity when written." },
+          "coverage": { "type": ["number", "null"], "description": "Coverage fraction when written; null without evidence." },
+          "crap": { "type": "number", "description": "CRAP score when written." }
+        },
+        "required": ["file", "kind", "scope", "signature", "occurrence", "fingerprint", "line", "complexity", "coverage", "crap"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["version", "threshold", "entries"],
+  "additionalProperties": false
+}

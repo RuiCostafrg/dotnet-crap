@@ -70,6 +70,12 @@ the `baseline` config key). Runs then fail only for violations that are new or
 worse; matching survives renamed files, moved callables and formatting edits, and
 is conservative when ambiguous. See [baselines](docs/BASELINES.md).
 
+## Stability
+
+From 1.0.0 the CLI, exit codes, JSON report, native coverage, config and baseline
+formats follow semantic versioning, and each has a published JSON Schema in
+[`schemas/`](schemas/). See the [compatibility policy](docs/COMPATIBILITY.md).
+
 ## Rust library
 
 The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
