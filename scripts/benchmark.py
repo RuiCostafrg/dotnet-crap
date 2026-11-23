@@ -258,7 +258,7 @@ def parse_args(argv=None):
     parser.add_argument("--warmup", type=int, default=1)
     parser.add_argument("--baseline", type=Path,
                         help="second executable measured on the same corpus in rotating order; "
-                             "outputs must be byte-identical")
+                             "outputs must be byte-identical, or a scan report may only add JSON fields")
     parser.add_argument("--candidate-args", action="append", default=[], metavar="ARGS", dest="candidate_args",
                         help="extra arguments for the candidate only, split like a shell word list "
                              "(write --candidate-args='--jobs 4': the = keeps argparse from reading the value as an option). Repeat to sweep several argument sets against "
@@ -391,6 +391,37 @@ def separation(baseline, candidate):
     return None
 
 
+def extends(candidate, baseline):
+    """Whether ``candidate`` equals ``baseline`` once object keys absent from ``baseline`` are dropped.
+
+    The compatibility policy lets a release add JSON report fields. Every value the
+    baseline emits must still be present, with the same type and value.
+    """
+    if isinstance(baseline, dict):
+        return isinstance(candidate, dict) and all(
+            key in candidate and extends(candidate[key], value) for key, value in baseline.items())
+    if isinstance(baseline, list):
+        return isinstance(candidate, list) and len(candidate) == len(baseline) \
+            and all(map(extends, candidate, baseline))
+    return type(candidate) is type(baseline) and candidate == baseline
+
+
+def adds_fields(candidate, baseline):
+    """Whether a differing scan outcome only adds JSON report fields to the baseline's.
+
+    Scan outcomes are JSON stdout, or ``(code, stdout, stderr)`` for ``--repo``; the
+    exit code and stderr must match exactly. Callers never pass collected evidence.
+    """
+    if isinstance(candidate, tuple) and isinstance(baseline, tuple):
+        if candidate[0] != baseline[0] or candidate[2] != baseline[2] or candidate[0] != 0:
+            return False
+        candidate, baseline = candidate[1], baseline[1]
+    try:
+        return extends(json.loads(candidate), json.loads(baseline))
+    except ValueError:
+        return False
+
+
 def compare(baseline, candidate):
     """Median ratios (candidate over baseline) and separation for wall time and CPU time."""
     return {metric: {"median_ratio": statistics.median(candidate[metric]) / statistics.median(baseline[metric]),
@@ -513,20 +544,26 @@ def main(argv=None):
             return result
 
         floor = rss_floor_kib()
-        reference = None
+        references = {}
+        added = set()  # candidate sets whose output only adds JSON report fields
         for run in range(args.warmup + args.runs):
             # Rotate the start so every executable runs in every position equally often
             # (for one candidate and a baseline this is plain alternation).
             shift = (run - args.warmup) % len(participants)
             order = participants[shift:] + participants[:shift]
             outcomes = {who: invoke(who, run) for who in order}
-            if len(set(outcomes.values())) > 1:
+            if baseline:
+                expected = outcomes[("baseline", 0)]
+                for (label, index), outcome in outcomes.items():
+                    if label == "candidate" and outcome != expected:
+                        if args.mode == "collect" or not adds_fields(outcome, expected):
+                            raise ValueError("candidate and baseline outputs are not byte-identical")
+                        added.add(index)
+            elif len(set(outcomes.values())) > 1:
                 raise ValueError("candidate and baseline outputs are not byte-identical")
-            current = next(iter(outcomes.values()))
-            if reference is None:
-                reference = current
-            elif current != reference:
-                raise ValueError("output changed between runs")
+            for who, outcome in outcomes.items():
+                if references.setdefault(who, outcome) != outcome:
+                    raise ValueError("output changed between runs")
     corpus = {}
     if repo is None:
         corpus = {
@@ -543,7 +580,7 @@ def main(argv=None):
         }
     else:
         selected, size = select_sources(repo)
-        code, stdout, _ = reference
+        code, stdout, _ = references[("baseline", 0)]
         report = json.loads(stdout) if code == 0 else None
         corpus = {
             "workload": "repo",
@@ -570,7 +607,9 @@ def main(argv=None):
     for index, argv in enumerate(sets):
         entry = {"args": argv, "label": set_label(argv), **summarize(records[("candidate", index)])}
         if baseline:
-            entry["outputs_byte_identical"] = True
+            entry["outputs_byte_identical"] = index not in added
+            if index in added:
+                entry["outputs_add_fields"] = True
             entry["comparison"] = compare(records[("baseline", 0)], records[("candidate", index)])
         measurement["candidates"].append(entry)
     if baseline:
