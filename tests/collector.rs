@@ -74,6 +74,41 @@ fn fresh_collection_preserves_zero_hits_hashes_and_hand_derived_scores() {
     assert_eq!(fs::read(&options.output).unwrap(), original);
 }
 
+/// Child that writes a Microsoft-style report (no `<sources>`, an absolute
+/// `filename`) to the single path argument it is given.
+const MICROSOFT_REPORT: &str = r#"import pathlib,sys
+target=pathlib.Path(sys.argv[1])
+assert target.name == 'coverage.cobertura.xml' and target.parent.is_dir() and not list(target.parent.iterdir())
+target.write_text('<coverage><packages><package><classes><class filename="' + str(pathlib.Path('C.cs').resolve()) + '"><methods/><lines><line number="3" hits="1"/><line number="4" hits="0"/></lines></class></classes></package></packages></coverage>')
+"#;
+
+#[test]
+/// A `{results}/name` argument is substituted, the named report is found, and its absolute filename maps to the selected source.
+fn results_prefix_argument_collects_a_microsoft_style_report() {
+    let (_dir, mut options) = fixture(MICROSOFT_REPORT);
+    options.command[3] = "{results}/coverage.cobertura.xml".into();
+    collect(&options).unwrap();
+    let native: Value = serde_json::from_slice(&fs::read(&options.output).unwrap()).unwrap();
+    assert_eq!(
+        native["files"]["C.cs"]["lines"],
+        serde_json::json!({"3":1,"4":0})
+    );
+}
+
+#[test]
+/// A report named `<guid>.cobertura.xml`, nested anywhere, is discovered; a bare `coverage.xml` is not.
+fn guid_named_reports_are_discovered_and_other_names_are_not() {
+    let guid = r#"import pathlib,sys
+p=pathlib.Path(sys.argv[1])/'a'/'b'; p.mkdir(parents=True)
+(p/'7ed21358-c486-4d24-a28e-ff36363bc18e.cobertura.xml').write_text('<coverage><packages><package><classes><class filename="C.cs"><lines><line number="3" hits="2"/></lines></class></classes></package></packages></coverage>')
+(p/'coverage.xml').write_text('not xml')
+"#;
+    let (_dir, options) = fixture(guid);
+    collect(&options).unwrap();
+    let native: Value = serde_json::from_slice(&fs::read(&options.output).unwrap()).unwrap();
+    assert_eq!(native["files"]["C.cs"]["lines"], serde_json::json!({"3":2}));
+}
+
 #[test]
 /// Use valid stale XML and actual private paths so accidental stale import or leaked output is observable.
 fn failures_leave_no_evidence_and_private_directories_are_removed() {
@@ -149,6 +184,8 @@ fn invalid_commands_inputs_and_destinations_fail_before_execution() {
         vec!["python3"],
         vec!["python3", "none"],
         vec!["python3", "{results}", "{results}"],
+        vec!["python3", "{results}", "{results}/x.cobertura.xml"],
+        vec!["python3", "--out={results}"],
     ] {
         let (_dir, mut options) = fixture(REPORT);
         options.command = argv.into_iter().map(OsString::from).collect();

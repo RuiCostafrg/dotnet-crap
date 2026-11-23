@@ -4,8 +4,9 @@ This fixture is a four-test-project VSTest solution covering xUnit, MSTest and N
 a library containing the measured C# sources, and each pins
 `Microsoft.NET.Test.Sdk` 18.12.0 and `coverlet.collector` 10.1.0. The test
 projects target `net10.0`; xUnit is pinned to 2.9.3 with the Visual Studio
-adapter pinned to 4.0.1. This exercises the VSTest collector path; it makes no
-claim about Microsoft Testing Platform.
+adapter pinned to 4.0.1. This exercises the VSTest collector path. The Microsoft
+Testing Platform and `dotnet-coverage` fixtures below are separate projects
+outside `CoverletFixtures.sln`.
 
 Run from the repository root with:
 
@@ -73,3 +74,29 @@ project output observable while preserving the coverage ratios and scores above.
 project assemblies appear and exactly four fresh attachments are produced.
 The MSTest and NUnit subdirectories record their separate real worker runs;
 source-qualified combined results belong in the feature evidence report.
+
+## Microsoft Testing Platform and Microsoft coverage fixtures
+
+These reuse `Alpha.Library` and the same three test calls (`Choose(1)`,
+`Full(1)`, `Full(0)`), so the hand-derived Alpha lines and scores above apply.
+They are not in `CoverletFixtures.sln`, because `dotnet test` in MTP mode needs
+every project of a solution to use that runner. The live tests copy the fixture
+tree and write `global.json` (`{"test":{"runner":"Microsoft.Testing.Platform"}}`)
+at the copy's root, the directory `collect` runs the command in.
+Versions are the latest stable on the NuGet flat-container index on 2026-11-22.
+
+| Fixture | Pins | Collection arguments |
+| --- | --- | --- |
+| `Mtp.CodeCoverage.Tests` | MSTest.TestFramework / MSTest.TestAdapter 4.5.3 (`EnableMSTestRunner`), Microsoft.Testing.Extensions.CodeCoverage 18.12.0 | `dotnet test --project Mtp.CodeCoverage.Tests --coverage --coverage-output-format cobertura --results-directory {results}` |
+| `Mtp.Coverlet.Tests` | xunit.v3 4.0.3, coverlet.MTP 10.1.1 | `dotnet test --project Mtp.Coverlet.Tests --coverlet --coverlet-output-format cobertura --results-directory {results}` |
+| `.config/dotnet-tools.json` | dotnet-coverage 18.12.0 | `dotnet tool run dotnet-coverage collect -f cobertura -o {results}/coverage.cobertura.xml dotnet test Alpha.Tests/Alpha.Tests.csproj` |
+
+Report names differ by tool: `<guid>.cobertura.xml` (Microsoft CodeCoverage),
+`coverage.cobertura.<timestamp>.xml` (coverlet.MTP) and the exact `-o` name
+(dotnet-coverage). The `evidence/` folders hold sanitized copies of the real
+Microsoft CodeCoverage and coverlet.MTP reports (the local fixture path replaced
+by `@ROOT@`), which `tests/cobertura_parser.rs` maps against the Alpha sources.
+They were generated on 2026-11-22 with SDK 10.0.109 (runtime 10.0.9) on Linux
+ARM64. `dotnet-coverage` could not be run there: its native profiler ships for
+Windows and x64 Linux/macOS only, so its live test skips on other hosts and has
+no committed report copy; CI's Linux x64 and Windows legs run it.

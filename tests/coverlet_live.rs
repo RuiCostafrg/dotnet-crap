@@ -1,4 +1,10 @@
-use std::{fs, path::Path, process::Command};
+use dotnet_crap::collector::{collect, CollectOptions};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+    sync::Mutex,
+};
 
 /// Inspect raw pinned collector method records independently of the production importer.
 fn method_block<'a>(xml: &'a str, name: &str) -> &'a str {
@@ -58,12 +64,210 @@ fn files_named(root: &Path, target: &str) -> Vec<std::path::PathBuf> {
     matches
 }
 
+/// Whether the opt-in live .NET collection tests are enabled.
+fn live_enabled() -> bool {
+    std::env::var("DOTNET_CRAP_COVERLET_E2E").as_deref() == Ok("1")
+}
+
+/// Copy the pinned fixture tree, without build output, into `workspace/fixture`.
+fn copy_fixture(workspace: &Path) -> PathBuf {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coverlet");
+    let fixture = workspace.join("fixture");
+    for entry in walkdir::WalkDir::new(&source)
+        .into_iter()
+        .filter_entry(|e| !matches!(e.file_name().to_str(), Some("bin" | "obj")))
+    {
+        let entry = entry.unwrap();
+        let target = fixture.join(entry.path().strip_prefix(&source).unwrap());
+        if entry.file_type().is_dir() {
+            fs::create_dir_all(target).unwrap();
+        } else {
+            fs::copy(entry.path(), target).unwrap();
+        }
+    }
+    fixture
+}
+
+/// Live .NET runs share the NuGet cache and build servers; run them one at a time.
+static LIVE: Mutex<()> = Mutex::new(());
+
+/// Opt a fixture copy into the Microsoft Testing Platform runner, as a
+/// repository must for `dotnet test` to launch MTP test applications.
+fn enable_mtp(fixture: &Path) {
+    fs::write(
+        fixture.join("global.json"),
+        r#"{"test":{"runner":"Microsoft.Testing.Platform"}}"#,
+    )
+    .unwrap();
+}
+
+/// Restore the fixture's pinned local tools.
+fn restore_tools(fixture: &Path) {
+    let restore = Command::new("dotnet")
+        .current_dir(fixture)
+        .args(["tool", "restore"])
+        .output()
+        .expect("start dotnet tool restore");
+    assert!(
+        restore.status.success(),
+        "dotnet tool restore failed:\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&restore.stdout),
+        String::from_utf8_lossy(&restore.stderr)
+    );
+}
+
+/// Collect Alpha.Library evidence with `command` in a fresh copy of the fixture
+/// prepared by `prepare`, and check the native evidence it publishes.
+fn collect_alpha(prepare: fn(&Path), command: &[&str]) -> (tempfile::TempDir, PathBuf) {
+    let workspace = tempfile::tempdir().unwrap();
+    let fixture = copy_fixture(workspace.path());
+    prepare(&fixture);
+    let native = workspace.path().join("native.json");
+    let options = CollectOptions {
+        root: fixture,
+        paths: vec!["Alpha.Library".into()],
+        timeout: std::time::Duration::from_secs(900),
+        jobs: None,
+        defines: Vec::new(),
+        skip_unparsed: false,
+        respect_ignore_files: true,
+        include: Vec::new(),
+        exclude: Vec::new(),
+        output: native.clone(),
+        expected_reports: 1,
+        command: command.iter().map(Into::into).collect(),
+    };
+    collect(&options).unwrap_or_else(|error| panic!("collect failed: {error:#}"));
+    let evidence: serde_json::Value = serde_json::from_slice(&fs::read(&native).unwrap()).unwrap();
+    let line = |file: &str, line: &str| {
+        evidence["files"][format!("Alpha.Library/{file}")]["lines"][line]
+            .as_u64()
+            .unwrap_or_else(|| panic!("no evidence for {file}:{line} in {evidence}"))
+    };
+    // `Choose(1)` takes the positive branch only (Gauge.First.cs, see the
+    // fixture README): line 8 is hit, line 9 is an executable line with no hit.
+    assert!(line("Gauge.First.cs", "8") > 0);
+    assert_eq!(line("Gauge.First.cs", "9"), 0);
+    assert_eq!(line("Gauge.Second.cs", "5"), 0);
+    (workspace, native)
+}
+
+/// Both Microsoft Testing Platform coverage providers see the same executable
+/// lines as Coverlet under VSTest, so the README's hand-derived scores apply.
+fn assert_alpha_scores(workspace: &Path, native: &Path) {
+    let report = dotnet_crap::scan(&dotnet_crap::ScanOptions {
+        coverage: Some(native.to_owned()),
+        require_coverage: true,
+        root: workspace.join("fixture"),
+        paths: vec!["Alpha.Library".into()],
+        ..Default::default()
+    })
+    .unwrap();
+    for (name, ratio) in [("Choose", 0.8), ("Full", 1.0), ("Uncovered", 0.0)] {
+        let item = report
+            .report()
+            .functions
+            .iter()
+            .find(|item| item.name == name)
+            .unwrap_or_else(|| panic!("no {name} function"));
+        assert_eq!(item.coverage, Some(ratio), "{name}");
+    }
+}
+
+/// MSTest on Microsoft Testing Platform with Microsoft.Testing.Extensions.CodeCoverage
+/// writes a `<guid>.cobertura.xml` with absolute filenames and no `<sources>`.
+#[test]
+fn mtp_microsoft_code_coverage_collects_fresh_cobertura() {
+    if !live_enabled() {
+        return;
+    }
+    let _serial = LIVE.lock().unwrap_or_else(|e| e.into_inner());
+    let (workspace, native) = collect_alpha(
+        enable_mtp,
+        &[
+            "dotnet",
+            "test",
+            "--project",
+            "Mtp.CodeCoverage.Tests",
+            "--coverage",
+            "--coverage-output-format",
+            "cobertura",
+            "--results-directory",
+            "{results}",
+        ],
+    );
+    assert_alpha_scores(workspace.path(), &native);
+}
+
+/// xUnit v3 on Microsoft Testing Platform with coverlet.MTP writes a
+/// `coverage.cobertura.<timestamp>.xml` with a `<sources>` prefix.
+#[test]
+fn mtp_coverlet_collects_fresh_cobertura() {
+    if !live_enabled() {
+        return;
+    }
+    let _serial = LIVE.lock().unwrap_or_else(|e| e.into_inner());
+    let (workspace, native) = collect_alpha(
+        enable_mtp,
+        &[
+            "dotnet",
+            "test",
+            "--project",
+            "Mtp.Coverlet.Tests",
+            "--coverlet",
+            "--coverlet-output-format",
+            "cobertura",
+            "--results-directory",
+            "{results}",
+        ],
+    );
+    assert_alpha_scores(workspace.path(), &native);
+}
+
+/// The `dotnet-coverage` tool, restored from the fixture's tool manifest, wraps
+/// the VSTest `Alpha.Tests` run. Its native profiler ships for Windows and
+/// x64 Linux and macOS only, so other hosts cannot run it.
+#[test]
+fn dotnet_coverage_collects_fresh_cobertura_around_vstest() {
+    if !live_enabled() {
+        return;
+    }
+    let supported = cfg!(target_os = "windows")
+        || cfg!(all(
+            any(target_os = "linux", target_os = "macos"),
+            target_arch = "x86_64"
+        ));
+    if !supported {
+        eprintln!("skipped: dotnet-coverage has no native profiler for this OS/architecture");
+        return;
+    }
+    let _serial = LIVE.lock().unwrap_or_else(|e| e.into_inner());
+    collect_alpha(
+        restore_tools,
+        &[
+            "dotnet",
+            "tool",
+            "run",
+            "dotnet-coverage",
+            "collect",
+            "-f",
+            "cobertura",
+            "-o",
+            "{results}/coverage.cobertura.xml",
+            "dotnet",
+            "test",
+            "Alpha.Tests/Alpha.Tests.csproj",
+        ],
+    );
+}
+
 /// Run the pinned VSTest/Coverlet fixtures and check actual Cobertura line hits.
 #[test]
 fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
-    if std::env::var("DOTNET_CRAP_COVERLET_E2E").as_deref() != Ok("1") {
+    if !live_enabled() {
         return;
     }
+    let _serial = LIVE.lock().unwrap_or_else(|e| e.into_inner());
 
     let sdk = Command::new("dotnet")
         .arg("--version")
@@ -82,21 +286,8 @@ fn pinned_coverlet_collector_emits_fresh_multproject_cobertura() {
         "dotnet --version returned no SDK version"
     );
 
-    let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/coverlet");
     let workspace = tempfile::tempdir().unwrap();
-    let fixture = workspace.path().join("fixture");
-    for entry in walkdir::WalkDir::new(&source)
-        .into_iter()
-        .filter_entry(|e| !matches!(e.file_name().to_str(), Some("bin" | "obj")))
-    {
-        let entry = entry.unwrap();
-        let target = fixture.join(entry.path().strip_prefix(&source).unwrap());
-        if entry.file_type().is_dir() {
-            fs::create_dir_all(target).unwrap();
-        } else {
-            fs::copy(entry.path(), target).unwrap();
-        }
-    }
+    let fixture = copy_fixture(workspace.path());
     let solution = fixture.join("CoverletFixtures.sln");
     let results = tempfile::tempdir().expect("create fresh Coverlet results directory");
     assert_eq!(fs::read_dir(results.path()).unwrap().count(), 0);

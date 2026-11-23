@@ -25,9 +25,14 @@ pub struct CollectOptions {
     pub paths: Vec<PathBuf>,
     /// New native v1 evidence destination. Existing destinations are rejected.
     pub output: PathBuf,
-    /// Executable and argv, containing exactly one standalone `{results}` token.
-    /// Use it as the value of `dotnet test --results-directory` and explicitly
-    /// select XPlat Code Coverage with Cobertura format.
+    /// Executable and argv. Exactly one argument may contain `{results}`, and it
+    /// must either equal `{results}` or start with `{results}/`; the
+    /// `{results}` prefix is replaced by the private results directory. Use it
+    /// as the value of `--results-directory` (or `dotnet-coverage collect -o
+    /// {results}/coverage.cobertura.xml`) and explicitly select Cobertura
+    /// format. Reports are the regular files under it whose name ends with
+    /// `.xml` and contains `.cobertura.`, for example `coverage.cobertura.xml`
+    /// or `<guid>.cobertura.xml`.
     pub command: Vec<OsString>,
     /// Exact expected report-file count (not project identity); must be positive.
     pub expected_reports: usize,
@@ -150,33 +155,58 @@ fn validate_options(options: &CollectOptions) -> Result<()> {
     if options.timeout.is_zero() {
         fail!(InvalidInput, "test timeout must be positive");
     }
-    if options.command.len() < 2
-        || options.command[1..]
-            .iter()
-            .filter(|a| *a == "{results}")
-            .count()
-            != 1
-    {
-        fail!(
+    let mut mentions = options
+        .command
+        .iter()
+        .skip(1)
+        .filter(|arg| mentions_results(arg));
+    match (mentions.next(), mentions.next()) {
+        (Some(arg), None) if results_suffix(arg).is_some() => Ok(()),
+        _ => fail!(
             InvalidInput,
             "test command requires exactly one standalone {{results}} argument"
-        );
+        ),
     }
-    Ok(())
 }
 
-/// Substitute the single standalone `{results}` argument in the trusted command.
-fn results_args<'a>(command: &'a [OsString], results: &'a Path) -> Vec<&'a OsStr> {
+/// The placeholder for the private results directory in the trusted command.
+const RESULTS_TOKEN: &str = "{results}";
+
+/// Whether an argument contains the placeholder anywhere (even invalid UTF-8).
+fn mentions_results(arg: &OsStr) -> bool {
+    arg.to_string_lossy().contains(RESULTS_TOKEN)
+}
+
+/// The text after the placeholder when `arg` is exactly `{results}` (empty) or
+/// starts with `{results}/` (then beginning with that slash), and holds no
+/// second placeholder; `None` for every other form.
+fn results_suffix(arg: &OsStr) -> Option<&str> {
+    let rest = arg.to_str()?.strip_prefix(RESULTS_TOKEN)?;
+    (rest.is_empty() || (rest.starts_with('/') && !rest.contains(RESULTS_TOKEN))).then_some(rest)
+}
+
+/// Substitute the placeholder argument in the trusted command, which
+/// `validate_options` has already shown is the only one.
+fn results_args(command: &[OsString], results: &Path) -> Vec<OsString> {
     command[1..]
         .iter()
-        .map(|arg| {
-            if arg == "{results}" {
-                results.as_os_str()
-            } else {
-                arg.as_os_str()
+        .map(|arg| match results_suffix(arg) {
+            Some(rest) => {
+                let mut substituted = results.as_os_str().to_owned();
+                substituted.push(rest);
+                substituted
             }
+            None => arg.clone(),
         })
         .collect()
+}
+
+/// Whether a file name is a Cobertura report: Microsoft's tools write
+/// `<guid>.cobertura.xml`, Coverlet `coverage.cobertura.xml` or, under
+/// Microsoft Testing Platform, `coverage.cobertura.<timestamp>.xml`.
+fn is_report_name(name: &OsStr) -> bool {
+    let name = name.to_string_lossy();
+    name.ends_with(".xml") && name.contains(".cobertura.")
 }
 
 /// Find and sort fresh Cobertura reports, rejecting links and count mismatches.
@@ -190,7 +220,7 @@ fn find_reports(results: &Path, expected: usize) -> Result<Vec<PathBuf>> {
                 "collector results cannot contain symbolic links"
             );
         }
-        if entry.file_name() == "coverage.cobertura.xml" && entry.file_type().is_file() {
+        if is_report_name(entry.file_name()) && entry.file_type().is_file() {
             reports.push(entry.into_path());
         }
     }
@@ -198,7 +228,7 @@ fn find_reports(results: &Path, expected: usize) -> Result<Vec<PathBuf>> {
     if reports.len() != expected {
         fail!(
             Collection,
-            "expected {} fresh coverage.cobertura.xml reports, found {}",
+            "expected {} fresh *.cobertura.xml reports, found {}",
             expected,
             reports.len()
         );
@@ -355,48 +385,87 @@ mod deadline_tests {
     }
 
     #[test]
-    /// Missing, duplicate and executable-position `{results}` tokens are rejected.
+    /// A `{results}/` prefix form is accepted as the single placeholder.
+    fn validate_options_accepts_a_results_prefixed_argument() {
+        let mut options = options();
+        options.command = ["dotnet-coverage", "-o", "{results}/coverage.cobertura.xml"]
+            .into_iter()
+            .map(OsString::from)
+            .collect();
+        assert!(validate_options(&options).is_ok());
+    }
+
+    #[test]
+    /// Missing, duplicate, malformed and executable-position `{results}` tokens are rejected.
     fn validate_options_rejects_wrong_results_argument_forms() {
         for command in [
             vec!["dotnet"],
             vec!["dotnet", "test"],
             vec!["dotnet", "{results}", "{results}"],
+            vec!["dotnet", "{results}", "{results}/a.xml"],
+            vec!["dotnet", "{results}/a.xml", "{results}/b.xml"],
             vec!["{results}", "test"],
+            // The placeholder must be the whole argument or its leading path.
+            vec!["dotnet", "--x={results}"],
+            vec!["dotnet", "a{results}"],
+            vec!["dotnet", "{results}x"],
+            vec!["dotnet", "{results}\\a.xml"],
+            vec!["dotnet", "{results}/{results}"],
+            vec!["dotnet", "{results}/a", "--x={results}"],
+            vec!["dotnet", "{results}", "--x={results}"],
         ] {
             let mut options = options();
-            options.command = command.into_iter().map(OsString::from).collect();
+            options.command = command.iter().copied().map(OsString::from).collect();
             let error = validate_options(&options).unwrap_err();
             assert_eq!(
                 error.to_string(),
-                "test command requires exactly one standalone {results} argument"
+                "test command requires exactly one standalone {results} argument",
+                "{command:?}"
             );
         }
     }
 
+    #[cfg(unix)]
     #[test]
-    /// Only the exact standalone token is substituted; the executable is excluded.
-    fn results_args_replaces_only_standalone_exact_tokens() {
-        let command: Vec<OsString> = [
-            "dotnet",
-            "test",
-            "--x={results}",
-            "{results}",
-            "{results}x",
-            "plain",
-        ]
-        .into_iter()
-        .map(OsString::from)
-        .collect();
+    /// An argument that is not valid UTF-8 cannot hide a placeholder.
+    fn validate_options_rejects_a_non_utf8_argument_containing_the_placeholder() {
+        use std::os::unix::ffi::OsStringExt;
+        let mut options = options();
+        let mut bytes = b"{results}/".to_vec();
+        bytes.push(0xff);
+        options.command = vec![OsString::from("dotnet"), OsString::from_vec(bytes)];
+        assert!(validate_options(&options).is_err());
+    }
+
+    #[test]
+    /// Only the exact placeholder or its `/` form is substituted; the executable is excluded.
+    fn results_args_replaces_only_the_placeholder_argument() {
         let results = Path::new("/tmp/dotnet-crap-results");
+        let command =
+            |args: &[&str]| -> Vec<OsString> { args.iter().copied().map(OsString::from).collect() };
         assert_eq!(
-            results_args(&command, results),
-            vec![
-                OsStr::new("test"),
-                OsStr::new("--x={results}"),
-                results.as_os_str(),
-                OsStr::new("{results}x"),
-                OsStr::new("plain"),
-            ]
+            results_args(
+                &command(&["{results}", "test", "--x={results}", "{results}", "plain"]),
+                results
+            ),
+            command(&["test", "--x={results}", "/tmp/dotnet-crap-results", "plain"])
+        );
+        assert_eq!(
+            results_args(
+                &command(&[
+                    "dotnet-coverage",
+                    "-o",
+                    "{results}/coverage.cobertura.xml",
+                    "t"
+                ]),
+                results
+            ),
+            command(&["-o", "/tmp/dotnet-crap-results/coverage.cobertura.xml", "t"])
+        );
+        // Text that is neither form stays literal.
+        assert_eq!(
+            results_args(&command(&["x", "{results}x", "a{results}"]), results),
+            command(&["{results}x", "a{results}"])
         );
     }
 
@@ -406,7 +475,10 @@ mod deadline_tests {
         let results = tempfile::tempdir().unwrap();
         let error = find_reports(results.path(), 1).unwrap_err();
         assert!(error.to_string().contains("found 0"));
-        assert!(error.to_string().contains("expected 1 fresh"));
+        assert_eq!(
+            error.to_string(),
+            "expected 1 fresh *.cobertura.xml reports, found 0"
+        );
     }
 
     #[test]
@@ -437,7 +509,7 @@ mod deadline_tests {
         );
     }
 
-    /// Only regular files named `coverage.cobertura.xml` count; other files and
+    /// Only regular files with a Cobertura report name count; other files and
     /// a directory with the report name are ignored rather than miscounted.
     #[test]
     fn find_reports_counts_only_regular_report_files() {
@@ -447,6 +519,42 @@ mod deadline_tests {
         std::fs::write(results.path().join("other.xml"), b"<coverage/>").unwrap();
         std::fs::create_dir_all(results.path().join("d").join("coverage.cobertura.xml")).unwrap();
         assert_eq!(find_reports(results.path(), 1).unwrap(), vec![report]);
+    }
+
+    #[test]
+    /// Microsoft's `<guid>.cobertura.xml` and MTP Coverlet's timestamped names
+    /// count; names that merely resemble a report do not.
+    fn find_reports_matches_cobertura_names_anywhere() {
+        let results = tempfile::tempdir().unwrap();
+        let nested = results.path().join("run");
+        std::fs::create_dir(&nested).unwrap();
+        let reports = [
+            results.path().join("7ed21358-c486.cobertura.xml"),
+            nested.join("coverage.cobertura.221126210538674.xml"),
+            nested.join("x.cobertura.y.xml"),
+        ];
+        let others = [
+            "coverage.xml",
+            "x.cobertura.xml.bak",
+            "cobertura.xml",
+            "x.cobertura",
+            "xcobertura.xml",
+            "x.Cobertura.xml",
+        ];
+        for path in &reports {
+            std::fs::write(path, b"<coverage/>").unwrap();
+        }
+        for name in others {
+            std::fs::write(results.path().join(name), b"<coverage/>").unwrap();
+        }
+        let mut expected = reports.to_vec();
+        expected.sort();
+        assert_eq!(find_reports(results.path(), 3).unwrap(), expected);
+        let error = find_reports(results.path(), 4).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "expected 4 fresh *.cobertura.xml reports, found 3"
+        );
     }
 
     #[cfg(unix)]
