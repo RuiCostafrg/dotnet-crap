@@ -2,8 +2,11 @@
 
 `dotnet-crap collect` runs an explicitly supplied trusted test command, imports
 fresh Cobertura line evidence, and creates native coverage v1. Scanning and
-scoring never start a process. OpenCover and Microsoft coverage adapters remain
-future work. No native schema or report completeness semantics change here.
+scoring never start a process. It imports Cobertura from Coverlet under VSTest,
+from Microsoft Testing Platform runs and from Microsoft's coverage tools (see
+[Microsoft Testing Platform](#microsoft-testing-platform) and
+[Microsoft coverage tools](#microsoft-coverage-tools)). OpenCover remains future
+work. No native schema or report completeness semantics change here.
 
 ## Invocation and trust boundary
 
@@ -26,8 +29,11 @@ dotnet-crap --root /absolute/path/to/repo --coverage /absolute/path/to/new-cover
 
 `--path` is repeatable and uses the same selection rules as scanning. The output
 path resolves against the invoking process's working directory; the child runs
-in the canonical source root. The command must contain exactly one standalone
-`{results}` argument, replaced with a new private temporary directory. Arguments
+in the canonical source root. Exactly one command argument may contain
+`{results}`, and it must either equal `{results}` or start with `{results}/`
+(`{results}/coverage.cobertura.xml`); that prefix is replaced with a new private
+temporary directory. `--x={results}`, `a{results}`, a second `{results}` in the
+same argument and a second argument containing it are rejected. Arguments
 are passed directly; there is no shell splitting or expansion. Supply the exact
 expected report count (projects times target frameworks) to detect missing/extra
 report files. Cobertura does not identify test projects
@@ -57,10 +63,74 @@ The entire child command, its dependencies, and test code are trusted executable
 code. The caller must pin the collector, choose the runner and format explicitly,
 and ensure the command actually runs the intended tests without reusing old build
 or coverage artifacts. The adapter cannot authenticate arbitrary command output
-or sandbox trusted code. It discovers only `coverage.cobertura.xml` files within
-its invocation-private directory, rejects symbolic links in that directory, and
-requires the exact expected report count. Old files in the project tree are never
+or sandbox trusted code. It discovers only Cobertura report files within its
+invocation-private directory (see [report discovery](#report-discovery)), rejects
+symbolic links in that directory, and requires the exact expected report count. Old files in the project tree are never
 searched or imported. A command that ignores `{results}` fails with missing reports.
+
+### Report discovery
+
+Reports are the regular files, at any depth under the results directory, whose
+name ends with `.xml` and contains `.cobertura.`. That covers
+`coverage.cobertura.xml` (Coverlet under VSTest, `dotnet-coverage -o`),
+`<guid>.cobertura.xml` (Microsoft.Testing.Extensions.CodeCoverage) and
+`coverage.cobertura.<timestamp>.xml` (`coverlet.MTP`). `coverage.xml` and
+`x.cobertura.xml.bak` are not reports. The count must equal `--expected-reports`
+(`expected N fresh *.cobertura.xml reports, found M`).
+
+### Microsoft Testing Platform
+
+`dotnet test` launches MTP test applications only when the repository opts in. On
+the .NET 10 SDK that is a `global.json` found from the command's working
+directory (the source root):
+
+```json
+{ "test": { "runner": "Microsoft.Testing.Platform" } }
+```
+
+Microsoft.Testing.Extensions.CodeCoverage (MSTest on MTP):
+
+```sh
+dotnet-crap collect --root /absolute/path/to/repo --path src \
+  --output /absolute/path/to/new-coverage.json --expected-reports 1 \
+  -- dotnet test --project tests/Tests.csproj \
+     --coverage --coverage-output-format cobertura --results-directory '{results}'
+```
+
+`coverlet.MTP` (xUnit v3):
+
+```sh
+dotnet-crap collect --root /absolute/path/to/repo --path src \
+  --output /absolute/path/to/new-coverage.json --expected-reports 1 \
+  -- dotnet test --project tests/Tests.csproj \
+     --coverlet --coverlet-output-format cobertura --results-directory '{results}'
+```
+
+The Microsoft extension writes absolute `filename`s and no `<sources>`; those
+resolve under the same rules as any absolute path (inside the root, exactly).
+Its reports also repeat each line under `<methods>`, which stays ignored.
+`coverlet.MTP` writes the VSTest collector's dialect. Both are exercised live by
+the `Mtp.CodeCoverage.Tests` and `Mtp.Coverlet.Tests` fixtures, and the importer
+is tested against sanitized copies of their real reports.
+
+### Microsoft coverage tools
+
+The `dotnet-coverage` global or local tool can wrap any test command, including
+a VSTest run. Pin it in a tool manifest and give it a fixed output name inside
+the results directory with the `{results}/` prefix form:
+
+```sh
+dotnet tool restore   # .config/dotnet-tools.json pins dotnet-coverage
+dotnet-crap collect --root /absolute/path/to/repo --path src \
+  --output /absolute/path/to/new-coverage.json --expected-reports 1 \
+  -- dotnet tool run dotnet-coverage collect -f cobertura \
+     -o '{results}/coverage.cobertura.xml' dotnet test tests/Tests.csproj
+```
+
+`dotnet-coverage` instruments through a native profiler that Microsoft ships for
+Windows and for x64 Linux and macOS only; on other hosts (for example Linux
+arm64 or macOS arm64) it writes an empty report and `collect` fails with no
+class records. A report with no packages is never accepted as evidence.
 
 ## Snapshot and publication
 
@@ -164,18 +234,17 @@ The executable fixtures and independent score derivations are in
 [tests/fixtures/coverlet](../tests/fixtures/coverlet/README.md). Live collection is
 explicitly enabled with `DOTNET_CRAP_COVERLET_E2E=1`. Set
 `DOTNET_CRAP_TEST_TFM=net10.0` or `net11.0` to select the runtime target (default:
-`net10.0`); all four test projects assert their actual runtime major against this
+`net10.0`); every test project asserts its actual runtime major against this
 variable. CI installs one SDK/runtime major per leg; an ordinary skipped test is
 not collector evidence. Current-head validation and exact host/toolchain details
 belong in the feature evidence report, separate from historical API measurements.
 
-VSTest collector support and Microsoft Testing Platform support must be evaluated
-separately. Coverlet's official documentation explicitly distinguishes
-`coverlet.collector` (VSTest) from `coverlet.MTP`; this adapter does not claim MTP
-parity from VSTest runs. MTP and Microsoft coverage formats remain unsupported
-until their own pinned live evidence and adapter contract exist. Arbitrary argv
-is not runner detection: unsupported runner invocations may fail in the runner
-or produce no accepted report, rather than a preflight mode diagnostic.
+Coverlet's official documentation distinguishes `coverlet.collector` (VSTest)
+from `coverlet.MTP`, and the runners are evidenced separately: the VSTest
+collector by the four-project solution, Microsoft Testing Platform by its own
+fixtures below. Arbitrary argv is not runner detection: unsupported runner
+invocations may fail in the runner or produce no accepted report, rather than a
+preflight mode diagnostic.
 
 Primary references used for the design:
 
