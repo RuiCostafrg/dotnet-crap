@@ -87,7 +87,8 @@ Each output (`"version": 3`) records:
   higher.
 - **Layout:** the candidate's samples are under `candidates`, a list with one entry per
   `--candidate-args` set (`args`, `label`, the samples and statistics above). With
-  `--baseline` each entry also has `outputs_byte_identical` and a `comparison` block
+  `--baseline` each entry also has `outputs_byte_identical` (plus `outputs_add_fields`
+  when its report only adds JSON fields) and a `comparison` block
   for `wall_ms` and `cpu_ms` (the candidate-over-baseline ratio of medians and
   `separated`, below), and a top-level `baseline` block carries the baseline's
   digest, samples and statistics.
@@ -111,7 +112,11 @@ candidate set that is plain alternation (an even `--runs` is required so neither
 binary runs first more often), and with `N` candidate sets each of the `N + 1`
 executables starts the round equally often (`--runs` must be a multiple of `N + 1`).
 Every run's outputs must be byte-identical (JSON stdout, or the collected evidence
-file), and the result gains a `baseline` block.
+file), and the result gains a `baseline` block. One exception: a candidate's JSON
+scan report may add fields, as [the compatibility policy](../README.md) allows a
+release to do, when every value the baseline emits is still present and equal and
+the exit code and stderr match. That entry records `outputs_byte_identical: false`
+and `outputs_add_fields: true`. Collected evidence must always be byte-identical.
 
 ### Sweeping candidate arguments
 
