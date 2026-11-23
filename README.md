@@ -62,6 +62,14 @@ Scans honor `.gitignore` and `.ignore` files and an optional versioned
 override the file (`--config`, `--no-config`, `--no-ignore`, `--include`,
 `--exclude`). See [configuration](docs/CONFIG.md).
 
+## Baselines
+
+To adopt `dotnet-crap` on existing code, record today's violations with
+`--write-baseline PATH`, commit the file, and compare with `--baseline PATH` (or
+the `baseline` config key). Runs then fail only for violations that are new or
+worse; matching survives renamed files, moved callables and formatting edits, and
+is conservative when ambiguous. See [baselines](docs/BASELINES.md).
+
 ## Rust library
 
 The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
@@ -86,7 +94,7 @@ The scanner supports C# methods, constructors, operators, conversions, destructo
 explicit accessors, expression-bodied properties/indexers, and nested callables.
 See [callable support and limits](docs/CSHARP_CALLABLES.md). F#, Visual Basic, semantic
 compilation, conditional-compilation symbol resolution, Git/PR selection,
-baselines, and additional report formats are future work. See the
+and additional report formats are future work. See the
 [full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature
 mapping, .NET-specific requirements, milestones, and acceptance criteria.
 

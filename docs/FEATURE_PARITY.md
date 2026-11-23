@@ -18,7 +18,7 @@ are replaced by .NET workflows rather than ported literally.
 | Every executable statement-start line | C# sequence points with callable ownership | Phase 2; current denominator is supplied points |
 | Changed-file and PR selection | Git merge-base and authenticated `gh` discovery | Phase 3 |
 | Project policy and boolean overrides | Versioned config and explicit CLI precedence | Phase 3 |
-| Regression baselines and move matching | Qualified C# identities and token fingerprints | Phase 4 |
+| Regression baselines and move matching | Qualified C# identities and token fingerprints | Implemented; see [BASELINES.md](BASELINES.md) |
 | Text and JSON reports | Same output roles | Implemented, initial report shape only |
 | XML, HTML, SARIF, filters/sorting/top | C# reports and stable diagnostic IDs | SARIF implemented; XML/HTML/display options remain Phase 5 |
 | Public Rust API and streaming rendering | `dotnet_crap` library and thin CLI | Scan/typed reports/string rendering implemented; streaming deferred |

@@ -78,6 +78,23 @@ fails the scan).
 | `jobs: Option<NonZeroUsize>` | Worker threads for scanning and source verification, as the CLI's `--jobs`. `None` uses `std::thread::available_parallelism()` (1 if unknown). The value never changes the report, its order, or which error is returned. `Some(1)` scans on the calling thread without spawning. |
 | `defines: Vec<String>` | Conditional compilation symbols, as the CLI's `--define`. Used only for a file that does not parse as written: its `#if` groups are resolved with these symbols and it is parsed again, with line numbers and the source hash unchanged. Each must match `[A-Za-z_][A-Za-z0-9_]*`, be at most 128 characters long and not be `true` or `false` in any letter case; otherwise `scan` returns `InvalidInput`, after the root, coverage and path checks. A non-ASCII symbol is rejected, and a directive in a file with a non-ASCII or over-long symbol makes the fallback decline, because no Unicode identifier table is used. A file that parses only after resolution is then subject to the normal analysis limits, so it may report `ResourceLimit` instead of `Syntax`; while it is resolved, its text is held twice. See [conditional compilation](PREPROCESSOR.md). |
 | `skip_unparsed: bool` | Skip a selected file whose final failure is a `Syntax` error instead of returning `Err`, as the CLI's `--skip-unparsed`. A skipped file contributes no `Item`s and is listed in `Report::skipped` in selection order. Only syntax failures are skipped: I/O, decoding, resource-limit and every other error still fail the scan. Coverage entries for a skipped file are bound like those of a selected file with no callables. Defaults to `false`. |
+| `baseline: Option<PathBuf>` | A baseline file, resolved against the working directory. The score policy then fails only for callables that are new or worse; `require_coverage` and `fail_on_empty` are unaffected. Its `threshold` must equal this scan's, else `InvalidInput`; a malformed, unknown-version or `.cs` baseline is `InvalidInput` naming the file. The path becomes an `input_paths` entry, so reports cannot overwrite it. Defaults to `None`. See [baselines](BASELINES.md). |
+| `baseline_moves: Vec<(String, String)>` | Root-relative `(old, new)` file pairs, as `--baseline-move`. Requires `baseline`. |
+
+### Baselines
+
+`dotnet_crap::baseline` exposes `Baseline`, `Entry`, `read`, `compare` (a pure
+function over entries and items) and `parse_move`. With `ScanOptions::baseline`
+set, failing `Item`s gain `baseline: Option<BaselineState>` and
+`Report::baseline` holds the `BaselineSummary` counts. `ScanResult` adds:
+
+- `write_baseline(path, overwrite) -> Result<usize>`: write the failing callables
+  atomically and return the entry count. An existing file is an `Output` error
+  unless `overwrite` is set; the path cannot be a C# source, a symbolic link or an
+  input of the scan.
+- `accept_scores()`: treat score violations as accepted, so `report().failed`
+  reflects only the completeness policies (what the CLI does for `--write-baseline`).
+- `completeness_failed() -> bool`: whether `require_coverage` or `fail_on_empty` fails.
 
 ### Worker count and determinism
 
@@ -163,6 +180,7 @@ These fields are public and match the current JSON output.
 | `coverage_complete` | `bool` | `true` when every callable has coverage evidence. |
 | `functions` | `Vec<Item>` | Callable records in deterministic order. |
 | `failed` | `bool` | The policy decision described above. |
+| `baseline` | `Option<BaselineSummary>` | `new`, `worse`, `unchanged`, `improved` and `resolved` counts; `None` and omitted from JSON without a baseline. |
 
 `SkippedFile`:
 
@@ -182,6 +200,9 @@ These fields are public and match the current JSON output.
 | `complexity` | `u32` | Syntax-based cyclomatic complexity. |
 | `coverage` | `Option<f64>` | Fraction from 0 to 1, or `None` when no coverage points fall in the callable. |
 | `crap` | `f64` | `complexity² × (1 − coverage)³ + complexity`, with absent coverage as 0. |
+| `scope` | `String` | Enclosing namespaces, types, members and callables joined with `.`. |
+| `signature` | `String` | Name plus parameter types, such as `Parse(string,int)`. |
+| `baseline` | `Option<BaselineState>` | Outcome of a failing callable against a baseline; omitted from JSON when `None`. |
 
 `ScanResult` has these accessors:
 

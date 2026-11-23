@@ -3,12 +3,14 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, path::Path};
 
-use crate::{Item, Report};
+use crate::baseline::Entry;
+use crate::{BaselineState, Item, Report};
 
 /// Render deterministic SARIF score, required-coverage and empty-selection diagnostics.
 /// Reject a non-UTF-8 source root rather than fabricate a finding location.
 pub fn render(
     report: &Report,
+    resolved: &[Entry],
     root: &Path,
     require_coverage: bool,
     fail_on_empty: bool,
@@ -27,7 +29,7 @@ pub fn render(
         );
         *occurrence += 1;
         if item.crap > report.threshold {
-            results.push(result(
+            let mut score = result(
                 "DNCRAP001",
                 format!(
                     "{} has CRAP score {:.2}, exceeding threshold {:.2}",
@@ -36,7 +38,15 @@ pub fn render(
                 Some(item),
                 &identity,
                 json!({"score": item.crap, "threshold": report.threshold}),
-            ));
+            );
+            if let Some(state) = item.baseline {
+                score["baselineState"] = json!(match state {
+                    BaselineState::New => "new",
+                    BaselineState::Worse => "updated",
+                    BaselineState::Unchanged | BaselineState::Improved => "unchanged",
+                });
+            }
+            results.push(score);
         }
         if require_coverage && item.coverage.is_none() {
             results.push(result(
@@ -47,6 +57,31 @@ pub fn render(
                 json!({}),
             ));
         }
+    }
+    // Baselined violations that are gone: SARIF's `absent` state reports them
+    // as resolved, without failing anything.
+    for entry in resolved {
+        let mut absent = result(
+            "DNCRAP001",
+            format!(
+                "{} no longer exceeds threshold {:.2} (was CRAP score {:.2})",
+                entry.signature, report.threshold, entry.crap
+            ),
+            None,
+            &format!(
+                "{}\0{}\0{}\0{}",
+                entry.file, entry.kind, entry.signature, entry.occurrence
+            ),
+            json!({"baselineScore": entry.crap, "threshold": report.threshold}),
+        );
+        absent["kind"] = json!("pass");
+        absent["level"] = json!("none");
+        absent["baselineState"] = json!("absent");
+        absent["locations"] = json!([{"physicalLocation":{
+            "artifactLocation":{"uri":uri(&entry.file),"uriBaseId":"%SRCROOT%"},
+            "region":{"startLine":entry.line}
+        }}]);
+        results.push(absent);
     }
     if fail_on_empty && report.functions.is_empty() {
         results.push(result(

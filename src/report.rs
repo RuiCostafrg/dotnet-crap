@@ -12,6 +12,33 @@ pub enum ReportFormat {
     /// SARIF 2.1.0 report.
     Sarif,
 }
+/// How a failing callable compares with the baseline it was matched against.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BaselineState {
+    /// No baseline entry matches: a violation that is not accepted.
+    New,
+    /// Matched an entry whose CRAP score was lower (compared at two decimals).
+    Worse,
+    /// Matched an entry with the same CRAP score (compared at two decimals).
+    Unchanged,
+    /// Matched an entry whose CRAP score was higher but still fails.
+    Improved,
+}
+/// Counts of each baseline outcome in one scan.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct BaselineSummary {
+    /// Failing callables with no matching baseline entry.
+    pub new: usize,
+    /// Failing callables whose score rose above the baseline's.
+    pub worse: usize,
+    /// Failing callables whose score equals the baseline's.
+    pub unchanged: usize,
+    /// Failing callables whose score fell but still fails.
+    pub improved: usize,
+    /// Baseline entries that match no failing callable now.
+    pub resolved: usize,
+}
 /// A scored callable and its source location.
 #[derive(Debug, Serialize)]
 pub struct Item {
@@ -33,6 +60,23 @@ pub struct Item {
     pub coverage: Option<f64>,
     /// Calculated CRAP score.
     pub crap: f64,
+    /// Enclosing namespaces, types and callables, joined with `.`.
+    pub scope: String,
+    /// Name plus parameter types, such as `Parse(string,int)`.
+    pub signature: String,
+    /// Baseline outcome of a failing callable; absent without a baseline and
+    /// for callables that pass.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub baseline: Option<BaselineState>,
+    /// Hash of the callable's tokens, written only into baselines.
+    #[serde(skip)]
+    pub(crate) fingerprint: String,
+    /// Index among same-file callables with the same kind, scope and signature.
+    #[serde(skip)]
+    pub(crate) occurrence: usize,
+    /// CRAP score of the matched baseline entry.
+    #[serde(skip)]
+    pub(crate) baseline_crap: Option<f64>,
 }
 /// A selected source skipped because it does not parse.
 #[derive(Debug, Serialize)]
@@ -58,6 +102,9 @@ pub struct Report {
     pub functions: Vec<Item>,
     /// Whether any configured policy failed.
     pub failed: bool,
+    /// Baseline comparison counts; absent unless a baseline was used.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub baseline: Option<BaselineSummary>,
 }
 /// Escape control characters before writing untrusted source names or errors to a terminal.
 pub fn terminal_safe(s: &str) -> String {
@@ -71,6 +118,17 @@ pub fn terminal_safe(s: &str) -> String {
     }
     text
 }
+/// The ` [state]` suffix of a failing callable's text line, empty without a baseline outcome.
+fn baseline_suffix(item: &Item) -> String {
+    let was = item.baseline_crap.unwrap_or_default();
+    match item.baseline {
+        None => String::new(),
+        Some(BaselineState::New) => " [new]".into(),
+        Some(BaselineState::Worse) => format!(" [worse, was {was:.2}]"),
+        Some(BaselineState::Unchanged) => " [unchanged]".into(),
+        Some(BaselineState::Improved) => format!(" [improved, was {was:.2}]"),
+    }
+}
 /// Render the human-readable text report using the scan's coverage policy.
 pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
     let mut s = String::new();
@@ -82,14 +140,21 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
     }
     for i in &report.functions {
         s.push_str(&format!(
-            "{}:{} {} complexity={} coverage={} CRAP={:.2}\n",
+            "{}:{} {} complexity={} coverage={} CRAP={:.2}{}\n",
             terminal_safe(&i.file),
             i.line,
             terminal_safe(&i.name),
             i.complexity,
             i.coverage
                 .map_or_else(|| "absent".into(), |v| format!("{:.1}%", v * 100.0)),
-            i.crap
+            i.crap,
+            baseline_suffix(i)
+        ));
+    }
+    if let Some(b) = &report.baseline {
+        s.push_str(&format!(
+            "baseline: {} new, {} worse, {} unchanged, {} improved, {} resolved\n",
+            b.new, b.worse, b.unchanged, b.improved, b.resolved
         ));
     }
     if !report.skipped.is_empty() {
