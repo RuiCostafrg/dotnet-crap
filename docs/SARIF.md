@@ -7,6 +7,14 @@ Gate failures retain the CLI's normal exit codes and still produce a report.
 - `DNCRAP002`: callable missing coverage, only with `--require-coverage`.
 - `DNCRAP003`: empty selection, only with `--fail-on-empty`.
 
+With a [baseline](BASELINES.md), each `DNCRAP001` result carries the standard
+`baselineState`: `new` for a new violation, `updated` for one that got worse, and
+`unchanged` for an unchanged or improved one. Baseline entries that no longer
+exceed the threshold are emitted as `DNCRAP001` results with `baselineState`
+`absent`, `kind` `pass` and level `none`, located at the entry's file and
+recorded line; their fingerprints derive from the baseline identity. Completeness
+results never carry a state, and without a baseline no result does.
+
 Passing scans produce an empty results array. A callable can have both score and
 completeness findings. Skipped files add one `warning` notification per file to
 the run's invocation (`runs[0].invocations[0].toolExecutionNotifications`) with
@@ -28,8 +36,9 @@ Fingerprints use SHA-256 over rule, path, callable kind/name, and the occurrence
 number among callables sharing that path/kind/name. They remain stable when scores,
 thresholds or coverage change. They are not semantic C# overload identities:
 reordering same-name overloads or anonymous callables can change their association;
-renames and moves produce new fingerprints. Baseline identity/move matching is a
-separate planned feature. No timestamps or random identifiers enter the output.
+renames and moves produce new fingerprints. Baseline identity and move matching
+is separate (see [BASELINES.md](BASELINES.md)); these fingerprints are unchanged by it.
+No timestamps or random identifiers enter the output.
 
 ## Validation evidence
 

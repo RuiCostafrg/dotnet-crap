@@ -34,6 +34,9 @@ pub struct Config {
     pub skip_unparsed: Option<bool>,
     /// As `ScanOptions::defines`.
     pub defines: Option<Vec<String>>,
+    /// Baseline file, as `ScanOptions::baseline`. Written relative to the
+    /// config file's directory; [`load`] resolves it against that directory.
+    pub baseline: Option<PathBuf>,
 }
 
 /// Build the error for a config file that cannot be used.
@@ -48,7 +51,7 @@ fn invalid(path: &Path, reason: impl std::fmt::Display) -> Error {
 /// whose message names `path`.
 pub fn load(path: &Path) -> Result<Config> {
     let text = std::fs::read_to_string(path).map_err(|e| invalid(path, e))?;
-    let config: Config = serde_json::from_str(&text).map_err(|e| invalid(path, e))?;
+    let mut config: Config = serde_json::from_str(&text).map_err(|e| invalid(path, e))?;
     if config.version != SUPPORTED_VERSION {
         return Err(invalid(
             path,
@@ -60,6 +63,10 @@ pub fn load(path: &Path) -> Result<Config> {
     }
     if config.threshold.is_some_and(|t| !t.is_finite() || t < 0.0) {
         return Err(invalid(path, "threshold must be finite and nonnegative"));
+    }
+    if let Some(baseline) = &mut config.baseline {
+        // Relative to the config file, whatever the working directory is.
+        *baseline = path.parent().unwrap_or(Path::new("")).join(&*baseline);
     }
     Ok(config)
 }
@@ -99,6 +106,10 @@ pub struct Overrides {
     pub exclude: Vec<String>,
     /// `--define` values; a non-empty list replaces the config list.
     pub defines: Vec<String>,
+    /// `--baseline`.
+    pub baseline: Option<PathBuf>,
+    /// `--no-baseline`: ignore a configured baseline.
+    pub no_baseline: bool,
 }
 
 /// Effective settings after applying precedence.
@@ -120,6 +131,8 @@ pub struct Resolved {
     pub exclude: Vec<String>,
     /// Effective defines.
     pub defines: Vec<String>,
+    /// Effective baseline file, if any.
+    pub baseline: Option<PathBuf>,
 }
 
 /// Apply precedence: explicit CLI value, then config value, then built-in default.
@@ -148,6 +161,11 @@ pub fn resolve(config: Option<&Config>, cli: &Overrides) -> Resolved {
         include: list(&cli.include, &config.include),
         exclude: list(&cli.exclude, &config.exclude),
         defines: list(&cli.defines, &config.defines),
+        baseline: if cli.no_baseline {
+            None
+        } else {
+            cli.baseline.clone().or_else(|| config.baseline.clone())
+        },
     }
 }
 
@@ -178,7 +196,8 @@ mod tests {
             r#"{ "version": 1, "threshold": 7.5, "include": ["src/**"],
                 "exclude": ["**/Migrations/**"], "respect_ignore_files": false,
                 "require_coverage": true, "fail_on_empty": true,
-                "skip_unparsed": true, "defines": ["NET10_0"] }"#,
+                "skip_unparsed": true, "defines": ["NET10_0"],
+                "baseline": "ci/baseline.json" }"#,
         );
         let config = load(&path).unwrap();
         assert_eq!(
@@ -193,6 +212,7 @@ mod tests {
                 fail_on_empty: Some(true),
                 skip_unparsed: Some(true),
                 defines: Some(vec!["NET10_0".into()]),
+                baseline: Some(path.parent().unwrap().join("ci/baseline.json")),
             }
         );
     }
@@ -289,6 +309,7 @@ mod tests {
                 include: vec![],
                 exclude: vec![],
                 defines: vec![],
+                baseline: None,
             }
         );
     }
@@ -305,6 +326,7 @@ mod tests {
             fail_on_empty: Some(true),
             skip_unparsed: Some(true),
             defines: Some(strings(&["X"])),
+            baseline: Some(PathBuf::from("cfg/base.json")),
         };
         let resolved = resolve(Some(&config), &Overrides::default());
         assert_eq!(
@@ -318,6 +340,7 @@ mod tests {
                 include: strings(&["a"]),
                 exclude: strings(&["b"]),
                 defines: strings(&["X"]),
+                baseline: Some(PathBuf::from("cfg/base.json")),
             }
         );
     }
@@ -334,6 +357,7 @@ mod tests {
             fail_on_empty: Some(true),
             skip_unparsed: Some(true),
             defines: Some(strings(&["X"])),
+            baseline: Some(PathBuf::from("cfg/base.json")),
         };
         let cli = Overrides {
             threshold: Some(0.0),
@@ -344,6 +368,8 @@ mod tests {
             include: strings(&["c", "d"]),
             exclude: strings(&["e"]),
             defines: strings(&["Y"]),
+            baseline: Some(PathBuf::from("cli.json")),
+            no_baseline: false,
         };
         let resolved = resolve(Some(&config), &cli);
         assert_eq!(
@@ -357,7 +383,44 @@ mod tests {
                 include: strings(&["c", "d"]),
                 exclude: strings(&["e"]),
                 defines: strings(&["Y"]),
+                baseline: Some(PathBuf::from("cli.json")),
             }
         );
+        // `--no-baseline` beats a config baseline, and the command line beats
+        // the config when it names one.
+        let off = Overrides {
+            no_baseline: true,
+            ..Overrides::default()
+        };
+        assert_eq!(resolve(Some(&config), &off).baseline, None);
+        assert_eq!(
+            resolve(Some(&config), &Overrides::default()).baseline,
+            Some(PathBuf::from("cfg/base.json"))
+        );
+    }
+
+    #[test]
+    fn a_relative_baseline_resolves_against_the_config_directory() {
+        let (dir, path) = write(r#"{"version":1,"baseline":"b.json"}"#);
+        let sub = dir.path().join("sub");
+        fs::create_dir(&sub).unwrap();
+        let nested = sub.join("c.json");
+        fs::write(&nested, r#"{"version":1,"baseline":"../b.json"}"#).unwrap();
+        assert_eq!(
+            load(&path).unwrap().baseline,
+            Some(dir.path().join("b.json"))
+        );
+        assert_eq!(load(&nested).unwrap().baseline, Some(sub.join("../b.json")));
+        // An absolute path stays as written.
+        let absolute = dir.path().join("abs.json");
+        fs::write(
+            &absolute,
+            format!(
+                r#"{{"version":1,"baseline":{:?}}}"#,
+                nested.to_str().unwrap()
+            ),
+        )
+        .unwrap();
+        assert_eq!(load(&absolute).unwrap().baseline, Some(nested));
     }
 }

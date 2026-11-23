@@ -14,7 +14,7 @@ jobs:
       # Shard count constant: exactly one entry per shard, 0-based for
       # cargo-mutants --shard k/N. The total is derived with strategy.job-total.
       matrix:
-        shard-index: [0, 1, 2, 3]
+        shard-index: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

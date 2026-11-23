@@ -25,6 +25,8 @@ use tree_sitter::Parser as TsParser;
 
 /// Typed analysis of C# callables and their CRAP scores.
 mod analysis;
+/// Regression baselines and move-aware matching.
+pub mod baseline;
 /// Native coverage schema, reading and validation.
 mod evidence;
 /// Deterministic ordered worker pool for per-file work.
@@ -84,6 +86,14 @@ pub struct ScanOptions {
     /// Gitignore-style patterns relative to the root; a selected file matching
     /// any of them is dropped. Applies to explicit files too.
     pub exclude: Vec<String>,
+    /// A baseline file, resolved against the working directory, to compare
+    /// with. The score policy then fails only for callables that are new or
+    /// worse than the baseline; `require_coverage` and `fail_on_empty` are
+    /// unaffected. Its threshold must equal `threshold`. Defaults to `None`.
+    pub baseline: Option<PathBuf>,
+    /// Root-relative `(old, new)` file paths: baseline entries for `old` are
+    /// matched as if they were in `new`. Requires `baseline`.
+    pub baseline_moves: Vec<(String, String)>,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -100,6 +110,8 @@ impl Default for ScanOptions {
             respect_ignore_files: true,
             include: Vec::new(),
             exclude: Vec::new(),
+            baseline: None,
+            baseline_moves: Vec::new(),
         }
     }
 }
@@ -113,6 +125,8 @@ pub struct ScanResult {
     require_coverage: bool,
     fail_on_empty: bool,
     jobs: usize,
+    /// Baseline entries that match no failing callable now; empty without a baseline.
+    resolved: Vec<baseline::Entry>,
 }
 impl ScanResult {
     /// Return the typed report.
@@ -126,6 +140,33 @@ impl ScanResult {
     /// Return selected source paths and the coverage input, if present.
     pub fn input_paths(&self) -> &[PathBuf] {
         &self.input_paths
+    }
+    /// Whether `require_coverage` or `fail_on_empty` fails for this scan,
+    /// whatever any baseline accepts.
+    pub fn completeness_failed(&self) -> bool {
+        completeness_failed(&self.report, self.require_coverage, self.fail_on_empty)
+    }
+    /// Treat every score violation as accepted, as when a baseline is being
+    /// written: `report().failed` then reflects only the completeness
+    /// policies, and renderings show it.
+    pub fn accept_scores(&mut self) {
+        self.report.failed = self.completeness_failed();
+    }
+    /// Write the callables that fail the threshold as a baseline at `path`,
+    /// atomically, and return how many entries it holds. An existing file is
+    /// an error unless `overwrite` is set. The path cannot be a C# source,
+    /// a symbolic link or an input of this scan.
+    pub fn write_baseline(&self, path: &Path, overwrite: bool) -> Result<usize> {
+        let baseline =
+            baseline::Baseline::from_items(&self.report.functions, self.report.threshold);
+        output::publish(
+            self,
+            &baseline.render()?,
+            path,
+            "baseline output",
+            overwrite,
+        )?;
+        Ok(baseline.entries.len())
     }
     /// Verify that selected source bytes still match the scanned bytes.
     ///
@@ -164,6 +205,7 @@ impl ScanResult {
                 "{}\n",
                 sarif::render(
                     report,
+                    &self.resolved,
                     &self.root,
                     self.require_coverage,
                     self.fail_on_empty
@@ -181,7 +223,9 @@ impl ScanResult {
     }
 }
 pub(crate) use evidence::{Coverage, CoverageFile};
-pub use report::{terminal_safe, Item, Report, ReportFormat, SkippedFile};
+pub use report::{
+    terminal_safe, BaselineState, BaselineSummary, Item, Report, ReportFormat, SkippedFile,
+};
 pub(crate) use source::decode_source;
 /// Strict Cobertura line-evidence importer.
 pub mod cobertura;
@@ -243,6 +287,14 @@ fn scan_impl(
         .context(ErrorKind::InvalidInput, "invalid root")?;
     if !root.is_dir() {
         fail!(InvalidInput, "root must be a directory");
+    }
+    let baseline = args
+        .baseline
+        .as_deref()
+        .map(|path| load_baseline(path, args.threshold))
+        .transpose()?;
+    if baseline.is_none() && !args.baseline_moves.is_empty() {
+        fail!(InvalidInput, "baseline moves require a baseline");
     }
     let coverage: Option<Coverage> = args
         .coverage
@@ -316,19 +368,47 @@ fn scan_impl(
         source_hashes.push((file.path, file.hash));
     }
     let coverage_complete = items.iter().all(|i| i.coverage.is_some());
-    let failed = items.iter().any(|i| i.crap > args.threshold)
-        || args.require_coverage && !coverage_complete
-        || args.fail_on_empty && items.is_empty();
-    let report = Report {
+    let mut summary = None;
+    let mut resolved = Vec::new();
+    if let Some(baseline) = &baseline {
+        let comparison = baseline::compare(
+            &baseline.entries,
+            &items,
+            args.threshold,
+            &args.baseline_moves,
+        );
+        for (item, class) in items.iter_mut().zip(&comparison.items) {
+            if let Some(class) = class {
+                item.baseline = Some(class.state);
+                item.baseline_crap = class.was;
+            }
+        }
+        summary = Some(comparison.summary());
+        resolved = comparison
+            .resolved
+            .iter()
+            .map(|&e| baseline.entries[e].clone())
+            .collect();
+    }
+    let mut report = Report {
         threshold: args.threshold,
         files_scanned: files.len(),
         skipped,
         coverage_complete,
         functions: items,
-        failed,
+        failed: false,
+        baseline: summary,
     };
+    // With a baseline only new or worse callables fail the score policy.
+    let scores_failed = match &report.baseline {
+        Some(summary) => summary.new + summary.worse > 0,
+        None => report.functions.iter().any(|i| i.crap > args.threshold),
+    };
+    report.failed =
+        scores_failed || completeness_failed(&report, args.require_coverage, args.fail_on_empty);
     let mut input_paths = files;
     input_paths.extend(args.coverage.iter().cloned());
+    input_paths.extend(args.baseline.iter().cloned());
     let result = ScanResult {
         report,
         root,
@@ -337,9 +417,26 @@ fn scan_impl(
         require_coverage: args.require_coverage,
         fail_on_empty: args.fail_on_empty,
         jobs,
+        resolved,
     };
     result.verify_sources()?;
     Ok((result, sources))
+}
+
+/// Whether a completeness policy fails: required coverage is missing, or an
+/// empty selection is not allowed. A baseline never suppresses these.
+fn completeness_failed(report: &Report, require_coverage: bool, fail_on_empty: bool) -> bool {
+    require_coverage && !report.coverage_complete || fail_on_empty && report.functions.is_empty()
+}
+
+/// Read a baseline and check it was written under the scan's threshold.
+fn load_baseline(path: &Path, threshold: f64) -> Result<baseline::Baseline> {
+    if output::is_csharp_path(path) {
+        fail!(InvalidInput, "baseline cannot be a C# source file");
+    }
+    let baseline = baseline::read(path)?;
+    baseline::check_threshold(&baseline, threshold)?;
+    Ok(baseline)
 }
 
 /// Inputs shared by every per-file scan, read-only across workers.

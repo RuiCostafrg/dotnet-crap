@@ -258,7 +258,8 @@ fn serialization_and_captured_policy_keep_the_existing_contract() {
             "      \"kind\": \"method_declaration\",\n      \"line\": 1,\n",
             "      \"column\": 11,\n      \"end_line\": 1,\n",
             "      \"complexity\": 1,\n      \"coverage\": null,\n",
-            "      \"crap\": 2.0\n    }\n  ],\n  \"failed\": true\n}\n"
+            "      \"crap\": 2.0,\n      \"scope\": \"C\",\n",
+            "      \"signature\": \"F()\"\n    }\n  ],\n  \"failed\": true\n}\n"
         )
     );
     assert!(result
