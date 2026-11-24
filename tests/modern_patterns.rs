@@ -162,7 +162,7 @@ fn real_sdk_executes_patterns_and_records_partial_and_full_line_evidence() {
             .contains("modern pattern fixture execution passed"));
         assert_eq!(fs::read(root.join(file)).unwrap(), original);
         let points: Value = serde_json::from_slice(&fs::read(hits).unwrap()).unwrap();
-        assert_eq!(points.as_object().unwrap().len(), 2);
+        assert_eq!(points.as_object().unwrap().len(), 3);
         assert_eq!(
             points
                 .as_object()
@@ -170,7 +170,7 @@ fn real_sdk_executes_patterns_and_records_partial_and_full_line_evidence() {
                 .values()
                 .filter(|v| v.as_u64().unwrap() > 0)
                 .count(),
-            if full { 2 } else { 1 }
+            if full { 3 } else { 2 }
         );
         let coverage = temporary.path().join("native.json");
         fs::write(
@@ -181,7 +181,9 @@ fn real_sdk_executes_patterns_and_records_partial_and_full_line_evidence() {
             .to_string(),
         )
         .unwrap();
-        let expected = if full { 4.0 } else { 6.0 }; // M=4, C=1 or 1/2
+        // M=4; C=1, or 2/3 when the fallback return is not reached.
+        let fraction = if full { 1.0 } else { 2.0 / 3.0 };
+        let expected = 16.0 * (1.0f64 - fraction).powi(3) + 4.0;
         let output = scan(file, Some(&coverage), &expected.to_string());
         assert!(
             output.status.success(),
@@ -192,10 +194,7 @@ fn real_sdk_executes_patterns_and_records_partial_and_full_line_evidence() {
         let functions = report["functions"].as_array().unwrap();
         assert_eq!(functions.len(), 1);
         assert_eq!(functions[0]["complexity"], 4);
-        assert_eq!(
-            functions[0]["coverage"].as_f64(),
-            Some(if full { 1.0 } else { 0.5 })
-        );
+        assert_eq!(functions[0]["coverage"].as_f64(), Some(fraction));
         assert_eq!(functions[0]["crap"].as_f64(), Some(expected));
         assert_eq!(
             scan(file, Some(&coverage), &(expected - 0.001).to_string())

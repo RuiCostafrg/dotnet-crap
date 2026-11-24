@@ -92,9 +92,11 @@ The initial [native coverage format](examples/COVERAGE.md) uses root-relative
 source paths and SHA-256 hashes of exact source bytes. It rejects stale coverage.
 Fresh Coverlet evidence can be collected with `dotnet-crap collect` using an
 explicit trusted command; see [collection and runner limits](docs/COVERLET.md).
-The initial denominator is the supplied coverage points inside each callable;
-producers must include zero-hit points. `--require-coverage` requires some
-evidence per callable, rather than proving complete statement coverage.
+A callable's coverage counts the supplied points inside it plus every
+executable line the scanner derives that has no point, which counts as
+uncovered and is listed as `unevidenced_lines`. `--require-coverage` requires
+evidence for every callable and every derived executable line. See the
+[coverage format](examples/COVERAGE.md) for the exact rule.
 
 The scanner supports C# methods, constructors, operators, conversions, destructors,
 explicit accessors, expression-bodied properties/indexers, and nested callables.

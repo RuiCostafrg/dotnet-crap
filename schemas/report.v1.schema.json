@@ -47,6 +47,11 @@
           "baseline": {
             "enum": ["new", "worse", "unchanged", "improved"],
             "description": "Baseline outcome of a failing callable. Absent without a baseline and for passing callables."
+          },
+          "unevidenced_lines": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 },
+            "description": "Executable lines with no coverage point, counted as uncovered; --require-coverage fails while any callable lists one. Absent when there are none or the callable has no coverage points at all."
           }
         },
         "required": ["file", "name", "kind", "line", "column", "end_line", "complexity", "coverage", "crap", "scope", "signature"],

@@ -178,7 +178,7 @@ These fields are public and match the current JSON output.
 | `threshold` | `f64` | The threshold used by the scan. |
 | `files_scanned` | `usize` | Number of selected `.cs` files. |
 | `skipped` | `Vec<SkippedFile>` | Selected sources skipped because they did not parse, in selection order. Serialized as `skipped_files`, and omitted from JSON when empty. Empty unless `skip_unparsed` is set and a file failed. |
-| `coverage_complete` | `bool` | `true` when every callable has coverage evidence. |
+| `coverage_complete` | `bool` | `true` when every callable has coverage evidence and no `Item::unevidenced_lines`. |
 | `functions` | `Vec<Item>` | Callable records in deterministic order. |
 | `failed` | `bool` | The policy decision described above. |
 | `baseline` | `Option<BaselineSummary>` | `new`, `worse`, `unchanged`, `improved` and `resolved` counts; `None` and omitted from JSON without a baseline. |
@@ -199,11 +199,12 @@ These fields are public and match the current JSON output.
 | `kind` | `String` | Syntax node kind, such as `method_declaration`. |
 | `line`, `column`, `end_line` | `usize` | One-based lines and UTF-8 byte column in the source. |
 | `complexity` | `u32` | Syntax-based cyclomatic complexity. |
-| `coverage` | `Option<f64>` | Fraction from 0 to 1, or `None` when no coverage points fall in the callable. |
+| `coverage` | `Option<f64>` | Fraction from 0 to 1 over the supplied points plus `unevidenced_lines`, or `None` when no coverage points fall in the callable. |
 | `crap` | `f64` | `complexity² × (1 − coverage)³ + complexity`, with absent coverage as 0. |
 | `scope` | `String` | Enclosing namespaces, types, members and callables joined with `.`. |
 | `signature` | `String` | Name plus parameter types, such as `Parse(string,int)`. |
 | `baseline` | `Option<BaselineState>` | Outcome of a failing callable against a baseline; omitted from JSON when `None`. |
+| `unevidenced_lines` | `Vec<usize>` | Derived executable lines with no coverage point, counted as uncovered (see [coverage](../examples/COVERAGE.md)); omitted from JSON when empty. |
 
 `ScanResult` has these accessors:
 

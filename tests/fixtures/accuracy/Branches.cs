@@ -4,6 +4,6 @@ class BranchesFixture {
         try {
             while (a && b) { Hits.Mark("Branches.cs", 5); s = s ?? throw new System.Exception(); break; }
         } catch (System.Exception) { Hits.Mark("Branches.cs", 6); return 0; }
-        return s.Length;
+        return Hits.Value("Branches.cs", 7, s.Length);
     }
 }

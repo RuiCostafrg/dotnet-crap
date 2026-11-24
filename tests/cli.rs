@@ -533,3 +533,63 @@ fn config_and_no_config_conflict() {
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("cannot be used with"));
 }
+#[test]
+fn executable_lines_without_coverage_points_count_and_fail_required_coverage() {
+    let dir = tempfile::tempdir().unwrap();
+    let source =
+        "class C {\n  int F(int x) {\n    if (x > 0)\n      return 1;\n    return 0;\n  }\n}\n";
+    fs::write(dir.path().join("a.cs"), source).unwrap();
+    let hash = hex::encode(Sha256::digest(source.as_bytes()));
+    let coverage = |lines: &str| {
+        let path = dir.path().join("coverage.json");
+        fs::write(
+            &path,
+            format!(
+                r#"{{"version":1,"files":{{"a.cs":{{"sha256":"{hash}","lines":{{{lines}}}}}}}}}"#
+            ),
+        )
+        .unwrap();
+        path
+    };
+    // Line 5's return has no point: it counts as uncovered.
+    let partial = coverage(r#""3":1,"4":1"#);
+    let go = |path: &std::path::Path, extra: &[&str]| {
+        let mut all = vec!["--coverage", path.to_str().unwrap()];
+        all.extend_from_slice(extra);
+        run(dir.path(), &all)
+    };
+    let out = go(&partial, &["--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(
+        report["functions"][0]["unevidenced_lines"],
+        serde_json::json!([5])
+    );
+    assert_eq!(report["coverage_complete"], false);
+    let out = go(&partial, &[]);
+    let text = String::from_utf8(out.stdout).unwrap();
+    assert!(
+        text.contains("coverage=66.7% CRAP=2.15 [no coverage data for lines 5]"),
+        "{text}"
+    );
+    // --require-coverage now fails, with a SARIF diagnostic naming the line.
+    assert_eq!(go(&partial, &["--require-coverage"]).status.code(), Some(1));
+    let out = go(&partial, &["--require-coverage", "--format", "sarif"]);
+    let sarif: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let result = &sarif["runs"][0]["results"][0];
+    assert_eq!(result["ruleId"], "DNCRAP002");
+    assert_eq!(
+        result["message"]["text"],
+        "F has executable lines without coverage data: 5"
+    );
+    // Complete evidence passes and lists nothing.
+    let complete = coverage(r#""3":1,"4":1,"5":0"#);
+    let out = go(&complete, &["--require-coverage", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(
+        report["functions"][0].get("unevidenced_lines").is_none(),
+        "{report}"
+    );
+    assert_eq!(report["coverage_complete"], true);
+}

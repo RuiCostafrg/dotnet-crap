@@ -9,8 +9,15 @@ static class Probe
     {
         var lines = File.ReadAllLines(source);
         for (int i = 0; i < lines.Length; i++)
-            if (lines[i].Contains("return Probe.Value(")) Hits.Add(i + 1, 0);
-        if (Hits.Count != 2) throw new Exception("expected two explicit return-line probes");
+            if (lines[i].Contains("Probe.Value(") || lines[i].Contains("Probe.Enter(")) Hits.Add(i + 1, 0);
+        if (Hits.Count != 3) throw new Exception("expected an entry probe and two return-line probes");
+    }
+
+    /// <summary>Record the line that tests the pattern and pass its input through.</summary>
+    public static int Enter(int value, [CallerLineNumber] int line = 0)
+    {
+        Hits[line]++;
+        return value;
     }
 
     public static int Value(int value, [CallerLineNumber] int line = 0)

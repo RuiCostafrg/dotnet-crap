@@ -44,7 +44,8 @@ fn coverage_ownership_and_locations_use_exact_callable_boundaries() {
     let path = coverage(
         dir.path(),
         source,
-        serde_json::json!({"2":0,"3":2,"5":0,"8":0,"9":0,"10":2,"11":0}),
+        // Every executable line has a point, as producers must supply.
+        serde_json::json!({"2":0,"3":2,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":2,"11":0}),
     );
     let output = scan(
         dir.path(),
@@ -70,7 +71,8 @@ fn coverage_ownership_and_locations_use_exact_callable_boundaries() {
     assert_eq!(outer["column"], 3);
     assert_eq!(outer["end_line"], 10);
     assert_eq!(outer["complexity"], 1);
-    assert!((outer["coverage"].as_f64().unwrap() - 2.0 / 3.0).abs() < 1e-12);
+    // Lines 3, 4, 9 and 10; Local's lines 5 to 8 are excluded.
+    assert!((outer["coverage"].as_f64().unwrap() - 2.0 / 4.0).abs() < 1e-12);
     let local = functions.iter().find(|f| f["name"] == "Local").unwrap();
     assert_eq!(local["line"], 5);
     assert_eq!(local["column"], 5);

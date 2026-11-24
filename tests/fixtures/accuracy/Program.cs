@@ -6,8 +6,8 @@ using System.Text.Json;
 
 static class Hits {
     public static readonly Dictionary<string, Dictionary<int, ulong>> Files = new() {
-        ["Switch.cs"] = new() { [6] = 0, [7] = 0 },
-        ["Branches.cs"] = new() { [5] = 0, [6] = 0 },
+        ["Switch.cs"] = new() { [4] = 0, [6] = 0, [7] = 0 },
+        ["Branches.cs"] = new() { [5] = 0, [6] = 0, [7] = 0 },
         ["Nested.cs"] = new() { [5] = 0, [6] = 0, [7] = 0 }
     };
     /// <summary>Increment the explicitly registered source-line probe.</summary>

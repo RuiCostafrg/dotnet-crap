@@ -367,7 +367,9 @@ fn scan_impl(
         }
         source_hashes.push((file.path, file.hash));
     }
-    let coverage_complete = items.iter().all(|i| i.coverage.is_some());
+    let coverage_complete = items
+        .iter()
+        .all(|i| i.coverage.is_some() && i.unevidenced_lines.is_empty());
     let mut summary = None;
     let mut resolved = Vec::new();
     if let Some(baseline) = &baseline {
@@ -556,6 +558,9 @@ impl FileContext<'_> {
             1_000_000,
             1_000_000,
         )?;
+        if let Some(points) = &points {
+            analysis::complete_coverage(self.kinds, tree.root_node(), &source, points, &mut items);
+        }
         Ok(FileScan {
             path: path.to_path_buf(),
             hash,

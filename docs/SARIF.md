@@ -4,7 +4,9 @@ Use `--format sarif` to write SARIF 2.1.0, optionally with `--output report.sari
 Gate failures retain the CLI's normal exit codes and still produce a report.
 
 - `DNCRAP001`: callable CRAP strictly above the threshold.
-- `DNCRAP002`: callable missing coverage, only with `--require-coverage`.
+- `DNCRAP002`: callable missing coverage, or with executable lines that have no
+  coverage point (listed in the message and in `properties.unevidencedLines`),
+  only with `--require-coverage`.
 - `DNCRAP003`: empty selection, only with `--fail-on-empty`.
 
 With a [baseline](BASELINES.md), each `DNCRAP001` result carries the standard
