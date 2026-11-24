@@ -130,6 +130,20 @@ fn real_json_reports_validate() {
     assert_valid(&report, &value, "skipped report");
     assert!(!value["skipped_files"].as_array().unwrap().is_empty());
 
+    // Partially scored files.
+    let partial = accuracy_copy();
+    fs::write(
+        partial.path().join("Broken.cs"),
+        "class B { int Ok() { return 1; } int Bad() { return ) ; } }\n",
+    )
+    .unwrap();
+    let value = stdout_json(&run(
+        partial.path(),
+        &["--format", "json", "--partial-unparsed"],
+    ));
+    assert_valid(&report, &value, "partial report");
+    assert_eq!(value["partial_files"][0]["unscored"], 1, "{value}");
+
     // Coverage.
     let covered = accuracy_copy();
     let coverage = covered.path().join("coverage.json");
@@ -278,7 +292,7 @@ fn config_schema_agrees_with_the_loader() {
             json!({"version": 1, "threshold": 0}),
             json!({"version": 1, "threshold": 7.5, "include": ["src/**"], "exclude": [],
                    "respect_ignore_files": false, "require_coverage": true,
-                   "fail_on_empty": true, "skip_unparsed": true, "defines": ["A"],
+                   "fail_on_empty": true, "skip_unparsed": true, "partial_unparsed": true, "defines": ["A"],
                    "baseline": "b.json"}),
             json!({"version": 1, "threshold": null, "baseline": null}),
         ],

@@ -21,7 +21,9 @@ Passing scans produce an empty results array. A callable can have both score and
 completeness findings. Skipped files add one `warning` notification per file to
 the run's invocation (`runs[0].invocations[0].toolExecutionNotifications`) with
 the file's root-relative location; the notification list is omitted when
-nothing is skipped. Coverage semantics and safe output replacement are the same
+nothing is skipped. Files scored partially (`--partial-unparsed`) add the same
+kind of notification, whose text also gives the number of callables not scored.
+Coverage semantics and safe output replacement are the same
 as text/JSON. No coverage collector is introduced by this format.
 
 Locations use percent-encoded, root-relative UTF-8 URI paths. `%SRCROOT%` resolves

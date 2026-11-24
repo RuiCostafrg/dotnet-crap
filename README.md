@@ -52,6 +52,21 @@ again, keeping line numbers. Files that parse are unaffected. See
 is a syntax error instead of failing the scan; skipped files are listed in the
 text, JSON and SARIF reports and contribute no callables. Other errors, such as
 unreadable or non-UTF-8 sources, still fail. Off by default.
+`--partial-unparsed` goes further for such a file: it scores the callables whose
+syntax is intact and leaves out each callable that contains a syntax error, is
+inside one, or is nested in a callable that has one. The file is listed with
+the number of callables left unscored (`partial_files` in JSON, a notification
+in SARIF). It takes precedence over `--skip-unparsed`. Off by default.
+`--failing-only`, `--top <N>` and `--sort location|crap` shape the text listing
+of a large scan: only callables above the threshold, at most N of them, in scan
+order or highest score first (`--top` alone sorts by score). A footer then says
+how many callables are shown. They never change the exit code, and they apply
+only to `--format text`; JSON and SARIF always hold every result.
+`--changed-since <REV>` scores only the selected files that differ from the
+merge base of REV and `HEAD`: committed, staged, unstaged and untracked files,
+but not deleted or ignored ones. Use it for fast pull-request checks, for
+example `--changed-since origin/main`. It needs `git`, and enough history for
+the merge base (`fetch-depth: 0` with `actions/checkout`).
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 

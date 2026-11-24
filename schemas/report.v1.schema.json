@@ -21,6 +21,20 @@
         "additionalProperties": true
       }
     },
+    "partial_files": {
+      "type": "array",
+      "description": "Selected sources that did not parse, of which only the intact callables were scored (--partial-unparsed). Absent when none.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "description": "Root-relative source path." },
+          "message": { "type": "string", "description": "Syntax error message that would have failed the scan." },
+          "unscored": { "type": "integer", "minimum": 0, "description": "Callables found in the file but not scored because their syntax, or that of an enclosing callable, has an error." }
+        },
+        "required": ["path", "message", "unscored"],
+        "additionalProperties": true
+      }
+    },
     "coverage_complete": { "type": "boolean", "description": "Whether every callable has coverage evidence." },
     "functions": {
       "type": "array",

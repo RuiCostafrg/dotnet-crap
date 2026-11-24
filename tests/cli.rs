@@ -625,3 +625,272 @@ fn files_resolved_by_the_conditional_fallback_derive_no_executable_lines() {
     );
     assert_eq!(report["functions"][0]["coverage"], 1.0);
 }
+#[test]
+fn partial_unparsed_scores_only_intact_callables() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    fs::write(
+        root.join("a.cs"),
+        "namespace N {\n\
+         class K {\n\
+             int Good(int x) { if (x > 0) return 1; return 0; }\n\
+             int Bad(int x) { if (x > 0 return 1; return 0; }\n\
+             int Outer(int x) {\n\
+                 int Local(int y) { return y; }\n\
+                 var z = ) ;\n\
+                 return Local(x);\n\
+             }\n\
+             int AlsoGood(int x) { return x > 1 ? 1 : 0; }\n\
+         }\n\
+         }\n",
+    )
+    .unwrap();
+    // A file the conditional-compilation fallback repairs is scored whole.
+    fs::write(
+        root.join("b.cs"),
+        "class B {\n#if X\n int F() {\n#else\n int F(int y) {\n#endif\n return 0; }\n}\n",
+    )
+    .unwrap();
+    let json = |args: &[&str]| -> serde_json::Value {
+        let mut all = vec!["--format", "json", "--define", "X"];
+        all.extend_from_slice(args);
+        let out = run(root, &all);
+        assert_eq!(out.status.code(), Some(0), "{out:?}");
+        serde_json::from_slice(&out.stdout).unwrap()
+    };
+    let names = |report: &serde_json::Value| -> Vec<String> {
+        report["functions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| {
+                format!(
+                    "{}:{}",
+                    f["file"].as_str().unwrap(),
+                    f["name"].as_str().unwrap()
+                )
+            })
+            .collect()
+    };
+    let report = json(&["--partial-unparsed"]);
+    assert_eq!(names(&report), ["a.cs:Good", "a.cs:AlsoGood", "b.cs:F"]);
+    assert_eq!(
+        report["partial_files"].as_array().unwrap().len(),
+        1,
+        "{report}"
+    );
+    assert_eq!(report["partial_files"][0]["path"], "a.cs");
+    assert_eq!(report["partial_files"][0]["unscored"], 3);
+    assert!(report.get("skipped_files").is_none(), "{report}");
+    // It takes precedence over skipping.
+    let report = json(&["--partial-unparsed", "--skip-unparsed"]);
+    assert_eq!(names(&report), ["a.cs:Good", "a.cs:AlsoGood", "b.cs:F"]);
+    let report = json(&["--skip-unparsed"]);
+    assert_eq!(names(&report), ["b.cs:F"]);
+    assert!(report.get("partial_files").is_none(), "{report}");
+    // From the config, and turned off again from the command line.
+    fs::write(
+        root.join("dotnet-crap.json"),
+        r#"{"version":1,"partial_unparsed":true}"#,
+    )
+    .unwrap();
+    assert_eq!(json(&[])["partial_files"][0]["unscored"], 3);
+    let out = run(root, &["--define", "X", "--no-partial-unparsed"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+    // Text and SARIF name the file and the unscored count.
+    let out = run(root, &["--define", "X"]);
+    let text = String::from_utf8(out.stdout).unwrap();
+    assert!(text.contains("partially scored 1 unparsed file(s):\n  a.cs: invalid C# syntax in a.cs; 3 callable(s) not scored\n"), "{text}");
+    let out = run(root, &["--define", "X", "--format", "sarif"]);
+    let sarif: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let notes = &sarif["runs"][0]["invocations"][0]["toolExecutionNotifications"];
+    assert_eq!(notes.as_array().unwrap().len(), 1, "{sarif}");
+    assert_eq!(
+        notes[0]["message"]["text"],
+        "invalid C# syntax in a.cs; 3 callable(s) not scored"
+    );
+}
+#[test]
+fn text_view_sorts_filters_and_limits_listing() {
+    let dir = tempfile::tempdir().unwrap();
+    // Complexities 1, 4 and 2 in scan order; without coverage CRAP is
+    // c^2 + c: 2, 20 and 6. Threshold 5 fails B and C.
+    let source = "class K {\n\
+         int A() { return 0; }\n\
+         int B(int x) { if (x > 0) return 1; if (x < -1) return 2; if (x == 9) return 3; return 0; }\n\
+         int C(int x) { if (x > 0) return 1; return 0; }\n\
+         }\n";
+    fs::write(dir.path().join("k.cs"), source).unwrap();
+    let names = |args: &[&str]| -> (Vec<String>, String) {
+        let mut all = vec!["--threshold", "5"];
+        all.extend_from_slice(args);
+        let out = run(dir.path(), &all);
+        assert_eq!(out.status.code(), Some(1), "{out:?}");
+        let text = String::from_utf8(out.stdout).unwrap();
+        let listed = text
+            .lines()
+            .filter(|l| l.contains("CRAP="))
+            .map(|l| l.split_whitespace().nth(1).unwrap().to_owned())
+            .collect();
+        (listed, text)
+    };
+    let (listed, text) = names(&[]);
+    assert_eq!(listed, ["A", "B", "C"]);
+    assert!(!text.contains("showing"));
+    let (listed, _) = names(&["--sort", "crap"]);
+    assert_eq!(listed, ["B", "C", "A"]);
+    let (listed, text) = names(&["--failing-only"]);
+    assert_eq!(listed, ["B", "C"]);
+    assert!(text.contains("showing 2 of 3 callables (2 above threshold 5)"));
+    // --top alone lists the highest scores first.
+    let (listed, text) = names(&["--top", "1"]);
+    assert_eq!(listed, ["B"]);
+    assert!(text.contains("showing 1 of 3 callables"));
+    let (listed, _) = names(&["--top", "2", "--sort", "location"]);
+    assert_eq!(listed, ["A", "B"]);
+    // View flags never change the policy: the exit stays 1 even when the
+    // failing callables are not listed.
+    let (listed, _) = names(&["--top", "1", "--sort", "location"]);
+    assert_eq!(listed, ["A"]);
+    for bad in [
+        &["--top", "0"][..],
+        &["--format", "json", "--failing-only"],
+        &["--format", "sarif", "--sort", "location"],
+    ] {
+        let out = run(dir.path(), bad);
+        assert_eq!(out.status.code(), Some(2), "{bad:?}");
+    }
+}
+/// Run git in `dir` with a fixed identity, panicking on failure.
+fn git(dir: &std::path::Path, args: &[&str]) {
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args(["-c", "user.name=t", "-c", "user.email=t@example.invalid"])
+        .args([
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "init.defaultBranch=main",
+        ])
+        .args(args)
+        .status()
+        .unwrap();
+    assert!(status.success(), "git {args:?}");
+}
+fn scored_files(output: &std::process::Output) -> Vec<String> {
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let mut files: Vec<String> = report["functions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["file"].as_str().unwrap().to_owned())
+        .collect();
+    files.dedup();
+    files
+}
+#[test]
+fn changed_since_scores_only_files_changed_from_the_merge_base() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    // Each file has one callable with complexity 4 (CRAP 20 without coverage).
+    let body = |name: &str| {
+        format!("class {name} {{\n int F(int x) {{ if (x > 0) return 1; if (x < -1) return 2; if (x == 9) return 3; return 0; }}\n}}\n")
+    };
+    for name in ["A", "B", "D"] {
+        fs::write(root.join(format!("{name}.cs")), body(name)).unwrap();
+    }
+    fs::write(root.join(".gitignore"), "Ignored.cs\n").unwrap();
+    git(root, &["init", "-q"]);
+    git(root, &["add", "."]);
+    git(root, &["commit", "-q", "-m", "base"]);
+    let baseline = root.join("baseline.json");
+    let written = run(root, &["--write-baseline", baseline.to_str().unwrap()]);
+    assert_eq!(written.status.code(), Some(0), "{written:?}");
+    git(root, &["checkout", "-q", "-b", "topic"]);
+    // Committed, unstaged and untracked changes all count; deletions and
+    // ignored files do not.
+    fs::write(root.join("B.cs"), body("B") + "// edited\n").unwrap();
+    git(root, &["commit", "-q", "-am", "edit B"]);
+    fs::write(root.join("A.cs"), body("A") + "// unstaged\n").unwrap();
+    fs::write(root.join("C.cs"), body("C")).unwrap();
+    fs::write(root.join("Ignored.cs"), body("Ignored")).unwrap();
+    fs::remove_file(root.join("D.cs")).unwrap();
+    let out = run(root, &["--changed-since", "main", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(1), "{out:?}");
+    assert_eq!(scored_files(&out), ["A.cs", "B.cs", "C.cs"]);
+    // Selection still applies to the changed files.
+    let out = run(
+        root,
+        &[
+            "--changed-since",
+            "main",
+            "--format",
+            "json",
+            "--exclude",
+            "C.cs",
+        ],
+    );
+    assert_eq!(scored_files(&out), ["A.cs", "B.cs"]);
+    // With a baseline, unchanged files' entries are out of scope rather than
+    // resolved; D.cs was deleted, so its entry is resolved.
+    let out = run(
+        root,
+        &[
+            "--changed-since",
+            "main",
+            "--format",
+            "json",
+            "--baseline",
+            baseline.to_str().unwrap(),
+            "--exclude",
+            "A.cs",
+        ],
+    );
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(report["baseline"]["unchanged"], 1, "{report}");
+    assert_eq!(report["baseline"]["new"], 1, "{report}");
+    assert_eq!(report["baseline"]["resolved"], 1, "{report}");
+    // Nothing changed since HEAD in a clean tree: an empty scan.
+    git(root, &["add", "-A"]);
+    git(root, &["commit", "-q", "-m", "rest"]);
+    let out = run(root, &["--changed-since", "HEAD", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    assert!(scored_files(&out).is_empty());
+    for (bad, message) in [
+        (&["--changed-since", "no-such-rev"][..], "merge-base"),
+        (&["--changed-since=--all"], "needs a revision"),
+        (&["--changed-since="], "needs a revision"),
+        (
+            &["--changed-since", "main", "--write-baseline", "x.json"],
+            "cannot be combined",
+        ),
+    ] {
+        let out = run(root, bad);
+        assert_eq!(out.status.code(), Some(2), "{bad:?}: {out:?}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(stderr.contains(message), "{bad:?}: {stderr}");
+        assert!(!stderr.contains("shallow"), "{bad:?}: {stderr}");
+    }
+    // A shallow clone that lacks the merge base explains how to fix it.
+    let clones = tempfile::tempdir().unwrap();
+    // file:///C:/… on Windows, file:///tmp/… elsewhere; a plain path would
+    // ignore --depth.
+    let path = root.to_str().unwrap().replace('\\', "/");
+    let url = format!("file:///{}", path.trim_start_matches('/'));
+    git(
+        clones.path(),
+        &["clone", "-q", "--depth", "1", &url, "shallow"],
+    );
+    let out = run(&clones.path().join("shallow"), &["--changed-since", "main"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("shallow clone"),
+        "{out:?}"
+    );
+    // Outside a repository it is an input error.
+    let plain = tempfile::tempdir().unwrap();
+    fs::write(plain.path().join("A.cs"), body("A")).unwrap();
+    let out = run(plain.path(), &["--changed-since", "main"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+}

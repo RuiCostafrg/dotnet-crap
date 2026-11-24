@@ -15,6 +15,7 @@
   "require_coverage": false,
   "fail_on_empty": false,
   "skip_unparsed": false,
+  "partial_unparsed": false,
   "defines": ["NET10_0"],
   "baseline": "dotnet-crap-baseline.json"
 }
@@ -30,6 +31,7 @@
 | `require_coverage` | boolean | As `--require-coverage`. |
 | `fail_on_empty` | boolean | As `--fail-on-empty`. |
 | `skip_unparsed` | boolean | As `--skip-unparsed`. |
+| `partial_unparsed` | boolean | As `--partial-unparsed`. |
 | `defines` | string list | As `--define`. |
 | `baseline` | string | Baseline file to compare with, relative to the config file's directory. See [BASELINES.md](BASELINES.md). |
 
@@ -55,6 +57,7 @@ Explicit command line, then config file, then built-in default.
 | require coverage | `--require-coverage` / `--no-require-coverage` | `require_coverage` | off |
 | fail on empty | `--fail-on-empty` / `--no-fail-on-empty` | `fail_on_empty` | off |
 | skip unparsed | `--skip-unparsed` / `--no-skip-unparsed` | `skip_unparsed` | off |
+| partial unparsed | `--partial-unparsed` / `--no-partial-unparsed` | `partial_unparsed` | off |
 | ignore files | `--no-ignore` | `respect_ignore_files` | on |
 | include / exclude / defines | `--include` / `--exclude` / `--define` | lists | empty |
 | baseline | `--baseline PATH` / `--no-baseline` | `baseline` | none |

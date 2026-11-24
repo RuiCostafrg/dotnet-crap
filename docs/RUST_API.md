@@ -78,9 +78,11 @@ fails the scan).
 | `paths: Vec<PathBuf>` | Files or directories to select. Relative values resolve against `root`. Absolute values must be inside `root`. Empty selects `root`. |
 | `jobs: Option<NonZeroUsize>` | Worker threads for scanning and source verification, as the CLI's `--jobs`. `None` uses `std::thread::available_parallelism()` (1 if unknown). The value never changes the report, its order, or which error is returned. `Some(1)` scans on the calling thread without spawning. |
 | `defines: Vec<String>` | Conditional compilation symbols, as the CLI's `--define`. Used only for a file that does not parse as written: its `#if` groups are resolved with these symbols and it is parsed again, with line numbers and the source hash unchanged. Each must match `[A-Za-z_][A-Za-z0-9_]*`, be at most 128 characters long and not be `true` or `false` in any letter case; otherwise `scan` returns `InvalidInput`, after the root, coverage and path checks. A non-ASCII symbol is rejected, and a directive in a file with a non-ASCII or over-long symbol makes the fallback decline, because no Unicode identifier table is used. A file that parses only after resolution is then subject to the normal analysis limits, so it may report `ResourceLimit` instead of `Syntax`; while it is resolved, its text is held twice. See [conditional compilation](PREPROCESSOR.md). |
+| `partial_unparsed: bool` | For a selected file whose final failure is a `Syntax` error, score only its intact callables instead of returning `Err` or skipping the file, as `--partial-unparsed`. A callable is scored only when neither its own syntax nor that of an enclosing callable has an error. The file is listed in `Report::partial` with the number of callables left unscored. Takes precedence over `skip_unparsed`. Defaults to `false`. |
 | `skip_unparsed: bool` | Skip a selected file whose final failure is a `Syntax` error instead of returning `Err`, as the CLI's `--skip-unparsed`. A skipped file contributes no `Item`s and is listed in `Report::skipped` in selection order. Only syntax failures are skipped: I/O, decoding, resource-limit and every other error still fail the scan. Coverage entries for a skipped file are bound like those of a selected file with no callables. Defaults to `false`. |
 | `baseline: Option<PathBuf>` | A baseline file, resolved against the working directory. The score policy then fails only for callables that are new or worse; `require_coverage` and `fail_on_empty` are unaffected. Its `threshold` must equal this scan's, else `InvalidInput`; a malformed, unknown-version or `.cs` baseline is `InvalidInput` naming the file. The path becomes an `input_paths` entry, so reports cannot overwrite it. Defaults to `None`. See [baselines](BASELINES.md). |
 | `baseline_moves: Vec<(String, String)>` | Root-relative `(old, new)` file pairs, as `--baseline-move`. Requires `baseline`. |
+| `changed_since: Option<String>` | A Git revision, as `--changed-since`: keep only selected files that differ from its merge base with `HEAD`. Requires `git`. |
 
 ### Baselines
 
@@ -177,6 +179,7 @@ These fields are public and match the current JSON output.
 | --- | --- | --- |
 | `threshold` | `f64` | The threshold used by the scan. |
 | `files_scanned` | `usize` | Number of selected `.cs` files. |
+| `partial` | `Vec<PartialFile>` | Selected sources that did not parse and were scored partially (`path`, `message`, `unscored`), in selection order. Serialized as `partial_files`, and omitted from JSON when empty. Empty unless `partial_unparsed` is set and a file failed. |
 | `skipped` | `Vec<SkippedFile>` | Selected sources skipped because they did not parse, in selection order. Serialized as `skipped_files`, and omitted from JSON when empty. Empty unless `skip_unparsed` is set and a file failed. |
 | `coverage_complete` | `bool` | `true` when every callable has coverage evidence and no `Item::unevidenced_lines`. |
 | `functions` | `Vec<Item>` | Callable records in deterministic order. |
@@ -215,6 +218,10 @@ These fields are public and match the current JSON output.
   by the walk; do not rely on their exact form beyond "selected inputs".
 - `verify_sources() -> dotnet_crap::Result<()>`: see below.
 - `render(ReportFormat) -> dotnet_crap::Result<String>`: see below.
+- `render_text(&TextView) -> String`: the text report listing only the
+  callables a `TextView` selects (`sort: TextSort::Location | Crap`,
+  `failing_only`, `top`), as the CLI's `--sort`, `--failing-only` and `--top`
+  do. `render(ReportFormat::Text)` equals `render_text(&TextView::default())`.
 
 ## Rendering
 
