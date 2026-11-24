@@ -16,7 +16,7 @@ are replaced by .NET workflows rather than ported literally.
 | Source-hashed native coverage | Version 1 path/hash/line map | Implemented; reduced completeness contract below |
 | Fresh V8/Istanbul/LCOV collectors | Fresh Coverlet and Microsoft coverage collection | Coverlet/VSTest implemented in PR #15; Microsoft Testing Platform (`--coverage`, `coverlet.MTP`) and `dotnet-coverage` Cobertura use the same adapter, with live fixtures ([details](COVERLET.md#microsoft-testing-platform)) |
 | Every executable statement-start line | C# sequence points with callable ownership | Phase 2; current denominator is supplied points |
-| Changed-file and PR selection | Git merge-base and authenticated `gh` discovery | Phase 3 |
+| Changed-file and PR selection | Git merge-base and authenticated `gh` discovery | `--changed-since REV` implemented (merge base, worktree and untracked files, shallow-clone diagnostic); `gh` PR discovery not planned |
 | Project policy and boolean overrides | Versioned config and explicit CLI precedence | Phase 3 |
 | Regression baselines and move matching | Qualified C# identities and token fingerprints | Implemented; see [BASELINES.md](BASELINES.md) |
 | Text and JSON reports | Same output roles | Implemented, initial report shape only |
@@ -129,8 +129,8 @@ fixtures. Never silently rewrite a committed baseline.
 Scanning and string rendering are available through the [Rust library API](RUST_API.md).
 Streaming rendering remains deferred. Add XML and standalone HTML with search
 and failing-only filters. SARIF 2.1.0, its diagnostic IDs, encoded locations and
-fingerprints are already implemented. Add deterministic text sort/top/filter
-flags without changing gates.
+fingerprints are already implemented. Deterministic text `--sort`, `--top` and
+`--failing-only` flags are implemented and do not change gates.
 
 Acceptance: format/schema/escaping tests, Unicode and terminal controls, output
 failures and failed-gate reports. Each format reports empty selections clearly.

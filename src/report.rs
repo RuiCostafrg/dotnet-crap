@@ -147,8 +147,50 @@ fn baseline_suffix(item: &Item) -> String {
         Some(BaselineState::Improved) => format!(" [improved, was {was:.2}]"),
     }
 }
+/// Order of callables in the text report.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum TextSort {
+    /// Scan order: file, then position in the file.
+    #[default]
+    Location,
+    /// Highest CRAP score first; equal scores keep scan order.
+    Crap,
+}
+/// Which callables the text report lists, and in what order. The JSON and
+/// SARIF reports always hold every callable.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct TextView {
+    /// Listing order.
+    pub sort: TextSort,
+    /// List only the callables whose CRAP score exceeds the threshold.
+    pub failing_only: bool,
+    /// List at most this many callables, after `failing_only` and `sort`.
+    pub top: Option<std::num::NonZeroUsize>,
+}
+impl TextView {
+    /// Whether this view can hide callables.
+    fn filters(&self) -> bool {
+        self.failing_only || self.top.is_some()
+    }
+    /// The callables to list, in listing order.
+    fn select<'a>(&self, report: &'a Report) -> Vec<&'a Item> {
+        let mut items: Vec<&Item> = report
+            .functions
+            .iter()
+            .filter(|i| !self.failing_only || i.crap > report.threshold)
+            .collect();
+        if self.sort == TextSort::Crap {
+            // Stable, so equal scores keep scan order.
+            items.sort_by(|a, b| b.crap.total_cmp(&a.crap));
+        }
+        if let Some(top) = self.top {
+            items.truncate(top.get());
+        }
+        items
+    }
+}
 /// Render the human-readable text report using the scan's coverage policy.
-pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
+pub(crate) fn render_text(report: &Report, require_coverage: bool, view: &TextView) -> String {
     let mut s = String::new();
     if report.functions.is_empty() {
         s.push_str("No implemented C# callables found.\n");
@@ -156,7 +198,8 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
     if require_coverage && !report.coverage_complete {
         s.push_str("Coverage missing for one or more callables.\n");
     }
-    for i in &report.functions {
+    let listed = view.select(report);
+    for i in &listed {
         s.push_str(&format!(
             "{}:{} {} complexity={} coverage={} CRAP={:.2}{}\n",
             terminal_safe(&i.file),
@@ -167,6 +210,20 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
                 .map_or_else(|| "absent".into(), |v| format!("{:.1}%", v * 100.0)),
             i.crap,
             baseline_suffix(i)
+        ));
+    }
+    if view.filters() {
+        let failing = report
+            .functions
+            .iter()
+            .filter(|i| i.crap > report.threshold)
+            .count();
+        s.push_str(&format!(
+            "showing {} of {} callables ({} above threshold {})\n",
+            listed.len(),
+            report.functions.len(),
+            failing,
+            report.threshold
         ));
     }
     if let Some(b) = &report.baseline {
@@ -203,4 +260,55 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
         }
     }
     s
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn item(name: &str, crap: f64) -> Item {
+        Item {
+            file: "a.cs".into(),
+            name: name.into(),
+            kind: "method_declaration".into(),
+            line: 1,
+            column: 1,
+            end_line: 1,
+            complexity: 1,
+            coverage: None,
+            crap,
+            scope: String::new(),
+            signature: format!("{name}()"),
+            baseline: None,
+            fingerprint: String::new(),
+            occurrence: 0,
+            baseline_crap: None,
+        }
+    }
+
+    #[test]
+    fn a_score_equal_to_the_threshold_is_not_failing() {
+        let report = Report {
+            version: 1,
+            threshold: 6.0,
+            files_scanned: 1,
+            skipped: Vec::new(),
+            partial: Vec::new(),
+            coverage_complete: false,
+            functions: vec![item("Equal", 6.0), item("Above", 6.5)],
+            failed: true,
+            baseline: None,
+        };
+        let view = TextView {
+            failing_only: true,
+            ..TextView::default()
+        };
+        let text = render_text(&report, false, &view);
+        assert!(!text.contains("Equal"), "{text}");
+        assert!(text.contains("Above"), "{text}");
+        assert!(
+            text.ends_with("showing 1 of 2 callables (1 above threshold 6)\n"),
+            "{text}"
+        );
+    }
 }

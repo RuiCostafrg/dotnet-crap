@@ -51,6 +51,16 @@ struct Args {
     format: String,
     #[arg(long)]
     output: Option<PathBuf>,
+    /// Text report order: `location` (scan order) or `crap` (highest first)
+    /// [default: location, or crap with --top]
+    #[arg(long, value_parser = ["location", "crap"])]
+    sort: Option<String>,
+    /// List at most N callables in the text report
+    #[arg(long, value_name = "N", value_parser = parse_count)]
+    top: Option<NonZeroUsize>,
+    /// List only callables above the threshold in the text report
+    #[arg(long)]
+    failing_only: bool,
     #[arg(long)]
     coverage: Option<PathBuf>,
     #[arg(long, overrides_with = "no_require_coverage")]
@@ -101,6 +111,10 @@ struct Args {
     /// repeatable)
     #[arg(long = "baseline-move", value_name = "OLD=NEW", value_parser = baseline::parse_move)]
     baseline_moves: Vec<(String, String)>,
+    /// Score only selected files that differ from the merge base of REV and
+    /// HEAD, including uncommitted and untracked files (needs `git`)
+    #[arg(long, value_name = "REV")]
+    changed_since: Option<String>,
     #[command(flatten)]
     selection: SelectionArgs,
     paths: Vec<PathBuf>,
@@ -108,11 +122,31 @@ struct Args {
 
 /// Parse a worker count, rejecting zero and non-numbers with one clear message.
 fn parse_jobs(value: &str) -> std::result::Result<NonZeroUsize, String> {
+    parse_count(value)
+}
+/// Parse a positive count, rejecting zero and non-numbers with one clear message.
+fn parse_count(value: &str) -> std::result::Result<NonZeroUsize, String> {
     value
         .parse::<NonZeroUsize>()
         .map_err(|_| format!("`{value}` is not a positive integer; use 1 or more"))
 }
-use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions};
+use dotnet_crap::{scan, terminal_safe, ReportFormat, ScanOptions, TextSort, TextView};
+
+/// The text listing the view flags ask for; `--top` alone lists the highest
+/// scores first.
+fn text_view(sort: Option<&str>, top: Option<NonZeroUsize>, failing_only: bool) -> TextView {
+    let sort = match sort {
+        Some("crap") => TextSort::Crap,
+        Some(_) => TextSort::Location,
+        None if top.is_some() => TextSort::Crap,
+        None => TextSort::Location,
+    };
+    TextView {
+        sort,
+        failing_only,
+        top,
+    }
+}
 
 /// Collect fresh evidence with an explicitly trusted argv after `--`.
 #[derive(Parser)]
@@ -233,6 +267,13 @@ fn run(args: Args) -> Result<bool> {
     } else {
         resolved.baseline
     };
+    let view = text_view(args.sort.as_deref(), args.top, args.failing_only);
+    if args.format != "text" && (args.sort.is_some() || args.top.is_some() || args.failing_only) {
+        anyhow::bail!("--sort, --top and --failing-only apply only to --format text");
+    }
+    if args.changed_since.is_some() && args.write_baseline.is_some() {
+        anyhow::bail!("--write-baseline records the whole selection; it cannot be combined with --changed-since");
+    }
     if let (Some(output), Some(written)) = (&args.output, &args.write_baseline) {
         if dotnet_crap::output::same_destination(output, written)? {
             anyhow::bail!("--output and --write-baseline name the same file");
@@ -254,6 +295,7 @@ fn run(args: Args) -> Result<bool> {
         exclude: resolved.exclude,
         baseline,
         baseline_moves: args.baseline_moves,
+        changed_since: args.changed_since,
     })?;
     if args.write_baseline.is_some() {
         result.accept_scores();
@@ -263,7 +305,11 @@ fn run(args: Args) -> Result<bool> {
         "sarif" => ReportFormat::Sarif,
         _ => ReportFormat::Text,
     };
-    let output = result.render(format)?;
+    let output = if format == ReportFormat::Text {
+        result.render_text(&view)
+    } else {
+        result.render(format)?
+    };
     result.verify_sources()?;
     if let Some(path) = args.output {
         dotnet_crap::output::write_report(&result, &output, &path)?;
