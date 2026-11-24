@@ -32,6 +32,8 @@ pub struct Config {
     pub fail_on_empty: Option<bool>,
     /// As `ScanOptions::skip_unparsed`.
     pub skip_unparsed: Option<bool>,
+    /// As `ScanOptions::partial_unparsed`.
+    pub partial_unparsed: Option<bool>,
     /// As `ScanOptions::defines`.
     pub defines: Option<Vec<String>>,
     /// Baseline file, as `ScanOptions::baseline`. Written relative to the
@@ -98,6 +100,8 @@ pub struct Overrides {
     pub fail_on_empty: Option<bool>,
     /// `--skip-unparsed` / `--no-skip-unparsed`.
     pub skip_unparsed: Option<bool>,
+    /// `--partial-unparsed` / `--no-partial-unparsed`.
+    pub partial_unparsed: Option<bool>,
     /// `--no-ignore` gives `Some(false)`.
     pub respect_ignore_files: Option<bool>,
     /// `--include` values; a non-empty list replaces the config list.
@@ -123,6 +127,8 @@ pub struct Resolved {
     pub fail_on_empty: bool,
     /// Effective `skip_unparsed`.
     pub skip_unparsed: bool,
+    /// Effective `partial_unparsed`.
+    pub partial_unparsed: bool,
     /// Effective `respect_ignore_files`.
     pub respect_ignore_files: bool,
     /// Effective include globs.
@@ -154,6 +160,10 @@ pub fn resolve(config: Option<&Config>, cli: &Overrides) -> Resolved {
             .unwrap_or(false),
         fail_on_empty: cli.fail_on_empty.or(config.fail_on_empty).unwrap_or(false),
         skip_unparsed: cli.skip_unparsed.or(config.skip_unparsed).unwrap_or(false),
+        partial_unparsed: cli
+            .partial_unparsed
+            .or(config.partial_unparsed)
+            .unwrap_or(false),
         respect_ignore_files: cli
             .respect_ignore_files
             .or(config.respect_ignore_files)
@@ -196,7 +206,7 @@ mod tests {
             r#"{ "version": 1, "threshold": 7.5, "include": ["src/**"],
                 "exclude": ["**/Migrations/**"], "respect_ignore_files": false,
                 "require_coverage": true, "fail_on_empty": true,
-                "skip_unparsed": true, "defines": ["NET10_0"],
+                "skip_unparsed": true, "partial_unparsed": true, "defines": ["NET10_0"],
                 "baseline": "ci/baseline.json" }"#,
         );
         let config = load(&path).unwrap();
@@ -211,6 +221,7 @@ mod tests {
                 require_coverage: Some(true),
                 fail_on_empty: Some(true),
                 skip_unparsed: Some(true),
+                partial_unparsed: Some(true),
                 defines: Some(vec!["NET10_0".into()]),
                 baseline: Some(path.parent().unwrap().join("ci/baseline.json")),
             }
@@ -305,6 +316,7 @@ mod tests {
                 require_coverage: false,
                 fail_on_empty: false,
                 skip_unparsed: false,
+                partial_unparsed: false,
                 respect_ignore_files: true,
                 include: vec![],
                 exclude: vec![],
@@ -325,6 +337,7 @@ mod tests {
             require_coverage: Some(true),
             fail_on_empty: Some(true),
             skip_unparsed: Some(true),
+            partial_unparsed: None,
             defines: Some(strings(&["X"])),
             baseline: Some(PathBuf::from("cfg/base.json")),
         };
@@ -336,6 +349,7 @@ mod tests {
                 require_coverage: true,
                 fail_on_empty: true,
                 skip_unparsed: true,
+                partial_unparsed: false,
                 respect_ignore_files: false,
                 include: strings(&["a"]),
                 exclude: strings(&["b"]),
@@ -356,6 +370,7 @@ mod tests {
             require_coverage: Some(true),
             fail_on_empty: Some(true),
             skip_unparsed: Some(true),
+            partial_unparsed: None,
             defines: Some(strings(&["X"])),
             baseline: Some(PathBuf::from("cfg/base.json")),
         };
@@ -364,6 +379,7 @@ mod tests {
             require_coverage: Some(false),
             fail_on_empty: Some(false),
             skip_unparsed: Some(false),
+            partial_unparsed: None,
             respect_ignore_files: Some(false),
             include: strings(&["c", "d"]),
             exclude: strings(&["e"]),
@@ -379,6 +395,7 @@ mod tests {
                 require_coverage: false,
                 fail_on_empty: false,
                 skip_unparsed: false,
+                partial_unparsed: false,
                 respect_ignore_files: false,
                 include: strings(&["c", "d"]),
                 exclude: strings(&["e"]),

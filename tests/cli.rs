@@ -533,3 +533,88 @@ fn config_and_no_config_conflict() {
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("cannot be used with"));
 }
+#[test]
+fn partial_unparsed_scores_only_intact_callables() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    fs::write(
+        root.join("a.cs"),
+        "namespace N {\n\
+         class K {\n\
+             int Good(int x) { if (x > 0) return 1; return 0; }\n\
+             int Bad(int x) { if (x > 0 return 1; return 0; }\n\
+             int Outer(int x) {\n\
+                 int Local(int y) { return y; }\n\
+                 var z = ) ;\n\
+                 return Local(x);\n\
+             }\n\
+             int AlsoGood(int x) { return x > 1 ? 1 : 0; }\n\
+         }\n\
+         }\n",
+    )
+    .unwrap();
+    // A file the conditional-compilation fallback repairs is scored whole.
+    fs::write(
+        root.join("b.cs"),
+        "class B {\n#if X\n int F() {\n#else\n int F(int y) {\n#endif\n return 0; }\n}\n",
+    )
+    .unwrap();
+    let json = |args: &[&str]| -> serde_json::Value {
+        let mut all = vec!["--format", "json", "--define", "X"];
+        all.extend_from_slice(args);
+        let out = run(root, &all);
+        assert_eq!(out.status.code(), Some(0), "{out:?}");
+        serde_json::from_slice(&out.stdout).unwrap()
+    };
+    let names = |report: &serde_json::Value| -> Vec<String> {
+        report["functions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| {
+                format!(
+                    "{}:{}",
+                    f["file"].as_str().unwrap(),
+                    f["name"].as_str().unwrap()
+                )
+            })
+            .collect()
+    };
+    let report = json(&["--partial-unparsed"]);
+    assert_eq!(names(&report), ["a.cs:Good", "a.cs:AlsoGood", "b.cs:F"]);
+    assert_eq!(
+        report["partial_files"].as_array().unwrap().len(),
+        1,
+        "{report}"
+    );
+    assert_eq!(report["partial_files"][0]["path"], "a.cs");
+    assert_eq!(report["partial_files"][0]["unscored"], 3);
+    assert!(report.get("skipped_files").is_none(), "{report}");
+    // It takes precedence over skipping.
+    let report = json(&["--partial-unparsed", "--skip-unparsed"]);
+    assert_eq!(names(&report), ["a.cs:Good", "a.cs:AlsoGood", "b.cs:F"]);
+    let report = json(&["--skip-unparsed"]);
+    assert_eq!(names(&report), ["b.cs:F"]);
+    assert!(report.get("partial_files").is_none(), "{report}");
+    // From the config, and turned off again from the command line.
+    fs::write(
+        root.join("dotnet-crap.json"),
+        r#"{"version":1,"partial_unparsed":true}"#,
+    )
+    .unwrap();
+    assert_eq!(json(&[])["partial_files"][0]["unscored"], 3);
+    let out = run(root, &["--define", "X", "--no-partial-unparsed"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+    // Text and SARIF name the file and the unscored count.
+    let out = run(root, &["--define", "X"]);
+    let text = String::from_utf8(out.stdout).unwrap();
+    assert!(text.contains("partially scored 1 unparsed file(s):\n  a.cs: invalid C# syntax in a.cs; 3 callable(s) not scored\n"), "{text}");
+    let out = run(root, &["--define", "X", "--format", "sarif"]);
+    let sarif: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let notes = &sarif["runs"][0]["invocations"][0]["toolExecutionNotifications"];
+    assert_eq!(notes.as_array().unwrap().len(), 1, "{sarif}");
+    assert_eq!(
+        notes[0]["message"]["text"],
+        "invalid C# syntax in a.cs; 3 callable(s) not scored"
+    );
+}

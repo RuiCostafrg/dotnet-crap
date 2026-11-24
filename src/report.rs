@@ -86,6 +86,18 @@ pub struct SkippedFile {
     /// Syntax error message that would have failed the scan.
     pub message: String,
 }
+/// A selected source that did not parse, of which only the intact callables
+/// were scored.
+#[derive(Debug, Serialize)]
+pub struct PartialFile {
+    /// Root-relative source path.
+    pub path: String,
+    /// Syntax error message that would have failed the scan.
+    pub message: String,
+    /// Callables found in the file but not scored because their syntax, or
+    /// that of an enclosing callable, has an error.
+    pub unscored: usize,
+}
 /// Ordered scan results and the resulting policy decision.
 #[derive(Debug, Serialize)]
 pub struct Report {
@@ -98,6 +110,10 @@ pub struct Report {
     /// Selected sources skipped because they did not parse, in scan order.
     #[serde(rename = "skipped_files", skip_serializing_if = "Vec::is_empty")]
     pub skipped: Vec<SkippedFile>,
+    /// Selected sources that did not parse and were scored only partially,
+    /// in scan order.
+    #[serde(rename = "partial_files", skip_serializing_if = "Vec::is_empty")]
+    pub partial: Vec<PartialFile>,
     /// Whether every callable has coverage evidence.
     pub coverage_complete: bool,
     /// Callables in deterministic scan order.
@@ -158,6 +174,20 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool) -> String {
             "baseline: {} new, {} worse, {} unchanged, {} improved, {} resolved\n",
             b.new, b.worse, b.unchanged, b.improved, b.resolved
         ));
+    }
+    if !report.partial.is_empty() {
+        s.push_str(&format!(
+            "partially scored {} unparsed file(s):\n",
+            report.partial.len()
+        ));
+        for file in &report.partial {
+            s.push_str(&format!(
+                "  {}: {}; {} callable(s) not scored\n",
+                terminal_safe(&file.path),
+                terminal_safe(&file.message),
+                file.unscored
+            ));
+        }
     }
     if !report.skipped.is_empty() {
         s.push_str(&format!(

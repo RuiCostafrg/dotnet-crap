@@ -52,6 +52,11 @@ again, keeping line numbers. Files that parse are unaffected. See
 is a syntax error instead of failing the scan; skipped files are listed in the
 text, JSON and SARIF reports and contribute no callables. Other errors, such as
 unreadable or non-UTF-8 sources, still fail. Off by default.
+`--partial-unparsed` goes further for such a file: it scores the callables whose
+syntax is intact and leaves out each callable that contains a syntax error, is
+inside one, or is nested in a callable that has one. The file is listed with
+the number of callables left unscored (`partial_files` in JSON, a notification
+in SARIF). It takes precedence over `--skip-unparsed`. Off by default.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 

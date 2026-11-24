@@ -13,6 +13,7 @@
     "require_coverage": { "type": ["boolean", "null"], "description": "As --require-coverage." },
     "fail_on_empty": { "type": ["boolean", "null"], "description": "As --fail-on-empty." },
     "skip_unparsed": { "type": ["boolean", "null"], "description": "As --skip-unparsed." },
+    "partial_unparsed": { "type": ["boolean", "null"], "description": "As --partial-unparsed." },
     "defines": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Conditional compilation symbols, as --define." },
     "baseline": { "type": ["string", "null"], "description": "Baseline file, relative to the config file's directory." }
   },

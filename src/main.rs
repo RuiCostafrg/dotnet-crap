@@ -76,6 +76,13 @@ struct Args {
     /// Override a config `skip_unparsed: true`
     #[arg(long, overrides_with = "skip_unparsed")]
     no_skip_unparsed: bool,
+    /// Score the intact callables of files that still do not parse, instead
+    /// of failing the scan or skipping the whole file
+    #[arg(long, overrides_with = "no_partial_unparsed")]
+    partial_unparsed: bool,
+    /// Override a config `partial_unparsed: true`
+    #[arg(long, overrides_with = "partial_unparsed")]
+    no_partial_unparsed: bool,
     /// Compare with this baseline: only new or worse violations fail
     /// [default: the config `baseline`]
     #[arg(long, value_name = "PATH", conflicts_with_all = ["no_baseline", "write_baseline"])]
@@ -211,6 +218,7 @@ fn run(args: Args) -> Result<bool> {
             require_coverage: flag(args.require_coverage, args.no_require_coverage),
             fail_on_empty: flag(args.fail_on_empty, args.no_fail_on_empty),
             skip_unparsed: flag(args.skip_unparsed, args.no_skip_unparsed),
+            partial_unparsed: flag(args.partial_unparsed, args.no_partial_unparsed),
             respect_ignore_files: args.selection.no_ignore.then_some(false),
             include: args.selection.include,
             exclude: args.selection.exclude,
@@ -240,6 +248,7 @@ fn run(args: Args) -> Result<bool> {
         jobs: args.jobs,
         defines: resolved.defines,
         skip_unparsed: resolved.skip_unparsed,
+        partial_unparsed: resolved.partial_unparsed,
         respect_ignore_files: resolved.respect_ignore_files,
         include: resolved.include,
         exclude: resolved.exclude,

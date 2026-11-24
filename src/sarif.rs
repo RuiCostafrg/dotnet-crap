@@ -103,21 +103,29 @@ pub fn render(
             {"id":"DNCRAP003","shortDescription":{"text":"No callables found"}}
         ]}},"originalUriBaseIds":{"%SRCROOT%":{"uri":root_uri}},"results":results
     });
-    // Omitted when nothing is skipped, so unchanged scans keep identical bytes.
-    if !report.skipped.is_empty() {
-        let notifications: Vec<Value> = report
-            .skipped
-            .iter()
-            .map(|file| {
-                json!({
-                    "level": "warning",
-                    "message": {"text": file.message},
-                    "locations": [{"physicalLocation": {
-                        "artifactLocation": {"uri": uri(&file.path), "uriBaseId": "%SRCROOT%"}
-                    }}]
-                })
-            })
-            .collect();
+    // Omitted when nothing is skipped or partial, so unchanged scans keep
+    // identical bytes.
+    let notification = |path: &str, text: String| {
+        json!({
+            "level": "warning",
+            "message": {"text": text},
+            "locations": [{"physicalLocation": {
+                "artifactLocation": {"uri": uri(path), "uriBaseId": "%SRCROOT%"}
+            }}]
+        })
+    };
+    let notifications: Vec<Value> = report
+        .skipped
+        .iter()
+        .map(|file| notification(&file.path, file.message.clone()))
+        .chain(report.partial.iter().map(|file| {
+            notification(
+                &file.path,
+                format!("{}; {} callable(s) not scored", file.message, file.unscored),
+            )
+        }))
+        .collect();
+    if !notifications.is_empty() {
         run["invocations"] = json!([{
             "executionSuccessful": true,
             "toolExecutionNotifications": notifications
