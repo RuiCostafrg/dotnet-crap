@@ -215,6 +215,10 @@ These fields are public and match the current JSON output.
   by the walk; do not rely on their exact form beyond "selected inputs".
 - `verify_sources() -> dotnet_crap::Result<()>`: see below.
 - `render(ReportFormat) -> dotnet_crap::Result<String>`: see below.
+- `render_text(&TextView) -> String`: the text report listing only the
+  callables a `TextView` selects (`sort: TextSort::Location | Crap`,
+  `failing_only`, `top`), as the CLI's `--sort`, `--failing-only` and `--top`
+  do. `render(ReportFormat::Text)` equals `render_text(&TextView::default())`.
 
 ## Rendering
 

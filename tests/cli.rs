@@ -533,6 +533,57 @@ fn config_and_no_config_conflict() {
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("cannot be used with"));
 }
+#[test]
+fn text_view_sorts_filters_and_limits_listing() {
+    let dir = tempfile::tempdir().unwrap();
+    // Complexities 1, 4 and 2 in scan order; without coverage CRAP is
+    // c^2 + c: 2, 20 and 6. Threshold 5 fails B and C.
+    let source = "class K {\n\
+         int A() { return 0; }\n\
+         int B(int x) { if (x > 0) return 1; if (x < -1) return 2; if (x == 9) return 3; return 0; }\n\
+         int C(int x) { if (x > 0) return 1; return 0; }\n\
+         }\n";
+    fs::write(dir.path().join("k.cs"), source).unwrap();
+    let names = |args: &[&str]| -> (Vec<String>, String) {
+        let mut all = vec!["--threshold", "5"];
+        all.extend_from_slice(args);
+        let out = run(dir.path(), &all);
+        assert_eq!(out.status.code(), Some(1), "{out:?}");
+        let text = String::from_utf8(out.stdout).unwrap();
+        let listed = text
+            .lines()
+            .filter(|l| l.contains("CRAP="))
+            .map(|l| l.split_whitespace().nth(1).unwrap().to_owned())
+            .collect();
+        (listed, text)
+    };
+    let (listed, text) = names(&[]);
+    assert_eq!(listed, ["A", "B", "C"]);
+    assert!(!text.contains("showing"));
+    let (listed, _) = names(&["--sort", "crap"]);
+    assert_eq!(listed, ["B", "C", "A"]);
+    let (listed, text) = names(&["--failing-only"]);
+    assert_eq!(listed, ["B", "C"]);
+    assert!(text.contains("showing 2 of 3 callables (2 above threshold 5)"));
+    // --top alone lists the highest scores first.
+    let (listed, text) = names(&["--top", "1"]);
+    assert_eq!(listed, ["B"]);
+    assert!(text.contains("showing 1 of 3 callables"));
+    let (listed, _) = names(&["--top", "2", "--sort", "location"]);
+    assert_eq!(listed, ["A", "B"]);
+    // View flags never change the policy: the exit stays 1 even when the
+    // failing callables are not listed.
+    let (listed, _) = names(&["--top", "1", "--sort", "location"]);
+    assert_eq!(listed, ["A"]);
+    for bad in [
+        &["--top", "0"][..],
+        &["--format", "json", "--failing-only"],
+        &["--format", "sarif", "--sort", "location"],
+    ] {
+        let out = run(dir.path(), bad);
+        assert_eq!(out.status.code(), Some(2), "{bad:?}");
+    }
+}
 /// Run git in `dir` with a fixed identity, panicking on failure.
 fn git(dir: &std::path::Path, args: &[&str]) {
     let status = Command::new("git")

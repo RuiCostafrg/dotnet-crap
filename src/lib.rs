@@ -225,14 +225,20 @@ impl ScanResult {
                 serde_json::to_string_pretty(report).kind(ErrorKind::Render)?
             )
         } else {
-            report::render_text(report, self.require_coverage)
+            report::render_text(report, self.require_coverage, &TextView::default())
         };
         Ok(output)
+    }
+    /// Render the text report listing only the callables `view` selects.
+    /// Policy lines and the baseline summary still describe the whole scan.
+    pub fn render_text(&self, view: &TextView) -> String {
+        report::render_text(&self.report, self.require_coverage, view)
     }
 }
 pub(crate) use evidence::{Coverage, CoverageFile};
 pub use report::{
     terminal_safe, BaselineState, BaselineSummary, Item, Report, ReportFormat, SkippedFile,
+    TextSort, TextView,
 };
 pub(crate) use source::decode_source;
 /// Strict Cobertura line-evidence importer.
