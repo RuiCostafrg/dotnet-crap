@@ -27,6 +27,8 @@ use tree_sitter::Parser as TsParser;
 mod analysis;
 /// Regression baselines and move-aware matching.
 pub mod baseline;
+/// Files changed since a Git revision.
+mod changed;
 /// Native coverage schema, reading and validation.
 mod evidence;
 /// Deterministic ordered worker pool for per-file work.
@@ -94,6 +96,11 @@ pub struct ScanOptions {
     /// Root-relative `(old, new)` file paths: baseline entries for `old` are
     /// matched as if they were in `new`. Requires `baseline`.
     pub baseline_moves: Vec<(String, String)>,
+    /// A Git revision: keep only selected files that differ from the merge
+    /// base of this revision and `HEAD` (committed, staged, unstaged or
+    /// untracked). Requires `git` and a repository containing the root.
+    /// Defaults to `None`, which keeps every selected file.
+    pub changed_since: Option<String>,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -112,6 +119,7 @@ impl Default for ScanOptions {
             exclude: Vec::new(),
             baseline: None,
             baseline_moves: Vec::new(),
+            changed_since: None,
         }
     }
 }
@@ -321,6 +329,13 @@ fn scan_impl(
     )?
     .into_iter()
     .collect();
+    let files = match &args.changed_since {
+        Some(revision) => {
+            let changed = changed::files(&root, revision)?;
+            files.into_iter().filter(|f| changed.contains(f)).collect()
+        }
+        None => files,
+    };
     // Checked after the root, coverage and paths, so those errors keep their
     // precedence over a symbol that only matters to the fallback.
     if let Some(symbol) = args.defines.iter().find(|s| !preprocess::is_symbol(s)) {
@@ -377,12 +392,24 @@ fn scan_impl(
     let mut summary = None;
     let mut resolved = Vec::new();
     if let Some(baseline) = &baseline {
-        let comparison = baseline::compare(
+        let mut comparison = baseline::compare(
             &baseline.entries,
             &items,
             args.threshold,
             &args.baseline_moves,
         );
+        // An unmatched entry is resolved only when its file was scanned or
+        // no longer exists; entries for files outside this scan's selection
+        // (other paths, excluded or unchanged files) are out of scope.
+        let scanned: BTreeSet<String> = files
+            .iter()
+            .filter_map(|f| f.strip_prefix(&root).ok()?.to_str())
+            .map(|f| f.replace('\\', "/"))
+            .collect();
+        comparison.resolved.retain(|&e| {
+            let file = &baseline.entries[e].file;
+            scanned.contains(file) || !root.join(file).exists()
+        });
         for (item, class) in items.iter_mut().zip(&comparison.items) {
             if let Some(class) = class {
                 item.baseline = Some(class.state);

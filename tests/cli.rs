@@ -584,3 +584,136 @@ fn text_view_sorts_filters_and_limits_listing() {
         assert_eq!(out.status.code(), Some(2), "{bad:?}");
     }
 }
+/// Run git in `dir` with a fixed identity, panicking on failure.
+fn git(dir: &std::path::Path, args: &[&str]) {
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args(["-c", "user.name=t", "-c", "user.email=t@example.invalid"])
+        .args([
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "init.defaultBranch=main",
+        ])
+        .args(args)
+        .status()
+        .unwrap();
+    assert!(status.success(), "git {args:?}");
+}
+fn scored_files(output: &std::process::Output) -> Vec<String> {
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let mut files: Vec<String> = report["functions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["file"].as_str().unwrap().to_owned())
+        .collect();
+    files.dedup();
+    files
+}
+#[test]
+fn changed_since_scores_only_files_changed_from_the_merge_base() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    // Each file has one callable with complexity 4 (CRAP 20 without coverage).
+    let body = |name: &str| {
+        format!("class {name} {{\n int F(int x) {{ if (x > 0) return 1; if (x < -1) return 2; if (x == 9) return 3; return 0; }}\n}}\n")
+    };
+    for name in ["A", "B", "D"] {
+        fs::write(root.join(format!("{name}.cs")), body(name)).unwrap();
+    }
+    fs::write(root.join(".gitignore"), "Ignored.cs\n").unwrap();
+    git(root, &["init", "-q"]);
+    git(root, &["add", "."]);
+    git(root, &["commit", "-q", "-m", "base"]);
+    let baseline = root.join("baseline.json");
+    let written = run(root, &["--write-baseline", baseline.to_str().unwrap()]);
+    assert_eq!(written.status.code(), Some(0), "{written:?}");
+    git(root, &["checkout", "-q", "-b", "topic"]);
+    // Committed, unstaged and untracked changes all count; deletions and
+    // ignored files do not.
+    fs::write(root.join("B.cs"), body("B") + "// edited\n").unwrap();
+    git(root, &["commit", "-q", "-am", "edit B"]);
+    fs::write(root.join("A.cs"), body("A") + "// unstaged\n").unwrap();
+    fs::write(root.join("C.cs"), body("C")).unwrap();
+    fs::write(root.join("Ignored.cs"), body("Ignored")).unwrap();
+    fs::remove_file(root.join("D.cs")).unwrap();
+    let out = run(root, &["--changed-since", "main", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(1), "{out:?}");
+    assert_eq!(scored_files(&out), ["A.cs", "B.cs", "C.cs"]);
+    // Selection still applies to the changed files.
+    let out = run(
+        root,
+        &[
+            "--changed-since",
+            "main",
+            "--format",
+            "json",
+            "--exclude",
+            "C.cs",
+        ],
+    );
+    assert_eq!(scored_files(&out), ["A.cs", "B.cs"]);
+    // With a baseline, unchanged files' entries are out of scope rather than
+    // resolved; D.cs was deleted, so its entry is resolved.
+    let out = run(
+        root,
+        &[
+            "--changed-since",
+            "main",
+            "--format",
+            "json",
+            "--baseline",
+            baseline.to_str().unwrap(),
+            "--exclude",
+            "A.cs",
+        ],
+    );
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(report["baseline"]["unchanged"], 1, "{report}");
+    assert_eq!(report["baseline"]["new"], 1, "{report}");
+    assert_eq!(report["baseline"]["resolved"], 1, "{report}");
+    // Nothing changed since HEAD in a clean tree: an empty scan.
+    git(root, &["add", "-A"]);
+    git(root, &["commit", "-q", "-m", "rest"]);
+    let out = run(root, &["--changed-since", "HEAD", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    assert!(scored_files(&out).is_empty());
+    for (bad, message) in [
+        (&["--changed-since", "no-such-rev"][..], "merge-base"),
+        (&["--changed-since=--all"], "needs a revision"),
+        (&["--changed-since="], "needs a revision"),
+        (
+            &["--changed-since", "main", "--write-baseline", "x.json"],
+            "cannot be combined",
+        ),
+    ] {
+        let out = run(root, bad);
+        assert_eq!(out.status.code(), Some(2), "{bad:?}: {out:?}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(stderr.contains(message), "{bad:?}: {stderr}");
+        assert!(!stderr.contains("shallow"), "{bad:?}: {stderr}");
+    }
+    // A shallow clone that lacks the merge base explains how to fix it.
+    let clones = tempfile::tempdir().unwrap();
+    // file:///C:/… on Windows, file:///tmp/… elsewhere; a plain path would
+    // ignore --depth.
+    let path = root.to_str().unwrap().replace('\\', "/");
+    let url = format!("file:///{}", path.trim_start_matches('/'));
+    git(
+        clones.path(),
+        &["clone", "-q", "--depth", "1", &url, "shallow"],
+    );
+    let out = run(&clones.path().join("shallow"), &["--changed-since", "main"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("shallow clone"),
+        "{out:?}"
+    );
+    // Outside a repository it is an input error.
+    let plain = tempfile::tempdir().unwrap();
+    fs::write(plain.path().join("A.cs"), body("A")).unwrap();
+    let out = run(plain.path(), &["--changed-since", "main"]);
+    assert_eq!(out.status.code(), Some(2), "{out:?}");
+}

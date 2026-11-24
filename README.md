@@ -57,6 +57,11 @@ of a large scan: only callables above the threshold, at most N of them, in scan
 order or highest score first (`--top` alone sorts by score). A footer then says
 how many callables are shown. They never change the exit code, and they apply
 only to `--format text`; JSON and SARIF always hold every result.
+`--changed-since <REV>` scores only the selected files that differ from the
+merge base of REV and `HEAD`: committed, staged, unstaged and untracked files,
+but not deleted or ignored ones. Use it for fast pull-request checks, for
+example `--changed-since origin/main`. It needs `git`, and enough history for
+the merge base (`fetch-depth: 0` with `actions/checkout`).
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
