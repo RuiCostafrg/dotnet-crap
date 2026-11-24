@@ -152,6 +152,13 @@ staged it on 2026-11-21, the owner promoted it on NuGet.org, and
 [45052566475](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45052566475)
 passed all 24 jobs. It is the first package to declare its MIT license.
 
+Version 0.3.0 followed the same path: `publish-nuget.yml` run
+[45131285219](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45131285219)
+staged it on 2026-11-23 from source `0732477c5daa3bc191196ea0ee1c974cc9b38235`,
+the owner promoted it on NuGet.org, and `verify-published.yml` run
+[45374108922](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45374108922)
+passed all 24 jobs.
+
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
 `v0.1.0` package was downloaded read-only, release-asset and build-provenance
