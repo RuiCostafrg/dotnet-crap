@@ -56,6 +56,22 @@ pub fn render(
                 &identity,
                 json!({}),
             ));
+        } else if require_coverage && !item.unevidenced_lines.is_empty() {
+            results.push(result(
+                "DNCRAP002",
+                format!(
+                    "{} has executable lines without coverage data: {}",
+                    item.name,
+                    item.unevidenced_lines
+                        .iter()
+                        .map(usize::to_string)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+                Some(item),
+                &identity,
+                json!({"unevidencedLines": item.unevidenced_lines}),
+            ));
         }
     }
     // Baselined violations that are gone: SARIF's `absent` state reports them

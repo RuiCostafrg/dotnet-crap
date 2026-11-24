@@ -49,12 +49,26 @@ fn check(file: &str, name: &str, complexity: u64, lines: &[(&str, u64)], expecte
 #[test]
 /// Count stacked non-default labels separately using the real switch fixture.
 fn stacked_switch() {
-    check("Switch.cs", "Pick", 3, &[("6", 1), ("7", 0)], 4.125);
+    // The switch (4), both sections (6, 7) and the closing brace (9).
+    check(
+        "Switch.cs",
+        "Pick",
+        3,
+        &[("4", 1), ("6", 1), ("7", 0), ("9", 0)],
+        4.125,
+    );
 }
 #[test]
 /// Check the real branch fixture's loops, Boolean operators, coalescing and catch decisions.
 fn branches() {
-    check("Branches.cs", "Run", 5, &[("5", 1), ("6", 0)], 8.125);
+    // The loop (5), the handler (6), the return (7) and the closing brace (8).
+    check(
+        "Branches.cs",
+        "Run",
+        5,
+        &[("5", 1), ("6", 0), ("7", 1), ("8", 0)],
+        8.125,
+    );
 }
 #[test]
 /// Keep the physical fixture's local function decisions and coverage separate from its parent.
@@ -186,31 +200,31 @@ fn execute_accuracy_fixtures_with_sdk() {
         assert_eq!(report["coverage_complete"], true);
         let functions = report["functions"].as_array().unwrap();
         assert_eq!(functions.len(), 4);
-        for (name, complexity, partial_score) in [
-            ("Pick", 3, 4.125),
-            ("Run", 5, 8.125),
-            ("Outer", 2, 2.5),
+        // The partial run misses one of three probed lines in Pick and Run,
+        // and one of Outer's two lines; Inner always runs.
+        let crap = |complexity: u32, coverage: f64| {
+            f64::from(complexity).powi(2) * (1.0 - coverage).powi(3) + f64::from(complexity)
+        };
+        let mut highest = 0.0f64;
+        for (name, complexity, partial) in [
+            ("Pick", 3, 2.0 / 3.0),
+            ("Run", 5, 2.0 / 3.0),
+            ("Outer", 2, 0.5),
             ("Inner", 1, 1.0),
         ] {
             let item = functions.iter().find(|i| i["name"] == name).unwrap();
             assert_eq!(item["complexity"], complexity);
+            let coverage = if full { 1.0 } else { partial };
+            assert_eq!(item["coverage"].as_f64(), Some(coverage), "{name}");
             assert_eq!(
-                item["coverage"],
-                if full || name == "Inner" { 1.0 } else { 0.5 }
+                item["crap"].as_f64(),
+                Some(crap(complexity, coverage)),
+                "{name}"
             );
-            assert_eq!(
-                item["crap"],
-                if full {
-                    f64::from(complexity)
-                } else {
-                    partial_score
-                }
-            );
+            highest = highest.max(crap(complexity, coverage));
         }
-        let boundary = if full { "5" } else { "8.125" };
-        let lower = if full { "4.999" } else { "8.124" };
-        assert!(scan(boundary).status.success());
-        assert_eq!(scan(lower).status.code(), Some(1));
+        assert!(scan(&highest.to_string()).status.success());
+        assert_eq!(scan(&(highest - 0.001).to_string()).status.code(), Some(1));
     }
 }
 

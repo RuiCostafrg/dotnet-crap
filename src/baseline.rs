@@ -386,6 +386,7 @@ mod tests {
             scope: scope.into(),
             signature: signature.into(),
             baseline: None,
+            unevidenced_lines: Vec::new(),
             fingerprint: fingerprint.into(),
             occurrence,
             baseline_crap: None,

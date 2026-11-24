@@ -68,6 +68,11 @@ pub struct Item {
     /// for callables that pass.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub baseline: Option<BaselineState>,
+    /// Executable lines with no coverage point, counted as uncovered. Only
+    /// for a callable that has some coverage points; `--require-coverage`
+    /// fails while any callable lists one.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub unevidenced_lines: Vec<usize>,
     /// Hash of the callable's tokens, written only into baselines.
     #[serde(skip)]
     pub(crate) fingerprint: String,
@@ -147,6 +152,19 @@ fn baseline_suffix(item: &Item) -> String {
         Some(BaselineState::Improved) => format!(" [improved, was {was:.2}]"),
     }
 }
+/// The ` [no coverage data for lines …]` suffix, empty when every executable
+/// line has a coverage point.
+fn unevidenced_suffix(item: &Item) -> String {
+    if item.unevidenced_lines.is_empty() {
+        return String::new();
+    }
+    let lines: Vec<String> = item
+        .unevidenced_lines
+        .iter()
+        .map(usize::to_string)
+        .collect();
+    format!(" [no coverage data for lines {}]", lines.join(", "))
+}
 /// Order of callables in the text report.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum TextSort {
@@ -201,7 +219,7 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool, view: &TextVi
     let listed = view.select(report);
     for i in &listed {
         s.push_str(&format!(
-            "{}:{} {} complexity={} coverage={} CRAP={:.2}{}\n",
+            "{}:{} {} complexity={} coverage={} CRAP={:.2}{}{}\n",
             terminal_safe(&i.file),
             i.line,
             terminal_safe(&i.name),
@@ -209,6 +227,7 @@ pub(crate) fn render_text(report: &Report, require_coverage: bool, view: &TextVi
             i.coverage
                 .map_or_else(|| "absent".into(), |v| format!("{:.1}%", v * 100.0)),
             i.crap,
+            unevidenced_suffix(i),
             baseline_suffix(i)
         ));
     }
@@ -280,6 +299,7 @@ mod tests {
             scope: String::new(),
             signature: format!("{name}()"),
             baseline: None,
+            unevidenced_lines: Vec::new(),
             fingerprint: String::new(),
             occurrence: 0,
             baseline_crap: None,

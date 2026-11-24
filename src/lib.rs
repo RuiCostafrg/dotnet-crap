@@ -403,7 +403,9 @@ fn scan_impl(
         }
         source_hashes.push((file.path, file.hash));
     }
-    let coverage_complete = items.iter().all(|i| i.coverage.is_some());
+    let coverage_complete = items
+        .iter()
+        .all(|i| i.coverage.is_some() && i.unevidenced_lines.is_empty());
     let mut summary = None;
     let mut resolved = Vec::new();
     if let Some(baseline) = &baseline {
@@ -549,6 +551,10 @@ impl FileContext<'_> {
         // decoded and resolved texts are both held, so a fallback file briefly
         // uses twice its text against one admission.
         let mut partial = None;
+        // Set when the tree is of conditional-compilation-resolved text, whose
+        // directives are gone and whose kept branches may not be the ones the
+        // build compiled.
+        let mut resolved_text = false;
         let (source, tree) = if tree.root_node().has_error()
             || placement::misplaced_directive(tree.root_node(), &source)
         {
@@ -558,6 +564,7 @@ impl FileContext<'_> {
                 Some(resolved) => {
                     drop(original);
                     drop(source);
+                    resolved_text = true;
                     resolved
                 }
                 // With partial scoring, the original tree is scored and only
@@ -616,6 +623,10 @@ impl FileContext<'_> {
             1_000_000,
             1_000_000,
         )?;
+        // Executable lines are derived only from text as written.
+        if let (Some(points), false) = (&points, resolved_text) {
+            analysis::complete_coverage(self.kinds, tree.root_node(), &source, points, &mut items);
+        }
         let partial = partial.map(|message| {
             let (kept, unscored) =
                 partial::keep_intact(tree.root_node(), &source, items.split_off(0));

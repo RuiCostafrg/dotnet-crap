@@ -23,8 +23,9 @@ and checks both partial and full reports plus strict gate boundaries. Fully
 covered Pick, Run, Outer and Inner score 3, 5, 2 and 1 respectively.
 
 This is a controlled instrumentation fixture, not a Coverlet collector or proof
-that all executable statements are covered. The denominator is exactly the
-supplied points, per the existing native coverage contract.
+that all executable statements are covered. The denominator is the supplied
+points plus any derived executable line without one, per the
+[native coverage contract](../examples/COVERAGE.md).
 
 Source hashes bind exact original bytes, including BOMs. UTF-8 and BOM-marked
 UTF-16 LE/BE are decoded for parsing; line numbers refer to decoded lines and

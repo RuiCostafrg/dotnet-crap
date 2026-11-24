@@ -3,12 +3,12 @@ public static class Calculator
     public static int Choose(int value)
     {
         Probe.Hit(); // point
-        if (value > 0)
+        if (value > 0) // block
         {
             Probe.Hit(); // point
-            return value;
+            return value; // block
         }
         Probe.Hit(); // point
-        return 0;
+        return 0; // block
     }
 }

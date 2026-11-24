@@ -406,6 +406,11 @@ impl CoverageIndex {
         Self { lines, hit_prefix }
     }
 
+    /// Whether `line` has a coverage point.
+    fn contains(&self, line: usize) -> bool {
+        self.lines.binary_search(&line).is_ok()
+    }
+
     /// Count coverage points with `a <= line <= b`, and how many of them have hits > 0.
     /// Callers guarantee `a <= b` (callable spans and clipped non-empty ranges).
     fn count(&self, a: usize, b: usize) -> (usize, usize) {
@@ -548,6 +553,37 @@ const CLASSES: &[(&str, Class)] = &[
     ("preproc_elif", Class::Preprocessor),
 ];
 
+/// How a node marks an executable line of the callable that owns it.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Exec {
+    No,
+    /// Its first line always carries a sequence point.
+    Statement,
+    /// A local declaration: executable only when a declarator has an initializer.
+    Declaration,
+}
+
+/// Statements the C# compiler always gives a sequence point on their first
+/// line. Deliberately incomplete: `try`, `do`, `for`, `foreach`, `lock`,
+/// blocks, labels, constants and declarations without an initializer are left
+/// out, because their sequence points sit elsewhere or may not exist (Coverlet
+/// reports none for a `lock` line, and a constant compiles to no code). Leaving a statement out only
+/// keeps today's rule (the tool's points) for its line.
+const EXECUTABLE: &[(&str, Exec)] = &[
+    ("expression_statement", Exec::Statement),
+    ("return_statement", Exec::Statement),
+    ("throw_statement", Exec::Statement),
+    ("break_statement", Exec::Statement),
+    ("continue_statement", Exec::Statement),
+    ("goto_statement", Exec::Statement),
+    ("yield_statement", Exec::Statement),
+    ("if_statement", Exec::Statement),
+    ("while_statement", Exec::Statement),
+    ("switch_statement", Exec::Statement),
+    ("using_statement", Exec::Statement),
+    ("local_declaration_statement", Exec::Declaration),
+];
+
 /// Node-kind classification indexed by kind id, so the traversal dispatches on
 /// integers instead of comparing kind names and reading operator text.
 ///
@@ -559,6 +595,8 @@ pub(crate) struct KindTable {
     classes: Box<[Class]>,
     /// Scope role of every kind id, as [`scope_kind`] gives by name.
     scopes: Box<[ScopeKind]>,
+    /// Executable-statement role of every kind id, as [`EXECUTABLE`] names it.
+    executable: Box<[Exec]>,
     body: Option<NonZeroU16>,
     value: Option<NonZeroU16>,
     operator: Option<NonZeroU16>,
@@ -587,9 +625,21 @@ impl KindTable {
                     .map_or(ScopeKind::None, scope_kind)
             })
             .collect();
+        let executable = (0..language.node_kind_count())
+            .map(|id| {
+                let name = u16::try_from(id)
+                    .ok()
+                    .and_then(|id| language.node_kind_for_id(id));
+                EXECUTABLE
+                    .iter()
+                    .find(|&&(known, _)| Some(known) == name)
+                    .map_or(Exec::No, |&(_, exec)| exec)
+            })
+            .collect();
         Self {
             classes,
             scopes,
+            executable,
             body: language.field_id_for_name("body"),
             value: language.field_id_for_name("value"),
             operator: language.field_id_for_name("operator"),
@@ -611,6 +661,51 @@ impl KindTable {
             .get(usize::from(n.kind_id()))
             .copied()
             .unwrap_or(ScopeKind::None)
+    }
+
+    /// The line, one-based, that `n` marks as executable for its owning
+    /// callable, if any: the first line of an executable statement, or the
+    /// first line of an arrow clause's expression.
+    fn executable_line(&self, n: Node<'_>) -> Option<usize> {
+        let line = |n: Node<'_>| n.start_position().row + 1;
+        match self.executable.get(usize::from(n.kind_id())).copied() {
+            Some(Exec::Statement) => return Some(line(n)),
+            Some(Exec::Declaration) => {
+                // A local constant compiles to no code.
+                let mut modifiers = n.walk();
+                let constant = n.named_children(&mut modifiers).any(|m| {
+                    m.kind() == "modifier" && m.child(0).is_some_and(|t| t.kind() == "const")
+                });
+                if constant {
+                    return None;
+                }
+                // local_declaration_statement > variable_declaration > variable_declarator,
+                // whose `=` token marks an initializer.
+                let mut outer = n.walk();
+                let initialized = n.named_children(&mut outer).any(|declaration| {
+                    let mut inner = declaration.walk();
+                    let found = declaration.named_children(&mut inner).any(|declarator| {
+                        let mut tokens = declarator.walk();
+                        let has = declarator
+                            .children(&mut tokens)
+                            .any(|t| !t.is_named() && t.kind() == "=");
+                        has
+                    });
+                    found
+                });
+                return initialized.then(|| line(n));
+            }
+            _ => {}
+        }
+        // An arrow clause's expression, past any comment after the `=>`.
+        if self.class(n) != Class::Arrow {
+            return None;
+        }
+        let mut cursor = n.walk();
+        let expression = n
+            .named_children(&mut cursor)
+            .find(|c| c.kind() != "comment");
+        expression.map(line)
     }
 
     /// Same result as [`callable`].
@@ -660,6 +755,140 @@ impl KindTable {
             ),
             _ => 0,
         }
+    }
+}
+
+/// Lines inside a conditional-compilation region (`#if` to `#endif`,
+/// inclusive, at any nesting), indexed by zero-based line. Such lines may not
+/// be compiled, so they never count as executable. `None` when the source
+/// remaps lines with `#line`, which makes derived lines meaningless.
+fn conditional_lines(source: &str) -> Option<Vec<bool>> {
+    let mut depth = 0usize;
+    let mut lines = Vec::new();
+    for text in source.lines() {
+        let directive = text.trim_start().strip_prefix('#').map(str::trim_start);
+        let word = |w: &str| {
+            directive.is_some_and(|d| {
+                d.strip_prefix(w).is_some_and(|rest| {
+                    !rest.starts_with(|c: char| c.is_alphanumeric() || c == '_')
+                })
+            })
+        };
+        if word("line") {
+            return None;
+        }
+        if word("if") {
+            depth += 1;
+        }
+        lines.push(depth > 0);
+        if word("endif") {
+            depth = depth.saturating_sub(1);
+        }
+    }
+    Some(lines)
+}
+
+/// A callable met by [`complete_coverage`]'s walk.
+struct Owned {
+    /// Start position and kind, which identify the callable's item.
+    key: (usize, usize, String),
+    depth: usize,
+    /// Executable lines owned directly, not by a nested callable.
+    lines: Vec<usize>,
+    /// Line spans of directly nested callables.
+    excluded: Vec<(usize, usize)>,
+}
+
+/// Count, as uncovered, the executable lines of each callable that have no
+/// coverage point, and record them in `Item::unevidenced_lines`.
+///
+/// The denominator becomes the tool's points plus these lines. Executable
+/// lines are the first lines of the statements in [`EXECUTABLE`] and of arrow
+/// and lambda expression bodies that the callable owns, outside nested
+/// callables' line spans and outside conditional-compilation regions. A
+/// callable with no coverage point at all keeps absent coverage.
+pub(crate) fn complete_coverage(
+    kinds: &KindTable,
+    root: Node<'_>,
+    source: &str,
+    cov: &CoverageIndex,
+    items: &mut [Item],
+) {
+    let Some(conditional) = conditional_lines(source) else {
+        return;
+    };
+    let mut done: HashMap<(usize, usize, String), Owned> = HashMap::new();
+    let mut open: Vec<Owned> = Vec::new();
+    let mut stack = vec![(root, 0usize)];
+    let mut cursor = root.walk();
+    while let Some((node, depth)) = stack.pop() {
+        while open.last().is_some_and(|o| o.depth >= depth) {
+            let owned = open.pop().expect("checked");
+            done.insert(owned.key.clone(), owned);
+        }
+        let start = node.start_position();
+        if kinds.callable(node) {
+            if let Some(parent) = open.last_mut() {
+                parent
+                    .excluded
+                    .push((start.row + 1, node.end_position().row + 1));
+            }
+            let mut lines = Vec::new();
+            // A lambda's expression body is its executable line.
+            if node.kind() == "lambda_expression" {
+                if let Some(body) = kinds.body.and_then(|id| node.child_by_field_id(id.get())) {
+                    if body.kind() != "block" {
+                        lines.push(body.start_position().row + 1);
+                    }
+                }
+            }
+            open.push(Owned {
+                key: (start.row + 1, start.column + 1, node.kind().to_owned()),
+                depth,
+                lines,
+                excluded: Vec::new(),
+            });
+        } else if let Some(owner) = open.last_mut() {
+            if let Some(line) = kinds.executable_line(node) {
+                owner.lines.push(line);
+            }
+        }
+        let children: Vec<Node<'_>> = node.named_children(&mut cursor).collect();
+        stack.extend(children.into_iter().rev().map(|c| (c, depth + 1)));
+    }
+    for owned in open {
+        done.insert(owned.key.clone(), owned);
+    }
+    for item in items.iter_mut() {
+        let Some(owned) = done.get(&(item.line, item.column, item.kind.clone())) else {
+            continue;
+        };
+        let ranges = merge_ranges(owned.excluded.clone());
+        let (total, hit) = span_counts(cov, item.line, item.end_line, &ranges);
+        if total == 0 {
+            continue;
+        }
+        let mut missing: Vec<usize> = owned
+            .lines
+            .iter()
+            .copied()
+            .filter(|&line| {
+                !conditional.get(line - 1).copied().unwrap_or(false)
+                    && !ranges.iter().any(|&(a, b)| a <= line && line <= b)
+                    && !cov.contains(line)
+            })
+            .collect();
+        missing.sort_unstable();
+        missing.dedup();
+        if missing.is_empty() {
+            continue;
+        }
+        let coverage = hit as f64 / (total + missing.len()) as f64;
+        let missed = 1.0 - coverage;
+        item.coverage = Some(coverage);
+        item.crap =
+            f64::from(item.complexity).powi(2) * missed.powi(3) + f64::from(item.complexity);
+        item.unevidenced_lines = missing;
     }
 }
 
@@ -806,6 +1035,7 @@ fn single_pass<'t>(
                 scope: join_scopes(&scopes),
                 signature: signature(node, &name, source),
                 baseline: None,
+                unevidenced_lines: Vec::new(),
                 fingerprint: String::new(),
                 occurrence: 0,
                 baseline_crap: None,
@@ -967,6 +1197,7 @@ fn collect_reference(
             scope: join_scopes(&scopes),
             signature: signature(n, &name, source),
             baseline: None,
+            unevidenced_lines: Vec::new(),
             fingerprint: String::new(),
             occurrence: 0,
             baseline_crap: None,
@@ -1871,6 +2102,7 @@ class C<T> {
             scope: String::new(),
             signature: "Earlier()".into(),
             baseline: None,
+            unevidenced_lines: Vec::new(),
             fingerprint: String::new(),
             occurrence: 0,
             baseline_crap: None,
@@ -2109,5 +2341,127 @@ class C<T> {
             workers.into_iter().map(|w| w.join().unwrap()).collect()
         });
         assert_eq!(parallel, sequential);
+    }
+
+    /// Score `source` with every line in `supplied` given a point (hit when
+    /// the second value is positive), then complete the coverage.
+    fn completed(source: &str, supplied: &[(usize, u64)]) -> Vec<Item> {
+        let language: Language = tree_sitter_c_sharp::LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let tree = parser.parse(source, None).unwrap();
+        let kinds = KindTable::new(&language);
+        let index = CoverageIndex::new(supplied.iter().copied());
+        let mut items = Vec::new();
+        collect(
+            &kinds,
+            tree.root_node(),
+            source,
+            "a.cs",
+            Some(&index),
+            &mut items,
+            1_000_000,
+            1_000_000,
+        )
+        .unwrap();
+        complete_coverage(&kinds, tree.root_node(), source, &index, &mut items);
+        items
+    }
+
+    fn unevidenced<'a>(items: &'a [Item], name: &str) -> &'a [usize] {
+        &items
+            .iter()
+            .find(|i| i.name == name)
+            .unwrap()
+            .unevidenced_lines
+    }
+
+    #[test]
+    fn executable_lines_without_points_count_as_uncovered() {
+        let source = "class C {\n int F(int x) {\n  if (x > 0)\n   return 1;\n  return 0;\n }\n}\n";
+        let items = completed(source, &[(3, 1), (4, 1)]);
+        assert_eq!(items[0].unevidenced_lines, [5]);
+        assert_eq!(items[0].coverage, Some(2.0 / 3.0));
+        // CRAP uses the completed coverage: 2^2 * (1/3)^3 + 2.
+        assert!((items[0].crap - (4.0 / 27.0 + 2.0)).abs() < 1e-12);
+        // With every line supplied nothing changes.
+        let items = completed(source, &[(3, 1), (4, 1), (5, 0)]);
+        assert!(items[0].unevidenced_lines.is_empty());
+        assert_eq!(items[0].coverage, Some(2.0 / 3.0));
+    }
+
+    #[test]
+    fn a_callable_without_any_point_stays_absent() {
+        let items = completed(
+            "class C {\n int F() {\n  return 0;\n }\n int G() {\n  return 1;\n }\n}\n",
+            &[(6, 1)],
+        );
+        assert_eq!(items[0].coverage, None);
+        assert!(items[0].unevidenced_lines.is_empty());
+        assert_eq!(items[1].coverage, Some(1.0));
+    }
+
+    #[test]
+    fn every_counted_statement_kind_marks_its_first_line() {
+        let source = "class C {\n int F(object o, int[] xs) {\n  M();\n  int a = 1;\n  while (a < 2) {\n   a++;\n   if (a > 5) break;\n   continue;\n  }\n  switch (a) { default: goto end; }\n  end:\n  lock (o) { }\n  using (var d = (System.IDisposable)o) { }\n  throw new System.Exception();\n }\n System.Collections.Generic.IEnumerable<int> G() {\n  yield return 1;\n }\n}\n";
+        let items = completed(source, &[(2, 1), (16, 1)]);
+        // `lock` (12) is left out: Coverlet reports no point for its line.
+        assert_eq!(unevidenced(&items, "F"), [3, 4, 5, 6, 7, 8, 10, 13, 14]);
+        assert_eq!(unevidenced(&items, "G"), [17]);
+    }
+
+    #[test]
+    fn uncertain_statements_are_not_counted() {
+        // Declarations without an initializer, `try`, `do`, `for`, `foreach`,
+        // blocks and labels may have no sequence point on their first line.
+        let source = "class C {\n void F(int[] xs) {\n  const int k = 1;\n  try {\n  } finally {\n  }\n  do\n  {\n  } while (false);\n  for (;;)\n  { }\n  foreach (var x in xs)\n  { }\n  {\n  }\n }\n}\n";
+        let items = completed(source, &[(2, 1)]);
+        assert!(unevidenced(&items, "F").is_empty(), "{items:?}");
+    }
+
+    #[test]
+    fn a_declaration_without_an_initializer_is_not_counted() {
+        let items = completed(
+            "class C {\n void F() {\n  int a;\n  int b, c = 1;\n }\n}\n",
+            &[(2, 1)],
+        );
+        assert_eq!(unevidenced(&items, "F"), [4]);
+    }
+
+    #[test]
+    fn arrow_and_lambda_expression_bodies_are_executable() {
+        let source = "class C {\n int P =>\n  1;\n int F() =>\n  // why\n  2;\n void G() {\n  System.Func<int> f = () =>\n   3;\n }\n}\n";
+        let items = completed(source, &[(2, 1), (4, 1), (7, 1), (8, 1)]);
+        assert_eq!(unevidenced(&items, "P"), [3]);
+        // The expression's line, not the comment's.
+        assert_eq!(unevidenced(&items, "F"), [6]);
+        assert_eq!(unevidenced(&items, "lambda_expression"), [9]);
+        // The declaration's line holds the lambda, so it belongs to the lambda.
+        assert!(unevidenced(&items, "G").is_empty());
+    }
+
+    #[test]
+    fn nested_callables_own_their_lines() {
+        let source =
+            "class C {\n int F() {\n  int L() {\n   return 1;\n  }\n  return L();\n }\n}\n";
+        let items = completed(source, &[(2, 1), (3, 1)]);
+        assert_eq!(unevidenced(&items, "F"), [6]);
+        assert_eq!(unevidenced(&items, "L"), [4]);
+    }
+
+    #[test]
+    fn conditional_regions_and_line_directives_are_left_alone() {
+        let source = "class C {\n void F() {\n#if DEBUG\n  A();\n#if X\n  B();\n#endif\n  C();\n#endif\n  D();\n }\n}\n";
+        let items = completed(source, &[(2, 1)]);
+        assert_eq!(unevidenced(&items, "F"), [10]);
+        // `#line` remaps lines, so nothing is derived for the file.
+        let remapped = format!("#line 100 \"x.cs\"\n{source}");
+        let items = completed(&remapped, &[(3, 1)]);
+        assert!(unevidenced(&items, "F").is_empty());
+        // A directive word only counts as a whole word.
+        assert_eq!(
+            conditional_lines("#iffy\n#lineage\nx\n"),
+            Some(vec![false, false, false])
+        );
     }
 }

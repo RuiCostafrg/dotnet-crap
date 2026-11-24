@@ -15,7 +15,7 @@ are replaced by .NET workflows rather than ported literally.
 | Ignore rules, config include/exclude | `.gitignore`, `.ignore`, `dotnet-crap.json` | Implemented; see [CONFIG.md](CONFIG.md) |
 | Source-hashed native coverage | Version 1 path/hash/line map | Implemented; reduced completeness contract below |
 | Fresh V8/Istanbul/LCOV collectors | Fresh Coverlet and Microsoft coverage collection | Coverlet/VSTest implemented in PR #15; Microsoft Testing Platform (`--coverage`, `coverlet.MTP`) and `dotnet-coverage` Cobertura use the same adapter, with live fixtures ([details](COVERLET.md#microsoft-testing-platform)) |
-| Every executable statement-start line | C# sequence points with callable ownership | Phase 2; current denominator is supplied points |
+| Every executable statement-start line | C# sequence points with callable ownership | Implemented conservatively: supplied points plus derived statement lines without evidence ([rule](../examples/COVERAGE.md)) |
 | Changed-file and PR selection | Git merge-base and authenticated `gh` discovery | `--changed-since REV` implemented (merge base, worktree and untracked files, shallow-clone diagnostic); `gh` PR discovery not planned |
 | Project policy and boolean overrides | Versioned config and explicit CLI precedence | Phase 3 |
 | Regression baselines and move matching | Qualified C# identities and token fingerprints | Implemented; see [BASELINES.md](BASELINES.md) |
@@ -53,9 +53,9 @@ conditional-compilation symbols still need broader support.
 Native coverage is validated for version, unknown/duplicate keys, canonical
 paths/line numbers, unsigned hit counts, source hashes, and selected-source line
 bounds. Every supplied point within a callable's span contributes equally;
-positive hits count as covered. Omitted points do not enter the denominator.
-`--require-coverage` requires at least one supplied point per callable, not
-complete statement evidence. Nested callable line spans are excluded from the
+positive hits count as covered. Derived executable lines without a point count
+as uncovered, and `--require-coverage` requires a point for each of them as well
+as at least one point per callable. Nested callable line spans are excluded from the
 parent; same-line nesting is ambiguous. Producers must include zero-hit points.
 Hashes detect stale bytes, not forged reports. The live fixture uses explicit
 instrumentation; it is not Coverlet integration.
