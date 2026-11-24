@@ -42,7 +42,12 @@ Each failing callable is classified:
 | `improved` | Matched with a lower score that still exceeds the threshold. |
 
 Baseline entries that match no failing callable are `resolved`: fixed, deleted,
-or now at or under the threshold. They never fail a run.
+or now at or under the threshold. They never fail a run. Only entries whose file
+was scanned, or no longer exists, can be resolved: when a scan covers part of the
+tree (explicit paths, `--exclude`, `--changed-since`), entries for the files it
+left out are out of scope and are neither counted nor reported as absent in SARIF.
+`--write-baseline` cannot be combined with `--changed-since`, because a baseline
+records the whole selection.
 
 Text output suffixes failing lines with ` [new]`, ` [worse, was 12.00]`,
 ` [unchanged]` or ` [improved, was 15.00]` and ends with

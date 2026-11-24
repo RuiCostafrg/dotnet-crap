@@ -94,6 +94,10 @@ struct Args {
     /// repeatable)
     #[arg(long = "baseline-move", value_name = "OLD=NEW", value_parser = baseline::parse_move)]
     baseline_moves: Vec<(String, String)>,
+    /// Score only selected files that differ from the merge base of REV and
+    /// HEAD, including uncommitted and untracked files (needs `git`)
+    #[arg(long, value_name = "REV")]
+    changed_since: Option<String>,
     #[command(flatten)]
     selection: SelectionArgs,
     paths: Vec<PathBuf>,
@@ -225,6 +229,9 @@ fn run(args: Args) -> Result<bool> {
     } else {
         resolved.baseline
     };
+    if args.changed_since.is_some() && args.write_baseline.is_some() {
+        anyhow::bail!("--write-baseline records the whole selection; it cannot be combined with --changed-since");
+    }
     if let (Some(output), Some(written)) = (&args.output, &args.write_baseline) {
         if dotnet_crap::output::same_destination(output, written)? {
             anyhow::bail!("--output and --write-baseline name the same file");
@@ -245,6 +252,7 @@ fn run(args: Args) -> Result<bool> {
         exclude: resolved.exclude,
         baseline,
         baseline_moves: args.baseline_moves,
+        changed_since: args.changed_since,
     })?;
     if args.write_baseline.is_some() {
         result.accept_scores();

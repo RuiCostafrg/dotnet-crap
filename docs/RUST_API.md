@@ -81,6 +81,7 @@ fails the scan).
 | `skip_unparsed: bool` | Skip a selected file whose final failure is a `Syntax` error instead of returning `Err`, as the CLI's `--skip-unparsed`. A skipped file contributes no `Item`s and is listed in `Report::skipped` in selection order. Only syntax failures are skipped: I/O, decoding, resource-limit and every other error still fail the scan. Coverage entries for a skipped file are bound like those of a selected file with no callables. Defaults to `false`. |
 | `baseline: Option<PathBuf>` | A baseline file, resolved against the working directory. The score policy then fails only for callables that are new or worse; `require_coverage` and `fail_on_empty` are unaffected. Its `threshold` must equal this scan's, else `InvalidInput`; a malformed, unknown-version or `.cs` baseline is `InvalidInput` naming the file. The path becomes an `input_paths` entry, so reports cannot overwrite it. Defaults to `None`. See [baselines](BASELINES.md). |
 | `baseline_moves: Vec<(String, String)>` | Root-relative `(old, new)` file pairs, as `--baseline-move`. Requires `baseline`. |
+| `changed_since: Option<String>` | A Git revision, as `--changed-since`: keep only selected files that differ from its merge base with `HEAD`. Requires `git`. |
 
 ### Baselines
 
