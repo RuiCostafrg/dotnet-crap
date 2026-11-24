@@ -564,9 +564,10 @@ enum Exec {
 }
 
 /// Statements the C# compiler always gives a sequence point on their first
-/// line. Deliberately incomplete: `try`, `do`, `for`, `foreach`, blocks,
-/// labels and declarations without an initializer are left out, because their
-/// sequence points sit elsewhere or may not exist. Leaving a statement out only
+/// line. Deliberately incomplete: `try`, `do`, `for`, `foreach`, `lock`,
+/// blocks, labels, constants and declarations without an initializer are left
+/// out, because their sequence points sit elsewhere or may not exist (Coverlet
+/// reports none for a `lock` line, and a constant compiles to no code). Leaving a statement out only
 /// keeps today's rule (the tool's points) for its line.
 const EXECUTABLE: &[(&str, Exec)] = &[
     ("expression_statement", Exec::Statement),
@@ -579,7 +580,6 @@ const EXECUTABLE: &[(&str, Exec)] = &[
     ("if_statement", Exec::Statement),
     ("while_statement", Exec::Statement),
     ("switch_statement", Exec::Statement),
-    ("lock_statement", Exec::Statement),
     ("using_statement", Exec::Statement),
     ("local_declaration_statement", Exec::Declaration),
 ];
@@ -671,6 +671,14 @@ impl KindTable {
         match self.executable.get(usize::from(n.kind_id())).copied() {
             Some(Exec::Statement) => return Some(line(n)),
             Some(Exec::Declaration) => {
+                // A local constant compiles to no code.
+                let mut modifiers = n.walk();
+                let constant = n.named_children(&mut modifiers).any(|m| {
+                    m.kind() == "modifier" && m.child(0).is_some_and(|t| t.kind() == "const")
+                });
+                if constant {
+                    return None;
+                }
                 // local_declaration_statement > variable_declaration > variable_declarator,
                 // whose `=` token marks an initializer.
                 let mut outer = n.walk();
@@ -689,9 +697,15 @@ impl KindTable {
             }
             _ => {}
         }
-        (self.class(n) == Class::Arrow)
-            .then(|| n.named_child(0).map(line))
-            .flatten()
+        // An arrow clause's expression, past any comment after the `=>`.
+        if self.class(n) != Class::Arrow {
+            return None;
+        }
+        let mut cursor = n.walk();
+        let expression = n
+            .named_children(&mut cursor)
+            .find(|c| c.kind() != "comment");
+        expression.map(line)
     }
 
     /// Same result as [`callable`].
@@ -2391,7 +2405,8 @@ class C<T> {
     fn every_counted_statement_kind_marks_its_first_line() {
         let source = "class C {\n int F(object o, int[] xs) {\n  M();\n  int a = 1;\n  while (a < 2) {\n   a++;\n   if (a > 5) break;\n   continue;\n  }\n  switch (a) { default: goto end; }\n  end:\n  lock (o) { }\n  using (var d = (System.IDisposable)o) { }\n  throw new System.Exception();\n }\n System.Collections.Generic.IEnumerable<int> G() {\n  yield return 1;\n }\n}\n";
         let items = completed(source, &[(2, 1), (16, 1)]);
-        assert_eq!(unevidenced(&items, "F"), [3, 4, 5, 6, 7, 8, 10, 12, 13, 14]);
+        // `lock` (12) is left out: Coverlet reports no point for its line.
+        assert_eq!(unevidenced(&items, "F"), [3, 4, 5, 6, 7, 8, 10, 13, 14]);
         assert_eq!(unevidenced(&items, "G"), [17]);
     }
 
@@ -2399,18 +2414,28 @@ class C<T> {
     fn uncertain_statements_are_not_counted() {
         // Declarations without an initializer, `try`, `do`, `for`, `foreach`,
         // blocks and labels may have no sequence point on their first line.
-        let source = "class C {\n void F(int[] xs) {\n  int a;\n  try {\n  } finally {\n  }\n  do\n  {\n  } while (false);\n  for (;;)\n  { }\n  foreach (var x in xs)\n  { }\n  {\n  }\n }\n}\n";
+        let source = "class C {\n void F(int[] xs) {\n  const int k = 1;\n  try {\n  } finally {\n  }\n  do\n  {\n  } while (false);\n  for (;;)\n  { }\n  foreach (var x in xs)\n  { }\n  {\n  }\n }\n}\n";
         let items = completed(source, &[(2, 1)]);
         assert!(unevidenced(&items, "F").is_empty(), "{items:?}");
     }
 
     #[test]
+    fn a_declaration_without_an_initializer_is_not_counted() {
+        let items = completed(
+            "class C {\n void F() {\n  int a;\n  int b, c = 1;\n }\n}\n",
+            &[(2, 1)],
+        );
+        assert_eq!(unevidenced(&items, "F"), [4]);
+    }
+
+    #[test]
     fn arrow_and_lambda_expression_bodies_are_executable() {
-        let source = "class C {\n int P =>\n  1;\n int F() =>\n  2;\n void G() {\n  System.Func<int> f = () =>\n   3;\n }\n}\n";
-        let items = completed(source, &[(2, 1), (4, 1), (6, 1), (7, 1)]);
+        let source = "class C {\n int P =>\n  1;\n int F() =>\n  // why\n  2;\n void G() {\n  System.Func<int> f = () =>\n   3;\n }\n}\n";
+        let items = completed(source, &[(2, 1), (4, 1), (7, 1), (8, 1)]);
         assert_eq!(unevidenced(&items, "P"), [3]);
-        assert_eq!(unevidenced(&items, "F"), [5]);
-        assert_eq!(unevidenced(&items, "lambda_expression"), [8]);
+        // The expression's line, not the comment's.
+        assert_eq!(unevidenced(&items, "F"), [6]);
+        assert_eq!(unevidenced(&items, "lambda_expression"), [9]);
         // The declaration's line holds the lambda, so it belongs to the lambda.
         assert!(unevidenced(&items, "G").is_empty());
     }

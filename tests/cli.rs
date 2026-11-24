@@ -593,3 +593,35 @@ fn executable_lines_without_coverage_points_count_and_fail_required_coverage() {
     );
     assert_eq!(report["coverage_complete"], true);
 }
+#[test]
+fn files_resolved_by_the_conditional_fallback_derive_no_executable_lines() {
+    // The `#if` splits the signature, so the file is scored from resolved
+    // text that keeps the `#else` branch, which the build may not compile.
+    let dir = tempfile::tempdir().unwrap();
+    let source = "class C {\n  T F<T>(string s)\n#if NET\n    where T : class\n#endif\n  {\n#if NET\n    return default;\n#else\n    throw null;\n#endif\n  }\n}\n";
+    fs::write(dir.path().join("a.cs"), source).unwrap();
+    let hash = hex::encode(Sha256::digest(source.as_bytes()));
+    let coverage = dir.path().join("coverage.json");
+    fs::write(
+        &coverage,
+        format!(r#"{{"version":1,"files":{{"a.cs":{{"sha256":"{hash}","lines":{{"8":1}}}}}}}}"#),
+    )
+    .unwrap();
+    let out = run(
+        dir.path(),
+        &[
+            "--coverage",
+            coverage.to_str().unwrap(),
+            "--require-coverage",
+            "--format",
+            "json",
+        ],
+    );
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(
+        report["functions"][0].get("unevidenced_lines").is_none(),
+        "{report}"
+    );
+    assert_eq!(report["functions"][0]["coverage"], 1.0);
+}

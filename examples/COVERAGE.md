@@ -24,16 +24,19 @@ existing old report's source does not establish freshness.
 Each supplied point inside a callable's span contributes equally, and
 positive hits count as covered. The scanner also derives the callable's
 executable lines: the first line of each expression, `return`, `throw`,
-`break`, `continue`, `goto`, `yield`, `if`, `while`, `switch`, `lock` and
-`using` statement, of each local declaration with an initializer, and of each
-arrow or lambda expression body, outside nested callables and outside
+`break`, `continue`, `goto`, `yield`, `if`, `while`, `switch` and `using`
+statement, of each non-constant local declaration with an initializer, and of
+each arrow or lambda expression body, outside nested callables and outside
 `#if`…`#endif` regions. An executable line with no supplied point counts as
 uncovered and is listed in the report's `unevidenced_lines`, and
 `--require-coverage` fails while any callable lists one. Producers should
 therefore include zero-hit points, as Coverlet and Microsoft's tools do.
-Statements whose sequence points may sit elsewhere (`try`, `do`, `for`,
-`foreach`, blocks, labels, declarations without an initializer) are not
-derived, and a file with a `#line` directive derives nothing. A callable with
+Statements whose sequence points may sit elsewhere or not exist (`try`, `do`,
+`for`, `foreach`, `lock`, blocks, labels, constants, declarations without an
+initializer) are not derived. Nothing is derived for a file with a `#line`
+directive, or for a file scored from conditional-compilation-resolved text
+(see [conditional compilation](../docs/PREPROCESSOR.md)), whose kept branches
+may differ from the build's. A callable with
 no supplied points has absent coverage, scored as 0%; enabling
 `--require-coverage` makes absent evidence a gate failure. Nested callable line
 spans belong to the nested callable and are excluded from the parent. Callables

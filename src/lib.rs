@@ -500,6 +500,10 @@ impl FileContext<'_> {
         // resolved text keeps every byte offset and line. While resolving, the
         // decoded and resolved texts are both held, so a fallback file briefly
         // uses twice its text against one admission.
+        // Set when the tree is of conditional-compilation-resolved text, whose
+        // directives are gone and whose kept branches may not be the ones the
+        // build compiled.
+        let mut resolved_text = false;
         let (source, tree) = if tree.root_node().has_error()
             || placement::misplaced_directive(tree.root_node(), &source)
         {
@@ -507,6 +511,7 @@ impl FileContext<'_> {
             match self.reparse_resolved(parser, &source) {
                 Some(resolved) => {
                     drop(source);
+                    resolved_text = true;
                     resolved
                 }
                 // A file whose final failure is a syntax error is skipped when
@@ -558,7 +563,8 @@ impl FileContext<'_> {
             1_000_000,
             1_000_000,
         )?;
-        if let Some(points) = &points {
+        // Executable lines are derived only from text as written.
+        if let (Some(points), false) = (&points, resolved_text) {
             analysis::complete_coverage(self.kinds, tree.root_node(), &source, points, &mut items);
         }
         Ok(FileScan {
