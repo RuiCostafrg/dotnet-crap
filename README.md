@@ -52,6 +52,11 @@ again, keeping line numbers. Files that parse are unaffected. See
 is a syntax error instead of failing the scan; skipped files are listed in the
 text, JSON and SARIF reports and contribute no callables. Other errors, such as
 unreadable or non-UTF-8 sources, still fail. Off by default.
+`--changed-since <REV>` scores only the selected files that differ from the
+merge base of REV and `HEAD`: committed, staged, unstaged and untracked files,
+but not deleted or ignored ones. Use it for fast pull-request checks, for
+example `--changed-since origin/main`. It needs `git`, and enough history for
+the merge base (`fetch-depth: 0` with `actions/checkout`).
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
