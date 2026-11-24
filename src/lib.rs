@@ -33,6 +33,8 @@ mod changed;
 mod evidence;
 /// Deterministic ordered worker pool for per-file work.
 mod par;
+/// Partial scoring of files that do not parse.
+mod partial;
 /// Directives the grammar accepts in positions the 0.23.5 grammar rejected.
 mod placement;
 /// Conditional-compilation fallback for sources that do not parse as written.
@@ -78,6 +80,13 @@ pub struct ScanOptions {
     /// decoding, resource limits) still fail the scan. Defaults to `false`,
     /// which fails on the first syntax error as before.
     pub skip_unparsed: bool,
+    /// Score the intact callables of a selected file whose final failure is a
+    /// syntax error, instead of failing the scan or skipping the whole file.
+    /// A callable is scored only when its own syntax, and that of any
+    /// enclosing callable, has no error. Such files are listed in
+    /// `Report::partial` with the number of callables left unscored. Takes
+    /// precedence over `skip_unparsed`. Defaults to `false`.
+    pub partial_unparsed: bool,
     /// Honor `.gitignore` and `.ignore` files at the root and below while
     /// walking directories. Files named explicitly in `paths` are still
     /// selected. Defaults to `true`; `false` disables ignore files entirely.
@@ -114,6 +123,7 @@ impl Default for ScanOptions {
             jobs: None,
             defines: Vec::new(),
             skip_unparsed: false,
+            partial_unparsed: false,
             respect_ignore_files: true,
             include: Vec::new(),
             exclude: Vec::new(),
@@ -237,8 +247,8 @@ impl ScanResult {
 }
 pub(crate) use evidence::{Coverage, CoverageFile};
 pub use report::{
-    terminal_safe, BaselineState, BaselineSummary, Item, Report, ReportFormat, SkippedFile,
-    TextSort, TextView,
+    terminal_safe, BaselineState, BaselineSummary, Item, PartialFile, Report, ReportFormat,
+    SkippedFile, TextSort, TextView,
 };
 pub(crate) use source::decode_source;
 /// Strict Cobertura line-evidence importer.
@@ -283,6 +293,8 @@ struct FileScan {
     items: Vec<Item>,
     /// Set when the file did not parse and skipping is enabled.
     skipped: Option<SkippedFile>,
+    /// Set when the file did not parse and only its intact callables were scored.
+    partial: Option<PartialFile>,
 }
 
 /// Shared [`scan`] body; with `want_sources`, also returns facts for each
@@ -363,6 +375,7 @@ fn scan_impl(
         defines: &defines,
         want_lines: want_sources,
         skip_unparsed: args.skip_unparsed,
+        partial_unparsed: args.partial_unparsed,
         budget,
     };
     let scanned = par::ordered_map(
@@ -374,11 +387,13 @@ fn scan_impl(
     )?;
     let mut items = Vec::new();
     let mut skipped = Vec::new();
+    let mut partial = Vec::new();
     let mut source_hashes = Vec::with_capacity(scanned.len());
     let mut sources = Vec::new();
     for mut file in scanned {
         items.append(&mut file.items);
         skipped.extend(file.skipped.take());
+        partial.extend(file.partial.take());
         if want_sources {
             sources.push(ScannedSource {
                 path: file.path.clone(),
@@ -428,6 +443,7 @@ fn scan_impl(
         threshold: args.threshold,
         files_scanned: files.len(),
         skipped,
+        partial,
         coverage_complete,
         functions: items,
         failed: false,
@@ -481,6 +497,7 @@ struct FileContext<'a> {
     defines: &'a BTreeSet<String>,
     want_lines: bool,
     skip_unparsed: bool,
+    partial_unparsed: bool,
     budget: &'a par::ByteBudget,
 }
 
@@ -531,14 +548,23 @@ impl FileContext<'_> {
         // resolved text keeps every byte offset and line. While resolving, the
         // decoded and resolved texts are both held, so a fallback file briefly
         // uses twice its text against one admission.
+        let mut partial = None;
         let (source, tree) = if tree.root_node().has_error()
             || placement::misplaced_directive(tree.root_node(), &source)
         {
-            drop(tree);
+            // Partial scoring reads the original tree of a file with errors.
+            let original = (self.partial_unparsed && tree.root_node().has_error()).then_some(tree);
             match self.reparse_resolved(parser, &source) {
                 Some(resolved) => {
+                    drop(original);
                     drop(source);
                     resolved
+                }
+                // With partial scoring, the original tree is scored and only
+                // its intact callables are kept below.
+                None if original.is_some() => {
+                    partial = Some(format!("invalid C# syntax in {relative}"));
+                    (source, original.expect("kept for partial scoring"))
                 }
                 // A file whose final failure is a syntax error is skipped when
                 // enabled. It binds coverage like a selected file with no
@@ -559,6 +585,7 @@ impl FileContext<'_> {
                             path: relative.clone(),
                             message: format!("invalid C# syntax in {relative}"),
                         }),
+                        partial: None,
                     });
                 }
                 None => fail!(Syntax, "invalid C# syntax in {relative}"),
@@ -589,12 +616,23 @@ impl FileContext<'_> {
             1_000_000,
             1_000_000,
         )?;
+        let partial = partial.map(|message| {
+            let (kept, unscored) =
+                partial::keep_intact(tree.root_node(), &source, items.split_off(0));
+            items = kept;
+            PartialFile {
+                path: relative.clone(),
+                message,
+                unscored,
+            }
+        });
         Ok(FileScan {
             path: path.to_path_buf(),
             hash,
             line_count,
             items,
             skipped: None,
+            partial,
         })
     }
 
