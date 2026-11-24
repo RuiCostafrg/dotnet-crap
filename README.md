@@ -116,7 +116,7 @@ evidence for every callable and every derived executable line. See the
 The scanner supports C# methods, constructors, operators, conversions, destructors,
 explicit accessors, expression-bodied properties/indexers, and nested callables.
 See [callable support and limits](docs/CSHARP_CALLABLES.md). F#, Visual Basic, semantic
-compilation, conditional-compilation symbol resolution, Git/PR selection,
+compilation, conditional-compilation symbol resolution,
 and additional report formats are future work. See the
 [full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature
 mapping, .NET-specific requirements, milestones, and acceptance criteria.

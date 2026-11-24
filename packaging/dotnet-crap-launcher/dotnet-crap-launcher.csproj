@@ -6,7 +6,7 @@
     <RollForward>Major</RollForward>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <PackAsTool>true</PackAsTool><ToolCommandName>dotnet-crap</ToolCommandName>
-    <PackageId>dotnet-crap</PackageId><Version>0.3.0</Version>
+    <PackageId>dotnet-crap</PackageId><Version>0.4.0</Version>
     <Authors>dotnet-crap contributors</Authors><Description>Code quality analysis for .NET projects.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/RuiCostafrg/dotnet-crap</PackageProjectUrl>
