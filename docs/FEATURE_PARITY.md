@@ -129,8 +129,8 @@ fixtures. Never silently rewrite a committed baseline.
 Scanning and string rendering are available through the [Rust library API](RUST_API.md).
 Streaming rendering remains deferred. Add XML and standalone HTML with search
 and failing-only filters. SARIF 2.1.0, its diagnostic IDs, encoded locations and
-fingerprints are already implemented. Add deterministic text sort/top/filter
-flags without changing gates.
+fingerprints are already implemented. Deterministic text `--sort`, `--top` and
+`--failing-only` flags are implemented and do not change gates.
 
 Acceptance: format/schema/escaping tests, Unicode and terminal controls, output
 failures and failed-gate reports. Each format reports empty selections clearly.

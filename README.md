@@ -52,6 +52,11 @@ again, keeping line numbers. Files that parse are unaffected. See
 is a syntax error instead of failing the scan; skipped files are listed in the
 text, JSON and SARIF reports and contribute no callables. Other errors, such as
 unreadable or non-UTF-8 sources, still fail. Off by default.
+`--failing-only`, `--top <N>` and `--sort location|crap` shape the text listing
+of a large scan: only callables above the threshold, at most N of them, in scan
+order or highest score first (`--top` alone sorts by score). A footer then says
+how many callables are shown. They never change the exit code, and they apply
+only to `--format text`; JSON and SARIF always hold every result.
 [SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
 empty-selection diagnostics for code-scanning integrations.
 
