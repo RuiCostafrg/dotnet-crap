@@ -159,6 +159,13 @@ the owner promoted it on NuGet.org, and `verify-published.yml` run
 [45374108922](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45374108922)
 passed all 24 jobs.
 
+Version 0.4.0 followed the same path: `publish-nuget.yml` run
+[45485873760](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45485873760)
+staged it on 2026-11-24 from source `36adc91f4e09f742ebd474d2de1ca5aaf6a6ae47`,
+the owner promoted it on NuGet.org, and `verify-published.yml` run
+[45653934045](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45653934045)
+passed all 24 jobs.
+
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
 `v0.1.0` package was downloaded read-only, release-asset and build-provenance
