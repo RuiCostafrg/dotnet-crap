@@ -5,16 +5,15 @@ fresh Cobertura line evidence, and creates native coverage v1. Scanning and
 scoring never start a process. It imports Cobertura from Coverlet under VSTest,
 from Microsoft Testing Platform runs and from Microsoft's coverage tools (see
 [Microsoft Testing Platform](#microsoft-testing-platform) and
-[Microsoft coverage tools](#microsoft-coverage-tools)). OpenCover remains future
-work. No native schema or report completeness semantics change here.
+[Microsoft coverage tools](#microsoft-coverage-tools)). The importer expects
+Cobertura XML during collection. Pass the resulting JSON to the scan
+with `--coverage`.
 
 ## Invocation and trust boundary
 
-Pin `coverlet.collector` in the test project. The fixtures use **10.1.0**, with
-Microsoft.NET.Test.Sdk **18.12.0**. The framework matrix pins xUnit **2.9.3** /
-adapter **4.0.1**, MSTest framework/adapter **4.5.2**, and NUnit **5.0.0** /
-NUnit3TestAdapter **6.3.1**. These pins describe the tested fixture, not a promise that arbitrary
-commands or other versions behave identically.
+Pin `coverlet.collector` in the test project when using VSTest. See the
+[live fixtures](../tests/fixtures/coverlet/README.md) for test frameworks, runner
+versions, and coverage signatures.
 
 ```sh
 dotnet-crap collect --root /absolute/path/to/repo \
@@ -235,9 +234,7 @@ The executable fixtures and independent score derivations are in
 explicitly enabled with `DOTNET_CRAP_COVERLET_E2E=1`. Set
 `DOTNET_CRAP_TEST_TFM=net10.0` or `net11.0` to select the runtime target (default:
 `net10.0`); every test project asserts its actual runtime major against this
-variable. CI installs one SDK/runtime major per leg; an ordinary skipped test is
-not collector evidence. Current-head validation and exact host/toolchain details
-belong in the feature evidence report, separate from historical API measurements.
+variable. CI installs one SDK/runtime major per leg and runs the live fixtures.
 
 Coverlet's official documentation distinguishes `coverlet.collector` (VSTest)
 from `coverlet.MTP`, and the runners are evidenced separately: the VSTest

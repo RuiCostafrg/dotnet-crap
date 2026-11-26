@@ -1,30 +1,9 @@
 # Distribution design
 
-The primary installation channel is the .NET tool. GitHub binary archives,
-the shell installer, Homebrew formula generation and the composite GitHub
-Action remain supported distribution paths. The immutable GitHub release
-[v0.1.0](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.1.0)
-already exists and must never be replaced or rebuilt as the same version.
-The .NET tool is published on NuGet.org from 0.2.0 onward by
-`publish-nuget.yml` (see [NuGet publishing](NUGET_PUBLISHING.md)); `v0.1.0` is
-not on NuGet.org. 0.2.0 was pushed directly by the workflow in its tag. Releases
-whose tag contains the current workflow are instead staged privately on NuGet.org
-with `dotnet package stage push` (GA .NET SDK 11.0.100); the owner promotes each
-one manually on the website with 2FA before it becomes public or
-restorable, and unpromoted staged content expires. After each release and only
-after promotion, `verify-published.yml` installs the package from NuGet.org on
-all five tool RIDs (see [published verification](PUBLISHED_VERIFICATION.md)).
-
-npm distribution is retired. This repository no longer builds, installs,
-stages, publishes or verifies npm packages. The five existing registry packages
-(`dotnet-crap`, `dotnet-crap-linux-x64`, `dotnet-crap-linux-arm64`,
-`dotnet-crap-darwin-x64`, `dotnet-crap-darwin-arm64`) were deprecated by the owner
-on 2026-11-19. Every published version (`0.0.0-stage`, `0.0.0` and `0.1.0`) of all
-five carries the deprecation flag, checked against the registry metadata on
-2026-11-19. On 2026-11-21 the owner unpublished every version of all five;
-the registry metadata now lists them as unpublished, so nothing installs from
-npm and nothing new is published there. Historical release plans describe
-the previous channel set and are not instructions to approve those stages.
+The project ships native archives, a shell installer, a Homebrew formula, a
+GitHub Action, and a .NET tool on NuGet.org. See the [README](../README.md)
+for installation. For the reasons behind the shared native engine and isolated
+publishing workflow, see the [architecture decisions](adr/).
 
 ## Release assets (`release-assets` artifact)
 
@@ -90,12 +69,15 @@ Cargo/tag agreement, main ancestry, and successful exact-SHA main push runs of
 `ci.yml`, `security.yml` and `distribution.yml`. The publisher checks tag binding
 again, refuses any existing release including drafts, and confirms the result
 is immutable. Owner-only immutable tags, protected main and required environment
-review remain prerequisites. No repository settings are changed by this work.
+review remain prerequisites.
 
 The tap's separate owner-approved sync verifies the attested formula and opens
-a PR in `RuiCostafrg/homebrew-tap`. This repository holds no tap token.
+a PR in [the Homebrew tap](https://github.com/RuiCostafrg/homebrew-tap).
+Candidate formula checks install from a local tap using the candidate archives.
+The public tap verifies the released formula before proposing the update and
+runs its own macOS and Linux install checks.
 
-## Verification and integration followups
+## Published verification
 
 `action.yml` verifies release-workflow provenance at the exact version tag,
 SHA-256 and the executable's reported version. Published checks require an
@@ -110,5 +92,4 @@ then promotes it on NuGet.org with 2FA, and unpromoted staged content expires. A
 GitHub `.nupkg` alone does not prove NuGet.org publication: run the NuGet job in
 `verify-published.yml` only after promotion. That job provides the evidence by
 comparing the registry package with the authenticated release package and
-installing it from NuGet.org only. Existing release and QA schedules remain
-disabled.
+installing it from NuGet.org only.

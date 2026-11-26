@@ -1,186 +1,99 @@
 ![dotnet-crap banner](assets/readme-banner.svg)
 
-<img src="assets/icon.svg" width="64" height="64" alt="">
-
 # dotnet-crap
 
-A Rust command-line quality gate for **C# CRAP scores**, inspired by
-[typescript-crap](https://github.com/RuiCostafrg/typescript-crap).
+**Find complex C# code that tests barely cover.** `dotnet-crap` scores each
+method, accessor, or other callable using its cyclomatic complexity and line
+coverage. Run it locally to see where tests would help, or use it in CI to stop
+new violations.
 
-This first version parses real `.cs` files with Tree-sitter and reports callable
-complexity, coverage, and CRAP scores. It is distributed as a native executable
-for Linux and macOS, installable as a .NET tool, with Homebrew, a shell
-installer, or a GitHub Action. Scanning needs no Rust, Node.js or .NET runtime
-except for the .NET tool launcher.
+[Install](#install) · [Quick start](#quick-start) · [GitHub Actions](#github-actions) · [Performance](#performance) · [Documentation](#documentation)
 
-```text
-CRAP = complexity² × (1 − coverage)³ + complexity
-```
+## Install
 
-Coverage is a fraction from 0 to 1. Missing coverage scores as zero coverage.
-Complexity 4 therefore scores 20 uncovered, 6 half covered, and 4 fully covered.
-The default threshold is 10; only scores strictly above it fail.
-
-## Build and run
-
-Building requires stable Rust and a C compiler for the C# parser. Scanning with
-a prebuilt native executable requires neither Rust nor the .NET SDK.
+The [NuGet tool](https://www.nuget.org/packages/dotnet-crap) runs on .NET 10
+and .NET 11. It supports macOS and Linux on x64 and ARM64, plus Windows x64.
 
 ```sh
-cargo build --locked --release
-./target/release/dotnet-crap --root examples/Fixture --format json
-./target/release/dotnet-crap --root . src --threshold 30
-./target/release/dotnet-crap --root . --coverage coverage.json --require-coverage
-./target/release/dotnet-crap --root . --format json --output report.json
-./target/release/dotnet-crap --root . --format sarif --output report.sarif
+dotnet tool install --global dotnet-crap --version 1.0.0
+dotnet-crap --version
 ```
 
-Source paths are relative to `--root`; coverage and report paths are relative to
-the calling directory. Reports are produced for passing and failing score gates.
-Exit codes are **0** for pass, **1** for a score gate failure, and **2** for an
-argument, source, coverage, or I/O error. `--fail-on-empty` rejects an empty scan.
-Missing required coverage and empty-selection gate failures also exit 1.
-`--jobs <N>` sets the number of worker threads that scan files (default:
-available parallelism, `--jobs 1` scans on one thread); it never changes the
-report or which error is reported, and `0` is rejected.
-`--define <SYMBOL>` (repeatable; `A,B` and `A;B` lists accepted) sets
-conditional compilation symbols. They matter only for a file that does not
-parse as written: its `#if` groups are then resolved and the file is parsed
-again, keeping line numbers. Files that parse are unaffected. See
-[conditional compilation](docs/PREPROCESSOR.md).
-`--skip-unparsed` (also on `collect`) skips a selected file whose final failure
-is a syntax error instead of failing the scan; skipped files are listed in the
-text, JSON and SARIF reports and contribute no callables. Other errors, such as
-unreadable or non-UTF-8 sources, still fail. Off by default.
-`--partial-unparsed` goes further for such a file: it scores the callables whose
-syntax is intact and leaves out each callable that contains a syntax error, is
-inside one, or is nested in a callable that has one. The file is listed with
-the number of callables left unscored (`partial_files` in JSON, a notification
-in SARIF). It takes precedence over `--skip-unparsed`. Off by default.
-`--failing-only`, `--top <N>` and `--sort location|crap` shape the text listing
-of a large scan: only callables above the threshold, at most N of them, in scan
-order or highest score first (`--top` alone sorts by score). A footer then says
-how many callables are shown. They never change the exit code, and they apply
-only to `--format text`; JSON and SARIF always hold every result.
-`--changed-since <REV>` scores only the selected files that differ from the
-merge base of REV and `HEAD`: committed, staged, unstaged and untracked files,
-but not deleted or ignored ones. Use it for fast pull-request checks, for
-example `--changed-since origin/main`. It needs `git`, and enough history for
-the merge base (`fetch-depth: 0` with `actions/checkout`).
-[SARIF output](docs/SARIF.md) includes score, missing-required-coverage, and
-empty-selection diagnostics for code-scanning integrations.
-
-## Configuration
-
-Scans honor `.gitignore` and `.ignore` files and an optional versioned
-`dotnet-crap.json` with `include`/`exclude` globs; explicit command-line flags
-override the file (`--config`, `--no-config`, `--no-ignore`, `--include`,
-`--exclude`). See [configuration](docs/CONFIG.md).
-
-## Baselines
-
-To adopt `dotnet-crap` on existing code, record today's violations with
-`--write-baseline PATH`, commit the file, and compare with `--baseline PATH` (or
-the `baseline` config key). Runs then fail only for violations that are new or
-worse; matching survives renamed files, moved callables and formatting edits, and
-is conservative when ambiguous. See [baselines](docs/BASELINES.md).
-
-## Stability
-
-Since 1.0.0 the CLI, exit codes, JSON report, native coverage, config and baseline
-formats follow semantic versioning, and each has a published JSON Schema in
-[`schemas/`](schemas/). See the [compatibility policy](docs/COMPATIBILITY.md).
-
-## Rust library
-
-The package also exposes `dotnet_crap::{ScanOptions, scan, ReportFormat}` so Rust
-code can scan and render reports without starting the CLI. Gate failures are
-reported by `ScanResult::report().failed`; input errors are returned as `Err`.
-`ScanOptions::jobs` is the library form of `--jobs`, and `ScanOptions::defines`
-of `--define`; `ScanOptions::skip_unparsed` is `--skip-unparsed`.
-See the [Rust API guide](docs/RUST_API.md) for consumption, verification, and
-limits. Run the bundled example with `cargo run --example scan -- <root>`.
-
-## Coverage and scope
-
-The initial [native coverage format](examples/COVERAGE.md) uses root-relative
-source paths and SHA-256 hashes of exact source bytes. It rejects stale coverage.
-Fresh Coverlet evidence can be collected with `dotnet-crap collect` using an
-explicit trusted command; see [collection and runner limits](docs/COVERLET.md).
-A callable's coverage counts the supplied points inside it plus every
-executable line the scanner derives that has no point, which counts as
-uncovered and is listed as `unevidenced_lines`. `--require-coverage` requires
-evidence for every callable and every derived executable line. See the
-[coverage format](examples/COVERAGE.md) for the exact rule.
-
-The scanner supports C# methods, constructors, operators, conversions, destructors,
-explicit accessors, expression-bodied properties/indexers, and nested callables.
-See [callable support and limits](docs/CSHARP_CALLABLES.md). F#, Visual Basic, semantic
-compilation, conditional-compilation symbol resolution,
-and additional report formats are future work. See the
-[full feature-parity plan](docs/FEATURE_PARITY.md) for the TypeScript feature
-mapping, .NET-specific requirements, milestones, and acceptance criteria.
-
-## Installation
-
-> The current release is **v0.4.0** (immutable GitHub release). Its NuGet.org,
-> Homebrew, shell-installer and GitHub Action channels were verified after
-> publication. Pin an exact version in CI. See
-> [distribution design](docs/DISTRIBUTION.md).
-> npm distribution is retired and its packages were removed from the registry; use the .NET tool or Homebrew instead.
-
-Prebuilt targets: macOS x86-64/ARM64 and Linux x86-64/ARM64 (glibc builds and
-fully static musl builds that also run on Alpine). Windows is only bundled in
-the .NET tool for now.
-
-**.NET tool** (primary channel; requires a .NET 10 or .NET 11 runtime), from
-[NuGet.org](https://www.nuget.org/packages/dotnet-crap):
-
-```sh
-dotnet tool install --global dotnet-crap --version 0.4.0
-```
-
-To install the exact bytes built by the release workflow instead, download
-`dotnet-crap.0.4.0.nupkg` from the
-[v0.4.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.4.0),
-authenticate its provenance and use it as a local feed:
-
-```sh
-gh attestation verify ./download/dotnet-crap.0.4.0.nupkg --repo RuiCostafrg/dotnet-crap
-dotnet tool install --global dotnet-crap --version 0.4.0 --add-source ./download
-```
-
-See [NuGet publishing](docs/NUGET_PUBLISHING.md) and
-[packaging](packaging/README.md) for local package creation.
-
-**Homebrew** (macOS and Linux):
+On macOS or Linux, install the native executable with Homebrew:
 
 ```sh
 brew install RuiCostafrg/tap/dotnet-crap
 ```
 
-**Shell installer** (installs to `~/.local/bin`):
+[GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases) provides
+a shell installer and native archives, including static musl builds for Linux.
+Native scans require neither Rust nor .NET. See [asset verification and an authenticated NuGet install](docs/PUBLISHED_VERIFICATION.md#install-the-authenticated-nuget-package-locally)
+and [build prerequisites](CONTRIBUTING.md).
+
+## Quick start
+
+Run this from the root of your C# repository. Omit `src` to scan the whole root.
 
 ```sh
-curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.4.0/dotnet-crap-installer.sh | sh
+dotnet-crap --root . --top 10 src
 ```
 
-Or download `dotnet-crap-<target>.tar.xz` and its `.sha256` from
-[GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases) and verify
-the build provenance with
-`gh attestation verify dotnet-crap-<target>.tar.xz --repo RuiCostafrg/dotnet-crap`.
+A scan without coverage scores every callable as 0% covered. The CRAP formula is
+`complexity² × (1 − coverage)³ + complexity`, with coverage between 0 and 1.
+For example, a callable with complexity 4 scores 20 at 0% coverage, 6 at 50%,
+and 4 at 100%. The default threshold is 10. Scores strictly above it fail.
 
-**GitHub Action** (installs a pinned release after verifying its build
-provenance and SHA-256, then optionally scans and uploads SARIF):
+### Scan with coverage
+
+Use `collect` to turn fresh Cobertura reports into
+[source-bound coverage JSON](examples/COVERAGE.md), then pass that file to
+the scan. This example uses VSTest with `coverlet.collector` installed in the
+test project. Replace the project path and set `--expected-reports` to the
+number of reports your command produces. Choose a new file for the output.
+
+```sh
+dotnet-crap collect --root . --path src --output coverage.json --expected-reports 1 \
+  -- dotnet test tests/Tests.csproj --collect 'XPlat Code Coverage' \
+     --results-directory '{results}' -- \
+     DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+dotnet-crap --root . --coverage coverage.json --require-coverage src
+```
+
+Only run `collect` with test commands and code you trust. See
+[coverage collection](docs/COVERLET.md) for Microsoft Testing Platform,
+`dotnet-coverage`, report discovery, and path mapping.
+
+### Adopt it on an existing codebase
+
+Save today's violations in a [baseline](docs/BASELINES.md) and commit the file.
+Later scans fail on new or worse violations. Required coverage still applies
+independently of the baseline.
+
+```sh
+dotnet-crap --root . --coverage coverage.json --write-baseline crap-baseline.json src
+dotnet-crap --root . --coverage coverage.json --baseline crap-baseline.json src
+```
+
+Use `dotnet-crap --help` for all flags and
+[`dotnet-crap.json`](docs/CONFIG.md) for shared policy. Exit codes are **0** for
+pass, **1** for a gate failure, and **2** for an input or runtime error. The
+default report is text. Use `--format json` or `--format sarif` for automation.
+
+## GitHub Actions
+
+Add this step after checkout and coverage generation. It verifies and installs
+the pinned release on Ubuntu or macOS, runs the scan, and uploads
+[SARIF](docs/SARIF.md) to GitHub code scanning. Set `contents: read` and
+`security-events: write` on the workflow job for this example.
 
 ```yaml
-- uses: RuiCostafrg/dotnet-crap@<full commit SHA> # v0.4.0
+- uses: RuiCostafrg/dotnet-crap@6587201921b9c6c048abbd13940cace841ec68a3 # v1.0.0
   with:
-    version: 0.4.0
+    version: '1.0.0'
     scan: true
     sarif: true
-    upload-sarif: true # needs `security-events: write`
+    upload-sarif: true
     args: |
       --root
       .
@@ -189,15 +102,36 @@ provenance and SHA-256, then optionally scans and uploads SARIF):
       --require-coverage
 ```
 
-Collect `coverage.json` beforehand with `dotnet-crap collect` (see
-[Coverlet collection](docs/COVERLET.md)); the action puts `dotnet-crap` on `PATH`.
-Ubuntu and macOS runners are supported.
+For a pull-request scan limited to changed files, pass
+`--changed-since origin/main` as two argument lines and fetch the merge-base
+history with `fetch-depth: 0` on checkout. See [Action inputs](action.yml).
 
-## Development
+## Performance
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for checks, including the live .NET fixture
-suite, and [SECURITY.md](SECURITY.md) for coverage trust and release verification.
-Licensed under [MIT](LICENSE).
+These wall times come from one Ubuntu 26.04 GitHub-hosted run on pinned C#
+projects on November 19, 2026, before v1.0.0. The scan column measures scoring
+with precollected coverage.
+Collection includes building and running the selected tests. CsvHelper skipped
+11 unparseable files in this run.
 
-Fresh pinned Coverlet collection is available through `dotnet-crap collect`; see
-[the command, mapping contract and runner limits](docs/COVERLET.md).
+| Project | Files scored | Callables | Scan | Collect including tests |
+| --- | ---: | ---: | ---: | ---: |
+| GuardClauses | 15 | 121 | 0.03 s | 27.6 s |
+| CsvHelper | 95 | 1,204 | 0.3 s | 213.7 s |
+| eShopOnWeb | 205 | 556 | 0.1 s | 38.2 s |
+| CleanArchitecture | 72 | 151 | 0.03 s | 16.0 s |
+
+See the [evaluation](docs/EVALUATION.md) for source revisions, memory, and
+reproduction instructions, and the [benchmark guide](docs/BENCHMARKS.md) for
+comparing two builds on the same workloads.
+
+## Documentation
+
+- [Configuration and selection](docs/CONFIG.md) and [regression baselines](docs/BASELINES.md)
+- [C# scoring and callable support](docs/CSHARP_CALLABLES.md) and [conditional compilation](docs/PREPROCESSOR.md)
+- [Coverage collection](docs/COVERLET.md), [native coverage](examples/COVERAGE.md), and [SARIF](docs/SARIF.md)
+- [Rust library](docs/RUST_API.md) and [1.x compatibility and schemas](docs/COMPATIBILITY.md)
+- [Changelog](CHANGELOG.md) and [GitHub Releases](https://github.com/RuiCostafrg/dotnet-crap/releases)
+
+See [Contributing](CONTRIBUTING.md) to build and test the project and
+[Security](SECURITY.md) to report a vulnerability. Licensed under [MIT](LICENSE).

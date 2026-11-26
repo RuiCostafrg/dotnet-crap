@@ -49,31 +49,18 @@ is uncovered; Cobertura emits separate class records with the same class name
 and different filenames. This demonstrates why the source filename is part of
 the identity when a consumer merges partial-class records.
 
-## Observed live run
-
-The initial local observation below preceded a source-qualified Rust integration
-run; see [current source-qualified evidence](../../../reports/fresh-coverlet/README.md).
-
-On 2026-11-06 this workspace had .NET SDK 10.0.109 and runtime 10.0.9 on
-Linux ARM64. The pinned collector run completed both tests and emitted two
-reports. Coverlet reported `Choose` as 4/5 line coverage (`0.8`), `Full` as
-5/5 (`1`), `Uncovered` as 0/1 (`0`), and Beta's `Full` as 5/5 (`1`). These
-observations are from the actual VSTest collector run on that host; other SDK,
-runtime, OS and test-runner combinations require their own live evidence.
-
 ## Framework matrix
 
-All projects target .NET 10 and pin Test SDK 18.12.0 / Coverlet collector 10.1.0.
+VSTest fixtures default to .NET 10 and also run on .NET 11 in CI. They use
+Microsoft.NET.Test.Sdk and the Coverlet collector pinned in their project files.
 The xUnit projects pin xUnit 2.9.3 / adapter 4.0.1; MSTest pins framework and
-adapter 4.5.2; NUnit pins framework 5.0.0 / NUnit3TestAdapter 6.3.1.
+adapter 4.5.3; NUnit pins framework 5.0.0 / NUnit3TestAdapter 6.3.1.
 MSTest and NUnit add one positive `Full(1)` call to the paired xUnit pattern.
 MSTest Full hits are 3/3/2/1/3; NUnit Full hits are 3/3/1/2/3 because Beta
 tests `value == 0`. The paired xUnit reports have 2/2/1/1/2. Each pair
 must contain exactly one report with each signature, making missing/duplicate
-project output observable while preserving the coverage ratios and scores above. The live harness verifies all four
-project assemblies appear and exactly four fresh attachments are produced.
-The MSTest and NUnit subdirectories record their separate real worker runs;
-source-qualified combined results belong in the feature evidence report.
+project output observable while preserving the coverage ratios and scores above. The live harness verifies that
+all four project assemblies appear and produce exactly four fresh attachments.
 
 ## Microsoft Testing Platform and Microsoft coverage fixtures
 
