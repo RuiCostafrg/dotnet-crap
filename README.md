@@ -123,7 +123,7 @@ mapping, .NET-specific requirements, milestones, and acceptance criteria.
 
 ## Installation
 
-> The current release is **v0.4.0** (immutable GitHub release). Its NuGet.org,
+> The current release is **v1.0.0** (immutable GitHub release). Its NuGet.org,
 > Homebrew, shell-installer and GitHub Action channels were verified after
 > publication. Pin an exact version in CI. See
 > [distribution design](docs/DISTRIBUTION.md).
@@ -137,17 +137,17 @@ the .NET tool for now.
 [NuGet.org](https://www.nuget.org/packages/dotnet-crap):
 
 ```sh
-dotnet tool install --global dotnet-crap --version 0.4.0
+dotnet tool install --global dotnet-crap --version 1.0.0
 ```
 
 To install the exact bytes built by the release workflow instead, download
-`dotnet-crap.0.4.0.nupkg` from the
-[v0.4.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v0.4.0),
+`dotnet-crap.1.0.0.nupkg` from the
+[v1.0.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v1.0.0),
 authenticate its provenance and use it as a local feed:
 
 ```sh
-gh attestation verify ./download/dotnet-crap.0.4.0.nupkg --repo RuiCostafrg/dotnet-crap
-dotnet tool install --global dotnet-crap --version 0.4.0 --add-source ./download
+gh attestation verify ./download/dotnet-crap.1.0.0.nupkg --repo RuiCostafrg/dotnet-crap
+dotnet tool install --global dotnet-crap --version 1.0.0 --add-source ./download
 ```
 
 See [NuGet publishing](docs/NUGET_PUBLISHING.md) and
@@ -163,7 +163,7 @@ brew install RuiCostafrg/tap/dotnet-crap
 
 ```sh
 curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.4.0/dotnet-crap-installer.sh | sh
+  https://github.com/RuiCostafrg/dotnet-crap/releases/download/v1.0.0/dotnet-crap-installer.sh | sh
 ```
 
 Or download `dotnet-crap-<target>.tar.xz` and its `.sha256` from
@@ -175,9 +175,9 @@ the build provenance with
 provenance and SHA-256, then optionally scans and uploads SARIF):
 
 ```yaml
-- uses: RuiCostafrg/dotnet-crap@<full commit SHA> # v0.4.0
+- uses: RuiCostafrg/dotnet-crap@6587201921b9c6c048abbd13940cace841ec68a3 # v1.0.0
   with:
-    version: 0.4.0
+    version: 1.0.0
     scan: true
     sarif: true
     upload-sarif: true # needs `security-events: write`

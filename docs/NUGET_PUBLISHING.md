@@ -166,6 +166,17 @@ the owner promoted it on NuGet.org, and `verify-published.yml` run
 [45653934045](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45653934045)
 passed all 24 jobs.
 
+Version 1.0.0 was staged by `publish-nuget.yml` run
+[45800157272](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45800157272)
+from source `6587201921b9c6c048abbd13940cace841ec68a3` and promoted by the owner.
+The Homebrew sync run
+[45800165258](https://github.com/RuiCostafrg/homebrew-tap/actions/runs/45800165258)
+opened the [formula update](https://github.com/RuiCostafrg/homebrew-tap/pull/31),
+which merged after installation checks passed. Published verification run
+[45888865138](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45888865138)
+passed all 24 jobs, covering release provenance, the shell installer, Homebrew,
+NuGet.org on all five tool RIDs, and the GitHub Action.
+
 Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
 optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
 `v0.1.0` package was downloaded read-only, release-asset and build-provenance
