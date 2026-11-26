@@ -56,7 +56,7 @@ outputs:
     description: Full path of the installed dotnet-crap executable.
     value: ${{ steps.install.outputs.executable }}
   exit-code:
-    description: Scan exit code (0 pass, 1 gate failure, 2 invalid input) when scan is true.
+    description: Scan exit code (0 pass, 1 gate failure, 2 input or runtime error) when scan is true.
     value: ${{ steps.scan.outputs.exit-code }}
   sarif-file:
     description: SARIF report path when sarif is true.
@@ -97,6 +97,6 @@ runs:
         STATUS: ${{ steps.scan.outputs.exit-code }}
       run: |
         if [[ "$STATUS" != 0 ]]; then
-          echo "::error title=dotnet-crap::CRAP gate exited with $STATUS (1 = gate failure, 2 = invalid input)"
+          echo "::error title=dotnet-crap::CRAP gate exited with $STATUS (1 = gate failure, 2 = input or runtime error)"
           exit "$STATUS"
         fi
