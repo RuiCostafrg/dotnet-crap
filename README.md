@@ -142,14 +142,17 @@ dotnet tool install --global dotnet-crap --version 1.0.0
 
 To install the exact bytes built by the release workflow instead, download
 `dotnet-crap.1.0.0.nupkg` from the
-[v1.0.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v1.0.0),
-authenticate its provenance and install from that folder with an empty package
-cache and no other NuGet sources:
+[v1.0.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v1.0.0)
+and save it as `./download/dotnet-crap.1.0.0.nupkg`. The commands below
+verify its provenance and install it with an empty cache and only that local feed.
 
 ```sh
 (
   set -e
-  gh attestation verify ./download/dotnet-crap.1.0.0.nupkg --repo RuiCostafrg/dotnet-crap
+  gh attestation verify ./download/dotnet-crap.1.0.0.nupkg --repo RuiCostafrg/dotnet-crap \
+    --cert-identity https://github.com/RuiCostafrg/dotnet-crap/.github/workflows/release.yml@refs/tags/v1.0.0 \
+    --source-ref refs/tags/v1.0.0 \
+    --source-digest 6587201921b9c6c048abbd13940cace841ec68a3
   tmp_dir=$(mktemp -d)
   trap 'rm -rf "$tmp_dir"' EXIT
   cat > "$tmp_dir/NuGet.Config" <<'EOF'
