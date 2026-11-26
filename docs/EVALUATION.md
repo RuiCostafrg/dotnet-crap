@@ -148,6 +148,14 @@ unchanged. The timings above describe the original run.
 
 ## Reproducing
 
+For the reported timings, build the scanner from
+[`6d6e7bfec4d31196c902f6f2cb73d210461dbabf`](https://github.com/RuiCostafrg/dotnet-crap/commit/6d6e7bfec4d31196c902f6f2cb73d210461dbabf)
+with `cargo build --locked --release` and use the evaluation harness and project
+pins from that revision. The runner and SDK can also affect results.
+
+The command below starts a new evaluation using the revision on `main` at
+dispatch time.
+
 ```sh
 gh workflow run evaluate.yml --repo RuiCostafrg/dotnet-crap --ref main
 ```

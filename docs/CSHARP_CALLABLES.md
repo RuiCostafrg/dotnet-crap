@@ -166,9 +166,10 @@ has one hit. Their coverage/CRAP pairs must be `0.5 / 4.125`, `0 / 12`, and
 parent. Same-line nesting is ambiguous.
 
 `PatternBranch.cs` contains an `if` with one `and` and one `or`, so its single
-method has complexity 4. Explicit runtime probes on its two return lines retain
-zero-hit entries. Partial execution hits one return: coverage `1/2` and CRAP
-`4² × (1/2)³ + 4 = 6`. Full execution hits both: coverage `1` and CRAP `4`.
+method has complexity 4. The fixture records three points: the `if` line
+and both returns. Partial execution hits the condition and one return, for
+coverage `2/3` and CRAP `4² × (1/3)³ + 4 ≈ 4.59`. Full execution hits all
+three points, for coverage `1` and CRAP `4`.
 Tests require passing at each exact threshold and failing just below it.
 These are explicit line probes, not Coverlet sequence-point completeness claims.
 

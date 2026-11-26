@@ -28,8 +28,10 @@ than-90% rule. A missing, cancelled or incomplete shard therefore fails the
 
 ## Running shards locally
 
-Run one shard with the same arguments CI uses, e.g.
-`python3 scripts/mutation-gate.py --shard 0/8`. Each invocation still reserves
+Run each shard with the same shard count CI uses, for example
+`python3 scripts/mutation-gate.py --shard 0/8 --keep-runs 8`. Pass
+`--keep-runs 8` for every shard and aggregate before running additional shards.
+The default retains only five completed runs. Each invocation reserves
 its own `target/mutation-runs/run-*` directory and records `full-mutants.json`.
 Aggregate locally over the evidence directories you want combined, e.g.
 

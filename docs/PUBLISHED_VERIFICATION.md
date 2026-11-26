@@ -9,11 +9,15 @@ contents, Actions and attestation access. They require a canonical exact
 version without `v` and a full lowercase 40-character expected source SHA.
 There is no moving `latest` or candidate-artifact fallback.
 
-Run `verify-release.yml` once the GitHub release exists:
+Once the GitHub release exists, set the version and full tagged commit SHA.
+The values below are for v1.0.0. Replace both with the release you are verifying,
+then run `verify-release.yml`.
 
 ```sh
+release_version=1.0.0
+release_source_sha=6587201921b9c6c048abbd13940cace841ec68a3
 gh workflow run verify-release.yml --repo RuiCostafrg/dotnet-crap --ref main \
-  -f version=1.0.0 -f source-sha=6587201921b9c6c048abbd13940cace841ec68a3
+  -f version="$release_version" -f source-sha="$release_source_sha"
 ```
 
 It requires an immutable published release, resolves its tag to the expected commit, downloads actual release
@@ -48,11 +52,12 @@ under `tools/`, are compared with the release package again before anything from
 it runs. It then receives the same payload, version and scan checks as the
 isolated-feed jobs.
 
-After the tap formula merge, run all channels:
+After the tap formula merge, verify all channels with the same version and
+source SHA.
 
 ```sh
 gh workflow run verify-published.yml --repo RuiCostafrg/dotnet-crap --ref main \
-  -f version=1.0.0 -f source-sha=6587201921b9c6c048abbd13940cace841ec68a3 \
+  -f version="$release_version" -f source-sha="$release_source_sha" \
   -F verify-homebrew=true -F verify-nuget=true
 ```
 
