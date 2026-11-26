@@ -1,6 +1,6 @@
 # Compatibility policy
 
-From 1.0.0, `dotnet-crap` follows [Semantic Versioning](https://semver.org/).
+Since 1.0.0, `dotnet-crap` follows [Semantic Versioning](https://semver.org/).
 This page defines what that promises. A change that breaks anything listed under
 *Stable* needs a new major version.
 

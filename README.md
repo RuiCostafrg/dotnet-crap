@@ -87,7 +87,7 @@ is conservative when ambiguous. See [baselines](docs/BASELINES.md).
 
 ## Stability
 
-From 1.0.0 the CLI, exit codes, JSON report, native coverage, config and baseline
+Since 1.0.0 the CLI, exit codes, JSON report, native coverage, config and baseline
 formats follow semantic versioning, and each has a published JSON Schema in
 [`schemas/`](schemas/). See the [compatibility policy](docs/COMPATIBILITY.md).
 
