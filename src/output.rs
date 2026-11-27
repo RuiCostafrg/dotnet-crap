@@ -3,7 +3,7 @@ use crate::error::{fail, ErrorKind, Result, ResultExt};
 use std::{io::Write, path::Path};
 use walkdir::WalkDir;
 
-/// Publish a rendered report after rejecting source aliases and staging the bytes.
+/// Publish a rendered report after rejecting aliases to scan inputs and C# sources.
 ///
 /// Callers should call `ScanResult::verify_sources` before relying on the
 /// rendered output. This function verifies the sources again after staging and

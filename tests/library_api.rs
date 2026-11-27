@@ -1,4 +1,4 @@
-use dotnet_crap::{scan, ReportFormat, ScanOptions};
+use dotnet_crap::{output::write_report, scan, ErrorKind, ReportFormat, ScanOptions};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::{
@@ -376,6 +376,89 @@ fn cli_preserves_coverage_and_unselected_source_aliases() {
     let output = cli(dir.path(), &["--output", alias.to_str().unwrap()]);
     assert_eq!(output.status.code(), Some(2));
     assert_eq!(fs::read_to_string(&ignored).unwrap(), source);
+}
+
+#[test]
+fn publication_protects_scan_inputs_after_changing_working_directory() {
+    const CHILD: &str = "DOTNET_CRAP_PUBLICATION_CWD_TEST_CHILD";
+    if std::env::var_os(CHILD).is_none() {
+        let dir = tempfile::tempdir().unwrap();
+        let scan_dir = dir.path().join("scan");
+        fs::create_dir(&scan_dir).unwrap();
+        let child = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "publication_protects_scan_inputs_after_changing_working_directory",
+                "--nocapture",
+            ])
+            .env(CHILD, "1")
+            .current_dir(scan_dir)
+            .output()
+            .unwrap();
+        assert!(
+            child.status.success(),
+            "{}\n{}",
+            String::from_utf8_lossy(&child.stdout),
+            String::from_utf8_lossy(&child.stderr)
+        );
+        return;
+    }
+
+    fs::create_dir("../sources").unwrap();
+    fs::create_dir("../publish").unwrap();
+    fs::write("../sources/a.cs", "class C { void F() {} }").unwrap();
+    let coverage = r#"{"version":1,"files":{}}"#;
+    let baseline = r#"{"version":1,"threshold":10.0,"entries":[]}"#;
+    fs::write("coverage.json", coverage).unwrap();
+    fs::write("baseline.json", baseline).unwrap();
+
+    let mut opts = options(Path::new("../sources"));
+    opts.paths.push("a.cs".into());
+    opts.coverage = Some("coverage.json".into());
+    opts.baseline = Some("baseline.json".into());
+    #[cfg(unix)]
+    {
+        let mut directory_input = opts.clone();
+        directory_input.coverage = Some("coverage.json/.".into());
+        assert_eq!(scan(&directory_input).unwrap_err().kind(), ErrorKind::Io);
+    }
+    let result = scan(&opts).unwrap();
+    assert_eq!(result.report().files_scanned, 1);
+    let rendered = result.render(ReportFormat::Json).unwrap();
+
+    std::env::set_current_dir("../publish").unwrap();
+    fs::write("coverage.json", "unrelated file").unwrap();
+    fs::write("baseline.json", "unrelated file").unwrap();
+    fs::hard_link("../scan/coverage.json", "coverage-alias.json").unwrap();
+    fs::hard_link("../scan/baseline.json", "baseline-alias.json").unwrap();
+
+    for (path, contents) in [
+        ("coverage-alias.json", coverage),
+        ("baseline-alias.json", baseline),
+    ] {
+        let path = Path::new(path);
+        assert_eq!(
+            write_report(&result, &rendered, path).unwrap_err().kind(),
+            ErrorKind::Output
+        );
+        assert_eq!(
+            result.write_baseline(path, true).unwrap_err().kind(),
+            ErrorKind::Output
+        );
+        assert_eq!(fs::read_to_string(path).unwrap(), contents);
+    }
+    assert_eq!(
+        fs::read_to_string("../scan/coverage.json").unwrap(),
+        coverage
+    );
+    assert_eq!(
+        fs::read_to_string("../scan/baseline.json").unwrap(),
+        baseline
+    );
+
+    let path = Path::new("coverage.json");
+    write_report(&result, &rendered, path).unwrap();
+    assert_eq!(fs::read_to_string(path).unwrap(), rendered);
 }
 
 #[cfg(unix)]
