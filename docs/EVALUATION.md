@@ -1,10 +1,7 @@
 # Evaluation on independent C# projects
 
 dotnet-crap was run end to end on four independent open-source C# projects at
-pinned revisions: a small library, a larger library, a multi-project web
-application and a multi-project solution. This closes the PLAN step 9 item
-"Evaluate 3–5 independent C# projects". The run is reproducible with
-`.github/workflows/evaluate.yml` (see [Reproducing](#reproducing)).
+pinned revisions. Use `.github/workflows/evaluate.yml` to reproduce the study.
 
 Evidence: workflow run
 [44578188397](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44578188397)
@@ -76,11 +73,12 @@ Highest-scoring callables:
 
 ## Findings
 
-### Scanning is fast; the test run dominates
+### Scan time and collection time
 
-Scanning the largest corpus, 1,204 callables in 95 files, took 0.3 s and 21 MiB.
-More than 99% of each project's evaluation time is building and running its own
-tests. dotnet-crap adds no meaningful cost to an existing coverage job.
+The CsvHelper scan scored 1,204 callables in 95 files in 0.3 s and used 20.6 MiB
+peak RSS. The separate precollected-coverage scan accounted for less than 1% of
+the combined wall time on each project. Collection includes both the test job
+and the import, so the measurement cannot isolate the cost of importing.
 
 ### Coverage mapping
 
@@ -123,8 +121,9 @@ needs an upstream fix: `lvalue_expression` does not include
 
 0.24.0 also changes some parse shapes, so some scores would change after an
 upgrade. For example, `(x) && y` now parses as a binary expression instead of a
-cast. Adopt it in a separate change with scoring tests, once the release has
-matured.
+cast. The grammar was upgraded in 0.2.2. On the same corpus, CsvHelper then scored
+1,222 callables and had 10 unparsed files. The other three projects were
+unchanged. The timings above describe the original run.
 
 ### Integration friction
 
@@ -132,8 +131,8 @@ matured.
   reference `coverlet.collector`, so the harness added it. The other projects'
   test projects already referenced it.
 - **The default threshold of 10 fails every project.** It failed even
-  GuardClauses, whose callables are 99% instrumented. Real adoption needs an
-  explicit `--threshold`, or a baseline, which is not implemented yet.
+  GuardClauses, whose callables are 99% instrumented. Use a threshold appropriate
+  to the project or a [regression baseline](BASELINES.md), available since 0.3.0.
 - **Multi-targeting and Docker-based tests limit what a single `dotnet test`
   covers.**
   - CsvHelper targets net10.0, net8.0 and net48. Running all targets would write
@@ -148,6 +147,14 @@ matured.
   failed.
 
 ## Reproducing
+
+For the reported timings, build the scanner from
+[`6d6e7bfec4d31196c902f6f2cb73d210461dbabf`](https://github.com/RuiCostafrg/dotnet-crap/commit/6d6e7bfec4d31196c902f6f2cb73d210461dbabf)
+with `cargo build --locked --release` and use the evaluation harness and project
+pins from that revision. The runner and SDK can also affect results.
+
+The command below starts a new evaluation using the revision on `main` at
+dispatch time.
 
 ```sh
 gh workflow run evaluate.yml --repo RuiCostafrg/dotnet-crap --ref main

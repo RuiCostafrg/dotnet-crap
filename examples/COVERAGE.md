@@ -63,5 +63,5 @@ invokes the Rust CLI, and verifies exact results: complexity 2; uncovered score
 score 2. With threshold 2 only the fully covered run passes. Changing the source
 then causes stale-coverage rejection.
 
-Fresh Coverlet/Cobertura and Microsoft coverage integration is the next milestone
-in [the parity roadmap](../docs/FEATURE_PARITY.md).
+To generate this format from fresh test coverage, see
+[coverage collection](../docs/COVERLET.md).

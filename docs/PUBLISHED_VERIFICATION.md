@@ -9,11 +9,15 @@ contents, Actions and attestation access. They require a canonical exact
 version without `v` and a full lowercase 40-character expected source SHA.
 There is no moving `latest` or candidate-artifact fallback.
 
-Run `verify-release.yml` once the GitHub release exists:
+Once the GitHub release exists, set the version and full tagged commit SHA.
+The values below are for v1.0.0. Replace both with the release you are verifying,
+then run `verify-release.yml`.
 
 ```sh
+release_version=1.0.0
+release_source_sha=6587201921b9c6c048abbd13940cace841ec68a3
 gh workflow run verify-release.yml --repo RuiCostafrg/dotnet-crap --ref main \
-  -f version=0.1.0 -f source-sha=<full-tagged-main-SHA>
+  -f version="$release_version" -f source-sha="$release_source_sha"
 ```
 
 It requires an immutable published release, resolves its tag to the expected commit, downloads actual release
@@ -48,11 +52,12 @@ under `tools/`, are compared with the release package again before anything from
 it runs. It then receives the same payload, version and scan checks as the
 isolated-feed jobs.
 
-After the tap formula merge, run all channels:
+After the tap formula merge, verify all channels with the same version and
+source SHA.
 
 ```sh
 gh workflow run verify-published.yml --repo RuiCostafrg/dotnet-crap --ref main \
-  -f version=0.2.0 -f source-sha=<full-tagged-main-SHA> \
+  -f version="$release_version" -f source-sha="$release_source_sha" \
   -F verify-homebrew=true -F verify-nuget=true
 ```
 
@@ -106,3 +111,45 @@ The main Python contract suite runs on PRs and includes these tests. Offline
 tests exercise input validation, provenance command restrictions and rejection,
 checksum tampering and installed-byte identity. They do not replace
 live verification of GitHub or the tap.
+
+## v1.0.0 verification
+
+Version 1.0.0 was staged by `publish-nuget.yml` run
+[45800157272](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45800157272)
+from source `6587201921b9c6c048abbd13940cace841ec68a3` and promoted by the owner.
+The Homebrew sync run
+[45800165258](https://github.com/RuiCostafrg/homebrew-tap/actions/runs/45800165258)
+opened the [formula update](https://github.com/RuiCostafrg/homebrew-tap/pull/31),
+which merged after installation checks passed. Published verification run
+[45888865138](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45888865138)
+passed all 24 jobs, covering release provenance, the shell installer, Homebrew,
+NuGet.org on all five tool RIDs, and the GitHub Action.
+
+## Install the authenticated NuGet package locally
+
+To install the exact bytes built by the release workflow instead, download
+`dotnet-crap.1.0.0.nupkg` from the
+[v1.0.0 GitHub release](https://github.com/RuiCostafrg/dotnet-crap/releases/tag/v1.0.0)
+and save it as `./download/dotnet-crap.1.0.0.nupkg`. The commands below
+verify its provenance and install it with an empty cache and only that local feed.
+
+```sh
+(
+  set -e
+  gh attestation verify ./download/dotnet-crap.1.0.0.nupkg --repo RuiCostafrg/dotnet-crap \
+    --cert-identity https://github.com/RuiCostafrg/dotnet-crap/.github/workflows/release.yml@refs/tags/v1.0.0 \
+    --source-ref refs/tags/v1.0.0 \
+    --source-digest 6587201921b9c6c048abbd13940cace841ec68a3
+  tmp_dir=$(mktemp -d)
+  trap 'rm -rf "$tmp_dir"' EXIT
+  cat > "$tmp_dir/NuGet.Config" <<'EOF'
+<configuration>
+  <packageSources>
+    <clear />
+  </packageSources>
+</configuration>
+EOF
+  NUGET_PACKAGES="$tmp_dir/packages" dotnet tool install --global dotnet-crap \
+    --version 1.0.0 --configfile "$tmp_dir/NuGet.Config" --add-source "$PWD/download"
+)
+```

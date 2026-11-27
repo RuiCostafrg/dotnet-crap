@@ -1,30 +1,10 @@
 # NuGet.org publishing
 
-`dotnet-crap` is published on NuGet.org. Version 0.2.0 was the first, pushed
-2026-11-19 by `publish-nuget.yml` run 44478346577 from tag `v0.2.0` (source
-`2267334808d014b76e363f5ceead63916f68ec11`) after owner approval of the `release`
-environment. The immutable GitHub release `v0.1.0` is explicitly excluded and is
-not on NuGet.org. This publisher does not change Cargo versions; version bumps
-and releases still require separate authorization.
-
-## Supported authentication and first package
-
+The owner stages the released `dotnet-crap` package with
 [NuGet trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
-supports GitHub OIDC via `NuGet/login`, issuing a one-hour API key immediately
-before pushing. Policies identify the repository owner, repository, workflow
-**filename** and optional GitHub environment. Policy scopes distinguish creating
-new packages from publishing versions of existing packages and accept package
-globs. This permits a first package with an appropriately scoped policy; a manual
-API-key bootstrap is not inherently required.
-
-[NuGet package publication and ownership](https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package)
-assign ownership to the publishing account, not the nuspec authors. Before first
-publication the owner must sign in to NuGet.org, select the actual individual or
-organization owner, and verify `dotnet-crap` availability and any prefix
-restrictions in that account's package upload/policy UI. A flat-container 404
-neither reserves the ID nor proves ownership; unlisted/reserved/conflicting IDs
-may still block publication. For an existing ID, obtain confirmed ownership or
-accepted co-ownership before continuing. Do not upload a placeholder version.
+and promotes it on NuGet.org with 2FA. The workflow uses a short-lived OIDC
+credential scoped to the existing package. It starts from the package attached
+to the immutable GitHub release.
 
 ## Current configuration
 
@@ -46,7 +26,6 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
    reviewed v1 code: `8d196754b4036150537f80ac539e15c2f1028841` (the commit, used
    by `main` since #58) and `ebc737b6fc418a6ca0073cf116ec8dc156d8b81e` (the v1
    annotated tag object, still referenced by the workflow inside tag `v0.2.0`).
-   Remove the tag-object pin once no release tag that may be republished uses it.
 4. **`release` environment.** Owner reviewer `RuiCostafrg`, no admin bypass, only
    `v*` tags. Confirm those protections and immutable releases remain enabled.
 5. Nothing triggers automatically on push, release, schedule or another workflow.
@@ -54,8 +33,8 @@ accepted co-ownership before continuing. Do not upload a placeholder version.
 ## Publishing a release
 
 Dispatch `publish-nuget.yml` **on the selected immutable release tag**, not `main`.
-For example, for `v0.2.0`, choose that tag in the Actions
-UI and supply `version=0.2.0` and the full lowercase 40-character source SHA.
+Choose that tag in the Actions UI and supply its version without the `v` prefix
+and the full lowercase 40-character source SHA.
 Use the peeled commit SHA (the commits API), not an annotated tag object SHA.
 The tag must contain this workflow and verifier. Dispatching on `main` is skipped;
 it could not enter the tag-only environment. Both the original and rerun actors
@@ -121,68 +100,3 @@ investigate manually. Do not delete/rebuild or overwrite a version. Network,
 authentication and missing-attestation failures also stop before staging. The old
 `scripts/publish-nuget.sh` is not used by this workflow and retains its historical
 behavior for its existing consumers.
-
-## Validation
-
-Run `python3 -m unittest discover -s tests -p 'test_nuget_publisher.py'` and
-`actionlint .github/workflows/publish-nuget.yml`. Offline contracts exercise source,
-release and package rejection, simulated cryptographic verification failures,
-and actual stage-step conflict propagation. These do not prove live OIDC exchange,
-ID ownership, NuGet acceptance, promotion or cross-platform installation. Existing
-release packaging tests install the package before release; this publisher never
-rebuilds it. After promotion, `verify-published.yml` installs the package from
-NuGet.org itself (see `docs/PUBLISHED_VERIFICATION.md`).
-
-First live run (2026-11-19): run 44478346577 passed every step (release and
-provenance verification, OIDC exchange, push). NuGet.org then served `0.2.0` in its
-flat container, and `dotnet tool install dotnet-crap --version 0.2.0` from
-NuGet.org on the ARM64 Termux host ran and reported `dotnet-crap 0.2.0`.
-
-Version 0.2.1 was the first staged release: `publish-nuget.yml` run
-[44714375635](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44714375635)
-staged it on 2026-11-20 under the "Stage packages" policy, the owner promoted it
-on NuGet.org, and `verify-published.yml` run
-[44728168904](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44728168904)
-verified every channel, including the NuGet.org package on all five tool RIDs.
-
-Version 0.2.2 followed the same path: `publish-nuget.yml` run
-[44885833338](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/44885833338)
-staged it on 2026-11-21, the owner promoted it on NuGet.org, and
-`verify-published.yml` run
-[45052566475](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45052566475)
-passed all 24 jobs. It is the first package to declare its MIT license.
-
-Version 0.3.0 followed the same path: `publish-nuget.yml` run
-[45131285219](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45131285219)
-staged it on 2026-11-23 from source `0732477c5daa3bc191196ea0ee1c974cc9b38235`,
-the owner promoted it on NuGet.org, and `verify-published.yml` run
-[45374108922](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45374108922)
-passed all 24 jobs.
-
-Version 0.4.0 followed the same path: `publish-nuget.yml` run
-[45485873760](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45485873760)
-staged it on 2026-11-24 from source `36adc91f4e09f742ebd474d2de1ca5aaf6a6ae47`,
-the owner promoted it on NuGet.org, and `verify-published.yml` run
-[45653934045](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45653934045)
-passed all 24 jobs.
-
-Version 1.0.0 was staged by `publish-nuget.yml` run
-[45800157272](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45800157272)
-from source `6587201921b9c6c048abbd13940cace841ec68a3` and promoted by the owner.
-The Homebrew sync run
-[45800165258](https://github.com/RuiCostafrg/homebrew-tap/actions/runs/45800165258)
-opened the [formula update](https://github.com/RuiCostafrg/homebrew-tap/pull/31),
-which merged after installation checks passed. Published verification run
-[45888865138](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/45888865138)
-passed all 24 jobs, covering release provenance, the shell installer, Homebrew,
-NuGet.org on all five tool RIDs, and the GitHub Action.
-
-Local preparation evidence (2026-11-13): all 192 Python contracts passed, with two
-optional tests skipped; actionlint 1.7.12 passed for the new workflow. The existing
-`v0.1.0` package was downloaded read-only, release-asset and build-provenance
-verified against source `2565412e3d2326d79e98963ed0b8df7de3020659`, checksum-checked,
-and installed from an isolated local feed. Version output and Fixture scans at
-thresholds 100/0 produced the expected exits 0/1. This ARM64 Termux host required
-its explicit `DOTNET_ROOT` and `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`; this is
-one local installation observation, not five-platform verification. It does not
-run the publisher for `v0.1.0`, which remains excluded, or modify that release.

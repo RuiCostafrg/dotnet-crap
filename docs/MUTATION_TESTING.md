@@ -28,8 +28,10 @@ than-90% rule. A missing, cancelled or incomplete shard therefore fails the
 
 ## Running shards locally
 
-Run one shard with the same arguments CI uses, e.g.
-`python3 scripts/mutation-gate.py --shard 0/4`. Each invocation still reserves
+Run each shard with the same shard count CI uses, for example
+`python3 scripts/mutation-gate.py --shard 0/8 --keep-runs 8`. Pass
+`--keep-runs 8` for every shard and aggregate before running additional shards.
+The default retains only five completed runs. Each invocation reserves
 its own `target/mutation-runs/run-*` directory and records `full-mutants.json`.
 Aggregate locally over the evidence directories you want combined, e.g.
 
@@ -40,50 +42,6 @@ python3 scripts/mutation-gate.py aggregate target/mutation-runs/run-<a> target/m
 Aggregate requires sharded evidence (each directory must contain the recorded
 `full-mutants.json`); a plain unsharded run keeps writing its evidence without
 that file and still enforces the score by itself.
-
-## Reusable API measurement
-
-The complete **local** run for `c80bbd0c4cc8fc4c9239130d07f75ddfd218079d`
-tested 186 mutants:
-178 caught, 3 missed, 0 timed out, and 5 unviable (**98.34%**). The audited inventory
-covers `src/lib.rs` (161), `src/sarif.rs` (17) and `src/main.rs` (8), with no
-production-source exclusions. [Inventory, outcomes and survivor review](../reports/reusable-api/README.md)
-are committed separately from the historical measurements below. Additional tests
-added after this full run do not retroactively change its score. This is local
-evidence only, not validation of the current PR head in CI; the PR mutation
-workflow must independently pass before merge.
-
-## Qualified historical measurements
-
-On quality head `318889605edb3e8258c38d0c29d862895bef688b`, the completed run reported 112 total: 109 caught, 1 missed, 0 timed out, and 2 unviable (99.09%). [Run 41932905187](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/41932905187).
-
-The combined run on `a08eae6184a8e4a50b5a8314a94c7cced58491db` reported 142 total: 139 caught, 1 missed, 0 timed out, and 2 unviable (99.29%). [Run 41934477734](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/41934477734). These are historical results and do not establish the score for later commits.
-
-## Initial measurement (incomplete)
-
-On parent commit `08a1f55`, cargo-mutants 27.1.0 listed 112 mutants in `src/main.rs`. A baseline run using `cargo mutants --jobs 2 --jobserver-tasks 2 --timeout 120 --build-timeout 180 -- --locked` passed its unmutated baseline (169 seconds build, 3 seconds test). On the resource-constrained Android/aarch64 host, after approximately 308 seconds, five mutants had completed: 3 caught, 1 missed, 0 timeout, 1 unviable; 107 remained. The run was interrupted because of its projected runtime. This is not a full score and cannot establish whether the gate passes. The 180 second build timeout was close to the clean build time, so the gate uses 600 seconds instead.
-
-The missed mutation removed the diagnostic describing the expected coverage map; `tests/mutation_contracts.rs` now checks this error. Its effect on the mutation score has not been measured. The one observed unviable mutation replaced `unique_map` with a map containing a default value, which cannot compile for the unconstrained generic value type. No other unviable mutants have been assessed. Run the full gate on the feature commit before drawing a score conclusion; later feature branches will require their own measurement.
-
-## Full CI baseline and hardening
-
-[The first full CI run](https://github.com/RuiCostafrg/dotnet-crap/actions/runs/41931454456)
-on commit `c6c40e07c3f3ecb5230aab7859c59c56ef156473` completed all 112 mutants:
-81 caught, 29 missed, 2 unviable, and no timeouts. The gate correctly failed.
-This supersedes the interrupted local measurement above. CI logs identify each
-survivor; the workflow now also preserves the complete `mutants.out` artifact on
-success or failure, including per-mutant logs and inventory.
-
-The follow-up behavioral corpus independently checks callable line/column spans,
-coverage boundaries, nested callable ownership, positive hit counts, initialized
-auto-property omission, switch-arm complexity, each malformed coverage path/hash/
-line condition, nested source selection, existing relative report replacement,
-and conditional text diagnostics. No production mutations are excluded.
-A fresh full CI result is required before claiming the greater-than-90% target.
-
-The dependency-security workflow separately runs cargo-audit 0.23.0 against the
-committed lockfile and denies advisory warnings as well as vulnerabilities. A
-passing mutation score is not a substitute for that audit or code review.
 
 ## Evidence paths and retention
 

@@ -6,7 +6,7 @@
 Every row compares the baseline and the head measured by one invocation of
 benchmark.py on one runner. A ratio is a claim only when it is marked
 ``separated``: every head sample beat (or lost to) every baseline sample, the
-rule PERFORMANCE_PLAN decision 7 and docs/BENCHMARKS.md set. Rows without the
+rule documented in docs/BENCHMARKS.md. Rows without the
 mark are observations. Nothing here compares rows from different runners.
 """
 import argparse

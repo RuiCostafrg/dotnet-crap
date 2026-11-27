@@ -23,9 +23,7 @@ This page defines what that promises. A change that breaks anything listed under
 - **SARIF.** Rule IDs and `partialFingerprints` ([SARIF.md](SARIF.md)).
 - **Scoring.** The CRAP formula (`complexity² × (1 − coverage)³ + complexity`,
   see the [README](../README.md)) and the documented complexity and ownership
-  conventions ([SCORING_ACCURACY.md](SCORING_ACCURACY.md),
-  [CSHARP_CALLABLES.md](CSHARP_CALLABLES.md),
-  [CSHARP_PATTERNS.md](CSHARP_PATTERNS.md)).
+  conventions ([C# scoring and callable support](CSHARP_CALLABLES.md)).
 
 ## Allowed in minor releases
 
