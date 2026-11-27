@@ -16,6 +16,7 @@
 use crate::error::{fail, OptionExt, ResultExt};
 use sha2::{Digest, Sha256};
 use std::{
+    borrow::Cow,
     collections::BTreeSet,
     fs,
     num::NonZeroUsize,
@@ -155,7 +156,8 @@ impl ScanResult {
     pub fn root(&self) -> &Path {
         &self.root
     }
-    /// Return selected source paths and the coverage input, if present.
+    /// Return absolute paths to the selected sources, then the coverage and
+    /// baseline inputs, if supplied.
     pub fn input_paths(&self) -> &[PathBuf] {
         &self.input_paths
     }
@@ -314,19 +316,21 @@ fn scan_impl(
     if !root.is_dir() {
         fail!(InvalidInput, "root must be a directory");
     }
-    let baseline = args
+    let (baseline_path, baseline) = args
         .baseline
         .as_deref()
         .map(|path| load_baseline(path, args.threshold))
-        .transpose()?;
+        .transpose()?
+        .unzip();
     if baseline.is_none() && !args.baseline_moves.is_empty() {
         fail!(InvalidInput, "baseline moves require a baseline");
     }
-    let coverage: Option<Coverage> = args
+    let coverage_path = args
         .coverage
-        .as_ref()
-        .map(|p| evidence::read(p))
+        .as_deref()
+        .map(|path| absolute_input(path).context(ErrorKind::Io, "reading coverage"))
         .transpose()?;
+    let coverage = coverage_path.as_deref().map(evidence::read).transpose()?;
     if let Some(c) = &coverage {
         evidence::validate(c)?;
     }
@@ -418,14 +422,14 @@ fn scan_impl(
         // An unmatched entry is resolved only when its file was scanned or
         // no longer exists; entries for files outside this scan's selection
         // (other paths, excluded or unchanged files) are out of scope.
-        let scanned: BTreeSet<String> = files
+        let scanned: BTreeSet<_> = files
             .iter()
             .filter_map(|f| f.strip_prefix(&root).ok()?.to_str())
-            .map(|f| f.replace('\\', "/"))
+            .map(native_path_key)
             .collect();
         comparison.resolved.retain(|&e| {
             let file = &baseline.entries[e].file;
-            scanned.contains(file) || !root.join(file).exists()
+            scanned.contains(file.as_str()) || !root.join(file).exists()
         });
         for (item, class) in items.iter_mut().zip(&comparison.items) {
             if let Some(class) = class {
@@ -459,8 +463,8 @@ fn scan_impl(
     report.failed =
         scores_failed || completeness_failed(&report, args.require_coverage, args.fail_on_empty);
     let mut input_paths = files;
-    input_paths.extend(args.coverage.iter().cloned());
-    input_paths.extend(args.baseline.iter().cloned());
+    input_paths.extend(coverage_path);
+    input_paths.extend(baseline_path);
     let result = ScanResult {
         report,
         root,
@@ -481,14 +485,40 @@ fn completeness_failed(report: &Report, require_coverage: bool, fail_on_empty: b
     require_coverage && !report.coverage_complete || fail_on_empty && report.functions.is_empty()
 }
 
-/// Read a baseline and check it was written under the scan's threshold.
-fn load_baseline(path: &Path, threshold: f64) -> Result<baseline::Baseline> {
+/// Anchor a relative input before reading it without resolving symlinks.
+/// Leave empty paths to the readers so they report their normal file errors.
+fn absolute_input(path: &Path) -> std::io::Result<PathBuf> {
+    if path.is_absolute() || path.as_os_str().is_empty() {
+        return Ok(path.to_path_buf());
+    }
+    #[cfg(unix)]
+    {
+        // Preserve the spelling, including a final `/.` that requires a directory.
+        Ok(std::env::current_dir()?.join(path))
+    }
+    #[cfg(not(unix))]
+    {
+        std::path::absolute(path)
+    }
+}
+
+/// Read a baseline, check its threshold, and retain the path used to read it.
+fn load_baseline(path: &Path, threshold: f64) -> Result<(PathBuf, baseline::Baseline)> {
     if output::is_csharp_path(path) {
         fail!(InvalidInput, "baseline cannot be a C# source file");
     }
-    let baseline = baseline::read(path)?;
+    let path = absolute_input(path).context(ErrorKind::InvalidInput, "invalid baseline path")?;
+    let baseline = baseline::read(&path)?;
     baseline::check_threshold(&baseline, threshold)?;
-    Ok(baseline)
+    Ok((path, baseline))
+}
+
+/// Use slash separators in keys made from native paths, preserving literal Unix backslashes.
+fn native_path_key(path: &str) -> Cow<'_, str> {
+    #[cfg(windows)]
+    return Cow::Owned(path.replace('\\', "/"));
+    #[cfg(not(windows))]
+    Cow::Borrowed(path)
 }
 
 /// Inputs shared by every per-file scan, read-only across workers.
@@ -527,10 +557,8 @@ impl FileContext<'_> {
             .strip_prefix(self.root)
             .kind(ErrorKind::InvalidInput)?
             .to_str()
-            .context(ErrorKind::Source, "non-UTF-8 source path")?
-            .to_owned();
-        #[cfg(windows)]
-        let relative = relative.replace('\\', "/");
+            .context(ErrorKind::Source, "non-UTF-8 source path")?;
+        let relative = native_path_key(relative).into_owned();
         if self.coverage.is_some() && relative.contains(['\\', ':']) {
             fail!(
                 Source,

@@ -517,15 +517,17 @@ fn resolve_filename(
             )
         })?
         .to_str()
-        .context(ErrorKind::Cobertura, "non-UTF-8 Cobertura source path")?
-        .replace('\\', "/");
+        .context(ErrorKind::Cobertura, "non-UTF-8 Cobertura source path")?;
+    let relative = crate::native_path_key(relative);
     if relative.is_empty() {
         fail!(
             Cobertura,
             "Cobertura filename does not identify a file: {filename:?}"
         );
     }
-    Ok(sources.contains_key(&relative).then_some(relative))
+    Ok(sources
+        .contains_key(relative.as_ref())
+        .then(|| relative.into_owned()))
 }
 
 /// Each distinct prefix once, in its original order.
@@ -577,8 +579,8 @@ fn add_candidate(
             // A missing lexical path is still exact evidence when its
             // root-relative identity is an explicitly selected source.
             if let Ok(relative) = candidate.strip_prefix(root) {
-                let relative = relative.to_string_lossy().replace('\\', "/");
-                if sources.contains_key(&relative) {
+                let relative = relative.to_string_lossy();
+                if sources.contains_key(crate::native_path_key(&relative).as_ref()) {
                     candidates.insert(candidate);
                 }
             }

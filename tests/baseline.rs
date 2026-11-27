@@ -513,6 +513,29 @@ fn json_reports_carry_baseline_states_and_counts_only_with_a_baseline() {
 }
 
 #[test]
+#[cfg(unix)]
+fn sarif_resolves_only_the_selected_literal_backslash_path() {
+    let literal = r"src\C.cs";
+    let p = Project::new(&[
+        (literal, class("Literal", &[("Fixed", 2)])),
+        ("src/C.cs", class("Nested", &[("StillFailing", 2)])),
+    ]);
+    p.write_baseline(&[]);
+    p.write(literal, &class("Literal", &[("Fixed", 0)]));
+
+    let output = p.compare(&["--format", "sarif", literal]);
+    assert_eq!(code(&output), 0, "{output:?}");
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let results = report["runs"][0]["results"].as_array().unwrap();
+    assert_eq!(results.len(), 1, "{results:?}");
+    assert_eq!(results[0]["baselineState"], "absent");
+    assert_eq!(
+        results[0]["locations"][0]["physicalLocation"]["artifactLocation"]["uri"],
+        "src%5CC.cs"
+    );
+}
+
+#[test]
 fn sarif_marks_baseline_states_and_reports_resolved_entries_as_absent() {
     let p = Project::new(&[(
         "A.cs",
